@@ -17,9 +17,6 @@
 |Jakarta Persistence (for the ORM mapper)
 |{jakartaPersistenceVersion}
 |
-|JPA (Java EE) (for the ORM mapper)
-|{jpaVersion}
-|Need to use <<other-integrations-javaee,different Maven artifacts>>.
 |Apache Lucene (for the <<backend-lucene,Lucene backend>>)
 |{luceneVersion}
 |
