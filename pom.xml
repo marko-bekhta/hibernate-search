@@ -2395,7 +2395,6 @@
         <profile>
             <id>dist</id>
             <modules>
-                <module>orm6</module>
                 <module>distribution</module>
             </modules>
         </profile>
