@@ -127,7 +127,7 @@ public final class HibernateOrmSearchQueryAdapter<R> extends AbstractQuery<R> {
 			case HibernateOrmSearchQueryHints.JAKARTA_FETCHGRAPH:
 			case HibernateOrmSearchQueryHints.JAVAX_LOADGRAPH:
 			case HibernateOrmSearchQueryHints.JAKARTA_LOADGRAPH:
-				applyEntityGraphQueryHint( hintName, hintValueToEntityGraph( value ) );
+				applyEntityGraphHint( hintName, value );
 				break;
 			default:
 				log.ignoringUnrecognizedQueryHint( hintName );
@@ -143,16 +143,10 @@ public final class HibernateOrmSearchQueryAdapter<R> extends AbstractQuery<R> {
 	}
 
 	@Override
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@SuppressWarnings("rawtypes")
 	public HibernateOrmSearchQueryAdapter<R> applyGraph(RootGraph graph, GraphSemantic semantic) {
-		loadingOptions.entityGraphHint( new EntityGraphHint<>( graph, semantic ), true );
+		applyGraph( (RootGraphImplementor) graph, semantic );
 		return this;
-	}
-
-	@Override
-	protected void applyEntityGraphQueryHint(String hintName, RootGraphImplementor<?> entityGraph) {
-		GraphSemantic graphSemantic = GraphSemantic.fromJpaHintName( hintName );
-		this.applyGraph( entityGraph, graphSemantic );
 	}
 
 	@Override
@@ -161,7 +155,7 @@ public final class HibernateOrmSearchQueryAdapter<R> extends AbstractQuery<R> {
 	}
 
 	@Override
-	public ScrollableResultsImplementor<R> scroll(ScrollMode scrollMode) {
+	protected ScrollableResultsImplementor<R> doScroll(ScrollMode scrollMode) {
 		if ( !ScrollMode.FORWARD_ONLY.equals( scrollMode ) ) {
 			throw log.canOnlyUseScrollWithScrollModeForwardsOnly( scrollMode );
 		}
@@ -187,8 +181,8 @@ public final class HibernateOrmSearchQueryAdapter<R> extends AbstractQuery<R> {
 	}
 
 	@Override
-	protected void beforeQuery(boolean requiresTxn) {
-		super.beforeQuery( requiresTxn );
+	protected void beforeQuery() {
+		super.beforeQuery();
 
 		extractQueryOptions();
 	}
@@ -202,6 +196,11 @@ public final class HibernateOrmSearchQueryAdapter<R> extends AbstractQuery<R> {
 		if ( queryTimeout != null ) {
 			delegate.failAfter( queryTimeout, TimeUnit.SECONDS );
 		}
+		EntityGraphHint<?> entityGraphHint = null;
+		if ( queryOptions.getGraph() != null ) {
+			entityGraphHint = new EntityGraphHint<>( queryOptions.getGraph(), queryOptions.getSemantic() );
+		}
+		loadingOptions.entityGraphHint( entityGraphHint, true );
 	}
 
 	//-------------------------------------------------------------
@@ -225,7 +224,7 @@ public final class HibernateOrmSearchQueryAdapter<R> extends AbstractQuery<R> {
 	}
 
 	@Override
-	protected QueryParameterBindings getQueryParameterBindings() {
+	public QueryParameterBindings getQueryParameterBindings() {
 		// parameters not supported in Hibernate Search queries
 		return QueryParameterBindings.NO_PARAM_BINDINGS;
 	}
@@ -319,10 +318,6 @@ public final class HibernateOrmSearchQueryAdapter<R> extends AbstractQuery<R> {
 		else {
 			return Integer.parseInt( String.valueOf( value ) );
 		}
-	}
-
-	private static RootGraphImplementor<?> hintValueToEntityGraph(Object value) {
-		return (RootGraphImplementor<?>) value;
 	}
 
 }
