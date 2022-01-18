@@ -126,7 +126,7 @@ public class DynamicMapBaseIT {
 			);
 
 			assertThat( query.fetchAllHits() ).containsExactly(
-					(Map) session.load( entityTypeName, 1 )
+					(Map) session.getReference( entityTypeName, 1 )
 			);
 		} );
 	}
@@ -211,7 +211,7 @@ public class DynamicMapBaseIT {
 			);
 
 			assertThat( query.fetchAllHits() ).containsExactly(
-					session.load( entityTypeName, 1 )
+					session.getReference( entityTypeName, 1 )
 			);
 		} );
 	}
@@ -330,7 +330,7 @@ public class DynamicMapBaseIT {
 			);
 
 			assertThat( query.fetchAllHits() ).containsExactly(
-					session.load( entityTypeName, 1 )
+					session.getReference( entityTypeName, 1 )
 			);
 		} );
 	}
@@ -417,8 +417,8 @@ public class DynamicMapBaseIT {
 			);
 
 			assertThat( query.fetchAllHits() ).containsExactly(
-					(Map) session.load( entityA_BTypeName, 1 ),
-					(Map) session.load( entityA_CTypeName, 2 )
+					(Map) session.getReference( entityA_BTypeName, 1 ),
+					(Map) session.getReference( entityA_CTypeName, 2 )
 			);
 		} );
 	}
