@@ -59,9 +59,8 @@ public final class HibernateOrmMappingConfigurationContributor implements PojoMa
 			}
 
 			// Sort the properties before processing for deterministic iteration
-			@SuppressWarnings("unchecked") // Hibernate ORM gives us raw types, we must make do.
 			List<Property> properties =
-					HibernateOrmUtils.sortedNonSyntheticProperties( persistentClass.getPropertyIterator() );
+					HibernateOrmUtils.sortedNonSyntheticProperties( persistentClass.getProperties().iterator() );
 
 			Property identifierProperty = persistentClass.getIdentifierProperty();
 			Optional<String> identifierPropertyNameOptional =
@@ -121,9 +120,8 @@ public final class HibernateOrmMappingConfigurationContributor implements PojoMa
 			 */
 			if ( processedEmbeddableTypes.add( componentTypeModel ) ) {
 				// Sort the properties before processing for deterministic iteration
-				@SuppressWarnings("unchecked") // Hibernate ORM gives us raw types, we must make do.
 				List<Property> properties =
-						HibernateOrmUtils.sortedNonSyntheticProperties( componentValue.getPropertyIterator() );
+						HibernateOrmUtils.sortedNonSyntheticProperties( componentValue.getProperties().iterator() );
 				configurationCollector.collectContributor( componentTypeModel,
 						new ErrorCollectingPojoTypeMetadataContributor()
 								// Ensure Hibernate ORM metadata about properties is translated into Hibernate Search metadata
