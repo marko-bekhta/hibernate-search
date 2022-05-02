@@ -203,7 +203,7 @@
         <!-- >>> Elasticsearch -->
         <!-- The version of the Elasticsearch client used by Hibernate Search, independently of the version of the remote cluster -->
         <!-- Use the latest open-source version here. Currently, low-level clients are open-source even in 8.1+ -->
-        <version.org.elasticsearch.client>8.1.1</version.org.elasticsearch.client>
+        <version.org.elasticsearch.client>8.1.3</version.org.elasticsearch.client>
         <!-- The main compatible version of Elasticsearch, advertised by default. Used in documentation links. -->
         <!-- When updating the following version you will likely need to update the test profiles as well,
              to make sure the corresponding profile (e.g. elasticsearch-8.1) becomes the default. -->
@@ -216,7 +216,7 @@
         <!-- The versions of Elasticsearch that may work, but are not given priority for bugfixes and new features -->
         <version.org.elasticsearch.compatible.not-regularly-tested.text>7.0 or 8.0</version.org.elasticsearch.compatible.not-regularly-tested.text>
         <!-- The latest micro of each Elasticsearch branch -->
-        <version.org.elasticsearch.latest-8.1>8.1.1</version.org.elasticsearch.latest-8.1>
+        <version.org.elasticsearch.latest-8.1>8.1.3</version.org.elasticsearch.latest-8.1>
         <version.org.elasticsearch.latest-8.0>8.0.1</version.org.elasticsearch.latest-8.0>
         <version.org.elasticsearch.latest-7.17>7.17.0</version.org.elasticsearch.latest-7.17>
         <version.org.elasticsearch.latest-7.16>7.16.3</version.org.elasticsearch.latest-7.16>
@@ -249,14 +249,14 @@
              That's why we have two separate properties for jackson versions,
              even though they may have the same value from time to time.
          -->
-        <version.com.fasterxml.jackson.databind>2.13.2</version.com.fasterxml.jackson.databind>
+        <version.com.fasterxml.jackson.databind>2.13.2.2</version.com.fasterxml.jackson.databind>
         <!-- Reactive-streams: used by the AWS SDK -->
         <version.org.reactivestreams.reactive-streams>1.0.3</version.org.reactivestreams.reactive-streams>
         <!-- slf4j: used by the AWS SDK -->
         <version.org.slf4j>1.7.36</version.org.slf4j>
 
         <!-- >>> ORM -->
-        <version.org.hibernate>5.6.7.Final</version.org.hibernate>
+        <version.org.hibernate>5.6.8.Final</version.org.hibernate>
         <javadoc.org.hibernate.url>https://docs.jboss.org/hibernate/orm/${parsed-version.org.hibernate.majorVersion}.${parsed-version.org.hibernate.minorVersion}/javadocs/</javadoc.org.hibernate.url>
         <documentation.org.hibernate.url>https://docs.jboss.org/hibernate/orm/${parsed-version.org.hibernate.majorVersion}.${parsed-version.org.hibernate.minorVersion}/userguide/html_single/Hibernate_User_Guide.html</documentation.org.hibernate.url>
         <version.org.hibernate.commons.annotations>5.1.2.Final</version.org.hibernate.commons.annotations>
@@ -269,38 +269,47 @@
           -->
         <version.org.jboss.jandex>2.4.2.Final</version.org.jboss.jandex>
         <version.javax.persistence>2.2</version.javax.persistence>
+        <!-- This version must be kept in sync with the version of the dependency in Hibernate ORM.
+             DO NOT USE DEPENDENCY MANAGEMENT IN THE ROOT POM FOR THIS DEPENDENCY!
+             If we do not use dependency management for this dependency, we get a build failure
+             when the versions start diverging, thanks to the maven-enforcer-plugin
+             and to an artificial dependency in the mapper-orm artifact
+             (which is only necessary for the maven-enforcer-plugin checks to work).
+          -->
+        <version.net.bytebuddy>1.12.9</version.net.bytebuddy>
 
         <!-- >>> ORM 6 / Jakarta Persistence -->
-        <version.org.hibernate.orm>6.0.0.CR2</version.org.hibernate.orm>
+        <version.org.hibernate.orm>6.0.0.Final</version.org.hibernate.orm>
         <javadoc.org.hibernate.orm.url>https://docs.jboss.org/hibernate/orm/${parsed-version.org.hibernate.orm.majorVersion}.${parsed-version.org.hibernate.orm.minorVersion}/javadocs/</javadoc.org.hibernate.orm.url>
         <documentation.org.hibernate.orm.url>https://docs.jboss.org/hibernate/orm/${parsed-version.org.hibernate.orm.majorVersion}.${parsed-version.org.hibernate.orm.minorVersion}/userguide/html_single/Hibernate_User_Guide.html</documentation.org.hibernate.orm.url>
-        <version.org.hibernate.commons.annotations.orm6>6.0.0.CR1</version.org.hibernate.commons.annotations.orm6>
-        <version.jakarta.persistence>3.0.0</version.jakarta.persistence>
+        <version.org.hibernate.commons.annotations.orm6>6.0.0.Final</version.org.hibernate.commons.annotations.orm6>
+        <version.jakarta.persistence>3.1.0</version.jakarta.persistence>
+        <version.net.bytebuddy.orm6>1.12.8</version.net.bytebuddy.orm6>
 
         <!-- >>> JSR 352 -->
         <version.javax.batch>1.0.1</version.javax.batch>
-        <version.jakarta.batch>2.0.0</version.jakarta.batch>
-        <version.org.jberet>1.4.6.Final</version.org.jberet>
-        <version.org.jberet.jakarta>2.0.2.Final</version.org.jberet.jakarta>
+        <version.jakarta.batch>2.1.0</version.jakarta.batch>
+        <version.org.jberet>1.4.7.Final</version.org.jberet>
+        <version.org.jberet.jakarta>2.0.4.Final</version.org.jberet.jakarta>
 
         <!-- >>> Java EE/Jakarta EE dependencies -->
         <!-- Used in the JSR352 integration in particular, but also in the ORM integration (?) and various tests -->
         <version.javax.inject>1</version.javax.inject>
         <version.jakarta.inject-api>2.0.1</version.jakarta.inject-api>
         <version.javax.enterprise>2.0</version.javax.enterprise>
-        <version.jakarta.enterprise>3.0.0</version.jakarta.enterprise>
+        <version.jakarta.enterprise>3.0.1</version.jakarta.enterprise>
         <version.org.jboss.spec.javax.annotation.jboss-annotations-api_1.2_spec>1.0.2.Final</version.org.jboss.spec.javax.annotation.jboss-annotations-api_1.2_spec>
-        <version.jakarta.annotation-api>2.0.0</version.jakarta.annotation-api>
+        <version.jakarta.annotation-api>2.1.0</version.jakarta.annotation-api>
         <version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.2_spec>1.1.1.Final</version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.2_spec>
-        <version.jakarta.transaction-api>2.0.0</version.jakarta.transaction-api>
+        <version.jakarta.transaction-api>2.0.1</version.jakarta.transaction-api>
         <!-- We need dependency management on these ones to avoid dependency divergence created by our own dependencies
              (Hibernate ORM, JBatch, ...).
              Ideally, we should remove this dependency management when the dependencies fix their dependency divergence.
          -->
-        <version.jakarta.xml.bind>3.0.1</version.jakarta.xml.bind>
-        <version.jakarta.activation>2.0.1</version.jakarta.activation>
+        <version.jakarta.xml.bind>4.0.0</version.jakarta.xml.bind>
+        <version.jakarta.activation>2.1.0</version.jakarta.activation>
         <version.org.jboss.spec.javax.interceptor.jboss-interceptor-api_1.2_spec>1.0.1.Final</version.org.jboss.spec.javax.interceptor.jboss-interceptor-api_1.2_spec>
-        <version.jakarta.interceptor-api>2.0.1</version.jakarta.interceptor-api>
+        <version.jakarta.interceptor-api>2.1.0</version.jakarta.interceptor-api>
         <!-- This is used to generate a link to the Java EE javadoc -->
         <javadoc.javaee.url>https://javaee.github.io/javaee-spec/javadocs/</javadoc.javaee.url>
         <javadoc.jakarta.batch.url>https://jakarta.ee/specifications/batch/2.0/apidocs/</javadoc.jakarta.batch.url>
@@ -313,25 +322,25 @@
         <version.org.osgi.core>6.0.0</version.org.osgi.core>
 
         <version.org.hamcrest>2.2</version.org.hamcrest>
-        <version.org.mockito>4.4.0</version.org.mockito>
+        <version.org.mockito>4.5.1</version.org.mockito>
         <version.org.assertj.assertj-core>3.22.0</version.org.assertj.assertj-core>
         <version.org.awaitily>4.2.0</version.org.awaitily>
         <version.org.skyscreamer.jsonassert>1.5.0</version.org.skyscreamer.jsonassert>
         <version.io.takari.junit>1.2.7</version.io.takari.junit>
-        <version.com.h2database>2.1.210</version.com.h2database>
+        <version.com.h2database>2.1.212</version.com.h2database>
         <version.com.github.tomakehurst.wiremock>2.27.2</version.com.github.tomakehurst.wiremock>
         <version.org.apache.commons.lang3>3.12.0</version.org.apache.commons.lang3>
         <version.org.apache.commons.math3>3.6.1</version.org.apache.commons.math3>
         <version.org.apache.avro>1.11.0</version.org.apache.avro>
         <version.org.jboss.weld>3.1.9.Final</version.org.jboss.weld>
-        <version.org.jboss.weld.jakarta>4.0.2.Final</version.org.jboss.weld.jakarta>
+        <version.org.jboss.weld.jakarta>4.0.3.Final</version.org.jboss.weld.jakarta>
 
         <!-- >>> Performance tests -->
-        <version.org.openjdk.jmh>1.34</version.org.openjdk.jmh>
+        <version.org.openjdk.jmh>1.35</version.org.openjdk.jmh>
 
         <!-- >>> JSR 352: JBatch runtime -->
         <version.com.ibm.jbatch>1.0</version.com.ibm.jbatch>
-        <version.com.ibm.jbatch.jakarta>2.0.0</version.com.ibm.jbatch.jakarta>
+        <version.com.ibm.jbatch.jakarta>2.1.0-M2</version.com.ibm.jbatch.jakarta>
         <version.org.apache.derby>10.13.1.1</version.org.apache.derby>
 
         <!-- >>> JSR 352: JBeret SE dependencies -->
@@ -340,45 +349,45 @@
         <version.org.google.guava>31.1-jre</version.org.google.guava>
 
         <!-- >>> Spring integration tests -->
-        <version.org.springframework.boot>2.6.2</version.org.springframework.boot>
+        <version.org.springframework.boot>2.6.7</version.org.springframework.boot>
 
         <!-- Maven plugins versions -->
 
         <version.assembly.plugin>3.1.0</version.assembly.plugin>
         <version.buildhelper.plugin>3.3.0</version.buildhelper.plugin>
         <version.checkstyle.plugin>3.1.2</version.checkstyle.plugin>
-        <version.bundle.plugin>5.1.4</version.bundle.plugin>
-        <version.clean.plugin>3.1.0</version.clean.plugin>
+        <version.bundle.plugin>5.1.5</version.bundle.plugin>
+        <version.clean.plugin>3.2.0</version.clean.plugin>
         <!-- Needing 3.6.2 at least because of MCOMPILER-294 -->
         <version.compiler.plugin>3.10.1</version.compiler.plugin>
         <version.dependency.plugin>3.3.0</version.dependency.plugin>
         <!-- Check dependencies for security vulnerabilities -->
-        <version.dependency-check.plugin>7.0.0</version.dependency-check.plugin>
+        <version.dependency-check.plugin>7.1.0</version.dependency-check.plugin>
         <version.deploy.plugin>2.8.2</version.deploy.plugin>
         <version.org.eclipse.m2e.lifecycle-mapping>1.0.0</version.org.eclipse.m2e.lifecycle-mapping>
         <version.enforcer.plugin>3.0.0</version.enforcer.plugin>
         <version.exec.plugin>3.0.0</version.exec.plugin>
-        <version.forbiddenapis.plugin>3.2</version.forbiddenapis.plugin>
+        <version.forbiddenapis.plugin>3.3</version.forbiddenapis.plugin>
         <version.help.plugin>3.2.0</version.help.plugin>
         <version.install.plugin>2.5.2</version.install.plugin>
         <version.io.takari.maven>0.7.7</version.io.takari.maven>
         <version.japicmp.plugin>0.15.7</version.japicmp.plugin>
         <version.jar.plugin>3.2.2</version.jar.plugin>
-        <version.javadoc.plugin>3.3.2</version.javadoc.plugin>
+        <version.javadoc.plugin>3.4.0</version.javadoc.plugin>
         <version.jdeps.plugin>0.5.1</version.jdeps.plugin>
-        <version.nexus-staging.plugin>1.6.12</version.nexus-staging.plugin>
+        <version.nexus-staging.plugin>1.6.13</version.nexus-staging.plugin>
         <version.processor.plugin>4.5-jdk8</version.processor.plugin>
         <version.project-info.plugin>3.2.2</version.project-info.plugin>
         <version.release.plugin>2.5.3</version.release.plugin>
         <version.resources.plugin>3.2.0</version.resources.plugin>
-        <version.shade.plugin>3.2.4</version.shade.plugin>
-        <version.site.plugin>3.11.0</version.site.plugin>
+        <version.shade.plugin>3.3.0</version.shade.plugin>
+        <version.site.plugin>3.12.0</version.site.plugin>
         <version.source.plugin>3.2.1</version.source.plugin>
         <!-- Surefire versions are a minefield of bugs: be careful with upgrades -->
         <version.surefire.plugin>3.0.0-M5</version.surefire.plugin>
-        <version.surefire.plugin.java-version.asm>9.2</version.surefire.plugin.java-version.asm>
+        <version.surefire.plugin.java-version.asm>9.3</version.surefire.plugin.java-version.asm>
         <version.failsafe.plugin>${version.surefire.plugin}</version.failsafe.plugin>
-        <version.jacoco.plugin>0.8.7</version.jacoco.plugin>
+        <version.jacoco.plugin>0.8.8</version.jacoco.plugin>
         <version.coveralls.plugin>4.3.0</version.coveralls.plugin>
         <version.com.buschmais.jqassistant.plugin>1.11.1</version.com.buschmais.jqassistant.plugin>
         <version.docker.maven.plugin>0.39.1</version.docker.maven.plugin>
@@ -387,7 +396,7 @@
         <version.scripting.plugin>3.0.0</version.scripting.plugin>
         <version.gpg.plugin>3.0.1</version.gpg.plugin>
         <version.org.codehaus.groovy-jsr223>3.0.10</version.org.codehaus.groovy-jsr223>
-        <version.com.puppycrawl.tools.checkstyle>10.0</version.com.puppycrawl.tools.checkstyle>
+        <version.com.puppycrawl.tools.checkstyle>10.2</version.com.puppycrawl.tools.checkstyle>
 
         <!-- Asciidoctor -->
 
@@ -419,22 +428,25 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-        <!-- JDK version required for the build; we target 8 but require at least 11 for the build -->
-        <jdk.min.version>11</jdk.min.version>
+        <!-- JDK version required for the build; we target 8 but require at least 17 for the build -->
+        <jdk.min.version>17</jdk.min.version>
         <!-- The lowest supported version of Java for applications using Hibernate Search -->
         <!-- Set statically, independently from the current JDK: we want our code to comply with this version -->
         <java-version.main.release>8</java-version.main.release>
         <java-version.main.compiler.java_home>${java.home}</java-version.main.compiler.java_home>
         <java-version.main.compiler>${java-version.main.compiler.java_home}/bin/javac</java-version.main.compiler>
         <!-- The version of test bytecode, useful for testing compatibility with newer JDKs -->
-        <!-- Set to the version of the JDK running Maven by default, but overridden on CI -->
-        <!-- 'java.specification.version' is only correct from Java 9 onwards, but we require Java 11 for the build anyway -->
-        <java-version.test.release>${java.specification.version}</java-version.test.release>
+        <!-- Set to the expected version of the JDK running Maven by default, but overridden on CI -->
+        <java-version.test.release>${jdk.min.version}</java-version.test.release>
         <java-version.test.compiler.java_home>${java.home}</java-version.test.compiler.java_home>
         <java-version.test.compiler>${java-version.test.compiler.java_home}/bin/javac</java-version.test.compiler>
         <!-- IMPORTANT: For Java 8, this must be the path to the JDK, not to the JRE -->
         <java-version.test.launcher.java_home>${java-version.test.compiler.java_home}</java-version.test.launcher.java_home>
         <java-version.test.launcher>${java-version.test.launcher.java_home}/bin/java</java-version.test.launcher>
+
+        <!-- Properties overridden in profiles to disable certain tests that only work with specific Java versions -->
+        <java-version.test.java11.add-test-source-phase>generate-test-sources</java-version.test.java11.add-test-source-phase>
+        <java-version.test.java17.add-test-source-phase>generate-test-sources</java-version.test.java17.add-test-source-phase>
 
         <!-- Set this through a property so that it can be overridden from the commandline -->
         <maven.compiler.failOnWarning>true</maven.compiler.failOnWarning>
@@ -505,6 +517,7 @@
         <failsafe.jvm.args.jacoco></failsafe.jvm.args.jacoco>
         <!-- JVM args to be customized by each Maven module -->
         <surefire.jvm.args.module></surefire.jvm.args.module>
+        <surefire.jvm.args.module.add-opens></surefire.jvm.args.module.add-opens>
         <!--
              Pass these properties as system properties to be able to switch to
              a different database without re-compiling the hibernate.properties file
@@ -563,6 +576,18 @@
         <test.elasticsearch.connection.aws.credentials.type></test.elasticsearch.connection.aws.credentials.type>
         <test.elasticsearch.connection.aws.credentials.access_key_id></test.elasticsearch.connection.aws.credentials.access_key_id>
         <test.elasticsearch.connection.aws.credentials.secret_access_key></test.elasticsearch.connection.aws.credentials.secret_access_key>
+        <!-- Property whose sole purpose is to be referenced in the definition of surefire.jvm.args.module
+             when elasticsearch connection is necessary -->
+        <test.elasticsearch.connection.jvm.args>
+            -Dhibernate.search.backend.uris=${test.elasticsearch.connection.uris}
+            -Dhibernate.search.backend.username=${test.elasticsearch.connection.username}
+            -Dhibernate.search.backend.password=${test.elasticsearch.connection.password}
+            -Dhibernate.search.backend.aws.signing.enabled=${test.elasticsearch.connection.aws.signing.enabled}
+            -Dhibernate.search.backend.aws.region=${test.elasticsearch.connection.aws.region}
+            -Dhibernate.search.backend.aws.credentials.type=${test.elasticsearch.connection.aws.credentials.type}
+            -Dhibernate.search.backend.aws.credentials.access_key_id=${test.elasticsearch.connection.aws.credentials.access_key_id}
+            -Dhibernate.search.backend.aws.credentials.secret_access_key=${test.elasticsearch.connection.aws.credentials.secret_access_key}
+        </test.elasticsearch.connection.jvm.args>
         <!-- Control how integration tests format the requests sent to Elasticsearch -->
         <test.elasticsearch.testdialect></test.elasticsearch.testdialect>
 
@@ -599,6 +624,14 @@
         <test.database.run.mssql.skip>true</test.database.run.mssql.skip>
         <test.database.run.mssql.image.name>mcr.microsoft.com/mssql/server</test.database.run.mssql.image.name>
         <test.database.run.mssql.image.tag>2019-CU8-ubuntu-16.04</test.database.run.mssql.image.tag>
+
+        <!-- Property whose sole purpose is to be referenced in the definition of surefire.jvm.args.module
+             when Weld is used. -->
+        <!-- Weld performs illegal accesses to java.base to generate proxies, so we need to allow them. -->
+        <test.weld.jvm.args>
+            --add-opens java.base/java.security=ALL-UNNAMED
+            --add-opens java.base/java.lang=ALL-UNNAMED
+        </test.weld.jvm.args>
 
         <!-- Eclipse plugin options -->
 
@@ -1050,8 +1083,8 @@
                 <version>${version.jakarta.xml.bind}</version>
             </dependency>
             <dependency>
-                <groupId>com.sun.activation</groupId>
-                <artifactId>jakarta.activation</artifactId>
+                <groupId>jakarta.activation</groupId>
+                <artifactId>jakarta.activation-api</artifactId>
                 <version>${version.jakarta.activation}</version>
             </dependency>
 
@@ -1525,6 +1558,30 @@
                             <versionString>${version.jakarta.persistence}</versionString>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>add-test-source-java11</id>
+                        <phase>${java-version.test.java11.add-test-source-phase}</phase>
+                        <goals>
+                            <goal>add-test-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>src/test/java11</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>add-test-source-java17</id>
+                        <phase>${java-version.test.java17.add-test-source-phase}</phase>
+                        <goals>
+                            <goal>add-test-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>src/test/java17</source>
+                            </sources>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <!-- Skip the deploy plugin explicitly: we use nexus-staging-maven-plugin instead -->
@@ -1674,8 +1731,6 @@
                         <release>${maven.compiler.release}</release>
                         <testRelease>${maven.compiler.testRelease}</testRelease>
                         <encoding>UTF-8</encoding>
-                        <!-- needed because of compiler bug: http://bugs.sun.com/view_bug.do?bug_id=6512707 -->
-                        <proc>none</proc>
                         <compilerArgs>
                             <compilerArg>-Xlint:unchecked</compilerArg>
                         </compilerArgs>
@@ -1686,12 +1741,25 @@
                             <configuration>
                                 <fork>true</fork>
                                 <executable>${java-version.main.compiler}</executable>
+                                <annotationProcessorPaths>
+                                    <path>
+                                        <groupId>org.jboss.logging</groupId>
+                                        <artifactId>jboss-logging-processor</artifactId>
+                                        <version>${version.org.jboss.logging.jboss-logging-tools}</version>
+                                    </path>
+                                    <path>
+                                        <groupId>org.jboss.logging</groupId>
+                                        <artifactId>jboss-logging</artifactId>
+                                        <version>${version.org.jboss.logging.jboss-logging}</version>
+                                    </path>
+                                </annotationProcessorPaths>
                             </configuration>
                         </execution>
                         <execution>
                             <id>default-testCompile</id>
                             <configuration>
                                 <fork>true</fork>
+                                <proc>none</proc>
                                 <executable>${java-version.test.compiler}</executable>
                             </configuration>
                         </execution>
@@ -1701,34 +1769,6 @@
                     <groupId>org.bsc.maven</groupId>
                     <artifactId>maven-processor-plugin</artifactId>
                     <version>${version.processor.plugin}</version>
-                    <executions>
-                        <!-- Run annotation processors on src/main/java sources -->
-                        <execution>
-                            <id>process</id>
-                            <goals>
-                                <goal>process</goal>
-                            </goals>
-                            <phase>process-sources</phase>
-                            <configuration>
-                                <processors>
-                                    <processor>org.jboss.logging.processor.apt.LoggingToolsProcessor</processor>
-                                </processors>
-                                <!-- Disable usage of the @Generated annotation: too much trouble as requirements are different across JDK8 vs JDK9 -->
-                                <!-- See also: https://github.com/jboss-logging/jboss-logging-tools/pull/60#issuecomment-293088198 -->
-                                <compilerArguments>-Aorg.jboss.logging.tools.addGeneratedAnnotation=false</compilerArguments>
-                                <!-- Necessary for the Jakarta artifacts, where sources are copied from other modules -->
-                                <addCompileSourceRoots>true</addCompileSourceRoots>
-                            </configuration>
-                        </execution>
-                    </executions>
-                    <dependencies>
-                        <dependency>
-                            <groupId>org.jboss.logging</groupId>
-                            <artifactId>jboss-logging-processor</artifactId>
-                            <version>${version.org.jboss.logging.jboss-logging-tools}</version>
-                            <scope>compile</scope>
-                        </dependency>
-                    </dependencies>
                 </plugin>
                 <plugin>
                     <groupId>org.sonatype.plugins</groupId>
@@ -1809,23 +1849,21 @@
                     <groupId>de.thetaphi</groupId>
                     <artifactId>forbiddenapis</artifactId>
                     <version>${version.forbiddenapis.plugin}</version>
+                    <configuration>
+                        <!-- if the used Java version is too new, don't fail, just do nothing: -->
+                        <failOnUnsupportedJava>false</failOnUnsupportedJava>
+                        <failOnMissingClasses>false</failOnMissingClasses>
+                        <ignoreSignaturesOfMissingClasses>true</ignoreSignaturesOfMissingClasses>
+                        <suppressAnnotations>
+                            <suppressAnnotation>javax.annotation.processing.Generated</suppressAnnotation>
+                            <suppressAnnotation>org.hibernate.search.util.common.annotation.impl.SuppressForbiddenApis</suppressAnnotation>
+                            <suppressAnnotation>org.hibernate.search.util.impl.test.annotation.SuppressForbiddenApis</suppressAnnotation>
+                        </suppressAnnotations>
+                    </configuration>
                     <executions>
                         <execution>
-                            <id>verify-forbidden-apis</id>
+                            <id>verify-forbidden-apis-main-public</id>
                             <configuration>
-                                <!-- if the used Java version is too new, don't fail, just do nothing: -->
-                                <failOnUnsupportedJava>false</failOnUnsupportedJava>
-                                <excludes>
-                                    <!-- JBoss Logger formats messages according to default Locale (bug or feature?) -->
-                                    <!-- Also, we allow JBoss Loggers to use SearchException constructors -->
-                                    <exclude>**/*_$logger.class</exclude>
-                                    <!-- JBoss message bundles format messages -->
-                                    <exclude>**/*_$bundle.class</exclude>
-                                </excludes>
-                                <suppressAnnotations>
-                                    <suppressAnnotation>org.hibernate.search.util.common.annotation.impl.SuppressForbiddenApis</suppressAnnotation>
-                                    <suppressAnnotation>org.hibernate.search.util.impl.test.annotation.SuppressForbiddenApis</suppressAnnotation>
-                                </suppressAnnotations>
                                 <bundledSignatures>
                                     <!-- These signatures on the top are not specific to any JDK version -->
                                     <bundledSignature>jdk-system-out</bundledSignature>
@@ -1833,18 +1871,12 @@
                                     <!-- The jdk-reflection is not yet something we can avoid -->
                                     <!--<bundledSignature>jdk-reflection</bundledSignature>-->
 
-                                    <!-- All following signatures should be replicated for each target JDK version we intend to support -->
-                                    <bundledSignature>jdk-unsafe-1.8</bundledSignature>
-                                    <bundledSignature>jdk-unsafe-9</bundledSignature>
-                                    <bundledSignature>jdk-unsafe-10</bundledSignature>
-                                    <bundledSignature>jdk-unsafe-11</bundledSignature>
-                                    <bundledSignature>jdk-unsafe-12</bundledSignature>
-                                    <bundledSignature>jdk-unsafe-13</bundledSignature>
-                                    <bundledSignature>jdk-unsafe-14</bundledSignature>
-                                    <bundledSignature>jdk-unsafe-15</bundledSignature>
-                                    <bundledSignature>jdk-unsafe-16</bundledSignature>
-                                    <bundledSignature>jdk-unsafe-17</bundledSignature>
+                                    <!-- These signatures can safely be limited to the current JDK;
+                                         see https://github.com/policeman-tools/forbidden-apis/issues/197#issuecomment-1080370368
+                                     -->
+                                    <bundledSignature>jdk-unsafe</bundledSignature>
 
+                                    <!-- All following signatures should be replicated for each target JDK version we intend to support -->
                                     <bundledSignature>jdk-deprecated-1.8</bundledSignature>
                                     <bundledSignature>jdk-deprecated-9</bundledSignature>
                                     <bundledSignature>jdk-deprecated-10</bundledSignature>
@@ -1855,6 +1887,7 @@
                                     <bundledSignature>jdk-deprecated-15</bundledSignature>
                                     <bundledSignature>jdk-deprecated-16</bundledSignature>
                                     <bundledSignature>jdk-deprecated-17</bundledSignature>
+                                    <bundledSignature>jdk-deprecated-18</bundledSignature>
 
                                     <bundledSignature>jdk-internal-1.8</bundledSignature>
                                     <bundledSignature>jdk-internal-9</bundledSignature>
@@ -1866,16 +1899,15 @@
                                     <bundledSignature>jdk-internal-15</bundledSignature>
                                     <bundledSignature>jdk-internal-16</bundledSignature>
                                     <bundledSignature>jdk-internal-17</bundledSignature>
+                                    <bundledSignature>jdk-internal-18</bundledSignature>
                                 </bundledSignatures>
-                                <failOnMissingClasses>false</failOnMissingClasses>
-                                <ignoreSignaturesOfMissingClasses>true</ignoreSignaturesOfMissingClasses>
                                 <signaturesArtifacts>
                                     <signaturesArtifact>
                                         <groupId>org.hibernate.search</groupId>
                                         <artifactId>hibernate-search-build-config</artifactId>
                                         <version>${project.version}</version>
                                         <type>jar</type>
-                                        <path>forbidden-runtime.txt</path>
+                                        <path>forbidden-public.txt</path>
                                     </signaturesArtifact>
                                 </signaturesArtifacts>
                             </configuration>
@@ -1885,19 +1917,8 @@
                             </goals>
                         </execution>
                         <execution>
-                            <id>verify-forbidden-test-apis</id>
+                            <id>verify-forbidden-apis-main-internal</id>
                             <configuration>
-                                <!-- if the used Java version is too new, don't fail, just do nothing: -->
-                                <failOnUnsupportedJava>false</failOnUnsupportedJava>
-                                <ignoreSignaturesOfMissingClasses>true</ignoreSignaturesOfMissingClasses>
-                                <excludes>
-                                    <!--
-                                        Only those two classes are allowed to build search integrators,
-                                        because they do it right (with guaranteed calls to close at the end of the test).
-                                    -->
-                                    <exclude>**/org/hibernate/search/testsupport/junit/SearchFactoryHolder.class</exclude>
-                                    <exclude>**/org/hibernate/search/testsupport/junit/SearchIntegratorResource.class</exclude>
-                                </excludes>
                                 <bundledSignatures>
                                     <!-- This will automatically choose the right signatures based on 'targetVersion': -->
                                     <bundledSignature>jdk-unsafe</bundledSignature>
@@ -1911,7 +1932,33 @@
                                         <artifactId>hibernate-search-build-config</artifactId>
                                         <version>${project.version}</version>
                                         <type>jar</type>
-                                        <path>forbidden-tests.txt</path>
+                                        <path>forbidden-internal.txt</path>
+                                    </signaturesArtifact>
+                                </signaturesArtifacts>
+                            </configuration>
+                            <!-- Disabled by default; see parents/internal -->
+                            <phase>none</phase>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>verify-forbidden-apis-tests</id>
+                            <configuration>
+                                <bundledSignatures>
+                                    <!-- This will automatically choose the right signatures based on 'targetVersion': -->
+                                    <bundledSignature>jdk-unsafe</bundledSignature>
+                                    <bundledSignature>jdk-deprecated</bundledSignature>
+                                    <bundledSignature>jdk-non-portable</bundledSignature>
+                                    <bundledSignature>jdk-internal</bundledSignature>
+                                </bundledSignatures>
+                                <signaturesArtifacts>
+                                    <signaturesArtifact>
+                                        <groupId>org.hibernate.search</groupId>
+                                        <artifactId>hibernate-search-build-config</artifactId>
+                                        <version>${project.version}</version>
+                                        <type>jar</type>
+                                        <path>forbidden-internal.txt</path>
                                     </signaturesArtifact>
                                 </signaturesArtifacts>
                             </configuration>
@@ -2239,7 +2286,7 @@
                 </plugin>
                 <plugin>
                     <artifactId>maven-antrun-plugin</artifactId>
-                    <version>3.0.0</version>
+                    <version>3.1.0</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -2331,6 +2378,23 @@
         </profile>
 
         <profile>
+            <id>testWithJdkSpecifiedExplicitly</id>
+            <activation>
+                <property>
+                    <name>java-version.test.compiler.java_home</name>
+                </property>
+            </activation>
+            <properties>
+                <!-- ForbiddenAPIs uses the Maven JDK to resolve signatures,
+                     which leads to some trouble when using a different JDK version to compile tests
+                     (see https://hibernate.atlassian.net/browse/HSEARCH-4521)
+                     Since the main build is supposed to catch all forbidden API invocations already,
+                     we can safely disable ForbiddenAPIs in builds that target other JDKs. -->
+                <forbiddenapis.skip>true</forbiddenapis.skip>
+            </properties>
+        </profile>
+
+        <profile>
             <id>testWithJdk8</id>
             <activation>
                 <property>
@@ -2339,8 +2403,17 @@
                 </property>
             </activation>
             <properties>
+                <!-- JDK 8 doesn't support the settings mentioned in the default value of this property,
+                     but it doesn't need them either, so we just omit them. -->
                 <surefire.jvm.args.java-version></surefire.jvm.args.java-version>
+                <!-- JDK 8 produces so many false positives that warnings are worthless -->
                 <maven.compiler.failOnWarning>false</maven.compiler.failOnWarning>
+                <!-- JDK 8 doesn't support the add-opens mentioned in the default value of this property,
+                     but it doesn't need them either, so we just omit them. -->
+                <test.weld.jvm.args></test.weld.jvm.args>
+                <!-- Tests specific to Java 11+ won't work with JDK 8, so we disable them. -->
+                <java-version.test.java11.add-test-source-phase>none</java-version.test.java11.add-test-source-phase>
+                <java-version.test.java17.add-test-source-phase>none</java-version.test.java17.add-test-source-phase>
             </properties>
         </profile>
 
@@ -2352,49 +2425,9 @@
                     <value>11</value>
                 </property>
             </activation>
-        </profile>
-
-        <profile>
-            <id>testWithJdk16</id>
-            <activation>
-                <property>
-                    <name>java-version.test.release</name>
-                    <value>16</value>
-                </property>
-            </activation>
             <properties>
-                <!-- Spring isn't ready for JDK16 yet -->
-                <failsafe.spring.skip>true</failsafe.spring.skip>
-            </properties>
-        </profile>
-
-        <profile>
-            <id>testWithJdk17</id>
-            <activation>
-                <property>
-                    <name>java-version.test.release</name>
-                    <value>17</value>
-                </property>
-            </activation>
-            <properties>
-                <!-- Spring isn't ready for JDK17 yet -->
-                <failsafe.spring.skip>true</failsafe.spring.skip>
-            </properties>
-        </profile>
-
-        <profile>
-            <id>testWithJdk18</id>
-            <activation>
-                <property>
-                    <name>java-version.test.release</name>
-                    <value>18</value>
-                </property>
-            </activation>
-            <properties>
-                <!-- ForbiddenAPIs doesn't provide bundled signatures for JDK18 yet. -->
-                <forbiddenapis.skip>true</forbiddenapis.skip>
-                <!-- Spring isn't ready for JDK18 yet -->
-                <failsafe.spring.skip>true</failsafe.spring.skip>
+                <!-- Tests specific to Java 17+ won't work with JDK 11, so we disable them. -->
+                <java-version.test.java17.add-test-source-phase>none</java-version.test.java17.add-test-source-phase>
             </properties>
         </profile>
 
@@ -2407,8 +2440,6 @@
                 </property>
             </activation>
             <properties>
-                <!-- ForbiddenAPIs doesn't provide bundled signatures for JDK19 yet. -->
-                <forbiddenapis.skip>true</forbiddenapis.skip>
                 <!-- We need net.bytebuddy.experimental=true to make BytecodeEnhancementIT and mockito-based tests pass -->
                 <surefire.jvm.args.java-version>
                     -Djdk.attach.allowAttachSelf=true
@@ -2524,18 +2555,32 @@
                     <name>idea.maven.embedder.version</name>
                 </property>
             </activation>
+            <properties>
+                <!-- Intellij IDEA only understands the main -release argument,
+                     so we need to do this in order for tests to compile.
+                     Here's the issue in the IDEA bug tracker: https://youtrack.jetbrains.com/issue/IDEA-85478
+                     It's fixed in 2022.1 EAP 6, so hopefully we'll be able to get rid of this soon. -->
+                <java-version.main.release>${java-version.test.release}</java-version.main.release>
+                <!-- Dependency convergence checks seem to fail in IntelliJ IDEA,
+                     for some reason. Maybe it's because of the two additional dependencies below.
+                     Anyway, let's disable these checks so the build works correctly in IDEA. -->
+                <enforcer.dependencyconvergence.skip>true</enforcer.dependencyconvergence.skip>
+            </properties>
             <dependencies>
+                <!-- Intellij IDEA doesn't understand <annotationProcessorPaths> in
+                     the maven-compiler-plugin configuration, so we need this in order
+                     for compilation to work in the IDE. -->
                 <dependency>
                     <groupId>org.jboss.logging</groupId>
                     <artifactId>jboss-logging-processor</artifactId>
                     <version>${version.org.jboss.logging.jboss-logging-tools}</version>
-                    <scope>compile</scope>
+                    <scope>provided</scope>
                 </dependency>
                 <dependency>
                     <groupId>org.openjdk.jmh</groupId>
                     <artifactId>jmh-generator-annprocess</artifactId>
                     <version>${version.org.openjdk.jmh}</version>
-                    <scope>compile</scope>
+                    <scope>provided</scope>
                 </dependency>
             </dependencies>
         </profile>
@@ -2713,7 +2758,7 @@
         <!--
             A profile executing jqassistant scanning and analysis for all relevant modules.
             Our rules are in jqassistant/rules.xml.
-            See README.md for usage.
+            See CONTRIBUTING.md for usage.
         -->
         <profile>
             <id>jqassistant</id>
