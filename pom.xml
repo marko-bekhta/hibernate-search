@@ -202,20 +202,21 @@
 
         <!-- >>> Elasticsearch -->
         <!-- The version of the Elasticsearch client used by Hibernate Search, independently of the version of the remote cluster -->
-        <!-- Use the latest open-source version here. Currently, low-level clients are open-source even in 8.1+ -->
-        <version.org.elasticsearch.client>8.1.3</version.org.elasticsearch.client>
+        <!-- Use the latest open-source version here. Currently, low-level clients are open-source even in 8.2+ -->
+        <version.org.elasticsearch.client>8.2.0</version.org.elasticsearch.client>
         <!-- The main compatible version of Elasticsearch, advertised by default. Used in documentation links. -->
         <!-- When updating the following version you will likely need to update the test profiles as well,
-             to make sure the corresponding profile (e.g. elasticsearch-8.1) becomes the default. -->
-        <version.org.elasticsearch.compatible.main>${version.org.elasticsearch.latest-8.1}</version.org.elasticsearch.compatible.main>
+             to make sure the corresponding profile (e.g. elasticsearch-8.3) becomes the default. -->
+        <version.org.elasticsearch.compatible.main>${version.org.elasticsearch.latest-8.2}</version.org.elasticsearch.compatible.main>
         <documentation.org.elasticsearch.url>https://www.elastic.co/guide/en/elasticsearch/reference/${parsed-version.org.elasticsearch.compatible.main.majorVersion}.${parsed-version.org.elasticsearch.compatible.main.minorVersion}</documentation.org.elasticsearch.url>
         <!-- The versions of Elasticsearch/OpenSearch advertised as compatible with Hibernate Search -->
         <!-- Make sure that 7.10 stays explicitly mentioned here, because that's the last open-source version -->
-        <version.org.elasticsearch.compatible.regularly-tested.text>5.6, 6.8, 7.10, 7.17 or 8.1</version.org.elasticsearch.compatible.regularly-tested.text>
+        <version.org.elasticsearch.compatible.regularly-tested.text>5.6, 6.8, 7.10, 7.17 or 8.2</version.org.elasticsearch.compatible.regularly-tested.text>
         <version.org.opensearch.compatible.regularly-tested.text>1.0 or 1.2</version.org.opensearch.compatible.regularly-tested.text>
         <!-- The versions of Elasticsearch that may work, but are not given priority for bugfixes and new features -->
         <version.org.elasticsearch.compatible.not-regularly-tested.text>7.0 or 8.0</version.org.elasticsearch.compatible.not-regularly-tested.text>
         <!-- The latest micro of each Elasticsearch branch -->
+        <version.org.elasticsearch.latest-8.2>8.2.0</version.org.elasticsearch.latest-8.2>
         <version.org.elasticsearch.latest-8.1>8.1.3</version.org.elasticsearch.latest-8.1>
         <version.org.elasticsearch.latest-8.0>8.0.1</version.org.elasticsearch.latest-8.0>
         <version.org.elasticsearch.latest-7.17>7.17.0</version.org.elasticsearch.latest-7.17>
@@ -237,6 +238,8 @@
         <version.org.elasticsearch.latest-6.2>6.2.4</version.org.elasticsearch.latest-6.2>
         <version.org.elasticsearch.latest-5.6>5.6.16</version.org.elasticsearch.latest-5.6>
         <!-- The latest micro of other Elasticsearch distributions -->
+        <version.org.opensearch.latest-2.0>2.0.0-rc1</version.org.opensearch.latest-2.0>
+        <version.org.opensearch.latest-1.3>1.3.1</version.org.opensearch.latest-1.3>
         <version.org.opensearch.latest-1.2>1.2.1</version.org.opensearch.latest-1.2>
         <version.org.opensearch.latest-1.0>1.0.0</version.org.opensearch.latest-1.0>
         <version.com.google.code.gson>2.9.0</version.com.google.code.gson>
@@ -279,12 +282,12 @@
         <version.net.bytebuddy>1.12.9</version.net.bytebuddy>
 
         <!-- >>> ORM 6 / Jakarta Persistence -->
-        <version.org.hibernate.orm>6.0.0.Final</version.org.hibernate.orm>
+        <version.org.hibernate.orm>6.0.1.Final</version.org.hibernate.orm>
         <javadoc.org.hibernate.orm.url>https://docs.jboss.org/hibernate/orm/${parsed-version.org.hibernate.orm.majorVersion}.${parsed-version.org.hibernate.orm.minorVersion}/javadocs/</javadoc.org.hibernate.orm.url>
         <documentation.org.hibernate.orm.url>https://docs.jboss.org/hibernate/orm/${parsed-version.org.hibernate.orm.majorVersion}.${parsed-version.org.hibernate.orm.minorVersion}/userguide/html_single/Hibernate_User_Guide.html</documentation.org.hibernate.orm.url>
-        <version.org.hibernate.commons.annotations.orm6>6.0.0.Final</version.org.hibernate.commons.annotations.orm6>
+        <version.org.hibernate.commons.annotations.orm6>6.0.1.Final</version.org.hibernate.commons.annotations.orm6>
         <version.jakarta.persistence>3.1.0</version.jakarta.persistence>
-        <version.net.bytebuddy.orm6>1.12.8</version.net.bytebuddy.orm6>
+        <version.net.bytebuddy.orm6>1.12.9</version.net.bytebuddy.orm6>
 
         <!-- >>> JSR 352 -->
         <version.javax.batch>1.0.1</version.javax.batch>
@@ -340,7 +343,7 @@
 
         <!-- >>> JSR 352: JBatch runtime -->
         <version.com.ibm.jbatch>1.0</version.com.ibm.jbatch>
-        <version.com.ibm.jbatch.jakarta>2.1.0-M2</version.com.ibm.jbatch.jakarta>
+        <version.com.ibm.jbatch.jakarta>2.1.1</version.com.ibm.jbatch.jakarta>
         <version.org.apache.derby>10.13.1.1</version.org.apache.derby>
 
         <!-- >>> JSR 352: JBeret SE dependencies -->
@@ -356,7 +359,7 @@
         <version.assembly.plugin>3.1.0</version.assembly.plugin>
         <version.buildhelper.plugin>3.3.0</version.buildhelper.plugin>
         <version.checkstyle.plugin>3.1.2</version.checkstyle.plugin>
-        <version.bundle.plugin>5.1.4</version.bundle.plugin>
+        <version.bundle.plugin>5.1.5</version.bundle.plugin>
         <version.clean.plugin>3.2.0</version.clean.plugin>
         <!-- Needing 3.6.2 at least because of MCOMPILER-294 -->
         <version.compiler.plugin>3.10.1</version.compiler.plugin>
@@ -377,7 +380,7 @@
         <version.jdeps.plugin>0.5.1</version.jdeps.plugin>
         <version.nexus-staging.plugin>1.6.13</version.nexus-staging.plugin>
         <version.processor.plugin>4.5-jdk8</version.processor.plugin>
-        <version.project-info.plugin>3.2.2</version.project-info.plugin>
+        <version.project-info.plugin>3.3.0</version.project-info.plugin>
         <version.release.plugin>2.5.3</version.release.plugin>
         <version.resources.plugin>3.2.0</version.resources.plugin>
         <version.shade.plugin>3.3.0</version.shade.plugin>
@@ -466,7 +469,7 @@
                 Note the version of ECJ is overridden because the one bundled with the latest plexus-compiler version
                 is outdated and leads to compilation errors.
          -->
-        <version.org.codehaus.plexus.plexus-compiler.compiler-eclipse>2.11.1</version.org.codehaus.plexus.plexus-compiler.compiler-eclipse>
+        <version.org.codehaus.plexus.plexus-compiler.compiler-eclipse>2.12.0</version.org.codehaus.plexus.plexus-compiler.compiler-eclipse>
         <version.org.eclipse.jdt.ecj>3.29.0</version.org.eclipse.jdt.ecj>
 
         <!--
