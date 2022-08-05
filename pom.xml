@@ -152,7 +152,6 @@
 
     <modules>
         <module>build/config</module>
-        <module>build/surefire-extension</module>
         <module>parents/internal</module>
         <module>util/internal/test/common</module>
         <module>util/internal/test/orm</module>
@@ -163,7 +162,7 @@
         <module>backend/elasticsearch</module>
         <module>backend/elasticsearch-aws</module>
         <module>mapper/pojo-base</module>
-        <module>mapper/javabean</module>
+        <module>mapper/pojo-standalone</module>
         <module>mapper/orm</module>
         <module>mapper/orm-coordination-outbox-polling</module>
         <module>mapper/orm-batch-jsr352/core</module>
@@ -181,7 +180,7 @@
              Version to be used as baseline for API/SPI change reports,
              and for the migration guide
           -->
-        <version.org.hibernate.search.previous-stable>6.0.4.Final</version.org.hibernate.search.previous-stable>
+        <version.org.hibernate.search.previous-stable>6.1.5.Final</version.org.hibernate.search.previous-stable>
 
         <!-- Main dependencies -->
 
@@ -194,7 +193,7 @@
         <!-- Nothing beyond common dependencies -->
 
         <!-- >>> Lucene -->
-        <version.org.apache.lucene>8.11.1</version.org.apache.lucene>
+        <version.org.apache.lucene>8.11.2</version.org.apache.lucene>
         <javadoc.org.apache.lucene.tag>${parsed-version.org.apache.lucene.majorVersion}_${parsed-version.org.apache.lucene.minorVersion}_${parsed-version.org.apache.lucene.incrementalVersion}</javadoc.org.apache.lucene.tag>
         <javadoc.org.apache.lucene.core.url>https://lucene.apache.org/core/${javadoc.org.apache.lucene.tag}/core/</javadoc.org.apache.lucene.core.url>
         <javadoc.org.apache.lucene.analyzers-common.url>https://lucene.apache.org/core/${javadoc.org.apache.lucene.tag}/analyzers-common/</javadoc.org.apache.lucene.analyzers-common.url>
@@ -202,21 +201,23 @@
 
         <!-- >>> Elasticsearch -->
         <!-- The version of the Elasticsearch client used by Hibernate Search, independently of the version of the remote cluster -->
-        <!-- Use the latest open-source version here. Currently, low-level clients are open-source even in 8.2+ -->
-        <version.org.elasticsearch.client>8.2.0</version.org.elasticsearch.client>
+        <!-- Use the latest open-source version here. Currently, low-level clients are open-source even in 8.3+ -->
+        <version.org.elasticsearch.client>8.3.3</version.org.elasticsearch.client>
         <!-- The main compatible version of Elasticsearch, advertised by default. Used in documentation links. -->
         <!-- When updating the following version you will likely need to update the test profiles as well,
              to make sure the corresponding profile (e.g. elasticsearch-8.3) becomes the default. -->
-        <version.org.elasticsearch.compatible.main>${version.org.elasticsearch.latest-8.2}</version.org.elasticsearch.compatible.main>
+        <version.org.elasticsearch.compatible.main>${version.org.elasticsearch.latest-8.3}</version.org.elasticsearch.compatible.main>
         <documentation.org.elasticsearch.url>https://www.elastic.co/guide/en/elasticsearch/reference/${parsed-version.org.elasticsearch.compatible.main.majorVersion}.${parsed-version.org.elasticsearch.compatible.main.minorVersion}</documentation.org.elasticsearch.url>
-        <!-- The versions of Elasticsearch/OpenSearch advertised as compatible with Hibernate Search -->
+
+        <!-- The versions of Elasticsearch advertised as compatible with Hibernate Search -->
+        <!-- Make sure to only mention tested versions here -->
         <!-- Make sure that 7.10 stays explicitly mentioned here, because that's the last open-source version -->
-        <version.org.elasticsearch.compatible.regularly-tested.text>5.6, 6.8, 7.10, 7.17 or 8.2</version.org.elasticsearch.compatible.regularly-tested.text>
-        <version.org.opensearch.compatible.regularly-tested.text>1.0 or 1.2</version.org.opensearch.compatible.regularly-tested.text>
+        <version.org.elasticsearch.compatible.regularly-tested.text>5.6, 6.8, 7.10, 7.17 or 8.3</version.org.elasticsearch.compatible.regularly-tested.text>
         <!-- The versions of Elasticsearch that may work, but are not given priority for bugfixes and new features -->
         <version.org.elasticsearch.compatible.not-regularly-tested.text>7.0 or 8.0</version.org.elasticsearch.compatible.not-regularly-tested.text>
-        <!-- The latest micro of each Elasticsearch branch -->
-        <version.org.elasticsearch.latest-8.2>8.2.0</version.org.elasticsearch.latest-8.2>
+        <!-- The latest micro of each Elasticsearch release line -->
+        <version.org.elasticsearch.latest-8.3>8.3.3</version.org.elasticsearch.latest-8.3>
+        <version.org.elasticsearch.latest-8.2>8.2.3</version.org.elasticsearch.latest-8.2>
         <version.org.elasticsearch.latest-8.1>8.1.3</version.org.elasticsearch.latest-8.1>
         <version.org.elasticsearch.latest-8.0>8.0.1</version.org.elasticsearch.latest-8.0>
         <version.org.elasticsearch.latest-7.17>7.17.0</version.org.elasticsearch.latest-7.17>
@@ -237,38 +238,41 @@
         <version.org.elasticsearch.latest-6.3>6.3.2</version.org.elasticsearch.latest-6.3>
         <version.org.elasticsearch.latest-6.2>6.2.4</version.org.elasticsearch.latest-6.2>
         <version.org.elasticsearch.latest-5.6>5.6.16</version.org.elasticsearch.latest-5.6>
-        <!-- The latest micro of other Elasticsearch distributions -->
-        <version.org.opensearch.latest-2.0>2.0.0-rc1</version.org.opensearch.latest-2.0>
-        <version.org.opensearch.latest-1.3>1.3.1</version.org.opensearch.latest-1.3>
+        <!-- The versions of OpenSearch advertised as compatible with Hibernate Search -->
+        <!-- Make sure to only mention tested versions here -->
+        <version.org.opensearch.compatible.regularly-tested.text>1.3 or 2.0</version.org.opensearch.compatible.regularly-tested.text>
+        <!-- The latest micro of each OpenSearch release line -->
+        <version.org.opensearch.latest-2.0>2.0.1</version.org.opensearch.latest-2.0>
+        <version.org.opensearch.latest-1.3>1.3.3</version.org.opensearch.latest-1.3>
         <version.org.opensearch.latest-1.2>1.2.1</version.org.opensearch.latest-1.2>
         <version.org.opensearch.latest-1.0>1.0.0</version.org.opensearch.latest-1.0>
-        <version.com.google.code.gson>2.9.0</version.com.google.code.gson>
+
+        <version.com.google.code.gson>2.9.1</version.com.google.code.gson>
         <version.software.amazon.awssdk>2.17.94</version.software.amazon.awssdk>
         <!-- Jackson: used by the Elasticsearch REST client, the AWS SDK and in tests (wiremock, ...) -->
-        <version.com.fasterxml.jackson>2.13.2</version.com.fasterxml.jackson>
+        <version.com.fasterxml.jackson>2.13.3</version.com.fasterxml.jackson>
         <!--
              In the past, there has been jackson-databind bugfix releases without any jackson-core release,
              so we had to use different versions, e.g. jackson-core 2.9.9 and jackson-databind 2.9.9.3.
              That's why we have two separate properties for jackson versions,
              even though they may have the same value from time to time.
          -->
-        <version.com.fasterxml.jackson.databind>2.13.2.2</version.com.fasterxml.jackson.databind>
+        <version.com.fasterxml.jackson.databind>2.13.3</version.com.fasterxml.jackson.databind>
         <!-- Reactive-streams: used by the AWS SDK -->
-        <version.org.reactivestreams.reactive-streams>1.0.3</version.org.reactivestreams.reactive-streams>
+        <version.org.reactivestreams.reactive-streams>1.0.4</version.org.reactivestreams.reactive-streams>
         <!-- slf4j: used by the AWS SDK -->
         <version.org.slf4j>1.7.36</version.org.slf4j>
 
         <!-- >>> ORM -->
-        <version.org.hibernate>5.6.8.Final</version.org.hibernate>
+        <version.org.hibernate>5.6.10.Final</version.org.hibernate>
         <javadoc.org.hibernate.url>https://docs.jboss.org/hibernate/orm/${parsed-version.org.hibernate.majorVersion}.${parsed-version.org.hibernate.minorVersion}/javadocs/</javadoc.org.hibernate.url>
         <documentation.org.hibernate.url>https://docs.jboss.org/hibernate/orm/${parsed-version.org.hibernate.majorVersion}.${parsed-version.org.hibernate.minorVersion}/userguide/html_single/Hibernate_User_Guide.html</documentation.org.hibernate.url>
         <version.org.hibernate.commons.annotations>5.1.2.Final</version.org.hibernate.commons.annotations>
         <!-- This version must be kept in sync with the version of the dependency in Hibernate ORM.
              DO NOT USE DEPENDENCY MANAGEMENT FOR THIS DEPENDENCY!
-             If we do not use dependency management for this dependency, we get a build failure
+             Thanks to not using dependency management for this dependency, we get a build failure
              when the versions start diverging, thanks to the maven-enforcer-plugin
-             and to an artificial dependency in the mapper-orm artifact
-             (which is only necessary for the maven-enforcer-plugin checks to work).
+             and to our own explicit dependency in the utils-common artifact.
           -->
         <version.org.jboss.jandex>2.4.2.Final</version.org.jboss.jandex>
         <version.javax.persistence>2.2</version.javax.persistence>
@@ -282,17 +286,17 @@
         <version.net.bytebuddy>1.12.9</version.net.bytebuddy>
 
         <!-- >>> ORM 6 / Jakarta Persistence -->
-        <version.org.hibernate.orm>6.0.1.Final</version.org.hibernate.orm>
+        <version.org.hibernate.orm>6.1.2.Final</version.org.hibernate.orm>
         <javadoc.org.hibernate.orm.url>https://docs.jboss.org/hibernate/orm/${parsed-version.org.hibernate.orm.majorVersion}.${parsed-version.org.hibernate.orm.minorVersion}/javadocs/</javadoc.org.hibernate.orm.url>
         <documentation.org.hibernate.orm.url>https://docs.jboss.org/hibernate/orm/${parsed-version.org.hibernate.orm.majorVersion}.${parsed-version.org.hibernate.orm.minorVersion}/userguide/html_single/Hibernate_User_Guide.html</documentation.org.hibernate.orm.url>
-        <version.org.hibernate.commons.annotations.orm6>6.0.1.Final</version.org.hibernate.commons.annotations.orm6>
+        <version.org.hibernate.commons.annotations.orm6>6.0.2.Final</version.org.hibernate.commons.annotations.orm6>
         <version.jakarta.persistence>3.1.0</version.jakarta.persistence>
         <version.net.bytebuddy.orm6>1.12.9</version.net.bytebuddy.orm6>
 
         <!-- >>> JSR 352 -->
         <version.javax.batch>1.0.1</version.javax.batch>
-        <version.jakarta.batch>2.1.0</version.jakarta.batch>
-        <version.org.jberet>1.4.7.Final</version.org.jberet>
+        <version.jakarta.batch>2.1.1</version.jakarta.batch>
+        <version.org.jberet>1.4.8.Final</version.org.jberet>
         <version.org.jberet.jakarta>2.0.4.Final</version.org.jberet.jakarta>
 
         <!-- >>> Java EE/Jakarta EE dependencies -->
@@ -302,7 +306,7 @@
         <version.javax.enterprise>2.0</version.javax.enterprise>
         <version.jakarta.enterprise>3.0.1</version.jakarta.enterprise>
         <version.org.jboss.spec.javax.annotation.jboss-annotations-api_1.2_spec>1.0.2.Final</version.org.jboss.spec.javax.annotation.jboss-annotations-api_1.2_spec>
-        <version.jakarta.annotation-api>2.1.0</version.jakarta.annotation-api>
+        <version.jakarta.annotation-api>2.1.1</version.jakarta.annotation-api>
         <version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.2_spec>1.1.1.Final</version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.2_spec>
         <version.jakarta.transaction-api>2.0.1</version.jakarta.transaction-api>
         <!-- We need dependency management on these ones to avoid dependency divergence created by our own dependencies
@@ -320,21 +324,21 @@
         <!-- Test dependencies -->
 
         <!-- >>> Common -->
-        <version.log4j>2.17.2</version.log4j>
+        <version.log4j>2.18.0</version.log4j>
         <version.junit>4.13.2</version.junit>
         <version.org.osgi.core>6.0.0</version.org.osgi.core>
 
         <version.org.hamcrest>2.2</version.org.hamcrest>
-        <version.org.mockito>4.5.1</version.org.mockito>
-        <version.org.assertj.assertj-core>3.22.0</version.org.assertj.assertj-core>
+        <version.org.mockito>4.6.1</version.org.mockito>
+        <version.org.assertj.assertj-core>3.23.1</version.org.assertj.assertj-core>
         <version.org.awaitily>4.2.0</version.org.awaitily>
-        <version.org.skyscreamer.jsonassert>1.5.0</version.org.skyscreamer.jsonassert>
+        <version.org.skyscreamer.jsonassert>1.5.1</version.org.skyscreamer.jsonassert>
         <version.io.takari.junit>1.2.7</version.io.takari.junit>
-        <version.com.h2database>2.1.212</version.com.h2database>
+        <version.com.h2database>2.1.214</version.com.h2database>
         <version.com.github.tomakehurst.wiremock>2.27.2</version.com.github.tomakehurst.wiremock>
         <version.org.apache.commons.lang3>3.12.0</version.org.apache.commons.lang3>
         <version.org.apache.commons.math3>3.6.1</version.org.apache.commons.math3>
-        <version.org.apache.avro>1.11.0</version.org.apache.avro>
+        <version.org.apache.avro>1.11.1</version.org.apache.avro>
         <version.org.jboss.weld>3.1.9.Final</version.org.jboss.weld>
         <version.org.jboss.weld.jakarta>4.0.3.Final</version.org.jboss.weld.jakarta>
 
@@ -343,70 +347,72 @@
 
         <!-- >>> JSR 352: JBatch runtime -->
         <version.com.ibm.jbatch>1.0</version.com.ibm.jbatch>
-        <version.com.ibm.jbatch.jakarta>2.1.0</version.com.ibm.jbatch.jakarta>
-        <version.org.apache.derby>10.13.1.1</version.org.apache.derby>
+        <version.com.ibm.jbatch.jakarta>2.1.1</version.com.ibm.jbatch.jakarta>
+        <!-- Sticking to Derby 10.14 for now since later versions require JDK 9+, and we need to test with JDK 8.
+             See https://db.apache.org/derby/derby_downloads.html -->
+        <version.org.apache.derby>10.14.2.0</version.org.apache.derby>
 
         <!-- >>> JSR 352: JBeret SE dependencies -->
-        <version.org.jboss.marshalling>2.0.12.Final</version.org.jboss.marshalling>
+        <version.org.jboss.marshalling>2.1.0.Final</version.org.jboss.marshalling>
         <version.org.wildfly.security.wildfly-security-manager>1.1.2.Final</version.org.wildfly.security.wildfly-security-manager>
         <version.org.google.guava>31.1-jre</version.org.google.guava>
 
         <!-- >>> Spring integration tests -->
-        <version.org.springframework.boot>2.6.7</version.org.springframework.boot>
+        <version.org.springframework.boot>2.7.0</version.org.springframework.boot>
 
         <!-- Maven plugins versions -->
 
         <version.assembly.plugin>3.1.0</version.assembly.plugin>
         <version.buildhelper.plugin>3.3.0</version.buildhelper.plugin>
         <version.checkstyle.plugin>3.1.2</version.checkstyle.plugin>
-        <version.bundle.plugin>5.1.5</version.bundle.plugin>
+        <version.bundle.plugin>5.1.8</version.bundle.plugin>
         <version.clean.plugin>3.2.0</version.clean.plugin>
         <!-- Needing 3.6.2 at least because of MCOMPILER-294 -->
         <version.compiler.plugin>3.10.1</version.compiler.plugin>
         <version.dependency.plugin>3.3.0</version.dependency.plugin>
         <!-- Check dependencies for security vulnerabilities -->
-        <version.dependency-check.plugin>7.1.0</version.dependency-check.plugin>
-        <version.deploy.plugin>2.8.2</version.deploy.plugin>
+        <version.dependency-check.plugin>7.1.1</version.dependency-check.plugin>
+        <version.deploy.plugin>3.0.0</version.deploy.plugin>
         <version.org.eclipse.m2e.lifecycle-mapping>1.0.0</version.org.eclipse.m2e.lifecycle-mapping>
-        <version.enforcer.plugin>3.0.0</version.enforcer.plugin>
-        <version.exec.plugin>3.0.0</version.exec.plugin>
+        <version.enforcer.plugin>3.1.0</version.enforcer.plugin>
+        <version.exec.plugin>3.1.0</version.exec.plugin>
         <version.forbiddenapis.plugin>3.3</version.forbiddenapis.plugin>
         <version.help.plugin>3.2.0</version.help.plugin>
-        <version.install.plugin>2.5.2</version.install.plugin>
+        <version.install.plugin>3.0.1</version.install.plugin>
         <version.io.takari.maven>0.7.7</version.io.takari.maven>
+        <version.jandex.plugin>1.2.3</version.jandex.plugin>
         <version.japicmp.plugin>0.15.7</version.japicmp.plugin>
         <version.jar.plugin>3.2.2</version.jar.plugin>
         <version.javadoc.plugin>3.4.0</version.javadoc.plugin>
         <version.jdeps.plugin>0.5.1</version.jdeps.plugin>
         <version.nexus-staging.plugin>1.6.13</version.nexus-staging.plugin>
         <version.processor.plugin>4.5-jdk8</version.processor.plugin>
-        <version.project-info.plugin>3.3.0</version.project-info.plugin>
+        <version.project-info.plugin>3.4.0</version.project-info.plugin>
         <version.release.plugin>2.5.3</version.release.plugin>
-        <version.resources.plugin>3.2.0</version.resources.plugin>
+        <version.resources.plugin>3.3.0</version.resources.plugin>
         <version.shade.plugin>3.3.0</version.shade.plugin>
-        <version.site.plugin>3.12.0</version.site.plugin>
+        <version.site.plugin>3.12.1</version.site.plugin>
         <version.source.plugin>3.2.1</version.source.plugin>
         <!-- Surefire versions are a minefield of bugs: be careful with upgrades -->
-        <version.surefire.plugin>3.0.0-M5</version.surefire.plugin>
+        <version.surefire.plugin>3.0.0-M7</version.surefire.plugin>
         <version.surefire.plugin.java-version.asm>9.3</version.surefire.plugin.java-version.asm>
         <version.failsafe.plugin>${version.surefire.plugin}</version.failsafe.plugin>
         <version.jacoco.plugin>0.8.8</version.jacoco.plugin>
-        <version.coveralls.plugin>4.3.0</version.coveralls.plugin>
-        <version.com.buschmais.jqassistant.plugin>1.11.1</version.com.buschmais.jqassistant.plugin>
-        <version.docker.maven.plugin>0.39.1</version.docker.maven.plugin>
+        <version.com.buschmais.jqassistant.plugin>1.12.0</version.com.buschmais.jqassistant.plugin>
+        <version.docker.maven.plugin>0.40.2</version.docker.maven.plugin>
         <version.moditect.plugin>1.0.0.RC2</version.moditect.plugin>
         <version.sonar.plugin>3.9.1.2184</version.sonar.plugin>
         <version.scripting.plugin>3.0.0</version.scripting.plugin>
         <version.gpg.plugin>3.0.1</version.gpg.plugin>
-        <version.org.codehaus.groovy-jsr223>3.0.10</version.org.codehaus.groovy-jsr223>
-        <version.com.puppycrawl.tools.checkstyle>10.2</version.com.puppycrawl.tools.checkstyle>
+        <version.org.codehaus.groovy-jsr223>3.0.12</version.org.codehaus.groovy-jsr223>
+        <version.com.puppycrawl.tools.checkstyle>10.3.2</version.com.puppycrawl.tools.checkstyle>
 
         <!-- Asciidoctor -->
 
         <version.asciidoctor.plugin>2.2.2</version.asciidoctor.plugin>
         <version.org.hibernate.infra.hibernate-asciidoctor-theme>1.0.4.Final</version.org.hibernate.infra.hibernate-asciidoctor-theme>
         <version.org.jruby>9.3.2.0</version.org.jruby>
-        <version.org.asciidoctor.asciidoctorj>2.5.3</version.org.asciidoctor.asciidoctorj>
+        <version.org.asciidoctor.asciidoctorj>2.5.5</version.org.asciidoctor.asciidoctorj>
         <version.org.asciidoctor.asciidoctorj-pdf>1.5.0-alpha.18</version.org.asciidoctor.asciidoctorj-pdf>
 
         <!-- Maven Central repository -->
@@ -448,6 +454,12 @@
         <java-version.test.launcher>${java-version.test.launcher.java_home}/bin/java</java-version.test.launcher>
 
         <!-- Properties overridden in profiles to disable certain tests that only work with specific Java versions -->
+        <!-- These are only used in integration tests, hence the default to "none", which is overridden in integration tests -->
+        <java-version.test.java11.add-main-source-phase.default>none</java-version.test.java11.add-main-source-phase.default>
+        <java-version.test.java17.add-main-source-phase.default>none</java-version.test.java17.add-main-source-phase.default>
+        <java-version.test.java11.add-main-source-phase>${java-version.test.java11.add-main-source-phase.default}</java-version.test.java11.add-main-source-phase>
+        <java-version.test.java17.add-main-source-phase>${java-version.test.java17.add-main-source-phase.default}</java-version.test.java17.add-main-source-phase>
+        <!-- These are used in all modules -->
         <java-version.test.java11.add-test-source-phase>generate-test-sources</java-version.test.java11.add-test-source-phase>
         <java-version.test.java17.add-test-source-phase>generate-test-sources</java-version.test.java17.add-test-source-phase>
 
@@ -469,8 +481,8 @@
                 Note the version of ECJ is overridden because the one bundled with the latest plexus-compiler version
                 is outdated and leads to compilation errors.
          -->
-        <version.org.codehaus.plexus.plexus-compiler.compiler-eclipse>2.12.0</version.org.codehaus.plexus.plexus-compiler.compiler-eclipse>
-        <version.org.eclipse.jdt.ecj>3.29.0</version.org.eclipse.jdt.ecj>
+        <version.org.codehaus.plexus.plexus-compiler.compiler-eclipse>2.12.1</version.org.codehaus.plexus.plexus-compiler.compiler-eclipse>
+        <version.org.eclipse.jdt.ecj>3.30.0</version.org.eclipse.jdt.ecj>
 
         <!--
             The absolute path to the root project directory.
@@ -513,7 +525,6 @@
         <!-- JVM args to be customized depending on the Java version -->
         <surefire.jvm.args.java-version>
             -Djdk.attach.allowAttachSelf=true
-            --illegal-access=deny
         </surefire.jvm.args.java-version>
         <!-- JVM args generated by JaCoCo -->
         <surefire.jvm.args.jacoco></surefire.jvm.args.jacoco>
@@ -529,16 +540,24 @@
         <failsafe.jvm.args.hibernate-orm></failsafe.jvm.args.hibernate-orm>
         <!-- Database profile jdbc java arguments -->
         <failsafe.jvm.args.jdbc></failsafe.jvm.args.jdbc>
-        <surefire.jvm.args>${surefire.jvm.args.memory} ${surefire.jvm.args.java-version} ${surefire.jvm.args.module} ${surefire.jvm.args.jacoco}</surefire.jvm.args>
-        <failsafe.jvm.args>${surefire.jvm.args.memory} ${surefire.jvm.args.java-version} ${surefire.jvm.args.module} ${failsafe.jvm.args.jacoco} ${failsafe.jvm.args.hibernate-orm} ${failsafe.jvm.args.jdbc}</failsafe.jvm.args>
+        <!-- Argument passed from the command line -->
+        <test.launcher.args></test.launcher.args>
+        <surefire.jvm.args>${surefire.jvm.args.memory} ${surefire.jvm.args.java-version} ${surefire.jvm.args.module} ${surefire.jvm.args.jacoco} ${test.launcher.args}</surefire.jvm.args>
+        <failsafe.jvm.args>${surefire.jvm.args.memory} ${surefire.jvm.args.java-version} ${surefire.jvm.args.module} ${failsafe.jvm.args.jacoco} ${failsafe.jvm.args.hibernate-orm} ${failsafe.jvm.args.jdbc} ${test.launcher.args}</failsafe.jvm.args>
 
         <!-- Disable integration tests selectively. To be set in specific profile, e.g. for a specific JDK version. -->
         <failsafe.spring.skip>${skipITs}</failsafe.spring.skip>
 
         <!-- This allows us to distinguish between multiple executions of the same test in test reports. -->
-        <surefire.reportNameSuffix>${surefire.environment}-${project.artifactId}</surefire.reportNameSuffix>
+        <surefire.reportNameSuffix>${surefire.module}-${surefire.integration}-${surefire.environment}</surefire.reportNameSuffix>
         <!-- This should be set from the command line by CI jobs that execute the same tests in multiple environments -->
         <surefire.environment>default</surefire.environment>
+        <!-- This should be set in modules that re-execute tests imported from a dependency (using <dependenciesToScan>)
+             to differentiate multiple executions of the same tests in multiple modules. -->
+        <surefire.module>default</surefire.module>
+        <!-- This should be set in modules that transform Hibernate Search code for a different integration
+             (Jakarta EE, ORM 6, ...). -->
+        <surefire.integration>default</surefire.integration>
 
         <!-- Containers executions tests properties -->
         <test.containers.run.skip>false</test.containers.run.skip>
@@ -627,6 +646,10 @@
         <test.database.run.mssql.skip>true</test.database.run.mssql.skip>
         <test.database.run.mssql.image.name>mcr.microsoft.com/mssql/server</test.database.run.mssql.image.name>
         <test.database.run.mssql.image.tag>2019-CU8-ubuntu-16.04</test.database.run.mssql.image.tag>
+        <!-- CockroachDB -->
+        <test.database.run.cockroachdb.skip>true</test.database.run.cockroachdb.skip>
+        <test.database.run.cockroachdb.image.name>cockroachdb/cockroach</test.database.run.cockroachdb.image.name>
+        <test.database.run.cockroachdb.image.tag>v22.1.4</test.database.run.cockroachdb.image.tag>
 
         <!-- Property whose sole purpose is to be referenced in the definition of surefire.jvm.args.module
              when Weld is used. -->
@@ -740,7 +763,7 @@
             </dependency>
             <dependency>
                 <groupId>org.hibernate.search</groupId>
-                <artifactId>hibernate-search-mapper-javabean</artifactId>
+                <artifactId>hibernate-search-mapper-pojo-standalone</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -1562,6 +1585,30 @@
                         </configuration>
                     </execution>
                     <execution>
+                        <id>add-main-source-java11</id>
+                        <phase>${java-version.test.java11.add-main-source-phase}</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>src/main/java11</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>add-main-source-java17</id>
+                        <phase>${java-version.test.java17.add-main-source-phase}</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>src/main/java17</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>add-test-source-java11</id>
                         <phase>${java-version.test.java11.add-test-source-phase}</phase>
                         <goals>
@@ -1764,6 +1811,9 @@
                                 <fork>true</fork>
                                 <proc>none</proc>
                                 <executable>${java-version.test.compiler}</executable>
+                                <compilerArgs combine.self="append">
+                                    <compilerArg>-parameters</compilerArg>
+                                </compilerArgs>
                             </configuration>
                         </execution>
                     </executions>
@@ -1842,6 +1892,9 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-shade-plugin</artifactId>
                     <version>${version.shade.plugin}</version>
+                    <configuration>
+                        <createDependencyReducedPom>false</createDependencyReducedPom>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
@@ -2017,7 +2070,8 @@
                         <excludes>
                             **/Generated.java,**/TypeHelper*.java,**/MatchSuppressor.java,**/CommentSuppressor.java,**/NeverSuppress.java,
                             **/*_$logger.java,**/*_$bundle.java,
-                            **/module-info.java
+                            **/module-info.java,
+                            **/avro/generated/**/*.java
                         </excludes>
                     </configuration>
                     <executions>
@@ -2042,6 +2096,19 @@
                     <artifactId>maven-injection-plugin</artifactId>
                     <version>1.0.2</version>
                 </plugin>
+                <plugin>
+                    <groupId>org.jboss.jandex</groupId>
+                    <artifactId>jandex-maven-plugin</artifactId>
+                    <version>${version.jandex.plugin}</version>
+                    <executions>
+                        <execution>
+                            <id>make-index</id>
+                            <goals>
+                                <goal>jandex</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
 
                 <!--
                     Test configuration
@@ -2062,6 +2129,7 @@
                          -->
                         <trimStackTrace>false</trimStackTrace>
                         <systemPropertyVariables>
+                            <org.hibernate.search.test.property-set-in-maven-config>someValue</org.hibernate.search.test.property-set-in-maven-config>
                             <com.sun.management.jmxremote>true</com.sun.management.jmxremote>
                             <org.hibernate.search.enable_performance_tests>${org.hibernate.search.enable_performance_tests}</org.hibernate.search.enable_performance_tests>
                             <org.hibernate.search.fail_on_unreleased_service>true</org.hibernate.search.fail_on_unreleased_service>
@@ -2108,6 +2176,7 @@
                          -->
                         <trimStackTrace>false</trimStackTrace>
                         <systemPropertyVariables>
+                            <org.hibernate.search.test.property-set-in-maven-config>someValue</org.hibernate.search.test.property-set-in-maven-config>
                             <com.sun.management.jmxremote>true</com.sun.management.jmxremote>
                             <org.hibernate.search.version>${project.version}</org.hibernate.search.version>
                             <org.hibernate.search.enable_performance_tests>${org.hibernate.search.enable_performance_tests}</org.hibernate.search.enable_performance_tests>
@@ -2166,28 +2235,6 @@
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
                     <version>${version.jacoco.plugin}</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.eluder.coveralls</groupId>
-                    <artifactId>coveralls-maven-plugin</artifactId>
-                    <version>${version.coveralls.plugin}</version>
-                    <configuration>
-                        <relativeReportDirs>
-                            <relativeReportDir>jacoco-aggregate</relativeReportDir>
-                        </relativeReportDirs>
-                    </configuration>
-                    <dependencies>
-                        <dependency>
-                            <groupId>jakarta.xml.bind</groupId>
-                            <artifactId>jakarta.xml.bind-api</artifactId>
-                            <version>2.3.2</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>org.glassfish.jaxb</groupId>
-                            <artifactId>jaxb-runtime</artifactId>
-                            <version>2.3.2</version>
-                        </dependency>
-                    </dependencies>
                 </plugin>
                 <plugin>
                     <groupId>org.asciidoctor</groupId>
@@ -2267,6 +2314,9 @@
                                     }
                                     if ( isFalseString( '${test.database.run.mssql.skip}' ) ) {
                                         images += '${test.database.run.mssql.image.name}:${test.database.run.mssql.image.tag}'
+                                    }
+                                    if ( isFalseString( '${test.database.run.cockroachdb.skip}' ) ) {
+                                        images += '${test.database.run.cockroachdb.image.name}:${test.database.run.cockroachdb.image.tag}'
                                     }
                                     new File('${containerImagesListFile}').append( images.join('\n') + '\n' )
                                 ]]></script>
@@ -2415,6 +2465,8 @@
                      but it doesn't need them either, so we just omit them. -->
                 <test.weld.jvm.args></test.weld.jvm.args>
                 <!-- Tests specific to Java 11+ won't work with JDK 8, so we disable them. -->
+                <java-version.test.java11.add-main-source-phase>none</java-version.test.java11.add-main-source-phase>
+                <java-version.test.java17.add-main-source-phase>none</java-version.test.java17.add-main-source-phase>
                 <java-version.test.java11.add-test-source-phase>none</java-version.test.java11.add-test-source-phase>
                 <java-version.test.java17.add-test-source-phase>none</java-version.test.java17.add-test-source-phase>
             </properties>
@@ -2429,7 +2481,13 @@
                 </property>
             </activation>
             <properties>
+                <!-- illegal-access=deny is not the default yet in JDK 11  -->
+                <surefire.jvm.args.java-version>
+                    -Djdk.attach.allowAttachSelf=true
+                    --illegal-access=deny
+                </surefire.jvm.args.java-version>
                 <!-- Tests specific to Java 17+ won't work with JDK 11, so we disable them. -->
+                <java-version.test.java17.add-main-source-phase>none</java-version.test.java17.add-main-source-phase>
                 <java-version.test.java17.add-test-source-phase>none</java-version.test.java17.add-test-source-phase>
             </properties>
         </profile>
@@ -2449,6 +2507,25 @@
                     -Dnet.bytebuddy.experimental=true
                 </surefire.jvm.args.java-version>
                 <!-- Spring isn't ready for JDK19 yet -->
+                <failsafe.spring.skip>true</failsafe.spring.skip>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>testWithJdk20</id>
+            <activation>
+                <property>
+                    <name>java-version.test.release</name>
+                    <value>20</value>
+                </property>
+            </activation>
+            <properties>
+                <!-- We need net.bytebuddy.experimental=true to make BytecodeEnhancementIT and mockito-based tests pass -->
+                <surefire.jvm.args.java-version>
+                    -Djdk.attach.allowAttachSelf=true
+                    -Dnet.bytebuddy.experimental=true
+                </surefire.jvm.args.java-version>
+                <!-- Spring isn't ready for JDK20 yet -->
                 <failsafe.spring.skip>true</failsafe.spring.skip>
             </properties>
         </profile>
