@@ -271,7 +271,7 @@
              when the versions start diverging, thanks to the maven-enforcer-plugin
              and to our own explicit dependencies in the relevant artifacts.
           -->
-        <version.org.hibernate.commons.annotations.orm6>6.0.2.Final</version.org.hibernate.commons.annotations.orm6>
+        <version.org.hibernate.commons.annotations.orm6>6.0.3.Final</version.org.hibernate.commons.annotations.orm6>
         <version.jakarta.persistence>3.0.0</version.jakarta.persistence>
         <version.jakarta.enterprise>3.0.1</version.jakarta.enterprise>
         <version.jakarta.xml.bind>3.0.1</version.jakarta.xml.bind>
