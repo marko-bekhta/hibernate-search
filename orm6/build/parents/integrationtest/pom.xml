@@ -67,7 +67,7 @@
                          (which, unfortunately, might be different from the version used in ORM 5.x
                          on which our utils are aligned) -->
                     <exclusion>
-                        <groupId>org.jboss</groupId>
+                        <groupId>io.smallrye</groupId>
                         <artifactId>jandex</artifactId>
                     </exclusion>
                     <exclusion>
