@@ -28,21 +28,20 @@ import org.hibernate.search.engine.mapper.mapping.spi.MappingImplementor;
 import org.hibernate.search.engine.reporting.FailureHandler;
 import org.hibernate.search.util.common.SearchException;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
-public class SearchIntegrationImplTest {
-
-	@Rule
-	public final MockitoRule mockito = MockitoJUnit.rule().strictness( Strictness.STRICT_STUBS );
+@MockitoSettings(strictness = Strictness.STRICT_STUBS)
+@ExtendWith(MockitoExtension.class)
+class SearchIntegrationImplTest {
 
 	@Mock
 	private BeanProvider beanProviderMock;
@@ -79,8 +78,8 @@ public class SearchIntegrationImplTest {
 
 	private SearchIntegrationImpl searchIntegration;
 
-	@Before
-	public void setup() {
+	@BeforeEach
+	void setup() {
 		Map<MappingKey<?, ?>, MappingImplementor<?>> mappings = new LinkedHashMap<>();
 		mappings.put( mappingKey( "mapping1" ), mapping1Mock );
 		mappings.put( mappingKey( "mapping2" ), mapping2Mock );
@@ -98,7 +97,7 @@ public class SearchIntegrationImplTest {
 	}
 
 	@Test
-	public void close_success() {
+	void close_success() {
 		when( mapping1Mock.preStop( any() ) ).thenReturn( CompletableFuture.completedFuture( null ) );
 		when( mapping2Mock.preStop( any() ) ).thenReturn( CompletableFuture.completedFuture( null ) );
 		when( indexManager1Mock.preStop() ).thenReturn( CompletableFuture.completedFuture( null ) );
@@ -145,7 +144,7 @@ public class SearchIntegrationImplTest {
 	}
 
 	@Test
-	public void close_failure() {
+	void close_failure() {
 		when( mapping1Mock.preStop( any() ) ).thenReturn( failedFuture( "mapping1 preStop failure" ) );
 		when( mapping2Mock.preStop( any() ) ).thenThrow( exception( "mapping2 preStop failure" ) );
 		doThrow( exception( "mapping1 stop failure" ) ).when( mapping1Mock ).stop();

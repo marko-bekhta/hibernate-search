@@ -23,24 +23,23 @@ import org.hibernate.search.backend.elasticsearch.work.impl.NonBulkableWork;
 import org.hibernate.search.backend.elasticsearch.work.result.impl.BulkResult;
 import org.hibernate.search.engine.backend.work.execution.DocumentRefreshStrategy;
 
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
+@MockitoSettings(strictness = Strictness.STRICT_STUBS)
+@ExtendWith(MockitoExtension.class)
 @SuppressWarnings("unchecked") // Raw types are the only way to mock parameterized types
-public class ElasticsearchDefaultWorkBulkerTest {
+class ElasticsearchDefaultWorkBulkerTest {
 
 	private static final int DEFAULT_MAX_BULK_SIZE = 10;
 
 	private static final DocumentRefreshStrategy DEFAULT_REFRESH = DocumentRefreshStrategy.NONE;
-
-	@Rule
-	public final MockitoRule mockito = MockitoJUnit.rule().strictness( Strictness.STRICT_STUBS );
 
 	@Mock
 	private ElasticsearchWorkSequenceBuilder sequenceBuilderMock;
@@ -50,7 +49,7 @@ public class ElasticsearchDefaultWorkBulkerTest {
 			NonBulkableWork<BulkResult>> bulkWorkFactoryMock;
 
 	@Test
-	public void simple() {
+	void simple() {
 		BulkableWork<Void> work1 = bulkableWorkMock( 1 );
 		BulkableWork<Void> work2 = bulkableWorkMock( 2 );
 		NonBulkableWork<BulkResult> bulkWork = workMock( 3 );
@@ -101,7 +100,7 @@ public class ElasticsearchDefaultWorkBulkerTest {
 	}
 
 	@Test
-	public void alwaysBulk() {
+	void alwaysBulk() {
 		BulkableWork<Void> work1 = bulkableWorkMock( 1 );
 		NonBulkableWork<BulkResult> bulkWork = workMock( 2 );
 
@@ -129,7 +128,7 @@ public class ElasticsearchDefaultWorkBulkerTest {
 	}
 
 	@Test
-	public void newBulkOnTooManyBulkedWorks() {
+	void newBulkOnTooManyBulkedWorks() {
 		List<BulkableWork<Void>> firstBulkWorks = new ArrayList<>();
 		for ( int i = 0; i < DEFAULT_MAX_BULK_SIZE; ++i ) {
 			firstBulkWorks.add( bulkableWorkMock( i ) );
@@ -193,7 +192,7 @@ public class ElasticsearchDefaultWorkBulkerTest {
 	}
 
 	@Test
-	public void newBulkOnDifferentRefresh() {
+	void newBulkOnDifferentRefresh() {
 		BulkableWork<Void> work1 = bulkableWorkMock( 1 );
 		BulkableWork<Void> work2 = bulkableWorkMock( 2 );
 		BulkableWork<Void> work3 = bulkableWorkMock( 3 );

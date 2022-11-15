@@ -18,15 +18,17 @@ import java.util.concurrent.CompletableFuture;
 
 import org.hibernate.search.backend.elasticsearch.work.impl.BulkableWork;
 
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
-public class ElasticsearchBatchedWorkProcessorTest {
+@MockitoSettings(strictness = Strictness.STRICT_STUBS)
+@ExtendWith(MockitoExtension.class)
+class ElasticsearchBatchedWorkProcessorTest {
 
 	/**
 	 * @return A value that should not matter, because it should not be used.
@@ -35,16 +37,13 @@ public class ElasticsearchBatchedWorkProcessorTest {
 		return null;
 	}
 
-	@Rule
-	public final MockitoRule mockito = MockitoJUnit.rule().strictness( Strictness.STRICT_STUBS );
-
 	@Mock
 	private ElasticsearchWorkSequenceBuilder sequenceBuilderMock;
 	@Mock
 	private ElasticsearchWorkBulker bulkerMock;
 
 	@Test
-	public void simple_singleWork() {
+	void simple_singleWork() {
 		BulkableWork<Object> work = bulkableWorkMock( 1 );
 
 		CompletableFuture<Void> sequenceFuture = new CompletableFuture<>();
@@ -78,7 +77,7 @@ public class ElasticsearchBatchedWorkProcessorTest {
 	}
 
 	@Test
-	public void simple_multipleWorks() {
+	void simple_multipleWorks() {
 		BulkableWork<Object> work1 = bulkableWorkMock( 1 );
 		BulkableWork<Object> work2 = bulkableWorkMock( 2 );
 
@@ -117,7 +116,7 @@ public class ElasticsearchBatchedWorkProcessorTest {
 	}
 
 	@Test
-	public void newSequenceBetweenBatches() {
+	void newSequenceBetweenBatches() {
 		BulkableWork<Object> work1 = bulkableWorkMock( 1 );
 
 		BulkableWork<Object> work2 = bulkableWorkMock( 2 );

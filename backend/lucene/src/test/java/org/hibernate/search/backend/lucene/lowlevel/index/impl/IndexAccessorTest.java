@@ -24,24 +24,23 @@ import org.hibernate.search.backend.lucene.lowlevel.writer.impl.IndexWriterProvi
 import org.hibernate.search.engine.reporting.spi.EventContexts;
 import org.hibernate.search.util.common.reporting.EventContext;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.store.Directory;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
-public class IndexAccessorTest {
+@MockitoSettings(strictness = Strictness.STRICT_STUBS)
+@ExtendWith(MockitoExtension.class)
+class IndexAccessorTest {
 
 	private static final String INDEX_NAME = "SomeIndexName";
-
-	@Rule
-	public final MockitoRule mockito = MockitoJUnit.rule().strictness( Strictness.STRICT_STUBS );
 
 	private final EventContext indexEventContext = EventContexts.fromIndexName( INDEX_NAME );
 
@@ -60,19 +59,19 @@ public class IndexAccessorTest {
 
 	private IndexAccessorImpl accessor;
 
-	@Before
-	public void start() throws IOException {
+	@BeforeEach
+	void start() throws IOException {
 		accessor = new IndexAccessorImpl( indexEventContext, directoryHolderMock,
 				indexWriterProviderMock, indexReaderProviderMock );
 	}
 
-	@After
-	public void close() throws IOException {
+	@AfterEach
+	void close() throws IOException {
 		accessor.close();
 	}
 
 	@Test
-	public void commit() {
+	void commit() {
 		when( indexWriterProviderMock.getOrNull() ).thenReturn( indexWriterDelegatorMock );
 
 		accessor.commit();
@@ -82,7 +81,7 @@ public class IndexAccessorTest {
 	}
 
 	@Test
-	public void commit_noWriter() {
+	void commit_noWriter() {
 		when( indexWriterProviderMock.getOrNull() ).thenReturn( null );
 
 		accessor.commit();
@@ -92,7 +91,7 @@ public class IndexAccessorTest {
 	}
 
 	@Test
-	public void commit_runtimeException() {
+	void commit_runtimeException() {
 		RuntimeException exception = new RuntimeException( "Some message" );
 
 		when( indexWriterProviderMock.getOrNull() ).thenReturn( indexWriterDelegatorMock );
@@ -104,7 +103,7 @@ public class IndexAccessorTest {
 	}
 
 	@Test
-	public void commitOrDelay() {
+	void commitOrDelay() {
 		when( indexWriterProviderMock.getOrNull() ).thenReturn( indexWriterDelegatorMock );
 
 		accessor.commitOrDelay();
@@ -114,7 +113,7 @@ public class IndexAccessorTest {
 	}
 
 	@Test
-	public void commitOrDelay_noWriter() {
+	void commitOrDelay_noWriter() {
 		when( indexWriterProviderMock.getOrNull() ).thenReturn( null );
 
 		accessor.commitOrDelay();
@@ -124,7 +123,7 @@ public class IndexAccessorTest {
 	}
 
 	@Test
-	public void commitOrDelay_runtimeException() {
+	void commitOrDelay_runtimeException() {
 		RuntimeException exception = new RuntimeException( "Some message" );
 
 		when( indexWriterProviderMock.getOrNull() ).thenReturn( indexWriterDelegatorMock );
@@ -136,7 +135,7 @@ public class IndexAccessorTest {
 	}
 
 	@Test
-	public void refresh() {
+	void refresh() {
 		accessor.refresh();
 
 		verify( indexReaderProviderMock ).refresh();
@@ -144,7 +143,7 @@ public class IndexAccessorTest {
 	}
 
 	@Test
-	public void refresh_runtimeException() {
+	void refresh_runtimeException() {
 		RuntimeException exception = new RuntimeException( "Some message" );
 
 		doThrow( exception ).when( indexReaderProviderMock ).refresh();
@@ -155,7 +154,7 @@ public class IndexAccessorTest {
 	}
 
 	@Test
-	public void mergeSegments() throws IOException {
+	void mergeSegments() throws IOException {
 		when( indexWriterProviderMock.getOrCreate() ).thenReturn( indexWriterDelegatorMock );
 
 		accessor.mergeSegments();
@@ -165,7 +164,7 @@ public class IndexAccessorTest {
 	}
 
 	@Test
-	public void getIndexWriterDelegator() throws IOException {
+	void getIndexWriterDelegator() throws IOException {
 		when( indexWriterProviderMock.getOrCreate() ).thenReturn( indexWriterDelegatorMock );
 
 		assertThat( accessor.getIndexWriterDelegator() ).isSameAs( indexWriterDelegatorMock );
@@ -173,7 +172,7 @@ public class IndexAccessorTest {
 	}
 
 	@Test
-	public void getIndexReader() throws IOException {
+	void getIndexReader() throws IOException {
 		when( indexReaderProviderMock.getOrCreate() ).thenReturn( indexReaderMock );
 
 		assertThat( accessor.getIndexReader() ).isSameAs( indexReaderMock );
@@ -181,7 +180,7 @@ public class IndexAccessorTest {
 	}
 
 	@Test
-	public void cleanUpAfterFailure() throws IOException {
+	void cleanUpAfterFailure() throws IOException {
 		Throwable exception = new RuntimeException( "Some message" );
 		Object failingOperation = "Some operation description";
 
@@ -193,7 +192,7 @@ public class IndexAccessorTest {
 	}
 
 	@Test
-	public void cleanUpAfterFailure_closeFailure() {
+	void cleanUpAfterFailure_closeFailure() {
 		Throwable exception = new RuntimeException( "Some message" );
 		Object failingOperation = "Some operation description";
 		RuntimeException closeException = new RuntimeException( "Some other message" );
@@ -207,7 +206,7 @@ public class IndexAccessorTest {
 	}
 
 	@Test
-	public void ccomputeSizeInBytes() throws IOException {
+	void ccomputeSizeInBytes() throws IOException {
 		when( directoryHolderMock.get() ).thenReturn( directoryMock );
 		when( directoryMock.listAll() )
 				.thenReturn( new String[] { "file0", "file1", "file2", "file3.cfr", "file4.dv" } );
@@ -223,7 +222,7 @@ public class IndexAccessorTest {
 	}
 
 	@Test
-	public void computeSizeInBytes_concurrentDeletion() throws IOException {
+	void computeSizeInBytes_concurrentDeletion() throws IOException {
 		when( directoryHolderMock.get() ).thenReturn( directoryMock );
 		when( directoryMock.listAll() )
 				.thenReturn( new String[] { "file0", "file1NoSuchFile", "file2", "file3FileNotFound.cfr", "file4.dv" } );

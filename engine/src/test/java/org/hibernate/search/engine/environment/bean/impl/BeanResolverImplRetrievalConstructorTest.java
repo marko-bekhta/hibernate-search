@@ -31,19 +31,18 @@ import org.hibernate.search.engine.environment.classpath.spi.ClassResolver;
 import org.hibernate.search.engine.environment.classpath.spi.ServiceResolver;
 import org.hibernate.search.util.common.SearchException;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
-public class BeanResolverImplRetrievalConstructorTest {
-
-	@Rule
-	public final MockitoRule mockito = MockitoJUnit.rule().strictness( Strictness.STRICT_STUBS );
+@MockitoSettings(strictness = Strictness.STRICT_STUBS)
+@ExtendWith(MockitoExtension.class)
+class BeanResolverImplRetrievalConstructorTest {
 
 	@Mock
 	private ClassResolver classResolverMock;
@@ -68,7 +67,7 @@ public class BeanResolverImplRetrievalConstructorTest {
 
 	private BeanResolver beanResolver;
 
-	@Before
+	@BeforeEach
 	// Raw types are the only way to set the return value for a wildcard return type (Optional<?>)
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void setup() {
@@ -96,7 +95,7 @@ public class BeanResolverImplRetrievalConstructorTest {
 	}
 
 	@Test
-	public void resolve_matchingReflection() {
+	void resolve_matchingReflection() {
 		// resolve(Class)
 		assertThat( beanResolver.resolve( ReflectionType1.class, BeanRetrieval.CONSTRUCTOR ) )
 				.extracting( BeanHolder::get ).isInstanceOf( ReflectionType1.class );
@@ -133,7 +132,7 @@ public class BeanResolverImplRetrievalConstructorTest {
 	}
 
 	@Test
-	public void resolve_noMatch() {
+	void resolve_noMatch() {
 		RuntimeException classNotFoundException = new RuntimeException( "cannot find class" );
 
 		// resolve(Class)

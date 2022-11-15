@@ -22,34 +22,34 @@ import org.hibernate.search.mapper.pojo.mapping.definition.annotation.PropertyVa
 import org.hibernate.search.mapper.pojo.standalone.mapping.SearchMapping;
 import org.hibernate.search.mapper.pojo.standalone.session.SearchSession;
 import org.hibernate.search.util.common.SearchException;
-import org.hibernate.search.util.impl.integrationtest.common.rule.BackendMock;
+import org.hibernate.search.util.impl.integrationtest.common.extension.BackendMock;
 import org.hibernate.search.util.impl.integrationtest.mapper.pojo.standalone.StandalonePojoMappingSetupHelper;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
+@MockitoSettings(strictness = Strictness.STRICT_STUBS)
+@ExtendWith(MockitoExtension.class)
 abstract class AbstractPojoReindexingResolutionFailureIT {
 
-	@Rule
-	public final BackendMock backendMock = new BackendMock();
+	@RegisterExtension
+	public final BackendMock backendMock = BackendMock.create();
 
-	@Rule
+	@RegisterExtension
 	public final StandalonePojoMappingSetupHelper setupHelper =
 			StandalonePojoMappingSetupHelper.withBackendMock( MethodHandles.lookup(), backendMock );
 
-	@Rule
-	public final MockitoRule mockito = MockitoJUnit.rule().strictness( Strictness.STRICT_STUBS );
-
 	protected SearchMapping mapping;
 
-	@Before
-	public void setup() {
+	@BeforeEach
+	void setup() {
 		backendMock.expectSchema( RootEntity.NAME, b -> b
 				.field( "value", String.class )
 				.objectField( "containedNoContainer", b2 -> b2
@@ -74,7 +74,7 @@ abstract class AbstractPojoReindexingResolutionFailureIT {
 	}
 
 	@Test
-	public void getter() {
+	void getter() {
 		NonRootEntity level1 = new NonRootEntity();
 
 		SimulatedFailure simulatedFailure = new SimulatedFailure();
@@ -90,7 +90,7 @@ abstract class AbstractPojoReindexingResolutionFailureIT {
 
 	@Test
 	@SuppressWarnings("unchecked")
-	public void containerExtraction() {
+	void containerExtraction() {
 		NonRootEntity level1 = new NonRootEntity();
 		level1.containingInContainer = Mockito.mock( List.class );
 
@@ -106,7 +106,7 @@ abstract class AbstractPojoReindexingResolutionFailureIT {
 	}
 
 	@Test
-	public void nested_getter() {
+	void nested_getter() {
 		NonRootEntity level1 = new NonRootEntity();
 
 		SimulatedFailure simulatedFailure = new SimulatedFailure();
@@ -126,7 +126,7 @@ abstract class AbstractPojoReindexingResolutionFailureIT {
 
 	@Test
 	@SuppressWarnings("unchecked")
-	public void nested_containerExtraction() {
+	void nested_containerExtraction() {
 		NonRootEntity level1 = new NonRootEntity();
 		level1.containingInContainer = Mockito.mock( List.class );
 

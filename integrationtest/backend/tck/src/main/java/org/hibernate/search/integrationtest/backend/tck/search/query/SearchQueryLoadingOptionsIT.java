@@ -19,41 +19,41 @@ import org.hibernate.search.engine.common.EntityReference;
 import org.hibernate.search.engine.search.loading.spi.SearchLoadingContext;
 import org.hibernate.search.engine.search.projection.spi.ProjectionMappedTypeContext;
 import org.hibernate.search.integrationtest.backend.tck.testsupport.stub.StubEntity;
-import org.hibernate.search.integrationtest.backend.tck.testsupport.util.rule.SearchSetupHelper;
+import org.hibernate.search.integrationtest.backend.tck.testsupport.util.extension.SearchSetupHelper;
 import org.hibernate.search.util.impl.integrationtest.mapper.stub.GenericStubMappingScope;
 import org.hibernate.search.util.impl.integrationtest.mapper.stub.SimpleMappedIndex;
 import org.hibernate.search.util.impl.test.annotation.TestForIssue;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
+@MockitoSettings(strictness = Strictness.STRICT_STUBS)
+@ExtendWith(MockitoExtension.class)
 @TestForIssue(jiraKey = "HSEARCH-3988")
 @SuppressWarnings("unchecked") // Mocking parameterized types
-public class SearchQueryLoadingOptionsIT {
+class SearchQueryLoadingOptionsIT {
 
 	private static final ProjectionMappedTypeContext typeContextMock = Mockito.mock( ProjectionMappedTypeContext.class );
 
-	@Rule
-	public final MockitoRule mockito = MockitoJUnit.rule().strictness( Strictness.STRICT_STUBS );
-
-	@Rule
-	public final SearchSetupHelper setupHelper = new SearchSetupHelper();
+	@RegisterExtension
+	public final SearchSetupHelper setupHelper = SearchSetupHelper.create();
 
 	private final SimpleMappedIndex<IndexBinding> index = SimpleMappedIndex.of( IndexBinding::new );
 
-	@Before
-	public void setup() {
+	@BeforeEach
+	void setup() {
 		setupHelper.start().withIndex( index ).setup();
 	}
 
 	@Test
-	public void defaultResultType() {
+	void defaultResultType() {
 		SearchLoadingContext<StubEntity> loadingContextMock = mock( SearchLoadingContext.class );
 		Consumer<Object> loadingOptionsStepMock = mock( Consumer.class );
 
@@ -76,7 +76,7 @@ public class SearchQueryLoadingOptionsIT {
 	}
 
 	@Test
-	public void selectEntity() {
+	void selectEntity() {
 		SearchLoadingContext<StubEntity> loadingContextMock = mock( SearchLoadingContext.class );
 		Consumer<Object> loadingOptionsStepMock = mock( Consumer.class );
 
@@ -100,7 +100,7 @@ public class SearchQueryLoadingOptionsIT {
 	}
 
 	@Test
-	public void selectEntityReference() {
+	void selectEntityReference() {
 		SearchLoadingContext<StubEntity> loadingContextMock = mock( SearchLoadingContext.class );
 		Consumer<Object> loadingOptionsStepMock = mock( Consumer.class );
 
@@ -122,7 +122,7 @@ public class SearchQueryLoadingOptionsIT {
 	}
 
 	@Test
-	public void select() {
+	void select() {
 		SearchLoadingContext<StubEntity> loadingContextMock =
 				mock( SearchLoadingContext.class );
 		Consumer<Object> loadingOptionsStepMock = mock( Consumer.class );

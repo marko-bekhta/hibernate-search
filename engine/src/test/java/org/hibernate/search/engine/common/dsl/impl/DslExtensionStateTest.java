@@ -19,18 +19,17 @@ import java.util.function.Function;
 import org.hibernate.search.engine.common.dsl.spi.DslExtensionState;
 import org.hibernate.search.util.common.SearchException;
 
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
-public class DslExtensionStateTest {
-
-	@Rule
-	public final MockitoRule mockito = MockitoJUnit.rule().strictness( Strictness.STRICT_STUBS );
+@MockitoSettings(strictness = Strictness.STRICT_STUBS)
+@ExtendWith(MockitoExtension.class)
+class DslExtensionStateTest {
 
 	@Mock
 	private Function<Object, MyResultType> contextFunction;
@@ -40,14 +39,14 @@ public class DslExtensionStateTest {
 	private final MyResultType expectedResult = new MyResultType();
 
 	@Test
-	public void ifSupported_noSupported() {
+	void ifSupported_noSupported() {
 		String extensionToString = "EXTENSION_TO_STRING";
 		state.ifSupported( new MyExtension( extensionToString ), Optional.empty(), contextFunction );
 		verifyNoOtherInteractionsAndReset();
 	}
 
 	@Test
-	public void ifSupported_supported() {
+	void ifSupported_supported() {
 		Object extendedContext = new Object();
 
 		when( contextFunction.apply( extendedContext ) ).thenReturn( expectedResult );
@@ -56,7 +55,7 @@ public class DslExtensionStateTest {
 	}
 
 	@Test
-	public void orElse() {
+	void orElse() {
 		Object defaultContext = new Object();
 
 		when( contextFunction.apply( defaultContext ) ).thenReturn( expectedResult );
@@ -65,7 +64,7 @@ public class DslExtensionStateTest {
 	}
 
 	@Test
-	public void orElseFail() {
+	void orElseFail() {
 		assertThatThrownBy( state::orElseFail )
 				.isInstanceOf( SearchException.class )
 				.hasMessageContainingAll(
@@ -75,7 +74,7 @@ public class DslExtensionStateTest {
 	}
 
 	@Test
-	public void ifSupportedThenOrElseFail_noSupported() {
+	void ifSupportedThenOrElseFail_noSupported() {
 		String extensionToString = "EXTENSION_TO_STRING";
 		state.ifSupported( new MyExtension( extensionToString ), Optional.empty(), contextFunction );
 		assertThatThrownBy( state::orElseFail )
@@ -88,7 +87,7 @@ public class DslExtensionStateTest {
 	}
 
 	@Test
-	public void ifSupportedThenOrElseFail_supported() {
+	void ifSupportedThenOrElseFail_supported() {
 		Object extendedContext = new Object();
 
 		when( contextFunction.apply( extendedContext ) ).thenReturn( expectedResult );
@@ -100,7 +99,7 @@ public class DslExtensionStateTest {
 	}
 
 	@Test
-	public void ifSupportedThenOrElse_noSupported() {
+	void ifSupportedThenOrElse_noSupported() {
 		Object defaultContext = new Object();
 
 		state.ifSupported( new MyExtension(), Optional.empty(), contextFunction );
@@ -112,7 +111,7 @@ public class DslExtensionStateTest {
 	}
 
 	@Test
-	public void ifSupportedThenOrElse_supported() {
+	void ifSupportedThenOrElse_supported() {
 		Object extendedContext = new Object();
 		Object defaultContext = new Object();
 
@@ -125,7 +124,7 @@ public class DslExtensionStateTest {
 	}
 
 	@Test
-	public void multipleIfSupported_noSupported() {
+	void multipleIfSupported_noSupported() {
 		String extension1ToString = "EXTENSION1_TO_STRING";
 		String extension2ToString = "EXTENSION2_TO_STRING";
 		String extension3ToString = "EXTENSION3_TO_STRING";
@@ -145,7 +144,7 @@ public class DslExtensionStateTest {
 	}
 
 	@Test
-	public void multipleIfSupported_singleSupported() {
+	void multipleIfSupported_singleSupported() {
 		Object extendedContext1 = new Object();
 
 		when( contextFunction.apply( extendedContext1 ) ).thenReturn( expectedResult );
@@ -163,7 +162,7 @@ public class DslExtensionStateTest {
 	}
 
 	@Test
-	public void multipleIfSupported_multipleSupported() {
+	void multipleIfSupported_multipleSupported() {
 		Object extendedContext2 = new Object();
 		Object extendedContext3 = new Object();
 
@@ -183,7 +182,7 @@ public class DslExtensionStateTest {
 	}
 
 	@Test
-	public void multipleIfSupportedThenOrElse_noSupported() {
+	void multipleIfSupportedThenOrElse_noSupported() {
 		Object defaultContext = new Object();
 
 		state.ifSupported( new MyExtension(), Optional.empty(), contextFunction );
@@ -201,7 +200,7 @@ public class DslExtensionStateTest {
 	}
 
 	@Test
-	public void multipleIfSupportedThenOrElse_singleSupported() {
+	void multipleIfSupportedThenOrElse_singleSupported() {
 		Object extendedContext1 = new Object();
 		Object defaultContext = new Object();
 
@@ -220,7 +219,7 @@ public class DslExtensionStateTest {
 	}
 
 	@Test
-	public void multipleIfSupportedThenOrElse_multipleSupported() {
+	void multipleIfSupportedThenOrElse_multipleSupported() {
 		Object extendedContext2 = new Object();
 		Object extendedContext3 = new Object();
 		Object defaultContext = new Object();
@@ -241,7 +240,7 @@ public class DslExtensionStateTest {
 	}
 
 	@Test
-	public void orElseThenIfSupported() {
+	void orElseThenIfSupported() {
 		Object defaultContext = new Object();
 
 		when( contextFunction.apply( defaultContext ) ).thenReturn( expectedResult );

@@ -31,15 +31,17 @@ import org.hibernate.search.mapper.orm.coordination.outboxpolling.cluster.impl.A
 import org.hibernate.search.mapper.orm.coordination.outboxpolling.cluster.impl.ShardAssignmentDescriptor;
 import org.hibernate.search.util.common.spi.ToStringTreeAppender;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
+@MockitoSettings(strictness = Strictness.STRICT_STUBS)
+@ExtendWith(MockitoExtension.class)
 abstract class AbstractEventProcessorClusterLinkTest {
 
 	static final Instant NOW = Instant.parse( "2021-10-21T14:30:00.000Z" );
@@ -57,9 +59,6 @@ abstract class AbstractEventProcessorClusterLinkTest {
 
 	static final UUID SELF_ID = toUUID( SELF_ID_ORDINAL );
 	static final AgentReference SELF_REF = AgentReference.of( SELF_ID, "Self Agent Name" );
-
-	@Rule
-	public final MockitoRule mockito = MockitoJUnit.rule().strictness( Strictness.STRICT_STUBS );
 
 	@Mock
 	public FailureHandler failureHandlerMock;
@@ -93,8 +92,8 @@ abstract class AbstractEventProcessorClusterLinkTest {
 
 	protected AgentRepositoryMockingHelper repositoryMockHelper;
 
-	@Before
-	public final void initMocks() {
+	@BeforeEach
+	final void initMocks() {
 		repositoryMockHelper = new AgentRepositoryMockingHelper( repositoryMock );
 		Collections.addAll( allMocks, failureHandlerMock, clockMock, eventFinderMock, repositoryMock );
 
@@ -103,8 +102,8 @@ abstract class AbstractEventProcessorClusterLinkTest {
 		doNothing().when( contextMock ).commitAndBeginNewTransaction();
 	}
 
-	@After
-	public void verifyNoMoreInvocationsOnAllMocks() {
+	@AfterEach
+	void verifyNoMoreInvocationsOnAllMocks() {
 		verifyNoMoreInteractions( allMocks.toArray() );
 	}
 

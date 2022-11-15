@@ -34,39 +34,39 @@ import org.hibernate.search.integrationtest.backend.tck.testsupport.types.Keywor
 import org.hibernate.search.integrationtest.backend.tck.testsupport.types.LocalDateFieldTypeDescriptor;
 import org.hibernate.search.integrationtest.backend.tck.testsupport.util.SimpleFieldModel;
 import org.hibernate.search.integrationtest.backend.tck.testsupport.util.ValueWrapper;
-import org.hibernate.search.integrationtest.backend.tck.testsupport.util.rule.SearchSetupHelper;
+import org.hibernate.search.integrationtest.backend.tck.testsupport.util.extension.SearchSetupHelper;
 import org.hibernate.search.util.impl.integrationtest.mapper.stub.BulkIndexer;
 import org.hibernate.search.util.impl.integrationtest.mapper.stub.SimpleMappedIndex;
 import org.hibernate.search.util.impl.test.annotation.TestForIssue;
 import org.hibernate.search.util.impl.test.data.Pair;
 import org.hibernate.search.util.impl.test.data.Triplet;
-import org.hibernate.search.util.impl.test.runner.nested.Nested;
-import org.hibernate.search.util.impl.test.runner.nested.NestedRunner;
 
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
 /**
  * Abstract base for tests of the from/as syntax of composite or object projections,
  * e.g. {@code f.composite().from( otherProjection1, otherProjection2 ).as( MyPair::new ) }.
  */
-@RunWith(NestedRunner.class)
+//CHECKSTYLE:OFF HideUtilityClassConstructor ignore the rule since it is a class with nested test classes.
+// cannot make a private constructor.
+@MockitoSettings(strictness = Strictness.STRICT_STUBS)
+@ExtendWith(MockitoExtension.class)
 public abstract class AbstractCompositeProjectionFromAsIT<B extends AbstractCompositeProjectionFromAsIT.AbstractIndexBinding> {
+	//CHECKSTYLE:ON
 
-	@ClassRule
-	public static final SearchSetupHelper setupHelper = new SearchSetupHelper();
+
+	@RegisterExtension
+	public static final SearchSetupHelper setupHelper = SearchSetupHelper.createGlobal();
 
 	private static final ProjectionRegistry projectionRegistryMock = Mockito.mock( ProjectionRegistry.class );
-
-	@Rule
-	public final MockitoRule mockito = MockitoJUnit.rule().strictness( Strictness.STRICT_STUBS );
 
 	private final SimpleMappedIndex<B> index;
 	private final AbstractDataSet<B> dataSet;
@@ -74,11 +74,6 @@ public abstract class AbstractCompositeProjectionFromAsIT<B extends AbstractComp
 	public AbstractCompositeProjectionFromAsIT(SimpleMappedIndex<B> index, AbstractDataSet<B> dataSet) {
 		this.index = index;
 		this.dataSet = dataSet;
-	}
-
-	@Test
-	public void takariCpSuiteWorkaround() {
-		// Workaround to get Takari-CPSuite to run this test.
 	}
 
 	protected abstract CompositeProjectionInnerStep startProjection(SearchProjectionFactory<?, ?> f);
@@ -318,7 +313,7 @@ public abstract class AbstractCompositeProjectionFromAsIT<B extends AbstractComp
 	}
 
 	@Nested
-	public class From1IT
+	class From1IT
 			extends AbstractFromSpecificNumberIT<CompositeProjectionFrom1AsStep<String>, ValueWrapper<String>> {
 		@Override
 		protected CompositeProjectionFrom1AsStep<String> doFrom(SearchProjectionFactory<?, ?> f,
@@ -344,7 +339,7 @@ public abstract class AbstractCompositeProjectionFromAsIT<B extends AbstractComp
 	}
 
 	@Nested
-	public class From2IT
+	class From2IT
 			extends AbstractFromSpecificNumberIT<CompositeProjectionFrom2AsStep<String, String>, Pair<String, String>> {
 		@Override
 		protected CompositeProjectionFrom2AsStep<String, String> doFrom(SearchProjectionFactory<?, ?> f,
@@ -374,7 +369,7 @@ public abstract class AbstractCompositeProjectionFromAsIT<B extends AbstractComp
 	}
 
 	@Nested
-	public class From3IT
+	class From3IT
 			extends AbstractFromSpecificNumberIT<CompositeProjectionFrom3AsStep<String, String, LocalDate>,
 					Triplet<String, String, LocalDate>> {
 		@Override
@@ -408,7 +403,7 @@ public abstract class AbstractCompositeProjectionFromAsIT<B extends AbstractComp
 	}
 
 	@Nested
-	public class From4IT
+	class From4IT
 			extends AbstractFromAnyNumberIT {
 		@Override
 		protected CompositeProjectionFromAsStep doFrom(SearchProjectionFactory<?, ?> f,

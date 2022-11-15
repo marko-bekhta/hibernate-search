@@ -28,15 +28,17 @@ import org.hibernate.search.mapper.orm.coordination.outboxpolling.cluster.impl.A
 import org.hibernate.search.mapper.orm.coordination.outboxpolling.cluster.impl.AgentState;
 import org.hibernate.search.mapper.orm.coordination.outboxpolling.cluster.impl.AgentType;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
+@MockitoSettings(strictness = Strictness.STRICT_STUBS)
+@ExtendWith(MockitoExtension.class)
 abstract class AbstractMassIndexerAgentClusterLinkTest {
 
 	static final Instant NOW = Instant.parse( "2021-11-21T14:30:00.000Z" );
@@ -54,9 +56,6 @@ abstract class AbstractMassIndexerAgentClusterLinkTest {
 	static final UUID SELF_ID = toUUID( SELF_ID_ORDINAL );
 	static final AgentReference SELF_REF = AgentReference.of( SELF_ID, "Self Agent Name" );
 
-	@Rule
-	public final MockitoRule mockito = MockitoJUnit.rule().strictness( Strictness.STRICT_STUBS );
-
 	@Mock
 	public FailureHandler failureHandlerMock;
 
@@ -73,8 +72,8 @@ abstract class AbstractMassIndexerAgentClusterLinkTest {
 
 	protected AgentRepositoryMockingHelper repositoryMockHelper;
 
-	@Before
-	public final void initMocks() {
+	@BeforeEach
+	final void initMocks() {
 		repositoryMockHelper = new AgentRepositoryMockingHelper( repositoryMock );
 		Collections.addAll( allMocks, failureHandlerMock, clockMock, repositoryMock );
 
@@ -83,8 +82,8 @@ abstract class AbstractMassIndexerAgentClusterLinkTest {
 		doNothing().when( contextMock ).commitAndBeginNewTransaction();
 	}
 
-	@After
-	public void verifyNoMoreInvocationsOnAllMocks() {
+	@AfterEach
+	void verifyNoMoreInvocationsOnAllMocks() {
 		verifyNoMoreInteractions( allMocks.toArray() );
 	}
 

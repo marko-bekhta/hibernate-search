@@ -15,26 +15,25 @@ import org.hibernate.search.engine.backend.types.converter.runtime.FromDocumentF
 import org.hibernate.search.engine.backend.types.converter.runtime.FromDocumentFieldValueConvertContextExtension;
 import org.hibernate.search.engine.backend.types.converter.runtime.spi.FromDocumentValueConvertContextImpl;
 
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
 /**
  * Test that implementations of the legacy interface {@link FromDocumentFieldValueConverter}
  * can be used transparently as a {@link FromDocumentValueConverter}.
  */
+@MockitoSettings(strictness = Strictness.STRICT_STUBS)
+@ExtendWith(MockitoExtension.class)
 @SuppressWarnings("deprecation")
-public class FromDocumentFieldValueConverterTest {
-
-	@Rule
-	public final MockitoRule mockito = MockitoJUnit.rule().strictness( Strictness.STRICT_STUBS );
+class FromDocumentFieldValueConverterTest {
 
 	@Test
-	public void fromDocumentFieldValue() {
+	void fromDocumentFieldValue() {
 		BackendSessionContext sessionContextMock = Mockito.mock( BackendSessionContext.class );
 		FromDocumentValueConvertContextImpl convertContext = new FromDocumentValueConvertContextImpl( sessionContextMock );
 
@@ -64,7 +63,7 @@ public class FromDocumentFieldValueConverterTest {
 	}
 
 	@Test
-	public void isCompatibleWith_default() {
+	void isCompatibleWith_default() {
 		class DefaultCompatibilityConverter implements FromDocumentFieldValueConverter<Integer, String> {
 			@Override
 			public String convert(Integer value, FromDocumentFieldValueConvertContext context) {
@@ -82,7 +81,7 @@ public class FromDocumentFieldValueConverterTest {
 	}
 
 	@Test
-	public void isCompatibleWith_custom() {
+	void isCompatibleWith_custom() {
 		class CustomCompatibilityConverter implements FromDocumentFieldValueConverter<Integer, String> {
 			@Override
 			public String convert(Integer value, FromDocumentFieldValueConvertContext context) {

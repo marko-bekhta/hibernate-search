@@ -6,8 +6,7 @@
  */
 package org.hibernate.search.integrationtest.jakarta.batch.component;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -22,7 +21,6 @@ import org.hibernate.search.integrationtest.jakarta.batch.massindexing.entity.Co
 import org.hibernate.search.integrationtest.jakarta.batch.massindexing.entity.Person;
 import org.hibernate.search.integrationtest.jakarta.batch.util.BackendConfigurations;
 import org.hibernate.search.integrationtest.jakarta.batch.util.JobTestUtil;
-import org.hibernate.search.integrationtest.jakarta.batch.util.PersistenceUnitTestUtil;
 import org.hibernate.search.jakarta.batch.core.massindexing.impl.JobContextData;
 import org.hibernate.search.jakarta.batch.core.massindexing.step.impl.HibernateSearchPartitionMapper;
 import org.hibernate.search.jakarta.batch.core.massindexing.util.impl.MassIndexingPartitionProperties;
@@ -43,7 +41,6 @@ import org.junit.rules.MethodRule;
  */
 public class HibernateSearchPartitionMapperComponentIT {
 
-	private static final String PERSISTENCE_UNIT_NAME = PersistenceUnitTestUtil.getPersistenceUnitName();
 	private static final int COMP_ROWS = 3;
 	private static final int PERS_ROWS = 8;
 
@@ -128,12 +125,12 @@ public class HibernateSearchPartitionMapperComponentIT {
 			 * since the value of rowsPerPartition is lower than the static default for checkpoint interval.
 			 */
 			String checkpointInterval = p.getProperty( MassIndexingPartitionProperties.CHECKPOINT_INTERVAL );
-			assertNotNull( checkpointInterval );
-			assertEquals( "3", checkpointInterval );
+			assertThat( checkpointInterval ).isNotNull();
+			assertThat( checkpointInterval ).isEqualTo( "3" );
 		}
 
 		// nbPartitions = rows / rowsPerPartition
-		assertEquals( 1, compPartitions ); // 3 / 3 => 1 partition
-		assertEquals( 3, persPartitions ); // 8 / 3 => 3 partitions
+		assertThat( compPartitions ).isEqualTo( 1 ); // 3 / 3 => 1 partition
+		assertThat( persPartitions ).isEqualTo( 3 ); // 8 / 3 => 3 partitions
 	}
 }

@@ -28,22 +28,21 @@ import org.hibernate.search.backend.lucene.work.impl.IndexingWorkExecutionContex
 import org.hibernate.search.engine.reporting.spi.EventContexts;
 import org.hibernate.search.util.common.reporting.EventContext;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
-public class LuceneBatchedWorkProcessorTest {
+@MockitoSettings(strictness = Strictness.STRICT_STUBS)
+@ExtendWith(MockitoExtension.class)
+class LuceneBatchedWorkProcessorTest {
 
 	private static final String INDEX_NAME = "SomeIndexName";
-
-	@Rule
-	public final MockitoRule mockito = MockitoJUnit.rule().strictness( Strictness.STRICT_STUBS );
 
 	private final EventContext indexEventContext = EventContexts.fromIndexName( INDEX_NAME );
 
@@ -56,13 +55,13 @@ public class LuceneBatchedWorkProcessorTest {
 
 	private int nextWorkId = 0;
 
-	@Before
-	public void setup() {
+	@BeforeEach
+	void setup() {
 		processor = new LuceneBatchedWorkProcessor( indexEventContext, indexAccessorMock );
 	}
 
 	@Test
-	public void batch() throws IOException {
+	void batch() throws IOException {
 		processor.beginBatch();
 		verifyNoOtherIndexInteractionsAndClear();
 
@@ -91,7 +90,7 @@ public class LuceneBatchedWorkProcessorTest {
 	}
 
 	@Test
-	public void error_workExecute() throws IOException {
+	void error_workExecute() throws IOException {
 		processor.beginBatch();
 		verifyNoOtherIndexInteractionsAndClear();
 
@@ -120,7 +119,7 @@ public class LuceneBatchedWorkProcessorTest {
 	}
 
 	@Test
-	public void forceCommit() {
+	void forceCommit() {
 		processor.forceCommit();
 
 		verify( indexAccessorMock ).commit();
@@ -128,7 +127,7 @@ public class LuceneBatchedWorkProcessorTest {
 	}
 
 	@Test
-	public void error_forceCommit() {
+	void error_forceCommit() {
 		RuntimeException commitException = new RuntimeException( "Some message" );
 		doThrow( commitException ).when( indexAccessorMock ).commit();
 		assertThatThrownBy( () -> processor.forceCommit() )
@@ -144,14 +143,14 @@ public class LuceneBatchedWorkProcessorTest {
 	}
 
 	@Test
-	public void forceRefresh() {
+	void forceRefresh() {
 		processor.forceRefresh();
 		verify( indexAccessorMock ).refresh();
 		verifyNoOtherIndexInteractionsAndClear();
 	}
 
 	@Test
-	public void error_forceRefresh() {
+	void error_forceRefresh() {
 		RuntimeException refreshException = new RuntimeException( "Some message" );
 		doThrow( refreshException ).when( indexAccessorMock ).refresh();
 		assertThatThrownBy( () -> processor.forceRefresh() )
@@ -160,7 +159,7 @@ public class LuceneBatchedWorkProcessorTest {
 	}
 
 	@Test
-	public void error_batchCommit() throws IOException {
+	void error_batchCommit() throws IOException {
 		RuntimeException commitException = new RuntimeException( "Some message" );
 
 		processor.beginBatch();

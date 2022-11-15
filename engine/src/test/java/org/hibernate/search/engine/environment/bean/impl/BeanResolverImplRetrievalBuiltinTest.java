@@ -30,19 +30,18 @@ import org.hibernate.search.engine.environment.classpath.spi.ClassResolver;
 import org.hibernate.search.engine.environment.classpath.spi.ServiceResolver;
 import org.hibernate.search.util.common.SearchException;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
-public class BeanResolverImplRetrievalBuiltinTest {
-
-	@Rule
-	public final MockitoRule mockito = MockitoJUnit.rule().strictness( Strictness.STRICT_STUBS );
+@MockitoSettings(strictness = Strictness.STRICT_STUBS)
+@ExtendWith(MockitoExtension.class)
+class BeanResolverImplRetrievalBuiltinTest {
 
 	@Mock
 	private ClassResolver classResolverMock;
@@ -67,7 +66,7 @@ public class BeanResolverImplRetrievalBuiltinTest {
 
 	private BeanResolver beanResolver;
 
-	@Before
+	@BeforeEach
 	// Raw types are the only way to set the return value for a wildcard return type (Optional<?>)
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void setup() {
@@ -94,7 +93,7 @@ public class BeanResolverImplRetrievalBuiltinTest {
 	}
 
 	@Test
-	public void resolve_matchingConfiguredBeans() {
+	void resolve_matchingConfiguredBeans() {
 		BeanHolder<InternalType1> type1BeanHolder = BeanHolder.of( new InternalType1() );
 		BeanHolder<InternalType2> type2BeanHolder = BeanHolder.of( new InternalType2() );
 		BeanHolder<InternalType3> type3BeanHolder1 = BeanHolder.of( new InternalType3() );
@@ -136,7 +135,7 @@ public class BeanResolverImplRetrievalBuiltinTest {
 	}
 
 	@Test
-	public void resolve_noMatch() {
+	void resolve_noMatch() {
 		// resolve(Class)
 		assertThatThrownBy( () -> beanResolver.resolve( InvalidType.class, BeanRetrieval.BUILTIN ) )
 				.isInstanceOf( SearchException.class )
@@ -180,7 +179,7 @@ public class BeanResolverImplRetrievalBuiltinTest {
 	}
 
 	@Test
-	public void resolve_configuredBeanFactoryFailure() {
+	void resolve_configuredBeanFactoryFailure() {
 		RuntimeException beanFactoryFailure = new RuntimeException( "internal failure in factory" );
 
 		// resolve(Class)
@@ -199,7 +198,7 @@ public class BeanResolverImplRetrievalBuiltinTest {
 	}
 
 	@Test
-	public void resolve_ambiguousInternalBean() {
+	void resolve_ambiguousInternalBean() {
 		// resolve(Class)
 		assertThatThrownBy( () -> beanResolver.resolve( InternalType3.class, BeanRetrieval.BUILTIN ) )
 				.isInstanceOf( SearchException.class )
