@@ -31,9 +31,9 @@ import org.hibernate.search.mapper.orm.coordination.outboxpolling.cluster.impl.A
 import org.hibernate.search.mapper.orm.coordination.outboxpolling.cluster.impl.ShardAssignmentDescriptor;
 import org.hibernate.search.util.common.spi.ToStringTreeAppender;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Rule;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
@@ -93,7 +93,7 @@ abstract class AbstractEventProcessorClusterLinkTest {
 
 	protected AgentRepositoryMockingHelper repositoryMockHelper;
 
-	@Before
+	@BeforeEach
 	public final void initMocks() {
 		repositoryMockHelper = new AgentRepositoryMockingHelper( repositoryMock );
 		Collections.addAll( allMocks, failureHandlerMock, clockMock, eventFinderMock, repositoryMock );
@@ -103,7 +103,7 @@ abstract class AbstractEventProcessorClusterLinkTest {
 		doNothing().when( contextMock ).commitAndBeginNewTransaction();
 	}
 
-	@After
+	@AfterEach
 	public void verifyNoMoreInvocationsOnAllMocks() {
 		verifyNoMoreInteractions( allMocks.toArray() );
 	}

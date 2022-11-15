@@ -39,9 +39,9 @@ import org.hibernate.search.util.impl.integrationtest.common.stub.backend.docume
 import org.hibernate.search.util.impl.integrationtest.mapper.orm.CoordinationStrategyExpectations;
 import org.hibernate.search.util.impl.integrationtest.mapper.orm.OrmSetupHelper;
 
-import org.junit.Before;
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class OutboxPollingAutomaticIndexingOutOfOrderIdsIT {
 
@@ -62,7 +62,7 @@ public class OutboxPollingAutomaticIndexingOutOfOrderIdsIT {
 
 	private SessionFactory sessionFactory;
 
-	@Before
+	@BeforeEach
 	public void before() {
 		backendMock.expectAnySchema( IndexedEntity.INDEX )
 				.expectAnySchema( RoutedIndexedEntity.NAME );

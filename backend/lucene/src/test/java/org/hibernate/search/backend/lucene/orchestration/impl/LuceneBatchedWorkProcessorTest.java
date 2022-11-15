@@ -28,9 +28,9 @@ import org.hibernate.search.backend.lucene.work.impl.IndexingWorkExecutionContex
 import org.hibernate.search.engine.reporting.spi.EventContexts;
 import org.hibernate.search.util.common.reporting.EventContext;
 
-import org.junit.Before;
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
@@ -56,7 +56,7 @@ public class LuceneBatchedWorkProcessorTest {
 
 	private int nextWorkId = 0;
 
-	@Before
+	@BeforeEach
 	public void setup() {
 		processor = new LuceneBatchedWorkProcessor( indexEventContext, indexAccessorMock );
 	}

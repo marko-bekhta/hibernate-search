@@ -13,7 +13,7 @@ import java.util.Arrays;
 import org.hibernate.search.util.common.spi.ToStringTreeAppendable;
 import org.hibernate.search.util.common.spi.ToStringTreeAppender;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class ToStringTreeBuilderTest {
 

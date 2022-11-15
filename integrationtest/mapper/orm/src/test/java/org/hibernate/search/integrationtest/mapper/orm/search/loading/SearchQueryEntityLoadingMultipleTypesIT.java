@@ -57,10 +57,10 @@ import org.hibernate.search.util.impl.integrationtest.mapper.orm.ReusableOrmSetu
 import org.hibernate.search.util.impl.integrationtest.mapper.orm.SlowerLoadingListener;
 import org.hibernate.search.util.impl.test.annotation.TestForIssue;
 
-import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.rules.MethodRule;
 
 /**
@@ -151,7 +151,7 @@ public class SearchQueryEntityLoadingMultipleTypesIT extends AbstractSearchQuery
 				);
 	}
 
-	@Before
+	@BeforeEach
 	public void initData() {
 		// We don't care about what is indexed exactly, so use the lenient mode
 		backendMock.inLenientMode( () -> setupHolder.runInTransaction( session -> {

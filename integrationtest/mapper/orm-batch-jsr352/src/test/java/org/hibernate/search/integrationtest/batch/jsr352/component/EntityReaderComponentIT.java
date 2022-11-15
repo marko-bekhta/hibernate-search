@@ -29,10 +29,10 @@ import org.hibernate.search.mapper.orm.cfg.HibernateOrmMapperSettings;
 import org.hibernate.search.util.impl.integrationtest.mapper.orm.OrmSetupHelper;
 import org.hibernate.search.util.impl.integrationtest.mapper.orm.ReusableOrmSetupHolder;
 
-import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.rules.MethodRule;
 
 import org.mockito.junit.MockitoJUnit;
@@ -75,7 +75,7 @@ public class EntityReaderComponentIT {
 				.withProperty( HibernateOrmMapperSettings.INDEXING_LISTENERS_ENABLED, false );
 	}
 
-	@Before
+	@BeforeEach
 	public void init() {
 		emf = setupHolder.entityManagerFactory();
 

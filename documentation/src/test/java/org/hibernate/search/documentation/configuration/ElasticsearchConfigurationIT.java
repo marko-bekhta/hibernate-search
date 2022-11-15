@@ -19,7 +19,7 @@ import org.hibernate.search.engine.cfg.IndexSettings;
 import org.hibernate.search.mapper.orm.cfg.HibernateOrmMapperSettings;
 import org.hibernate.search.mapper.pojo.work.IndexingPlanSynchronizationStrategyNames;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class ElasticsearchConfigurationIT {
 	// tag::build-hibernate-configuration[]

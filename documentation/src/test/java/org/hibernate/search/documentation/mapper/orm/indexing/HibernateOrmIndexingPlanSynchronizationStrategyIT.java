@@ -22,7 +22,7 @@ import org.hibernate.search.mapper.pojo.work.IndexingPlanSynchronizationStrategy
 import org.hibernate.search.mapper.pojo.work.IndexingPlanSynchronizationStrategyNames;
 
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class HibernateOrmIndexingPlanSynchronizationStrategyIT {
 	private static final String BOOK1_TITLE = "I, Robot";

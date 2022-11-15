@@ -12,8 +12,8 @@ import org.hibernate.search.integrationtest.backend.tck.testsupport.util.rule.Se
 import org.hibernate.search.util.impl.integrationtest.mapper.stub.BulkIndexer;
 import org.hibernate.search.util.impl.integrationtest.mapper.stub.StubMappedIndex;
 
-import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.jupiter.api.BeforeAll;
 
 public class EntityReferenceProjectionIT extends AbstractEntityReferenceProjectionIT {
 
@@ -26,7 +26,7 @@ public class EntityReferenceProjectionIT extends AbstractEntityReferenceProjecti
 		super( mainIndex );
 	}
 
-	@BeforeClass
+	@BeforeAll
 	public static void setup() {
 		setupHelper.start().withIndex( mainIndex ).setup();
 

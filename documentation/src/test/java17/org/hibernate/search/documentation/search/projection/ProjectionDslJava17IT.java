@@ -38,11 +38,11 @@ import org.hibernate.search.mapper.pojo.search.definition.binding.builtin.ScoreP
 import org.hibernate.search.util.common.impl.CollectionHelper;
 import org.hibernate.search.util.impl.integrationtest.common.NormalizationUtils;
 
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.Rule;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Test;
 
 @RunWith(Parameterized.class)
 public class ProjectionDslJava17IT {
@@ -211,7 +211,7 @@ public class ProjectionDslJava17IT {
 
 	private EntityManagerFactory entityManagerFactory;
 
-	@Before
+	@BeforeEach
 	public void setup() {
 		entityManagerFactory = setupHelper.start().setup( Book.class, Author.class, EmbeddableGeoPoint.class );
 		initData();

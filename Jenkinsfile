@@ -610,7 +610,7 @@ stage('Non-default environments') {
 						withMavenWorkspace {
 							// Tests may fail because of hourly AWS snapshots,
 							// which prevent deleting indexes while they are being executed.
-							// Unfortunately, this triggers test failure in @BeforeClass/@AfterClass,
+							// Unfortunately, this triggers test failure in @BeforeAll/@AfterAll,
 							// which cannot be handled by the maven-failsafe-plugin,
 							// which normally re-runs failing tests, but only if
 							// the failure occurs in the @Test method.
@@ -652,7 +652,7 @@ stage('Non-default environments') {
 
 								// Tests may fail because of hourly AWS snapshots,
 								// which prevent deleting indexes while they are being executed.
-								// Unfortunately, this triggers test failure in @BeforeClass/@AfterClass,
+								// Unfortunately, this triggers test failure in @BeforeAll/@AfterAll,
 								// which cannot be handled by the maven-failsafe-plugin,
 								// which normally re-runs failing tests, but only if
 								// the failure occurs in the @Test method.

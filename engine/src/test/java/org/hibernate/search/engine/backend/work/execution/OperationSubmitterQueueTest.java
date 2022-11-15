@@ -17,14 +17,14 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class OperationSubmitterQueueTest {
 
 	private BlockingQueue<Integer> queue;
 
-	@Before
+	@BeforeEach
 	public void setUp() throws Exception {
 		this.queue = new ArrayBlockingQueue<>( 2 );
 

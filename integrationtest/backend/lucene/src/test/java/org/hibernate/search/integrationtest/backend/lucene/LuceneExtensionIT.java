@@ -66,9 +66,9 @@ import org.hibernate.search.util.impl.integrationtest.mapper.stub.StubLoadingOpt
 import org.hibernate.search.util.impl.integrationtest.mapper.stub.StubMappingScope;
 import org.hibernate.search.util.impl.test.annotation.TestForIssue;
 
-import org.junit.Before;
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.DoublePoint;
@@ -106,7 +106,7 @@ public class LuceneExtensionIT {
 
 	private SearchIntegration integration;
 
-	@Before
+	@BeforeEach
 	public void setup() {
 		this.integration = setupHelper.start().withIndexes( mainIndex, otherIndex ).setup().integration();
 

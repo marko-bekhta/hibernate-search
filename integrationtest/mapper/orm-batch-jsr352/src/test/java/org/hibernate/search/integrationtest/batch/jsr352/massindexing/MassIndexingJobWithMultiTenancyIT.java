@@ -27,10 +27,10 @@ import org.hibernate.search.mapper.orm.cfg.HibernateOrmMapperSettings;
 import org.hibernate.search.util.impl.integrationtest.mapper.orm.OrmSetupHelper;
 import org.hibernate.search.util.impl.integrationtest.mapper.orm.ReusableOrmSetupHolder;
 
-import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.rules.MethodRule;
 
 /**
@@ -64,7 +64,7 @@ public class MassIndexingJobWithMultiTenancyIT {
 				.tenants( TARGET_TENANT_ID, UNUSED_TENANT_ID );
 	}
 
-	@Before
+	@BeforeEach
 	public void initData() {
 		jobOperator = JobTestUtil.getAndCheckRuntime();
 

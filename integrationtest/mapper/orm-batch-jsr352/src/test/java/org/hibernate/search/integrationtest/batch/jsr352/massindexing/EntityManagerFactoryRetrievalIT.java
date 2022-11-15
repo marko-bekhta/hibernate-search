@@ -25,9 +25,9 @@ import org.hibernate.search.integrationtest.batch.jsr352.massindexing.entity.Who
 import org.hibernate.search.integrationtest.batch.jsr352.util.JobTestUtil;
 import org.hibernate.search.integrationtest.batch.jsr352.util.PersistenceUnitTestUtil;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Mincong Huang
@@ -52,7 +52,7 @@ public class EntityManagerFactoryRetrievalIT {
 	protected JobOperator jobOperator;
 	protected EntityManagerFactory emf;
 
-	@Before
+	@BeforeEach
 	public void setup() {
 		jobOperator = JobTestUtil.getAndCheckRuntime();
 		List<Company> companies = new ArrayList<>();
@@ -81,7 +81,7 @@ public class EntityManagerFactoryRetrievalIT {
 		} );
 	}
 
-	@After
+	@AfterEach
 	public void shutdown() {
 		if ( emf != null ) {
 			emf.close();

@@ -27,7 +27,7 @@ import org.hibernate.search.util.impl.integrationtest.mapper.stub.SingleFieldDoc
 import org.hibernate.search.util.impl.integrationtest.mapper.stub.StubMappingScope;
 
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test indexing and searching with custom analyzer definitions.

@@ -24,9 +24,9 @@ import org.hibernate.search.mapper.orm.mapping.SearchMapping;
 import org.hibernate.search.mapper.orm.scope.SearchScope;
 import org.hibernate.search.mapper.orm.session.SearchSession;
 
-import org.junit.Before;
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class HibernateOrmEntryPointsIT {
 
@@ -35,7 +35,7 @@ public class HibernateOrmEntryPointsIT {
 
 	private SessionFactory theSessionFactory;
 
-	@Before
+	@BeforeEach
 	public void setup() {
 		this.theSessionFactory = setupHelper.start()
 				.setup( Book.class, Associate.class, Manager.class );

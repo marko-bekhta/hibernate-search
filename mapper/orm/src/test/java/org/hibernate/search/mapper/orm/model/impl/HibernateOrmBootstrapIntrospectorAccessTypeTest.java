@@ -28,7 +28,7 @@ import jakarta.persistence.Transient;
 import org.hibernate.search.mapper.pojo.model.spi.PojoRawTypeModel;
 import org.hibernate.search.util.common.reflect.spi.ValueReadHandle;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class HibernateOrmBootstrapIntrospectorAccessTypeTest
 		extends AbstractHibernateOrmBootstrapIntrospectorPerReflectionStrategyTest {

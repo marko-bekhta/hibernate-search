@@ -24,9 +24,9 @@ import org.hibernate.search.util.impl.integrationtest.mapper.stub.BulkIndexer;
 import org.hibernate.search.util.impl.integrationtest.mapper.stub.SimpleMappedIndex;
 import org.hibernate.search.util.impl.integrationtest.mapper.stub.StubMappingScope;
 
-import org.junit.Before;
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class TermsPredicateSpecificsIT {
 
@@ -49,7 +49,7 @@ public class TermsPredicateSpecificsIT {
 		}
 	}
 
-	@Before
+	@BeforeEach
 	public void before() {
 		setupHelper.start().withIndex( index ).setup();
 		BulkIndexer indexer = index.bulkIndexer();

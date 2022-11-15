@@ -25,10 +25,10 @@ import org.hibernate.search.mapper.pojo.standalone.session.SearchSession;
 import org.hibernate.search.mapper.pojo.work.IndexingPlanSynchronizationStrategy;
 import org.hibernate.search.util.impl.integrationtest.common.TestConfigurationProvider;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class StandalonePojoSelectionLoadingIT {
 
@@ -40,7 +40,7 @@ public class StandalonePojoSelectionLoadingIT {
 	private MyDatastore datastore;
 	private CloseableSearchMapping searchMapping;
 
-	@Before
+	@BeforeEach
 	public void setup() {
 		Map<Class<?>, Map<String, ?>> entities = new HashMap<>();
 		books = new LinkedHashMap<>();
@@ -80,7 +80,7 @@ public class StandalonePojoSelectionLoadingIT {
 		}
 	}
 
-	@After
+	@AfterEach
 	public void cleanup() {
 		if ( searchMapping != null ) {
 			searchMapping.close();

@@ -60,9 +60,9 @@ import org.hibernate.search.util.impl.integrationtest.mapper.stub.StubLoadingOpt
 import org.hibernate.search.util.impl.integrationtest.mapper.stub.StubMappingScope;
 import org.hibernate.search.util.impl.test.annotation.TestForIssue;
 
-import org.junit.Before;
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -96,7 +96,7 @@ public class ElasticsearchExtensionIT {
 
 	private SearchIntegration integration;
 
-	@Before
+	@BeforeEach
 	public void setup() {
 		this.integration = setupHelper.start().withIndexes( mainIndex, otherIndex ).setup().integration();
 

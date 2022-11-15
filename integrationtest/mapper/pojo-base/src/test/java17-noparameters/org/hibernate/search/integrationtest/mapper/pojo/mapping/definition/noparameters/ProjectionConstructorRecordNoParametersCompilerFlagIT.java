@@ -23,7 +23,7 @@ import org.hibernate.search.util.impl.integrationtest.mapper.pojo.standalone.Sta
 
 import org.junit.Before;
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class ProjectionConstructorRecordNoParametersCompilerFlagIT extends AbstractProjectionConstructorIT {
 

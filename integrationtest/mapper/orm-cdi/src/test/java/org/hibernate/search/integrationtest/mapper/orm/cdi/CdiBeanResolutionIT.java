@@ -33,10 +33,10 @@ import org.hibernate.search.util.impl.test.annotation.PortedFromSearch5;
 import org.hibernate.search.util.impl.test.annotation.TestForIssue;
 import org.hibernate.search.util.impl.test.rule.StaticCounters;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.assertj.core.api.InstanceOfAssertFactories;
 
@@ -66,7 +66,7 @@ public class CdiBeanResolutionIT {
 
 	private SeContainer cdiContainer;
 
-	@Before
+	@BeforeEach
 	public void setup() {
 		final SeContainerInitializer cdiInitializer = SeContainerInitializer.newInstance()
 				.disableDiscovery()
@@ -80,7 +80,7 @@ public class CdiBeanResolutionIT {
 		this.cdiContainer = cdiInitializer.initialize();
 	}
 
-	@After
+	@AfterEach
 	public void tearDown() {
 		if ( cdiContainer != null ) {
 			cdiContainer.close();

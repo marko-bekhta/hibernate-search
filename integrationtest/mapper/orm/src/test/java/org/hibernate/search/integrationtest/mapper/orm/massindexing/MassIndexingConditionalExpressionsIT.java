@@ -30,10 +30,10 @@ import org.hibernate.search.util.impl.integrationtest.mapper.orm.OrmSetupHelper;
 import org.hibernate.search.util.impl.integrationtest.mapper.orm.ReusableOrmSetupHolder;
 import org.hibernate.search.util.impl.test.annotation.TestForIssue;
 
-import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.rules.MethodRule;
 
 public class MassIndexingConditionalExpressionsIT {
@@ -83,7 +83,7 @@ public class MassIndexingConditionalExpressionsIT {
 				);
 	}
 
-	@Before
+	@BeforeEach
 	public void initData() {
 		setupHolder.runInTransaction( session -> {
 			session.persist( new H0_Indexed( 1, INSTANT_0, INT_0 ) );
