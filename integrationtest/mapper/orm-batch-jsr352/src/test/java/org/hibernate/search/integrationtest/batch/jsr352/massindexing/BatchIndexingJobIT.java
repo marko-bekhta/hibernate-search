@@ -9,7 +9,6 @@ package org.hibernate.search.integrationtest.batch.jsr352.massindexing;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 import static org.hibernate.search.integrationtest.batch.jsr352.util.JobTestUtil.JOB_TIMEOUT_MS;
-import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
@@ -125,9 +124,9 @@ public class BatchIndexingJobIT {
 		List<Company> companies = JobTestUtil.findIndexedResults( emf, Company.class, "name", "Google" );
 		List<Person> people = JobTestUtil.findIndexedResults( emf, Person.class, "firstName", "Linus" );
 		List<WhoAmI> whos = JobTestUtil.findIndexedResults( emf, WhoAmI.class, "id", "id01" );
-		assertEquals( 0, companies.size() );
-		assertEquals( 0, people.size() );
-		assertEquals( 0, whos.size() );
+		assertThat( companies ).isEmpty();
+		assertThat( people ).isEmpty();
+		assertThat( whos ).isEmpty();
 
 		long executionId = jobOperator.start(
 				MassIndexingJob.NAME,
@@ -146,9 +145,9 @@ public class BatchIndexingJobIT {
 		companies = JobTestUtil.findIndexedResults( emf, Company.class, "name", "Google" );
 		people = JobTestUtil.findIndexedResults( emf, Person.class, "firstName", "Linus" );
 		whos = JobTestUtil.findIndexedResults( emf, WhoAmI.class, "id", "id01" );
-		assertEquals( INSTANCES_PER_DATA_TEMPLATE, companies.size() );
-		assertEquals( INSTANCES_PER_DATA_TEMPLATE, people.size() );
-		assertEquals( INSTANCES_PER_DATA_TEMPLATE, whos.size() );
+		assertThat( companies ).hasSize( INSTANCES_PER_DATA_TEMPLATE );
+		assertThat( people ).hasSize( INSTANCES_PER_DATA_TEMPLATE );
+		assertThat( whos ).hasSize( INSTANCES_PER_DATA_TEMPLATE );
 	}
 
 	@Test
@@ -158,9 +157,9 @@ public class BatchIndexingJobIT {
 		List<Company> companies = JobTestUtil.findIndexedResults( emf, Company.class, "name", "Google" );
 		List<Person> people = JobTestUtil.findIndexedResults( emf, Person.class, "firstName", "Linus" );
 		List<WhoAmI> whos = JobTestUtil.findIndexedResults( emf, WhoAmI.class, "id", "id01" );
-		assertEquals( 0, companies.size() );
-		assertEquals( 0, people.size() );
-		assertEquals( 0, whos.size() );
+		assertThat( companies ).isEmpty();
+		assertThat( people ).isEmpty();
+		assertThat( whos ).isEmpty();
 
 		long executionId = jobOperator.start(
 				MassIndexingJob.NAME,
@@ -178,9 +177,9 @@ public class BatchIndexingJobIT {
 		companies = JobTestUtil.findIndexedResults( emf, Company.class, "name", "Google" );
 		people = JobTestUtil.findIndexedResults( emf, Person.class, "firstName", "Linus" );
 		whos = JobTestUtil.findIndexedResults( emf, WhoAmI.class, "id", "id01" );
-		assertEquals( INSTANCES_PER_DATA_TEMPLATE, companies.size() );
-		assertEquals( INSTANCES_PER_DATA_TEMPLATE, people.size() );
-		assertEquals( INSTANCES_PER_DATA_TEMPLATE, whos.size() );
+		assertThat( companies ).hasSize( INSTANCES_PER_DATA_TEMPLATE );
+		assertThat( people ).hasSize( INSTANCES_PER_DATA_TEMPLATE );
+		assertThat( whos ).hasSize( INSTANCES_PER_DATA_TEMPLATE );
 	}
 
 	@Test
@@ -213,9 +212,9 @@ public class BatchIndexingJobIT {
 				JobTestUtil.findIndexedResults( emf, CompanyGroup.class, "companies.name", "Red Hat" );
 		List<CompanyGroup> groupsContainingMicrosoft =
 				JobTestUtil.findIndexedResults( emf, CompanyGroup.class, "companies.name", "Microsoft" );
-		assertEquals( 0, groupsContainingGoogle.size() );
-		assertEquals( 0, groupsContainingRedHat.size() );
-		assertEquals( 0, groupsContainingMicrosoft.size() );
+		assertThat( groupsContainingGoogle ).isEmpty();
+		assertThat( groupsContainingRedHat ).isEmpty();
+		assertThat( groupsContainingMicrosoft ).isEmpty();
 
 		long executionId = jobOperator.start(
 				MassIndexingJob.NAME,
@@ -232,18 +231,18 @@ public class BatchIndexingJobIT {
 		groupsContainingGoogle = JobTestUtil.findIndexedResults( emf, CompanyGroup.class, "companies.name", "Google" );
 		groupsContainingRedHat = JobTestUtil.findIndexedResults( emf, CompanyGroup.class, "companies.name", "Red Hat" );
 		groupsContainingMicrosoft = JobTestUtil.findIndexedResults( emf, CompanyGroup.class, "companies.name", "Microsoft" );
-		assertEquals( 2 * INSTANCES_PER_DATA_TEMPLATE, groupsContainingGoogle.size() );
-		assertEquals( INSTANCES_PER_DATA_TEMPLATE, groupsContainingRedHat.size() );
-		assertEquals( INSTANCES_PER_DATA_TEMPLATE, groupsContainingMicrosoft.size() );
+		assertThat( groupsContainingGoogle ).hasSize( 2 * INSTANCES_PER_DATA_TEMPLATE );
+		assertThat( groupsContainingRedHat ).hasSize( INSTANCES_PER_DATA_TEMPLATE );
+		assertThat( groupsContainingMicrosoft ).hasSize( INSTANCES_PER_DATA_TEMPLATE );
 	}
 
 	@Test
 	public void purge() throws InterruptedException, IOException {
 		int expectedCount = 10;
 
-		assertEquals( 0, JobTestUtil.nbDocumentsInIndex( emf, Company.class ) );
+		assertThat( JobTestUtil.nbDocumentsInIndex( emf, Company.class ) ).isZero();
 		indexSomeCompanies( expectedCount );
-		assertEquals( expectedCount, JobTestUtil.nbDocumentsInIndex( emf, Company.class ) );
+		assertThat( JobTestUtil.nbDocumentsInIndex( emf, Company.class ) ).isEqualTo( expectedCount );
 
 		/*
 		 * Request a mass indexing with a filter matching nothing,
@@ -260,16 +259,16 @@ public class BatchIndexingJobIT {
 		JobExecution jobExecution = jobOperator.getJobExecution( executionId );
 		JobTestUtil.waitForTermination( jobOperator, jobExecution, JOB_TIMEOUT_MS );
 
-		assertEquals( 0, JobTestUtil.nbDocumentsInIndex( emf, Company.class ) );
+		assertThat( JobTestUtil.nbDocumentsInIndex( emf, Company.class ) ).isZero();
 	}
 
 	@Test
 	public void noPurge() throws InterruptedException, IOException {
 		int expectedCount = 10;
 
-		assertEquals( 0, JobTestUtil.nbDocumentsInIndex( emf, Company.class ) );
+		assertThat( JobTestUtil.nbDocumentsInIndex( emf, Company.class ) ).isZero();
 		indexSomeCompanies( expectedCount );
-		assertEquals( expectedCount, JobTestUtil.nbDocumentsInIndex( emf, Company.class ) );
+		assertThat( JobTestUtil.nbDocumentsInIndex( emf, Company.class ) ).isEqualTo( expectedCount );
 
 		/*
 		 * Request a mass indexing with a filter matching nothing, and requesting no purge at all,
@@ -286,7 +285,7 @@ public class BatchIndexingJobIT {
 		JobExecution jobExecution = jobOperator.getJobExecution( executionId );
 		JobTestUtil.waitForTermination( jobOperator, jobExecution, JOB_TIMEOUT_MS );
 
-		assertEquals( expectedCount, JobTestUtil.nbDocumentsInIndex( emf, Company.class ) );
+		assertThat( JobTestUtil.nbDocumentsInIndex( emf, Company.class ) ).isEqualTo( expectedCount );
 	}
 
 	@Test
@@ -295,9 +294,9 @@ public class BatchIndexingJobIT {
 			IOException {
 		// searches before mass index,
 		// expected no results for each search
-		assertEquals( 0, JobTestUtil.findIndexedResults( emf, Company.class, "name", "Google" ).size() );
-		assertEquals( 0, JobTestUtil.findIndexedResults( emf, Company.class, "name", "Red Hat" ).size() );
-		assertEquals( 0, JobTestUtil.findIndexedResults( emf, Company.class, "name", "Microsoft" ).size() );
+		assertThat( JobTestUtil.findIndexedResults( emf, Company.class, "name", "Google" ) ).isEmpty();
+		assertThat( JobTestUtil.findIndexedResults( emf, Company.class, "name", "Red Hat" ) ).isEmpty();
+		assertThat( JobTestUtil.findIndexedResults( emf, Company.class, "name", "Microsoft" ) ).isEmpty();
 
 		long executionId = jobOperator.start(
 				MassIndexingJob.NAME,
@@ -310,11 +309,11 @@ public class BatchIndexingJobIT {
 		JobExecution jobExecution = jobOperator.getJobExecution( executionId );
 		JobTestUtil.waitForTermination( jobOperator, jobExecution, JOB_TIMEOUT_MS );
 
-		assertEquals( INSTANCES_PER_DATA_TEMPLATE,
-				JobTestUtil.findIndexedResults( emf, Company.class, "name", "Google" ).size() );
-		assertEquals( INSTANCES_PER_DATA_TEMPLATE,
-				JobTestUtil.findIndexedResults( emf, Company.class, "name", "Red Hat" ).size() );
-		assertEquals( 0, JobTestUtil.findIndexedResults( emf, Company.class, "name", "Microsoft" ).size() );
+		assertThat( JobTestUtil.findIndexedResults( emf, Company.class, "name", "Google" ) )
+				.hasSize( INSTANCES_PER_DATA_TEMPLATE );
+		assertThat( JobTestUtil.findIndexedResults( emf, Company.class, "name", "Red Hat" ) )
+				.hasSize( INSTANCES_PER_DATA_TEMPLATE );
+		assertThat( JobTestUtil.findIndexedResults( emf, Company.class, "name", "Microsoft" ) ).isEmpty();
 	}
 
 	@Test
@@ -323,7 +322,7 @@ public class BatchIndexingJobIT {
 			IOException {
 		// searches before mass index,
 		// expected no results for each search
-		assertEquals( 0, JobTestUtil.nbDocumentsInIndex( emf, Company.class ) );
+		assertThat( JobTestUtil.nbDocumentsInIndex( emf, Company.class ) ).isZero();
 
 		int maxResults = CHECKPOINT_INTERVAL + 1;
 
@@ -339,7 +338,7 @@ public class BatchIndexingJobIT {
 		JobExecution jobExecution = jobOperator.getJobExecution( executionId );
 		JobTestUtil.waitForTermination( jobOperator, jobExecution, JOB_TIMEOUT_MS );
 
-		assertEquals( maxResults, JobTestUtil.nbDocumentsInIndex( emf, Company.class ) );
+		assertThat( JobTestUtil.nbDocumentsInIndex( emf, Company.class ) ).isEqualTo( maxResults );
 	}
 
 	@Test
@@ -349,9 +348,9 @@ public class BatchIndexingJobIT {
 		List<Company> companies = JobTestUtil.findIndexedResults( emf, Company.class, "name", "Google" );
 		List<Person> people = JobTestUtil.findIndexedResults( emf, Person.class, "firstName", "Linus" );
 		List<WhoAmI> whos = JobTestUtil.findIndexedResults( emf, WhoAmI.class, "id", "id01" );
-		assertEquals( 0, companies.size() );
-		assertEquals( 0, people.size() );
-		assertEquals( 0, whos.size() );
+		assertThat( companies ).isEmpty();
+		assertThat( people ).isEmpty();
+		assertThat( whos ).isEmpty();
 
 		long executionId = jobOperator.start(
 				MassIndexingJob.NAME,
@@ -388,9 +387,9 @@ public class BatchIndexingJobIT {
 		companies = JobTestUtil.findIndexedResults( emf, Company.class, "name", "Google" );
 		people = JobTestUtil.findIndexedResults( emf, Person.class, "firstName", "Linus" );
 		whos = JobTestUtil.findIndexedResults( emf, WhoAmI.class, "id", "id01" );
-		assertEquals( INSTANCES_PER_DATA_TEMPLATE, companies.size() );
-		assertEquals( INSTANCES_PER_DATA_TEMPLATE, people.size() );
-		assertEquals( INSTANCES_PER_DATA_TEMPLATE, whos.size() );
+		assertThat( companies ).hasSize( INSTANCES_PER_DATA_TEMPLATE );
+		assertThat( people ).hasSize( INSTANCES_PER_DATA_TEMPLATE );
+		assertThat( whos ).hasSize( INSTANCES_PER_DATA_TEMPLATE );
 	}
 
 	private void assertCompletion(long executionId) {
@@ -398,7 +397,7 @@ public class BatchIndexingJobIT {
 		for ( StepExecution stepExecution : stepExecutions ) {
 			BatchStatus batchStatus = stepExecution.getBatchStatus();
 			log.infof( "step %s executed.", stepExecution.getStepName() );
-			assertEquals( BatchStatus.COMPLETED, batchStatus );
+			assertThat( batchStatus ).isEqualTo( BatchStatus.COMPLETED );
 		}
 	}
 
@@ -410,7 +409,7 @@ public class BatchIndexingJobIT {
 		 * Thus we check our own object.
 		 */
 		StepProgress progress = getMainStepProgress( executionId );
-		assertEquals( Long.valueOf( progressValue ), progress.getEntityProgress().get( entityType.getName() ) );
+		assertThat( progress.getEntityProgress().get( entityType.getName() ) ).isEqualTo( Long.valueOf( progressValue ) );
 	}
 
 	private StepProgress getMainStepProgress(long executionId) {

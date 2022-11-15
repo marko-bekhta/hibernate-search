@@ -6,8 +6,8 @@
  */
 package org.hibernate.search.integrationtest.mapper.orm.model;
 
+import static org.assertj.core.api.Assertions.fail;
 import static org.hibernate.search.util.impl.integrationtest.mapper.orm.OrmUtils.with;
-import static org.junit.Assert.fail;
 
 import java.io.Serializable;
 
