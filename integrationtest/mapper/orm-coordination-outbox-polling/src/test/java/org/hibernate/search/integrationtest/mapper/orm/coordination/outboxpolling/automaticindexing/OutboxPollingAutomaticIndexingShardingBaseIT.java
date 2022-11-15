@@ -10,6 +10,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hibernate.search.integrationtest.mapper.orm.coordination.outboxpolling.testsupport.util.OutboxPollingTestUtils.awaitAllAgentsRunningInOneCluster;
 import static org.hibernate.search.util.impl.integrationtest.mapper.orm.OrmUtils.with;
 
+import java.util.Arrays;
+import java.util.List;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
@@ -26,11 +29,10 @@ import org.hibernate.search.util.impl.integrationtest.mapper.orm.OrmSetupHelper;
 import org.hibernate.search.util.impl.test.annotation.TestForIssue;
 import org.hibernate.search.util.impl.test.rule.StaticCounters;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import org.assertj.core.data.Percentage;
 
@@ -39,25 +41,17 @@ import org.assertj.core.data.Percentage;
  * checks that all events are handled by one and only one node
  * (if they were not, we would see missing or duplicate indexing work executions).
  */
-@RunWith(Parameterized.class)
 @TestForIssue(jiraKey = { "HSEARCH-4141", "HSEARCH-4140" })
 public class OutboxPollingAutomaticIndexingShardingBaseIT {
 
-	@Parameterized.Parameters(name = "static = {0}, totalShardCount = {1}")
-	public static Object[][] params() {
-		return new Object[][] {
-				{ false, 2 },
-				{ true, 2 },
-				{ false, 10 },
-				{ true, 10 },
-		};
+	public static List<? extends Arguments> params() {
+		return Arrays.asList(
+				Arguments.of( false, 2 ),
+				Arguments.of( true, 2 ),
+				Arguments.of( false, 10 ),
+				Arguments.of( true, 10 )
+		);
 	}
-
-	@Parameterized.Parameter
-	public boolean isStatic;
-
-	@Parameterized.Parameter(1)
-	public int totalShardCount;
 
 	@RegisterExtension
 	public BackendMock backendMock = BackendMock.create();
@@ -72,10 +66,9 @@ public class OutboxPollingAutomaticIndexingShardingBaseIT {
 	private final PerSessionFactoryIndexingCountHelper indexingCountHelper =
 			new PerSessionFactoryIndexingCountHelper( counters );
 
-	@BeforeEach
-	public void setup() {
+	public void setup(boolean isStatic, int totalShardCount) {
 		for ( int i = 0; i < totalShardCount; i++ ) {
-			setup(
+			setup( isStatic, totalShardCount,
 					// Avoid session factories stepping on each other's feet.
 					i == 0 ? "create-drop" : "none",
 					i
@@ -87,7 +80,7 @@ public class OutboxPollingAutomaticIndexingShardingBaseIT {
 		awaitAllAgentsRunningInOneCluster( with( indexingCountHelper.sessionFactory( 0 ) ), totalShardCount );
 	}
 
-	private void setup(String hbm2ddlAction, int assignedShardIndex) {
+	private void setup(boolean isStatic, int totalShardCount, String hbm2ddlAction, int assignedShardIndex) {
 		backendMock.expectSchema( IndexedEntity.NAME, b -> b
 				.field( "text", String.class, f -> f.analyzerName( AnalyzerNames.DEFAULT ) )
 				.with( indexingCountHelper::expectSchema )
@@ -117,8 +110,10 @@ public class OutboxPollingAutomaticIndexingShardingBaseIT {
 				.setup( IndexedEntity.class, IndexedAndContainingEntity.class, ContainedEntity.class );
 	}
 
-	@Test
-	public void uniqueWorkAcrossSessionFactories_insertUpdateDelete_indexed() {
+	@ParameterizedTest(name = "static = {0}, totalShardCount = {1}")
+	@MethodSource("params")
+	void uniqueWorkAcrossSessionFactories_insertUpdateDelete_indexed(boolean isStatic, int totalShardCount) {
+		setup( isStatic, totalShardCount );
 		SessionFactory sessionFactory = indexingCountHelper.sessionFactory( 0 );
 
 		with( sessionFactory ).runInTransaction( session -> {
@@ -151,8 +146,10 @@ public class OutboxPollingAutomaticIndexingShardingBaseIT {
 		indexingCountHelper.indexingCounts().assertAcrossAllSessionFactories().isEqualTo( 2 );
 	}
 
-	@Test
-	public void uniqueWorkAcrossSessionFactories_insertUpdateDelete_contained() {
+	@ParameterizedTest(name = "static = {0}, totalShardCount = {1}")
+	@MethodSource("params")
+	void uniqueWorkAcrossSessionFactories_insertUpdateDelete_contained(boolean isStatic, int totalShardCount) {
+		setup( isStatic, totalShardCount );
 		SessionFactory sessionFactory = indexingCountHelper.sessionFactory( 0 );
 
 		with( sessionFactory ).runInTransaction( session -> {
@@ -195,8 +192,10 @@ public class OutboxPollingAutomaticIndexingShardingBaseIT {
 		indexingCountHelper.indexingCounts().assertAcrossAllSessionFactories().isEqualTo( 3 );
 	}
 
-	@Test
-	public void uniformWorkDistribution_insertUpdateDelete_indexed() {
+	@ParameterizedTest(name = "static = {0}, totalShardCount = {1}")
+	@MethodSource("params")
+	void uniformWorkDistribution_insertUpdateDelete_indexed(boolean isStatic, int totalShardCount) {
+		setup( isStatic, totalShardCount );
 		SessionFactory sessionFactory = indexingCountHelper.sessionFactory( 0 );
 
 		int entityCount = 1000;

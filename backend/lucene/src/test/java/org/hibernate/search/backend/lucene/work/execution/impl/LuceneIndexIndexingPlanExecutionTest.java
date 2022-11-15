@@ -36,10 +36,10 @@ import org.hibernate.search.engine.common.EntityReference;
 import org.hibernate.search.util.impl.test.annotation.TestForIssue;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
@@ -49,25 +49,20 @@ import org.mockito.quality.Strictness;
 
 @MockitoSettings(strictness = Strictness.STRICT_STUBS)
 @ExtendWith(MockitoExtension.class)
-@RunWith(Parameterized.class)
 @SuppressWarnings("unchecked") // Raw types are the only way to mock parameterized types
 public class LuceneIndexIndexingPlanExecutionTest {
 
 	private static final String TYPE_NAME = "SomeTypeName";
 
-	@Parameterized.Parameters(name = "commit = {0}, refresh = {1}")
-	public static Object[][] params() {
-		List<Object[]> params = new ArrayList<>();
+	public static List<? extends Arguments> params() {
+		List<Arguments> params = new ArrayList<>();
 		for ( DocumentCommitStrategy commitStrategy : DocumentCommitStrategy.values() ) {
 			for ( DocumentRefreshStrategy refreshStrategy : DocumentRefreshStrategy.values() ) {
-				params.add( new Object[] { commitStrategy, refreshStrategy } );
+				params.add( Arguments.of( commitStrategy, refreshStrategy ) );
 			}
 		}
-		return params.toArray( new Object[0][] );
+		return params;
 	}
-
-	private final DocumentCommitStrategy commitStrategy;
-	private final DocumentRefreshStrategy refreshStrategy;
 
 	@Mock
 	private LuceneSerialWorkOrchestrator orchestratorMock;
@@ -77,20 +72,15 @@ public class LuceneIndexIndexingPlanExecutionTest {
 
 	private final List<SingleDocumentIndexingWork> workMocks = new ArrayList<>();
 
-	public LuceneIndexIndexingPlanExecutionTest(DocumentCommitStrategy commitStrategy,
-			DocumentRefreshStrategy refreshStrategy) {
-		this.commitStrategy = commitStrategy;
-		this.refreshStrategy = refreshStrategy;
-	}
-
 	@BeforeEach
 	public void setup() {
 		when( entityReferenceFactoryMock.createEntityReference( eq( TYPE_NAME ), any() ) )
 				.thenAnswer( invocation -> entityReference( invocation.getArgument( 1 ) ) );
 	}
 
-	@Test
-	public void success() {
+	@ParameterizedTest(name = "commit = {0}, refresh = {1}")
+	@MethodSource("params")
+	void success(DocumentCommitStrategy commitStrategy, DocumentRefreshStrategy refreshStrategy) {
 		Long work1Result = 42L;
 		Long work2Result = 41L;
 		Long work3Result = 43L;
@@ -147,8 +137,9 @@ public class LuceneIndexIndexingPlanExecutionTest {
 		} );
 	}
 
-	@Test
-	public void failure_work() {
+	@ParameterizedTest(name = "commit = {0}, refresh = {1}")
+	@MethodSource("params")
+	void failure_work(DocumentCommitStrategy commitStrategy, DocumentRefreshStrategy refreshStrategy) {
 		RuntimeException work1Exception = new RuntimeException( "work1" );
 		Long work2Result = 41L;
 		Long work3Result = 43L;
@@ -206,8 +197,9 @@ public class LuceneIndexIndexingPlanExecutionTest {
 		} );
 	}
 
-	@Test
-	public void failure_multipleWorks() {
+	@ParameterizedTest(name = "commit = {0}, refresh = {1}")
+	@MethodSource("params")
+	void failure_multipleWorks(DocumentCommitStrategy commitStrategy, DocumentRefreshStrategy refreshStrategy) {
 		RuntimeException work1Exception = new RuntimeException( "work1" );
 		Long work2Result = 41L;
 		RuntimeException work3Exception = new RuntimeException( "work3" );
@@ -274,9 +266,11 @@ public class LuceneIndexIndexingPlanExecutionTest {
 		} );
 	}
 
-	@Test
+	@ParameterizedTest(name = "commit = {0}, refresh = {1}")
+	@MethodSource("params")
 	@TestForIssue(jiraKey = "HSEARCH-3851")
-	public void failure_multipleWorksAndCreateEntityReference() {
+	void failure_multipleWorksAndCreateEntityReference(DocumentCommitStrategy commitStrategy,
+			DocumentRefreshStrategy refreshStrategy) {
 		RuntimeException work1Exception = new RuntimeException( "work1" );
 		Long work2Result = 41L;
 		RuntimeException work3Exception = new RuntimeException( "work3" );
@@ -350,8 +344,9 @@ public class LuceneIndexIndexingPlanExecutionTest {
 		} );
 	}
 
-	@Test
-	public void failure_commit() {
+	@ParameterizedTest(name = "commit = {0}, refresh = {1}")
+	@MethodSource("params")
+	void failure_commit(DocumentCommitStrategy commitStrategy, DocumentRefreshStrategy refreshStrategy) {
 		assumeTrue(
 				"This test only makes sense when commit is forced",
 				DocumentCommitStrategy.FORCE.equals( commitStrategy )
@@ -411,8 +406,9 @@ public class LuceneIndexIndexingPlanExecutionTest {
 		} );
 	}
 
-	@Test
-	public void failure_refresh() {
+	@ParameterizedTest(name = "commit = {0}, refresh = {1}")
+	@MethodSource("params")
+	void failure_refresh(DocumentCommitStrategy commitStrategy, DocumentRefreshStrategy refreshStrategy) {
 		assumeTrue(
 				"This test only makes sense when refresh is forced",
 				DocumentRefreshStrategy.FORCE.equals( refreshStrategy )
@@ -474,8 +470,9 @@ public class LuceneIndexIndexingPlanExecutionTest {
 		} );
 	}
 
-	@Test
-	public void failure_workAndCommit() {
+	@ParameterizedTest(name = "commit = {0}, refresh = {1}")
+	@MethodSource("params")
+	void failure_workAndCommit(DocumentCommitStrategy commitStrategy, DocumentRefreshStrategy refreshStrategy) {
 		assumeTrue(
 				"This test only makes sense when commit is forced",
 				DocumentCommitStrategy.FORCE.equals( commitStrategy )
@@ -536,8 +533,9 @@ public class LuceneIndexIndexingPlanExecutionTest {
 		} );
 	}
 
-	@Test
-	public void failure_workAndRefresh() {
+	@ParameterizedTest(name = "commit = {0}, refresh = {1}")
+	@MethodSource("params")
+	void failure_workAndRefresh(DocumentCommitStrategy commitStrategy, DocumentRefreshStrategy refreshStrategy) {
 		assumeTrue(
 				"This test only makes sense when refresh is forced",
 				DocumentRefreshStrategy.FORCE.equals( refreshStrategy )

@@ -46,8 +46,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import org.awaitility.Awaitility;
 import org.mockito.ArgumentCaptor;
@@ -60,18 +60,17 @@ import org.mockito.quality.Strictness;
 @MockitoSettings(strictness = Strictness.STRICT_STUBS)
 @ExtendWith(MockitoExtension.class)
 @SuppressWarnings({ "unchecked", "rawtypes" }) // Raw types are the only way to mock parameterized types
-@RunWith(Parameterized.class)
 public class BatchingExecutorTest {
 
 	private static final String NAME = "executor-name";
 
-	@Parameterized.Parameters(name = "operation submitter = {0}")
-	public static Object[][] params() {
-		return new Object[][] {
-				{ "BLOCKING", OperationSubmitter.blocking() },
-				{ "REJECTING", OperationSubmitter.rejecting() },
-				{ "OFFLOADING", OperationSubmitter.offloading( CompletableFuture::runAsync ) }
-		};
+	public static List<? extends Arguments> params() {
+		List<Arguments> params = new ArrayList<>();
+		params.add( Arguments.of( "BLOCKING", OperationSubmitter.blocking() ) );
+		params.add( Arguments.of( "REJECTING", OperationSubmitter.rejecting() ) );
+		params.add( Arguments.of( "OFFLOADING", OperationSubmitter.offloading( CompletableFuture::runAsync ) ) );
+
+		return params;
 	}
 
 	@Mock
@@ -90,12 +89,6 @@ public class BatchingExecutorTest {
 	private ScheduledExecutorService executorService;
 	private BatchingExecutor<StubWorkProcessor, StubWork> executor;
 
-	private final OperationSubmitter operationSubmitter;
-
-	public BatchingExecutorTest(String name, OperationSubmitter operationSubmitter) {
-		this.operationSubmitter = operationSubmitter;
-	}
-
 	@BeforeEach
 	public void setup() {
 		mocks.add( processorMock );
@@ -112,8 +105,9 @@ public class BatchingExecutorTest {
 		executor.stop();
 	}
 
-	@Test
-	public void simple_batchEndsImmediately() throws InterruptedException {
+	@ParameterizedTest(name = "operation submitter = {0}")
+	@MethodSource("params")
+	void simple_batchEndsImmediately(OperationSubmitter operationSubmitter) throws InterruptedException {
 		createAndStartExecutor( 2, true );
 
 		StubWork work1Mock = workMock( 1 );
@@ -131,11 +125,13 @@ public class BatchingExecutorTest {
 		} );
 
 		// Submitting other works should start the executor/processor again
-		checkPostExecution();
+		checkPostExecution( operationSubmitter );
 	}
 
-	@Test
-	public void simple_batchEndsLater_someAdditionalWorkBeforeComplete() throws InterruptedException {
+	@ParameterizedTest(name = "operation submitter = {0}")
+	@MethodSource("params")
+	void simple_batchEndsLater_someAdditionalWorkBeforeComplete(OperationSubmitter operationSubmitter)
+			throws InterruptedException {
 		createAndStartExecutor( 2, true );
 
 		StubWork work1Mock = workMock( 1 );
@@ -189,11 +185,12 @@ public class BatchingExecutorTest {
 		} );
 
 		// Submitting other works should start the executor/processor again
-		checkPostExecution();
+		checkPostExecution( operationSubmitter );
 	}
 
-	@Test
-	public void simple_batchEndsLater_noAdditionalWork() throws InterruptedException {
+	@ParameterizedTest(name = "operation submitter = {0}")
+	@MethodSource("params")
+	void simple_batchEndsLater_noAdditionalWork(OperationSubmitter operationSubmitter) throws InterruptedException {
 		createAndStartExecutor( 2, true );
 
 		StubWork work1Mock = workMock( 1 );
@@ -220,16 +217,17 @@ public class BatchingExecutorTest {
 		} );
 
 		// Submitting other works should start the executor/processor again
-		checkPostExecution();
+		checkPostExecution( operationSubmitter );
 	}
 
-	@Test
-	public void beginBatchFailure() throws InterruptedException {
+	@ParameterizedTest(name = "operation submitter = {0}")
+	@MethodSource("params")
+	void beginBatchFailure(OperationSubmitter operationSubmitter) throws InterruptedException {
 		createAndStartExecutor( 4, true );
 
 		SimulatedFailure simulatedFailure = new SimulatedFailure();
 
-		Runnable unblockExecutorSwitch = blockExecutor();
+		Runnable unblockExecutorSwitch = blockExecutor( operationSubmitter );
 
 		StubWork work1Mock = workMock( 1 );
 		executor.submit( work1Mock, operationSubmitter );
@@ -258,16 +256,17 @@ public class BatchingExecutorTest {
 				.contains( "Executing task '" + NAME + "'" );
 
 		// The executor should still try to process submitted works, even after a failure
-		checkPostExecution();
+		checkPostExecution( operationSubmitter );
 	}
 
-	@Test
-	public void submitFailure() throws InterruptedException {
+	@ParameterizedTest(name = "operation submitter = {0}")
+	@MethodSource("params")
+	void submitFailure(OperationSubmitter operationSubmitter) throws InterruptedException {
 		createAndStartExecutor( 4, true );
 
 		SimulatedFailure simulatedFailure = new SimulatedFailure();
 
-		Runnable unblockExecutorSwitch = blockExecutor();
+		Runnable unblockExecutorSwitch = blockExecutor( operationSubmitter );
 
 		StubWork work1Mock = workMock( 1 );
 		StubWork work2Mock = workMock( 2 );
@@ -299,16 +298,17 @@ public class BatchingExecutorTest {
 		} );
 
 		// The executor should still try to process submitted works, even after a failure
-		checkPostExecution();
+		checkPostExecution( operationSubmitter );
 	}
 
-	@Test
-	public void endBatchFailure() throws InterruptedException {
+	@ParameterizedTest(name = "operation submitter = {0}")
+	@MethodSource("params")
+	void endBatchFailure(OperationSubmitter operationSubmitter) throws InterruptedException {
 		createAndStartExecutor( 4, true );
 
 		SimulatedFailure simulatedFailure = new SimulatedFailure();
 
-		Runnable unblockExecutorSwitch = blockExecutor();
+		Runnable unblockExecutorSwitch = blockExecutor( operationSubmitter );
 
 		StubWork work1Mock = workMock( 1 );
 		StubWork work2Mock = workMock( 2 );
@@ -341,19 +341,20 @@ public class BatchingExecutorTest {
 				.contains( "Executing task '" + NAME + "'" );
 
 		// The executor should still try to process submitted works, even after a failure
-		checkPostExecution();
+		checkPostExecution( operationSubmitter );
 	}
 
 	@Test
-	public void simple_newTasksBlockedException() throws InterruptedException {
+	void simple_newTasksBlockedException() throws InterruptedException {
 		createAndStartExecutor( 2, true );
+		OperationSubmitter operationSubmitter = OperationSubmitter.REJECTED_EXECUTION_EXCEPTION;
 
 		assumeTrue(
 				"This test only makes sense for nonblocking submitter",
 				OperationSubmitter.rejecting().equals( operationSubmitter )
 		);
 
-		Runnable unblockExecutorSwitch = blockExecutor();
+		Runnable unblockExecutorSwitch = blockExecutor( operationSubmitter );
 
 		StubWork work1Mock = workMock( 1 );
 		StubWork work2Mock = workMock( 2 );
@@ -377,19 +378,20 @@ public class BatchingExecutorTest {
 		} );
 
 		// Submitting other works should start the executor/processor again
-		checkPostExecution();
+		checkPostExecution( operationSubmitter );
 	}
 
 	@Test
-	public void simple_newTasksBlockedWaitAndCompletes() throws InterruptedException {
+	void simple_newTasksBlockedWaitAndCompletes() throws InterruptedException {
 		createAndStartExecutor( 2, true );
 
 		assumeTrue(
 				"This test only makes sense for blocking submitter",
 				OperationSubmitter.blocking().equals( operationSubmitter )
 		);
+		OperationSubmitter operationSubmitter = OperationSubmitter.BLOCKING;
 
-		Runnable unblockExecutorSwitch = blockExecutor();
+		Runnable unblockExecutorSwitch = blockExecutor( operationSubmitter );
 
 		StubWork work1Mock = workMock( 1 );
 		StubWork work2Mock = workMock( 2 );
@@ -511,7 +513,7 @@ public class BatchingExecutorTest {
 		} );
 
 		// Submitting other works should start the executor/processor again
-		checkPostExecution();
+		checkPostExecution( operationSubmitter );
 	}
 
 	private void verifyAsynchronouslyAndReset(Consumer<InOrder> verify) {
@@ -527,7 +529,7 @@ public class BatchingExecutorTest {
 	 * Block the executor by submitting a batch that will only complete when the returned runnable is executed.
 	 * Used to give us the time to carefully craft the next batch with a specific sequence of works.
 	 */
-	private Runnable blockExecutor()
+	private Runnable blockExecutor(OperationSubmitter operationSubmitter)
 			throws InterruptedException {
 		StubWork blockingWorkMock = workMock( 0 );
 		CompletableFuture<Object> blockingBatchFuture = new CompletableFuture<>();
@@ -586,7 +588,7 @@ public class BatchingExecutorTest {
 		return listener;
 	}
 
-	private void checkPostExecution() throws InterruptedException {
+	private void checkPostExecution(OperationSubmitter operationSubmitter) throws InterruptedException {
 		CompletableFuture<?> completion = executor.completion();
 		// This should not trigger any call to the mocks
 		verifyNoInteractions( mocks.toArray() );

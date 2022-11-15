@@ -30,11 +30,11 @@ import org.hibernate.search.util.impl.test.annotation.TestForIssue;
 import org.hibernate.search.util.impl.test.rule.ExpectedLog4jLog;
 import org.hibernate.stat.Statistics;
 
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.Extension;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import org.apache.logging.log4j.Level;
 
@@ -42,16 +42,14 @@ import org.apache.logging.log4j.Level;
  * Test cache lookup as part of entity loading when executing a search query
  * when only a single type is involved.
  */
-@RunWith(Parameterized.class)
 public class SearchQueryEntityLoadingCacheLookupIT<T> extends AbstractSearchQueryEntityLoadingSingleTypeIT<T> {
 
-	@Parameterized.Parameters(name = "Default strategy: {2} - {0}, {1}")
-	public static List<Object[]> params() {
-		List<Object[]> result = new ArrayList<>();
+	public static List<? extends Arguments> params() {
+		List<Arguments> result = new ArrayList<>();
 		forAllModelMappingCombinations( (model, mapping) -> {
-			result.add( new Object[] { model, mapping, null } );
+			result.add( Arguments.of( model, mapping, null ) );
 			for ( EntityLoadingCacheLookupStrategy strategy : EntityLoadingCacheLookupStrategy.values() ) {
-				result.add( new Object[] { model, mapping, strategy } );
+				result.add( Arguments.of( model, mapping, strategy ) );
 			}
 		} );
 		return result;
@@ -61,7 +59,8 @@ public class SearchQueryEntityLoadingCacheLookupIT<T> extends AbstractSearchQuer
 	public static BackendMock backendMock = BackendMock.createGlobal();
 
 	@RegisterExtension
-	public static ReusableOrmSetupHolder setupHolder = ReusableOrmSetupHolder.withBackendMock( backendMock );
+	public static ReusableOrmSetupHolder setupHolder = ReusableOrmSetupHolder.withBackendMock( backendMock )
+			.delayedInitialization( true );
 
 	@RegisterExtension
 	public Extension setupHolderMethodRule = setupHolder.methodExtension();
@@ -69,12 +68,13 @@ public class SearchQueryEntityLoadingCacheLookupIT<T> extends AbstractSearchQuer
 	@RegisterExtension
 	public final ExpectedLog4jLog logged = ExpectedLog4jLog.create();
 
-	private final EntityLoadingCacheLookupStrategy defaultCacheLookupStrategy;
+	private EntityLoadingCacheLookupStrategy defaultCacheLookupStrategy;
 
-	public SearchQueryEntityLoadingCacheLookupIT(SingleTypeLoadingModel<T> model, SingleTypeLoadingMapping mapping,
+	public void init(SingleTypeLoadingModel<T> model, SingleTypeLoadingMapping mapping,
 			EntityLoadingCacheLookupStrategy defaultCacheLookupStrategy) {
-		super( model, mapping );
+		init( model, mapping );
 		this.defaultCacheLookupStrategy = defaultCacheLookupStrategy;
+		setupHolder.initialize();
 	}
 
 	@Override
@@ -102,9 +102,12 @@ public class SearchQueryEntityLoadingCacheLookupIT<T> extends AbstractSearchQuer
 				.withConfiguration( c -> mapping.configure( c, model ) );
 	}
 
-	@Test
+	@ParameterizedTest(name = "Default strategy: {2} - {0}, {1}")
+	@MethodSource("params")
 	@TestForIssue(jiraKey = "HSEARCH-3349")
-	public void defaultStrategy() {
+	public void defaultStrategy(SingleTypeLoadingModel<T> model, SingleTypeLoadingMapping mapping,
+			EntityLoadingCacheLookupStrategy defaultCacheLookupStrategy) {
+		init( model, mapping, defaultCacheLookupStrategy );
 		if ( defaultCacheLookupStrategy == null ) {
 			testLoadingCacheLookupExpectingSkipCacheLookup( null );
 		}
@@ -123,33 +126,45 @@ public class SearchQueryEntityLoadingCacheLookupIT<T> extends AbstractSearchQuer
 		}
 	}
 
-	@Test
+	@ParameterizedTest(name = "Default strategy: {2} - {0}, {1}")
+	@MethodSource("params")
 	@TestForIssue(jiraKey = "HSEARCH-3349")
-	public void overriddenStrategy_skip() {
+	public void overriddenStrategy_skip(SingleTypeLoadingModel<T> model, SingleTypeLoadingMapping mapping,
+			EntityLoadingCacheLookupStrategy defaultCacheLookupStrategy) {
+		init( model, mapping, defaultCacheLookupStrategy );
 		testLoadingCacheLookupExpectingSkipCacheLookup(
 				EntityLoadingCacheLookupStrategy.SKIP
 		);
 	}
 
-	@Test
+	@ParameterizedTest(name = "Default strategy: {2} - {0}, {1}")
+	@MethodSource("params")
 	@TestForIssue(jiraKey = "HSEARCH-3349")
-	public void overriddenStrategy_persistenceContext() {
+	public void overriddenStrategy_persistenceContext(SingleTypeLoadingModel<T> model, SingleTypeLoadingMapping mapping,
+			EntityLoadingCacheLookupStrategy defaultCacheLookupStrategy) {
+		init( model, mapping, defaultCacheLookupStrategy );
 		testLoadingCacheLookupExpectingPersistenceContextOnlyLookup(
 				EntityLoadingCacheLookupStrategy.PERSISTENCE_CONTEXT
 		);
 	}
 
-	@Test
+	@ParameterizedTest(name = "Default strategy: {2} - {0}, {1}")
+	@MethodSource("params")
 	@TestForIssue(jiraKey = "HSEARCH-3349")
-	public void overriddenStrategy_2LC() {
+	public void overriddenStrategy_2LC(SingleTypeLoadingModel<T> model, SingleTypeLoadingMapping mapping,
+			EntityLoadingCacheLookupStrategy defaultCacheLookupStrategy) {
+		init( model, mapping, defaultCacheLookupStrategy );
 		testLoadingCacheLookupExpectingSecondLevelCacheLookup(
 				EntityLoadingCacheLookupStrategy.PERSISTENCE_CONTEXT_THEN_SECOND_LEVEL_CACHE
 		);
 	}
 
-	@Test
+	@ParameterizedTest(name = "Default strategy: {2} - {0}, {1}")
+	@MethodSource("params")
 	@TestForIssue(jiraKey = "HSEARCH-3349")
-	public void overriddenStrategy_skip_fullCacheHits() {
+	public void overriddenStrategy_skip_fullCacheHits(SingleTypeLoadingModel<T> model, SingleTypeLoadingMapping mapping,
+			EntityLoadingCacheLookupStrategy defaultCacheLookupStrategy) {
+		init( model, mapping, defaultCacheLookupStrategy );
 		testLoadingCacheLookup(
 				EntityLoadingCacheLookupStrategy.SKIP,
 				// Persist that many entities
@@ -167,9 +182,13 @@ public class SearchQueryEntityLoadingCacheLookupIT<T> extends AbstractSearchQuer
 		);
 	}
 
-	@Test
+	@ParameterizedTest(name = "Default strategy: {2} - {0}, {1}")
+	@MethodSource("params")
 	@TestForIssue(jiraKey = "HSEARCH-3349")
-	public void overriddenStrategy_persistenceContext_fullCacheHits() {
+	public void overriddenStrategy_persistenceContext_fullCacheHits(SingleTypeLoadingModel<T> model,
+			SingleTypeLoadingMapping mapping,
+			EntityLoadingCacheLookupStrategy defaultCacheLookupStrategy) {
+		init( model, mapping, defaultCacheLookupStrategy );
 		assumeTrue(
 				"This test only makes sense if cache lookups are supported",
 				mapping.isCacheLookupSupported()
@@ -192,9 +211,12 @@ public class SearchQueryEntityLoadingCacheLookupIT<T> extends AbstractSearchQuer
 		);
 	}
 
-	@Test
+	@ParameterizedTest(name = "Default strategy: {2} - {0}, {1}")
+	@MethodSource("params")
 	@TestForIssue(jiraKey = "HSEARCH-3349")
-	public void overriddenStrategy_2LC_fullCacheHits() {
+	public void overriddenStrategy_2LC_fullCacheHits(SingleTypeLoadingModel<T> model, SingleTypeLoadingMapping mapping,
+			EntityLoadingCacheLookupStrategy defaultCacheLookupStrategy) {
+		init( model, mapping, defaultCacheLookupStrategy );
 		assumeTrue(
 				"This test only makes sense if cache lookups are supported",
 				mapping.isCacheLookupSupported()

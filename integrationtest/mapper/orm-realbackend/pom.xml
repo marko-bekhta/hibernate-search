@@ -87,6 +87,8 @@
                             <excludes>
                                 <exclude>org.hibernate.search.integrationtest.mapper.orm.realbackend.bootstrap.BackendTypeAutoDetectMultipleBackendTypesInClasspathIT</exclude>
                                 <exclude>org.hibernate.search.integrationtest.mapper.orm.realbackend.schema.management.ElasticsearchSchemaManagerExporterIT</exclude>
+<!--                                <exclude>org.hibernate.search.integrationtest.mapper.orm.realbackend.bootstrap.ElasticsearchBackendTypeAutoDetectMultipleBackendTypesInClasspathIT</exclude>-->
+<!--                                <exclude>org.hibernate.search.integrationtest.mapper.orm.realbackend.bootstrap.LuceneBackendTypeAutoDetectMultipleBackendTypesInClasspathIT</exclude>-->
                             </excludes>
                         </configuration>
                     </execution>
@@ -106,6 +108,8 @@
                             <excludes>
                                 <exclude>org.hibernate.search.integrationtest.mapper.orm.realbackend.bootstrap.BackendTypeAutoDetectMultipleBackendTypesInClasspathIT</exclude>
                                 <exclude>org.hibernate.search.integrationtest.mapper.orm.realbackend.schema.management.LuceneSchemaManagerExporterIT</exclude>
+<!--                                <exclude>org.hibernate.search.integrationtest.mapper.orm.realbackend.bootstrap.ElasticsearchBackendTypeAutoDetectMultipleBackendTypesInClasspathIT</exclude>-->
+<!--                                <exclude>org.hibernate.search.integrationtest.mapper.orm.realbackend.bootstrap.LuceneBackendTypeAutoDetectMultipleBackendTypesInClasspathIT</exclude>-->
                             </excludes>
                         </configuration>
                     </execution>
@@ -120,6 +124,8 @@
                                 <include>org.hibernate.search.integrationtest.mapper.orm.realbackend.bootstrap.BackendTypeAutoDetectMultipleBackendTypesInClasspathIT</include>
                                 <include>org.hibernate.search.integrationtest.mapper.orm.realbackend.schema.management.ElasticsearchSchemaManagerExporterIT</include>
                                 <include>org.hibernate.search.integrationtest.mapper.orm.realbackend.schema.management.LuceneSchemaManagerExporterIT</include>
+<!--                                <include>org.hibernate.search.integrationtest.mapper.orm.realbackend.bootstrap.ElasticsearchBackendTypeAutoDetectMultipleBackendTypesInClasspathIT</include>-->
+<!--                                <include>org.hibernate.search.integrationtest.mapper.orm.realbackend.bootstrap.LuceneBackendTypeAutoDetectMultipleBackendTypesInClasspathIT</include>-->
                             </includes>
                         </configuration>
                     </execution>
