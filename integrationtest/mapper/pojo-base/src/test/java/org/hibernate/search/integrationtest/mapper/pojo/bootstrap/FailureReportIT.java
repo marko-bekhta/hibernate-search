@@ -22,6 +22,7 @@ import org.hibernate.search.util.impl.test.rule.ExpectedLog4jLog;
 
 import org.junit.Rule;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import org.apache.logging.log4j.Level;
 
@@ -40,7 +41,7 @@ public class FailureReportIT {
 	@Rule
 	public BackendMock backendMock = new BackendMock();
 
-	@Rule
+	@RegisterExtension
 	public ExpectedLog4jLog logged = ExpectedLog4jLog.create();
 
 	@Rule

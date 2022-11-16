@@ -41,28 +41,32 @@ import org.hibernate.search.util.impl.test.rule.ExpectedLog4jLog;
 import org.junit.Rule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.quality.Strictness;
 
 // We have to use raw types to mock methods returning generic types with wildcards
 @SuppressWarnings({ "unchecked", "rawtypes" })
+@ExtendWith(MockitoExtension.class)
 public class IndexManagerBuildingStateHolderTest {
 
 	@Rule
 	public final MockitoRule mockito = MockitoJUnit.rule().strictness( Strictness.STRICT_STUBS );
 
-	@Rule
+	@RegisterExtension
 	public final ExpectedLog4jLog logged = ExpectedLog4jLog.create();
 
-	@Mock
+	@Mock(strictness = Mock.Strictness.STRICT_STUBS)
 	private RootBuildContext rootBuildContextMock;
 
-	@Mock(answer = Answers.CALLS_REAL_METHODS)
+	@Mock(strictness = Mock.Strictness.STRICT_STUBS, answer = Answers.CALLS_REAL_METHODS)
 	private ConfigurationPropertySource configurationSourceMock;
 
 	@Mock(strictness = Mock.Strictness.LENIENT, answer = Answers.CALLS_REAL_METHODS)
@@ -259,7 +263,8 @@ public class IndexManagerBuildingStateHolderTest {
 						"Unable to resolve backend type",
 						"configuration property 'somePrefix.backend.type' is not set,"
 								+ " and there isn't any backend in the classpath",
-						"Check that you added the desired backend to your project's dependencies" );
+						"Check that you added the desired backend to your project's dependencies"
+				);
 	}
 
 	@Test
@@ -292,7 +297,8 @@ public class IndexManagerBuildingStateHolderTest {
 						"Unable to resolve backend type",
 						"configuration property 'somePrefix.backend.type' is not set,"
 								+ " and there isn't any backend in the classpath",
-						"Check that you added the desired backend to your project's dependencies" );
+						"Check that you added the desired backend to your project's dependencies"
+				);
 	}
 
 	@Test

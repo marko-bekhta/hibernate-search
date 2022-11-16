@@ -74,6 +74,7 @@ import org.hibernate.search.util.impl.test.rule.Retry;
 import org.junit.Rule;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.extension.Parameters;
@@ -125,6 +126,7 @@ public class ElasticsearchClientFactoryImplIT {
 	@Rule
 	public Retry retry;
 
+	@RegisterExtension
 	private final ExpectedLog4jLog logged = ExpectedLog4jLog.create();
 
 	private final WireMockRule wireMockRule1 = new WireMockRule( wireMockConfig().port( 0 )
