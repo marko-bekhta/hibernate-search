@@ -24,16 +24,12 @@ import org.hibernate.search.util.impl.integrationtest.mapper.stub.StubMapping;
 import org.hibernate.search.util.impl.integrationtest.mapper.stub.StubMappingScope;
 
 import org.junit.Rule;
-import org.junit.rules.TemporaryFolder;
 
 public abstract class AbstractDirectoryIT {
 
 	private static final String DOCUMENT_1 = "1";
 	private static final String DOCUMENT_2 = "2";
 	private static final String DOCUMENT_3 = "3";
-
-	@Rule
-	public final TemporaryFolder temporaryFolder = new TemporaryFolder();
 
 	@Rule
 	public final SearchSetupHelper setupHelper = new SearchSetupHelper();
