@@ -25,6 +25,7 @@ import org.hibernate.search.util.impl.integrationtest.mapper.stub.StubMappedInde
 
 import org.junit.Rule;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import com.google.gson.JsonObject;
 
@@ -35,8 +36,8 @@ public class ElasticsearchFieldAttributesIT {
 	@Rule
 	public final SearchSetupHelper setupHelper = new SearchSetupHelper();
 
-	@Rule
-	public ElasticsearchClientSpy clientSpy = new ElasticsearchClientSpy();
+	@RegisterExtension
+	public ElasticsearchClientSpy clientSpy = ElasticsearchClientSpy.create();
 
 	@Test
 	public void verifyNorms() {

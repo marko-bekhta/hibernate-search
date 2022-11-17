@@ -21,6 +21,7 @@ import org.hibernate.search.util.impl.integrationtest.mapper.stub.StubMappedInde
 
 import org.junit.Rule;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import com.google.gson.JsonObject;
 
@@ -34,8 +35,8 @@ public class ElasticsearchFieldTypesIT {
 	@Rule
 	public final SearchSetupHelper setupHelper = new SearchSetupHelper();
 
-	@Rule
-	public final ElasticsearchClientSpy clientSpy = new ElasticsearchClientSpy();
+	@RegisterExtension
+	public final ElasticsearchClientSpy clientSpy = ElasticsearchClientSpy.create();
 
 	private final StubMappedIndex index = StubMappedIndex.ofNonRetrievable( IndexBinding::new );
 
