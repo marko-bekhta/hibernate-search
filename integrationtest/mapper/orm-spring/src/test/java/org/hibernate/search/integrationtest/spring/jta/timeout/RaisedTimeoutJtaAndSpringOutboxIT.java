@@ -17,9 +17,9 @@ import org.hibernate.search.integrationtest.spring.jta.dao.SnertDAO;
 import org.hibernate.search.integrationtest.spring.jta.entity.Snert;
 import org.hibernate.search.util.impl.integrationtest.common.rule.BackendMock;
 
-import org.junit.Rule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.runner.RunWith;
 
 import com.atomikos.icatch.jta.TransactionManagerImp;
@@ -37,7 +37,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 public class RaisedTimeoutJtaAndSpringOutboxIT {
 
 	@Autowired
-	@Rule
+	@RegisterExtension
 	public BackendMock backendMock;
 
 	@Autowired
