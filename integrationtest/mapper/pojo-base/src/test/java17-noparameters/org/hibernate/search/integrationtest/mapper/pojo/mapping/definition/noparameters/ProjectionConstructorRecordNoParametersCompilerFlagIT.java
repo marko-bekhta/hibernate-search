@@ -21,17 +21,16 @@ import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Projection
 import org.hibernate.search.mapper.pojo.standalone.mapping.SearchMapping;
 import org.hibernate.search.util.impl.integrationtest.mapper.pojo.standalone.StandalonePojoMappingSetupHelper;
 
-import org.junit.Before;
-import org.junit.Rule;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 public class ProjectionConstructorRecordNoParametersCompilerFlagIT extends AbstractProjectionConstructorIT {
 
-	@Rule
+	@RegisterExtension
 	public StandalonePojoMappingSetupHelper setupHelper = StandalonePojoMappingSetupHelper.withBackendMock( MethodHandles.lookup(), backendMock );
 
-	@Before
+	@BeforeEach
 	public void sourcesCompiledWithoutParametersFlag() {
 		assertThat( ConstructorWithParameters.class.getDeclaredConstructors()[0].getParameters() )
 				.withFailMessage( "This test only works if compiled *without* the '-parameters' compiler flag." )

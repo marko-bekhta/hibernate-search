@@ -20,14 +20,12 @@ import org.hibernate.search.mapper.pojo.standalone.mapping.SearchMapping;
 import org.hibernate.search.util.impl.integrationtest.mapper.pojo.standalone.StandalonePojoMappingSetupHelper;
 import org.hibernate.search.util.impl.test.annotation.TestForIssue;
 
-import org.junit.Rule;
 import org.junit.jupiter.api.Test;
 
 public class ProjectionConstructorRecordIT extends AbstractProjectionConstructorIT {
 
-	@Rule
-	public StandalonePojoMappingSetupHelper setupHelper =
-			StandalonePojoMappingSetupHelper.withBackendMock( MethodHandles.lookup(), backendMock );
+	@RegisterExtension
+	public StandalonePojoMappingSetupHelper setupHelper = StandalonePojoMappingSetupHelper.withBackendMock( MethodHandles.lookup(), backendMock );
 
 	@Test
 	public void typeLevelAnnotation() {

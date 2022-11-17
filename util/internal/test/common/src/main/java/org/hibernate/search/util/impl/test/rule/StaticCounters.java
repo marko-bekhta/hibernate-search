@@ -48,6 +48,7 @@ public final class StaticCounters implements BeforeTestExecutionCallback, AfterT
 	public static StaticCounters create() {
 		return new StaticCounters();
 	}
+
 	private StaticCounters() {
 	}
 
