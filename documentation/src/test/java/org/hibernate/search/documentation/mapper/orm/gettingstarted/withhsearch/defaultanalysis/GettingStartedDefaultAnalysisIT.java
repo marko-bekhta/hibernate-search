@@ -28,6 +28,7 @@ import org.junit.Rule;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 public class GettingStartedDefaultAnalysisIT {
 
@@ -35,7 +36,7 @@ public class GettingStartedDefaultAnalysisIT {
 
 	private EntityManagerFactory entityManagerFactory;
 
-	@Rule
+	@RegisterExtension
 	public TestConfigurationProvider configurationProvider = new TestConfigurationProvider();
 
 	@BeforeEach
