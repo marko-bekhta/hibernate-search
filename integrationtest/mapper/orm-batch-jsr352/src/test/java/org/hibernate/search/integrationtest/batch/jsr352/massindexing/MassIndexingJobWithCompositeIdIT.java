@@ -41,12 +41,11 @@ import org.hibernate.search.util.impl.integrationtest.mapper.orm.OrmSetupHelper;
 import org.hibernate.search.util.impl.integrationtest.mapper.orm.ReusableOrmSetupHolder;
 import org.hibernate.search.util.impl.test.annotation.TestForIssue;
 
-import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.MethodRule;
+import org.junit.jupiter.api.extension.Extension;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * Tests that mass indexing job can handle entity having
@@ -62,11 +61,12 @@ public class MassIndexingJobWithCompositeIdIT {
 
 	private static final LocalDate END = LocalDate.of( 2017, 8, 1 );
 
-	@ClassRule
+	@RegisterExtension
 	public static ReusableOrmSetupHolder setupHolder =
 			ReusableOrmSetupHolder.withSingleBackend( BackendConfigurations.simple() );
-	@Rule
-	public MethodRule setupHolderMethodRule = setupHolder.methodRule();
+
+	@RegisterExtension
+	public Extension setupHolderMethodRule = setupHolder.methodExtension();
 
 	private EntityManagerFactory emf;
 
