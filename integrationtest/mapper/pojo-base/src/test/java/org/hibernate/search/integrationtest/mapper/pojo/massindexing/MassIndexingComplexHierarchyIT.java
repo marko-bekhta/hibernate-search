@@ -28,6 +28,7 @@ import org.hibernate.search.util.impl.integrationtest.mapper.pojo.standalone.Sta
 import org.junit.Rule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * Test that the {@link MassIndexer} correctly indexes even complex entity hierarchies
@@ -35,8 +36,8 @@ import org.junit.jupiter.api.Test;
  */
 public class MassIndexingComplexHierarchyIT {
 
-	@Rule
-	public final BackendMock backendMock = new BackendMock();
+	@RegisterExtension
+	public final BackendMock backendMock = BackendMock.create();
 
 	@Rule
 	public final StandalonePojoMappingSetupHelper setupHelper =

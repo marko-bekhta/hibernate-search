@@ -27,6 +27,7 @@ import org.hibernate.search.util.impl.integrationtest.mapper.orm.ReusableOrmSetu
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.rules.MethodRule;
 
 /**
@@ -34,8 +35,8 @@ import org.junit.rules.MethodRule;
  */
 public class AutomaticIndexingMappedSuperclassIT {
 
-	@ClassRule
-	public static BackendMock backendMock = new BackendMock();
+	@RegisterExtension
+	public static BackendMock backendMock = BackendMock.createGlobal();
 
 	@ClassRule
 	public static ReusableOrmSetupHolder setupHolder = ReusableOrmSetupHolder.withBackendMock( backendMock );

@@ -9,15 +9,15 @@ package org.hibernate.search.integrationtest.mapper.pojo.mapping.definition;
 import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
 
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FieldProjection;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.IdProjection;
-import org.hibernate.search.util.impl.integrationtest.mapper.pojo.standalone.StandalonePojoMappingSetupHelper;
-import org.hibernate.search.mapper.pojo.standalone.mapping.SearchMapping;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.DocumentId;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FieldProjection;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.GenericField;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.IdProjection;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.ProjectionConstructor;
+import org.hibernate.search.mapper.pojo.standalone.mapping.SearchMapping;
+import org.hibernate.search.util.impl.integrationtest.mapper.pojo.standalone.StandalonePojoMappingSetupHelper;
 import org.hibernate.search.util.impl.test.annotation.TestForIssue;
 
 import org.junit.Rule;
@@ -26,7 +26,8 @@ import org.junit.jupiter.api.Test;
 public class ProjectionConstructorRecordIT extends AbstractProjectionConstructorIT {
 
 	@Rule
-	public StandalonePojoMappingSetupHelper setupHelper = StandalonePojoMappingSetupHelper.withBackendMock( MethodHandles.lookup(), backendMock );
+	public StandalonePojoMappingSetupHelper setupHelper =
+			StandalonePojoMappingSetupHelper.withBackendMock( MethodHandles.lookup(), backendMock );
 
 	@Test
 	public void typeLevelAnnotation() {
@@ -40,7 +41,8 @@ public class ProjectionConstructorRecordIT extends AbstractProjectionConstructor
 			public Integer integer;
 		}
 		@ProjectionConstructor
-		record MyProjection(String text, Integer integer) { }
+		record MyProjection(String text, Integer integer) {
+		}
 
 		backendMock.expectAnySchema( INDEX_NAME );
 		SearchMapping mapping = setupHelper.start()

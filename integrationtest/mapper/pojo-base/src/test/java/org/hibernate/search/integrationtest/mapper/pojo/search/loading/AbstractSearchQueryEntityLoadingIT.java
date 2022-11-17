@@ -27,13 +27,14 @@ import org.hibernate.search.util.impl.integrationtest.common.rule.StubSearchWork
 import org.hibernate.search.util.impl.integrationtest.mapper.pojo.standalone.StandalonePojoMappingSetupHelper;
 
 import org.junit.Rule;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import org.assertj.core.api.SoftAssertions;
 
 public abstract class AbstractSearchQueryEntityLoadingIT {
 
-	@Rule
-	public BackendMock backendMock = new BackendMock();
+	@RegisterExtension
+	public BackendMock backendMock = BackendMock.create();
 
 	@Rule
 	public StandalonePojoMappingSetupHelper setupHelper =

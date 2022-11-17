@@ -68,8 +68,8 @@ public class AutomaticIndexingSynchronizationStrategyIT {
 	private static final int ENTITY_1_ID = 1;
 	private static final int ENTITY_2_ID = 2;
 
-	@Rule
-	public BackendMock backendMock = new BackendMock();
+	@RegisterExtension
+	public BackendMock backendMock = BackendMock.create();
 
 	@Rule
 	public OrmSetupHelper ormSetupHelper = OrmSetupHelper.withBackendMock( backendMock );

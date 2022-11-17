@@ -31,12 +31,13 @@ import org.hibernate.search.util.impl.test.annotation.TestForIssue;
 import org.junit.Rule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 @TestForIssue(jiraKey = "HSEARCH-4203") // See https://github.com/hibernate/hibernate-search/pull/2564#issuecomment-833808403
 public class LoadingStrategyInheritanceIT {
 
-	@Rule
-	public BackendMock backendMock = new BackendMock();
+	@RegisterExtension
+	public BackendMock backendMock = BackendMock.create();
 
 	@Rule
 	public StandalonePojoMappingSetupHelper setupHelper =

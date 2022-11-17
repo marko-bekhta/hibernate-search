@@ -24,14 +24,15 @@ import org.hibernate.search.util.impl.integrationtest.mapper.pojo.standalone.Sta
 import org.junit.Rule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * Test for {@link org.hibernate.search.mapper.pojo.mapping.spi.AbstractPojoMappingInitiator#defaultReindexOnUpdate(ReindexOnUpdate)}.
  */
 public class DefaultReindexOnUpdateIT {
 
-	@Rule
-	public BackendMock backendMock = new BackendMock();
+	@RegisterExtension
+	public BackendMock backendMock = BackendMock.create();
 
 	@Rule
 	public StandalonePojoMappingSetupHelper setupHelper =

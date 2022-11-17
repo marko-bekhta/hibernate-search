@@ -31,6 +31,7 @@ import org.hibernate.search.util.impl.integrationtest.mapper.pojo.standalone.Sta
 
 import org.junit.Rule;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 public class MarkerBindingBaseIT {
 
@@ -38,8 +39,8 @@ public class MarkerBindingBaseIT {
 
 	private static PojoModelType extractedModelType;
 
-	@Rule
-	public BackendMock backendMock = new BackendMock();
+	@RegisterExtension
+	public BackendMock backendMock = BackendMock.create();
 
 	@Rule
 	public StandalonePojoMappingSetupHelper setupHelper = StandalonePojoMappingSetupHelper.withBackendMock(

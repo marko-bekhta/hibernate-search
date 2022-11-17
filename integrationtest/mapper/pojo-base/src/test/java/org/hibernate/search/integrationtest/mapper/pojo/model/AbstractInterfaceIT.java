@@ -21,6 +21,7 @@ import org.hibernate.search.util.impl.test.annotation.TestForIssue;
 import org.junit.Rule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * Test that annotations on interfaces are correctly detected
@@ -30,8 +31,8 @@ import org.junit.jupiter.api.Test;
 @TestForIssue(jiraKey = "HSEARCH-4385")
 public class AbstractInterfaceIT {
 
-	@Rule
-	public BackendMock backendMock = new BackendMock();
+	@RegisterExtension
+	public BackendMock backendMock = BackendMock.create();
 
 	@Rule
 	public StandalonePojoMappingSetupHelper setupHelper =

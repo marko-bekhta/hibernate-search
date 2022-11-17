@@ -34,6 +34,7 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.rules.MethodRule;
 
 public class MassIndexingConditionalExpressionsIT {
@@ -53,8 +54,8 @@ public class MassIndexingConditionalExpressionsIT {
 	private static final String KEYWORD_B_1 = "b-1";
 	private static final String KEYWORD_B_2 = "b-2";
 
-	@ClassRule
-	public static BackendMock backendMock = new BackendMock();
+	@RegisterExtension
+	public static BackendMock backendMock = BackendMock.createGlobal();
 
 	@ClassRule
 	public static ReusableOrmSetupHolder setupHolder = ReusableOrmSetupHolder.withBackendMock( backendMock );

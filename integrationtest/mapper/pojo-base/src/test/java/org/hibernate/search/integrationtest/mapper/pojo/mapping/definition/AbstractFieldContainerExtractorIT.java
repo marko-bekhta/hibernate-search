@@ -35,6 +35,7 @@ import org.hibernate.search.util.impl.test.annotation.TestForIssue;
 
 import org.junit.Rule;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * Test default value bridges for the {@code @GenericField} annotation.
@@ -50,8 +51,8 @@ public abstract class AbstractFieldContainerExtractorIT {
 	static final String STRING_VALUE_5 = "5 - Let's stop strings?";
 	static final String STRING_VALUE_6 = "6 - The last string";
 
-	@Rule
-	public BackendMock backendMock = new BackendMock();
+	@RegisterExtension
+	public BackendMock backendMock = BackendMock.create();
 
 	@Rule
 	public StandalonePojoMappingSetupHelper setupHelper =

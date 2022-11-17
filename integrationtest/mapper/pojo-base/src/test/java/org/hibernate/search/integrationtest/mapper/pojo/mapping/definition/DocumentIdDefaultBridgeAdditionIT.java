@@ -28,6 +28,7 @@ import org.hibernate.search.util.impl.test.annotation.TestForIssue;
 
 import org.junit.Rule;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * Test adding default identifier bridges so that custom types are supported by the {@code @DocumentId} annotation.
@@ -36,8 +37,8 @@ import org.junit.jupiter.api.Test;
 public class DocumentIdDefaultBridgeAdditionIT {
 	private static final String INDEX_NAME = "indexName";
 
-	@Rule
-	public BackendMock backendMock = new BackendMock();
+	@RegisterExtension
+	public BackendMock backendMock = BackendMock.create();
 
 	@Rule
 	public StandalonePojoMappingSetupHelper setupHelper =

@@ -21,6 +21,7 @@ import org.hibernate.search.util.impl.test.annotation.TestForIssue;
 
 import org.junit.Rule;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * Tests a corner case that used to not work well in Search 5
@@ -31,8 +32,8 @@ import org.junit.jupiter.api.Test;
 @TestForIssue(jiraKey = "HSEARCH-2663")
 public class IndexNullAsOnNumericContainerIT {
 
-	@Rule
-	public BackendMock backendMock = new BackendMock();
+	@RegisterExtension
+	public BackendMock backendMock = BackendMock.create();
 
 	@Rule
 	public StandalonePojoMappingSetupHelper setupHelper =

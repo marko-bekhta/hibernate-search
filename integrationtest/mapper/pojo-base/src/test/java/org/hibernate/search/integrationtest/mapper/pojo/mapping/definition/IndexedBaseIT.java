@@ -38,13 +38,13 @@ import org.junit.jupiter.api.Test;
 public class IndexedBaseIT {
 
 	@Rule
-	public BackendMock defaultBackendMock = new BackendMock();
+	public BackendMock defaultBackendMock = BackendMock.create();
 
 	@Rule
-	public BackendMock backend2Mock = new BackendMock();
+	public BackendMock backend2Mock = BackendMock.create();
 
 	@Rule
-	public BackendMock backend3Mock = new BackendMock();
+	public BackendMock backend3Mock = BackendMock.create();
 
 	@Rule
 	public StandalonePojoMappingSetupHelper setupHelper =
