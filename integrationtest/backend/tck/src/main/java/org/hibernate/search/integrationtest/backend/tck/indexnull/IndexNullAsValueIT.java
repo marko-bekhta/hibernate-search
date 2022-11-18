@@ -28,8 +28,8 @@ import org.hibernate.search.util.impl.integrationtest.mapper.stub.SimpleMappedIn
 import org.hibernate.search.util.impl.integrationtest.mapper.stub.StubMappedIndex;
 import org.hibernate.search.util.impl.integrationtest.mapper.stub.StubMappingScope;
 
-import org.junit.Rule;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 public class IndexNullAsValueIT {
 
@@ -37,8 +37,8 @@ public class IndexNullAsValueIT {
 	private static final String DOCUMENT_WITH_DIFFERENT_VALUES = "documentWithDifferentValues";
 	private static final String DOCUMENT_WITH_NULL_VALUES = "documentWithNullValues";
 
-	@Rule
-	public final SearchSetupHelper setupHelper = new SearchSetupHelper();
+	@RegisterExtension
+	public final SearchSetupHelper setupHelper = SearchSetupHelper.create();
 
 	private final SimpleMappedIndex<IndexBinding> index = SimpleMappedIndex.of( IndexBinding::new );
 

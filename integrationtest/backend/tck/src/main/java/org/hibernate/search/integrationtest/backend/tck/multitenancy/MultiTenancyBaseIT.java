@@ -32,9 +32,9 @@ import org.hibernate.search.util.impl.integrationtest.mapper.stub.StubMappingSco
 import org.hibernate.search.util.impl.integrationtest.mapper.stub.StubSession;
 import org.hibernate.search.util.impl.test.annotation.TestForIssue;
 
-import org.junit.Rule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 public class MultiTenancyBaseIT {
 
@@ -56,9 +56,9 @@ public class MultiTenancyBaseIT {
 	private static final Integer INTEGER_VALUE_4 = 4;
 	private static final Integer INTEGER_VALUE_5 = 5;
 
-	@Rule
+	@RegisterExtension
 	public final SearchSetupHelper setupHelper =
-			new SearchSetupHelper( TckBackendHelper::createMultiTenancyBackendSetupStrategy );
+			SearchSetupHelper.create( TckBackendHelper::createMultiTenancyBackendSetupStrategy );
 
 	private final SimpleMappedIndex<IndexBinding> index = SimpleMappedIndex.of( IndexBinding::new );
 

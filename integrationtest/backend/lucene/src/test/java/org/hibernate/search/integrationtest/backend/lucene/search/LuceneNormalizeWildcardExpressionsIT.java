@@ -21,9 +21,9 @@ import org.hibernate.search.util.impl.integrationtest.mapper.stub.SimpleMappedIn
 import org.hibernate.search.util.impl.integrationtest.mapper.stub.StubMappingScope;
 import org.hibernate.search.util.impl.test.annotation.TestForIssue;
 
-import org.junit.Rule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * Extends {@link WildcardPredicateSpecificsIT},
@@ -52,8 +52,8 @@ public class LuceneNormalizeWildcardExpressionsIT {
 	private static final String TEXT_MATCHING_PATTERN_3 = "A had to call the landlord.";
 	private static final String TEXT_MATCHING_PATTERN_2_AND_3 = "I had some interaction with that lad.";
 
-	@Rule
-	public final SearchSetupHelper setupHelper = new SearchSetupHelper();
+	@RegisterExtension
+	public final SearchSetupHelper setupHelper = SearchSetupHelper.create();
 
 	private final SimpleMappedIndex<IndexBinding> index = SimpleMappedIndex.of( IndexBinding::new );
 

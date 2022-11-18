@@ -19,7 +19,7 @@ import org.hibernate.search.util.impl.integrationtest.mapper.stub.StubMappedInde
 public class IndexWorkspaceRefreshIT extends AbstractIndexWorkspaceSimpleOperationIT {
 
 	public IndexWorkspaceRefreshIT() {
-		super( new SearchSetupHelper( helper -> helper.createRarePeriodicRefreshBackendSetupStrategy() ) );
+		super( SearchSetupHelper.create( helper -> helper.createRarePeriodicRefreshBackendSetupStrategy() ) );
 	}
 
 	@Override

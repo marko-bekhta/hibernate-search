@@ -26,8 +26,8 @@ import org.hibernate.search.util.impl.integrationtest.mapper.stub.SimpleMappedIn
 import org.hibernate.search.util.impl.integrationtest.mapper.stub.SingleFieldDocumentBuilder;
 import org.hibernate.search.util.impl.integrationtest.mapper.stub.StubMappingScope;
 
-import org.junit.Rule;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * Test indexing and searching with custom analyzer definitions.
@@ -83,9 +83,9 @@ public class AnalysisCustomIT {
 		}
 	}
 
-	@Rule
+	@RegisterExtension
 	public final SearchSetupHelper setupHelper =
-			new SearchSetupHelper( TckBackendHelper::createAnalysisCustomBackendSetupStrategy );
+			SearchSetupHelper.create( TckBackendHelper::createAnalysisCustomBackendSetupStrategy );
 
 	private SimpleMappedIndex<IndexBinding> index;
 

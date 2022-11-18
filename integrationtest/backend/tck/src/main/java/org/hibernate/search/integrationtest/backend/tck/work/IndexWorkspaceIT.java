@@ -22,9 +22,9 @@ import org.hibernate.search.integrationtest.backend.tck.testsupport.util.rule.Se
 import org.hibernate.search.util.impl.integrationtest.mapper.stub.SimpleMappedIndex;
 import org.hibernate.search.util.impl.integrationtest.mapper.stub.StubSession;
 
-import org.junit.Rule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * Verify that the work executor operations:
@@ -38,12 +38,12 @@ public class IndexWorkspaceIT {
 
 	private static final int NUMBER_OF_BOOKS = 200;
 
-	@Rule
-	public final SearchSetupHelper setupHelper = new SearchSetupHelper();
+	@RegisterExtension
+	public final SearchSetupHelper setupHelper = SearchSetupHelper.create();
 
-	@Rule
-	public SearchSetupHelper multiTenancySetupHelper =
-			new SearchSetupHelper( TckBackendHelper::createMultiTenancyBackendSetupStrategy );
+	@RegisterExtension
+	public final SearchSetupHelper multiTenancySetupHelper =
+			SearchSetupHelper.create( TckBackendHelper::createMultiTenancyBackendSetupStrategy );
 
 	private final SimpleMappedIndex<IndexBinding> index = SimpleMappedIndex.of( IndexBinding::new );
 

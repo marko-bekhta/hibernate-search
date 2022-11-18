@@ -24,9 +24,9 @@ import org.hibernate.search.util.impl.integrationtest.mapper.stub.SimpleMappedIn
 import org.hibernate.search.util.impl.integrationtest.mapper.stub.SingleFieldDocumentBuilder;
 import org.hibernate.search.util.impl.integrationtest.mapper.stub.StubMappingScope;
 
-import org.junit.Rule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -41,13 +41,13 @@ public class AnalysisBuiltinIT {
 	public static List<SearchSetupHelper> params() {
 		return Arrays.asList(
 				// Test with no analysis configurer whatsoever
-				new SearchSetupHelper( TckBackendHelper::createAnalysisNotConfiguredBackendSetupStrategy ),
+				SearchSetupHelper.create( TckBackendHelper::createAnalysisNotConfiguredBackendSetupStrategy ),
 				// Test with an analysis configurer that does not override the defaults but defines other analyzers
-				new SearchSetupHelper( TckBackendHelper::createAnalysisCustomBackendSetupStrategy )
+				SearchSetupHelper.create( TckBackendHelper::createAnalysisCustomBackendSetupStrategy )
 		);
 	}
 
-	@Rule
+	@RegisterExtension
 	public final SearchSetupHelper setupHelper;
 
 	private final SimpleMappedIndex<IndexBinding> index = SimpleMappedIndex.of( IndexBinding::new );

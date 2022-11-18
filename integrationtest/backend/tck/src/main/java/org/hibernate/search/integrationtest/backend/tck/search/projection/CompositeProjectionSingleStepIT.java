@@ -26,9 +26,9 @@ import org.hibernate.search.integrationtest.backend.tck.testsupport.util.rule.Se
 import org.hibernate.search.util.impl.integrationtest.mapper.stub.SimpleMappedIndex;
 import org.hibernate.search.util.impl.integrationtest.mapper.stub.StubMappingScope;
 
-import org.junit.Rule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * Tests composite projections created through the single-step DSL,
@@ -56,8 +56,8 @@ public class CompositeProjectionSingleStepIT {
 	private static final String AUTHOR_AVENUE_OF_MYSTERIES = "John Irving";
 	private static final LocalDate RELEASE_DATE_AVENUE_OF_MYSTERIES = LocalDate.of( 2015, 4, 7 );
 
-	@Rule
-	public final SearchSetupHelper setupHelper = new SearchSetupHelper();
+	@RegisterExtension
+	public final SearchSetupHelper setupHelper = SearchSetupHelper.create();
 
 	private final SimpleMappedIndex<IndexBinding> index = SimpleMappedIndex.of( IndexBinding::new );
 
