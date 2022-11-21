@@ -22,9 +22,9 @@ import org.hibernate.search.mapper.pojo.extractor.builtin.BuiltinContainerExtrac
 import org.hibernate.search.mapper.pojo.mapping.definition.programmatic.TypeMappingStep;
 import org.hibernate.search.mapper.pojo.model.path.PojoModelPath;
 
-import org.junit.Rule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -54,7 +54,7 @@ public class AssociationInverseSideIT {
 	}
 
 	@Parameterized.Parameter
-	@Rule
+	@RegisterExtension
 	public DocumentationSetupHelper setupHelper;
 
 	private EntityManagerFactory entityManagerFactory;

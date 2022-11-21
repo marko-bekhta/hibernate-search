@@ -23,8 +23,8 @@ import org.hibernate.search.mapper.orm.session.SearchSession;
 import org.hibernate.search.mapper.orm.work.SearchIndexingPlan;
 import org.hibernate.search.mapper.orm.work.SearchWorkspace;
 
-import org.junit.Rule;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 public class HibernateOrmManualIndexingIT {
 
@@ -32,7 +32,7 @@ public class HibernateOrmManualIndexingIT {
 	private static final int BATCH_SIZE = 100;
 	private static final int INIT_DATA_TRANSACTION_SIZE = 500;
 
-	@Rule
+	@RegisterExtension
 	public DocumentationSetupHelper setupHelper = DocumentationSetupHelper.withSingleBackend( BackendConfigurations.simple() );
 
 	@Test

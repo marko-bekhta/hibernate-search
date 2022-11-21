@@ -30,9 +30,9 @@ import org.hibernate.search.mapper.orm.schema.management.SearchSchemaManager;
 import org.hibernate.search.mapper.orm.session.SearchSession;
 import org.hibernate.search.mapper.pojo.schema.management.SearchSchemaCollector;
 
-import org.junit.Rule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.rules.TemporaryFolder;
 
 public class HibernateOrmSchemaManagerIT {
@@ -40,7 +40,7 @@ public class HibernateOrmSchemaManagerIT {
 	private static final int NUMBER_OF_BOOKS = 200;
 	private static final int INIT_DATA_TRANSACTION_SIZE = 100;
 
-	@Rule
+	@RegisterExtension
 	public DocumentationSetupHelper setupHelper = DocumentationSetupHelper.withSingleBackend( BackendConfigurations.simple() );
 
 	@Rule

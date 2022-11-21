@@ -78,7 +78,7 @@ public final class StandalonePojoMappingSetupHelper
 
 	private StandalonePojoMappingSetupHelper(MethodHandles.Lookup lookup, BackendSetupStrategy backendSetupStrategy,
 			SchemaManagementStrategyName schemaManagementStrategyName) {
-		super( backendSetupStrategy );
+		super( backendSetupStrategy, Type.METHOD );
 		this.lookup = lookup;
 		this.schemaManagementStrategyName = schemaManagementStrategyName;
 	}

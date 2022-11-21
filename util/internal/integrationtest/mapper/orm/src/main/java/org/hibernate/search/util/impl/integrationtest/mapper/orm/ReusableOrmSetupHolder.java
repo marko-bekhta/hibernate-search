@@ -58,11 +58,8 @@ import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.Extension;
 import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.rules.TestRule;
-import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.junit.runners.model.Statement;
 
 import org.jboss.logging.Logger;
 
@@ -110,8 +107,7 @@ import org.opentest4j.TestAbortedException;
  * 	}
  * }</pre>
  */
-public class ReusableOrmSetupHolder
-		implements TestRule, BeforeAllCallback, AfterAllCallback, PersistenceRunner<Session, Transaction> {
+public class ReusableOrmSetupHolder implements BeforeAllCallback, AfterAllCallback, PersistenceRunner<Session, Transaction> {
 	private static final Logger log = Logger.getLogger( ReusableOrmSetupHolder.class.getName() );
 
 	/**
@@ -166,7 +162,7 @@ public class ReusableOrmSetupHolder
 	}
 
 	public static ReusableOrmSetupHolder withBackendMock(BackendMock backendMock) {
-		return new ReusableOrmSetupHolder( OrmSetupHelper.withBackendMock( backendMock ),
+		return new ReusableOrmSetupHolder( OrmSetupHelper.withBackendMockGlobal( backendMock ),
 				Collections.singletonList( backendMock ), IndexDataClearStrategy.NONE );
 	}
 
@@ -177,7 +173,7 @@ public class ReusableOrmSetupHolder
 			allBackendMocks.add( defaultBackendMock );
 		}
 		allBackendMocks.addAll( namedBackendMocks.values() );
-		return new ReusableOrmSetupHolder( OrmSetupHelper.withBackendMocks( defaultBackendMock, namedBackendMocks ),
+		return new ReusableOrmSetupHolder( OrmSetupHelper.withBackendMocksGlobal( defaultBackendMock, namedBackendMocks ),
 				allBackendMocks, IndexDataClearStrategy.NONE );
 	}
 
@@ -298,11 +294,6 @@ public class ReusableOrmSetupHolder
 	}
 
 	@Override
-	public Statement apply(Statement base, Description description) {
-		return classStatement( base, description );
-	}
-
-	@Override
 	public void afterAll(ExtensionContext context) throws Exception {
 		try ( Closer<Exception> closer = new Closer<>() ) {
 			inClassStatement = false;
@@ -315,29 +306,9 @@ public class ReusableOrmSetupHolder
 	}
 
 	@Override
-	public void beforeAll(ExtensionContext context) {
-		setupHelper.beforeEach( context );
+	public void beforeAll(ExtensionContext context) throws Exception {
+		setupHelper.beforeAll( context );
 		inClassStatement = true;
-	}
-
-	private Statement classStatement(Statement base, Description description) {
-		Statement wrapped = new Statement() {
-			@Override
-			public void evaluate() throws Throwable {
-				try ( Closer<Exception> closer = new Closer<>() ) {
-					try {
-						inClassStatement = true;
-						base.evaluate();
-					}
-					finally {
-						inClassStatement = false;
-						// Do this in the closer in order to preserve the original exception.
-						closer.push( ReusableOrmSetupHolder::tearDownSessionFactory, ReusableOrmSetupHolder.this );
-					}
-				}
-			}
-		};
-		return setupHelper.apply( wrapped, description );
 	}
 
 	private void setupSessionFactory(ExtensionContext context) {

@@ -41,7 +41,7 @@ public final class V5MigrationHelperOrmSetupHelper
 	}
 
 	private V5MigrationHelperOrmSetupHelper(BackendSetupStrategy backendSetupStrategy) {
-		super( backendSetupStrategy );
+		super( backendSetupStrategy, type );
 	}
 
 	@Override

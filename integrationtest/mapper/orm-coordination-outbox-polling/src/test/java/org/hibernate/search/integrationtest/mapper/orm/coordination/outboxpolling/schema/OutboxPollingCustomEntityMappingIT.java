@@ -49,7 +49,6 @@ import org.hibernate.search.util.impl.integrationtest.mapper.orm.CoordinationStr
 import org.hibernate.search.util.impl.integrationtest.mapper.orm.OrmSetupHelper;
 import org.hibernate.search.util.impl.test.rule.ExpectedLog4jLog;
 
-import org.junit.Rule;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -92,7 +91,7 @@ public class OutboxPollingCustomEntityMappingIT {
 	@RegisterExtension
 	public BackendMock backendMock = new BackendMock();
 
-	@Rule
+	@RegisterExtension
 	public OrmSetupHelper ormSetupHelper = OrmSetupHelper.withBackendMock( backendMock )
 			.coordinationStrategy( CoordinationStrategyExpectations.outboxPolling() );
 

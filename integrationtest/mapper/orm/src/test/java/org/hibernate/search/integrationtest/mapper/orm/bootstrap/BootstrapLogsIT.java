@@ -25,7 +25,6 @@ import org.hibernate.search.util.impl.test.SystemHelper.SystemPropertyRestorer;
 import org.hibernate.search.util.impl.test.annotation.TestForIssue;
 import org.hibernate.search.util.impl.test.rule.ExpectedLog4jLog;
 
-import org.junit.Rule;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -57,7 +56,7 @@ public class BootstrapLogsIT {
 	@RegisterExtension
 	public BackendMock backendMock = BackendMock.create();
 
-	@Rule
+	@RegisterExtension
 	public OrmSetupHelper ormSetupHelper = OrmSetupHelper.withBackendMock( backendMock );
 
 	@RegisterExtension

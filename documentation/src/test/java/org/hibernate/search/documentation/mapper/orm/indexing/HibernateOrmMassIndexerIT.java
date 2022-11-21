@@ -28,9 +28,9 @@ import org.hibernate.search.mapper.orm.session.SearchSession;
 import org.hibernate.search.util.common.logging.impl.Log;
 import org.hibernate.search.util.common.logging.impl.LoggerFactory;
 
-import org.junit.Rule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 public class HibernateOrmMassIndexerIT {
 
@@ -39,7 +39,7 @@ public class HibernateOrmMassIndexerIT {
 	static final int NUMBER_OF_BOOKS = 1000;
 	static final int INIT_DATA_TRANSACTION_SIZE = 500;
 
-	@Rule
+	@RegisterExtension
 	public DocumentationSetupHelper setupHelper = DocumentationSetupHelper.withSingleBackend( BackendConfigurations.simple() );
 
 	private EntityManagerFactory entityManagerFactory;

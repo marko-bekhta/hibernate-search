@@ -25,7 +25,6 @@ import org.hibernate.search.mapper.orm.Search;
 import org.hibernate.search.mapper.orm.session.SearchSession;
 import org.hibernate.search.util.impl.integrationtest.backend.elasticsearch.rule.TestElasticsearchClient;
 
-import org.junit.Rule;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -36,7 +35,7 @@ public class ElasticsearchCustomIndexMappingIT {
 	@RegisterExtension
 	public TestElasticsearchClient elasticsearchClient = TestElasticsearchClient.create();
 
-	@Rule
+	@RegisterExtension
 	public DocumentationSetupHelper setupHelper = DocumentationSetupHelper.withSingleBackend(
 			BackendConfigurations.simple() );
 

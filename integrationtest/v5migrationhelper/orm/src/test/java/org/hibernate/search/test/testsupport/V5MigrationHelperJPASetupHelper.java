@@ -40,7 +40,7 @@ public final class V5MigrationHelperJPASetupHelper
 	}
 
 	private V5MigrationHelperJPASetupHelper(BackendSetupStrategy backendSetupStrategy) {
-		super( backendSetupStrategy );
+		super( backendSetupStrategy, type );
 	}
 
 	@Override

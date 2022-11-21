@@ -39,7 +39,7 @@ public final class V5MigrationHelperEngineSetupHelper
 	}
 
 	private V5MigrationHelperEngineSetupHelper(BackendSetupStrategy backendSetupStrategy) {
-		super( backendSetupStrategy );
+		super( backendSetupStrategy, Type.METHOD );
 	}
 
 	@Override
