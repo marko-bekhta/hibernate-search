@@ -11,17 +11,14 @@ import java.util.UUID;
 import org.hibernate.search.mapper.orm.coordination.outboxpolling.cluster.impl.AgentState;
 import org.hibernate.search.mapper.orm.coordination.outboxpolling.cluster.impl.AgentType;
 import org.hibernate.search.mapper.orm.coordination.outboxpolling.cluster.impl.ShardAssignmentDescriptor;
-import org.hibernate.search.util.impl.test.runner.nested.Nested;
-import org.hibernate.search.util.impl.test.runner.nested.NestedRunner;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
 
 /**
  * Base tests of {@link OutboxPollingEventProcessorClusterLink}
  * with dynamic sharding.
  */
-@RunWith(NestedRunner.class)
 public class EventProcessorClusterLinkDynamicShardingBaseTest {
 
 	abstract static class AbstractBaseTest extends AbstractEventProcessorClusterLinkBaseTest {

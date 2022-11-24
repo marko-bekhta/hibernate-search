@@ -10,10 +10,8 @@ import java.util.UUID;
 
 import org.hibernate.search.mapper.orm.coordination.outboxpolling.cluster.impl.AgentState;
 import org.hibernate.search.mapper.orm.coordination.outboxpolling.cluster.impl.AgentType;
-import org.hibernate.search.util.impl.test.runner.nested.Nested;
-import org.hibernate.search.util.impl.test.runner.nested.NestedRunner;
 
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Nested;
 
 /**
  * Base tests of {@link OutboxPollingEventProcessorClusterLink}
@@ -21,7 +19,6 @@ import org.junit.runner.RunWith;
  * with a total shard count of 4,
  * self being static.
  */
-@RunWith(NestedRunner.class)
 public class EventProcessorClusterLinkMixedSharding4ShardSelfDynamicBaseTest {
 
 	abstract static class AbstractBaseTest extends AbstractEventProcessorClusterLinkBaseTest {
