@@ -42,13 +42,10 @@ import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.rules.TestRule;
-import org.junit.runner.Description;
-import org.junit.runners.model.Statement;
 
 import org.opentest4j.TestAbortedException;
 
-public class BackendMock implements TestRule, BeforeEachCallback, AfterEachCallback, BeforeAllCallback, AfterAllCallback {
+public class BackendMock implements BeforeEachCallback, AfterEachCallback, BeforeAllCallback, AfterAllCallback {
 
 	public enum Type {
 		CLASS,
@@ -136,33 +133,6 @@ public class BackendMock implements TestRule, BeforeEachCallback, AfterEachCallb
 				backendBehavior.resetBackends();
 			}
 		}
-	}
-
-	@Override
-	public Statement apply(Statement base, Description description) {
-		return new Statement() {
-			@Override
-			public void evaluate() throws Throwable {
-				doBefore();
-				try {
-					base.evaluate();
-					// Workaround for a problem in Hibernate ORM's CustomRunner
-					// (used by BytecodeEnhancerRunner in particular)
-					// which applies class rules twices, resulting in "started" being false
-					// when we get here in the outermost statement...
-					if ( started ) {
-						verifyExpectationsMet();
-					}
-				}
-				finally {
-					if ( started ) {
-						resetExpectations();
-						started = false;
-						backendBehavior.resetBackends();
-					}
-				}
-			}
-		};
 	}
 
 	public BackendMock ignoreSchema() {
