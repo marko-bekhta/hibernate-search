@@ -9,7 +9,7 @@ package org.hibernate.search.backend.lucene.work.execution.impl;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.hibernate.search.util.impl.test.FutureAssert.assertThatFuture;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -348,8 +348,8 @@ public class LuceneIndexIndexingPlanExecutionTest {
 	@MethodSource("params")
 	void failure_commit(DocumentCommitStrategy commitStrategy, DocumentRefreshStrategy refreshStrategy) {
 		assumeTrue(
-				"This test only makes sense when commit is forced",
-				DocumentCommitStrategy.FORCE.equals( commitStrategy )
+				DocumentCommitStrategy.FORCE.equals( commitStrategy ),
+				"This test only makes sense when commit is forced"
 		);
 
 		Long work1Result = 42L;
@@ -410,8 +410,8 @@ public class LuceneIndexIndexingPlanExecutionTest {
 	@MethodSource("params")
 	void failure_refresh(DocumentCommitStrategy commitStrategy, DocumentRefreshStrategy refreshStrategy) {
 		assumeTrue(
-				"This test only makes sense when refresh is forced",
-				DocumentRefreshStrategy.FORCE.equals( refreshStrategy )
+				DocumentRefreshStrategy.FORCE.equals( refreshStrategy ),
+				"This test only makes sense when refresh is forced"
 		);
 
 		Long work1Result = 42L;
@@ -474,8 +474,8 @@ public class LuceneIndexIndexingPlanExecutionTest {
 	@MethodSource("params")
 	void failure_workAndCommit(DocumentCommitStrategy commitStrategy, DocumentRefreshStrategy refreshStrategy) {
 		assumeTrue(
-				"This test only makes sense when commit is forced",
-				DocumentCommitStrategy.FORCE.equals( commitStrategy )
+				DocumentCommitStrategy.FORCE.equals( commitStrategy ),
+				"This test only makes sense when commit is forced"
 		);
 
 		RuntimeException work1Exception = new RuntimeException( "work1" );
@@ -537,8 +537,8 @@ public class LuceneIndexIndexingPlanExecutionTest {
 	@MethodSource("params")
 	void failure_workAndRefresh(DocumentCommitStrategy commitStrategy, DocumentRefreshStrategy refreshStrategy) {
 		assumeTrue(
-				"This test only makes sense when refresh is forced",
-				DocumentRefreshStrategy.FORCE.equals( refreshStrategy )
+				DocumentRefreshStrategy.FORCE.equals( refreshStrategy ),
+				"This test only makes sense when refresh is forced"
 		);
 
 		RuntimeException work1Exception = new RuntimeException( "work1" );

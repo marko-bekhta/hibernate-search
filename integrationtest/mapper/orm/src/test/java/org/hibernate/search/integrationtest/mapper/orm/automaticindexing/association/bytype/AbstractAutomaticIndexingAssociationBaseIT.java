@@ -6,7 +6,7 @@
  */
 package org.hibernate.search.integrationtest.mapper.orm.automaticindexing.association.bytype;
 
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -218,11 +218,13 @@ public abstract class AbstractAutomaticIndexingAssociationBaseIT<
 	}
 
 	private void assumeElementCollectionAssociationsOnContainingSide() {
-		assumeTrue( "This test only makes sense if there is an element collection with nested associations"
-				+ " on the containing side,"
-				+ " which requires that the associations be owned by the containing side"
-				+ " and be single-valued on the containing side.",
-				isElementCollectionAssociationsOnContainingSide() );
+		assumeTrue(
+				isElementCollectionAssociationsOnContainingSide(),
+				"This test only makes sense if there is an element collection with nested associations"
+						+ " on the containing side,"
+						+ " which requires that the associations be owned by the containing side"
+						+ " and be single-valued on the containing side."
+		);
 	}
 
 	private boolean isElementCollectionAssociationsOnContainedSide() {
@@ -230,11 +232,13 @@ public abstract class AbstractAutomaticIndexingAssociationBaseIT<
 	}
 
 	private void assumeElementCollectionAssociationsOnContainedSide() {
-		assumeTrue( "This test only makes sense if there is an element collection with nested associations"
-				+ " on the contained side,"
-				+ " which requires that the associations be owned by the contained side"
-				+ " and be single-valued on the contained side.",
-				isElementCollectionAssociationsOnContainedSide() );
+		assumeTrue(
+				isElementCollectionAssociationsOnContainedSide(),
+				"This test only makes sense if there is an element collection with nested associations"
+						+ " on the contained side,"
+						+ " which requires that the associations be owned by the contained side"
+						+ " and be single-valued on the contained side."
+		);
 	}
 
 	protected IndexedEntityPrimitives<TIndexed> _indexed() {
@@ -955,13 +959,16 @@ public abstract class AbstractAutomaticIndexingAssociationBaseIT<
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-4303")
 	public final void directImplicitAssociationUpdateThroughInsert_indexedEmbedded() {
-		assumeTrue( "This test only makes sense if the association is owned by the contained side",
-				isAssociationOwnedByContainedSide() );
 		assumeTrue(
+				isAssociationOwnedByContainedSide(),
+				"This test only makes sense if the association is owned by the contained side"
+		);
+		assumeTrue(
+				isAssociationLazyOnContainingSide() || !setupHolder.areEntitiesProcessedInSession(),
 				"This test can only succeed if the containing side of the association is loaded after the contained entity is inserted."
 						+ " See the paragraph starting with \"By the way\" in"
-						+ " https://discourse.hibernate.org/t/hs6-not-indexing-add-or-delete-only-update-with-onetomany-indexedembedded/5638/6",
-				isAssociationLazyOnContainingSide() || !setupHolder.areEntitiesProcessedInSession() );
+						+ " https://discourse.hibernate.org/t/hs6-not-indexing-add-or-delete-only-update-with-onetomany-indexedembedded/5638/6"
+		);
 
 		PropertyAccessor<TContained, TContaining> containedAssociation = _contained().containingAsIndexedEmbedded();
 		PropertyAccessor<TContained, String> field = _contained().indexedField();
@@ -1012,13 +1019,16 @@ public abstract class AbstractAutomaticIndexingAssociationBaseIT<
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-4303")
 	public final void directImplicitAssociationUpdateThroughDelete_indexedEmbedded() {
-		assumeTrue( "This test only makes sense if the association is owned by the contained side",
-				isAssociationOwnedByContainedSide() );
 		assumeTrue(
+				isAssociationOwnedByContainedSide(),
+				"This test only makes sense if the association is owned by the contained side"
+		);
+		assumeTrue(
+				isAssociationLazyOnContainingSide() || !setupHolder.areEntitiesProcessedInSession(),
 				"This test can only succeed if the containing side of the association is loaded after the contained entity is inserted."
 						+ " See the paragraph starting with \"By the way\" in"
-						+ " https://discourse.hibernate.org/t/hs6-not-indexing-add-or-delete-only-update-with-onetomany-indexedembedded/5638/6",
-				isAssociationLazyOnContainingSide() || !setupHolder.areEntitiesProcessedInSession() );
+						+ " https://discourse.hibernate.org/t/hs6-not-indexing-add-or-delete-only-update-with-onetomany-indexedembedded/5638/6"
+		);
 
 		PropertyAccessor<TContaining, TContained> containingAssociation = _containing().containedIndexedEmbedded();
 		PropertyAccessor<TContained, TContaining> containedAssociation = _contained().containingAsIndexedEmbedded();
@@ -1074,10 +1084,12 @@ public abstract class AbstractAutomaticIndexingAssociationBaseIT<
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-4365")
 	public final void directImplicitAssociationUpdateThroughDeleteWithAlreadyLoadedAssociation_indexedEmbedded() {
-		assumeTrue( "This test only makes sense if the association is owned by the contained side;" +
-				" if the association is owned by the containing side," +
-				" deleting a contained entity requires updating the association to avoid violating foreign key constraints.",
-				isAssociationOwnedByContainedSide() );
+		assumeTrue(
+				isAssociationOwnedByContainedSide(),
+				"This test only makes sense if the association is owned by the contained side;" +
+						" if the association is owned by the containing side," +
+						" deleting a contained entity requires updating the association to avoid violating foreign key constraints."
+		);
 
 		PropertyAccessor<TContaining, TContained> containingAssociation = _containing().containedIndexedEmbedded();
 		PropertyAccessor<TContained, TContaining> containedAssociation = _contained().containingAsIndexedEmbedded();
@@ -3557,13 +3569,16 @@ public abstract class AbstractAutomaticIndexingAssociationBaseIT<
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-4303")
 	public final void indirectImplicitAssociationUpdateThroughInsert_indexedEmbedded() {
-		assumeTrue( "This test only makes sense if the association is owned by the contained side",
-				isAssociationOwnedByContainedSide() );
 		assumeTrue(
+				isAssociationOwnedByContainedSide(),
+				"This test only makes sense if the association is owned by the contained side"
+		);
+		assumeTrue(
+				isAssociationLazyOnContainingSide() || !setupHolder.areEntitiesProcessedInSession(),
 				"This test can only succeed if the containing side of the association is loaded after the contained entity is inserted."
 						+ " See the paragraph starting with \"By the way\" in"
-						+ " https://discourse.hibernate.org/t/hs6-not-indexing-add-or-delete-only-update-with-onetomany-indexedembedded/5638/6",
-				isAssociationLazyOnContainingSide() || !setupHolder.areEntitiesProcessedInSession() );
+						+ " https://discourse.hibernate.org/t/hs6-not-indexing-add-or-delete-only-update-with-onetomany-indexedembedded/5638/6"
+		);
 
 		PropertyAccessor<TContained, TContaining> containedAssociation = _contained().containingAsIndexedEmbedded();
 		PropertyAccessor<TContained, String> field = _contained().indexedField();
@@ -3613,13 +3628,16 @@ public abstract class AbstractAutomaticIndexingAssociationBaseIT<
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-4303")
 	public final void indirectImplicitAssociationUpdateThroughDelete_indexedEmbedded() {
-		assumeTrue( "This test only makes sense if the association is owned by the contained side",
-				isAssociationOwnedByContainedSide() );
 		assumeTrue(
+				isAssociationOwnedByContainedSide(),
+				"This test only makes sense if the association is owned by the contained side"
+		);
+		assumeTrue(
+				isAssociationLazyOnContainingSide() || !setupHolder.areEntitiesProcessedInSession(),
 				"This test can only succeed if the containing side of the association is loaded after the contained entity is inserted."
 						+ " See the paragraph starting with \"By the way\" in"
-						+ " https://discourse.hibernate.org/t/hs6-not-indexing-add-or-delete-only-update-with-onetomany-indexedembedded/5638/6",
-				isAssociationLazyOnContainingSide() || !setupHolder.areEntitiesProcessedInSession() );
+						+ " https://discourse.hibernate.org/t/hs6-not-indexing-add-or-delete-only-update-with-onetomany-indexedembedded/5638/6"
+		);
 
 		PropertyAccessor<TContaining, TContained> containingAssociation = _containing().containedIndexedEmbedded();
 		PropertyAccessor<TContained, TContaining> containedAssociation = _contained().containingAsIndexedEmbedded();
@@ -3674,10 +3692,12 @@ public abstract class AbstractAutomaticIndexingAssociationBaseIT<
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-4365")
 	public final void indirectImplicitAssociationUpdateThroughDeleteWithAlreadyLoadedAssociation_indexedEmbedded() {
-		assumeTrue( "This test only makes sense if the association is owned by the contained side;" +
-				" if the association is owned by the containing side," +
-				" deleting a contained entity requires updating the association to avoid violating foreign key constraints.",
-				isAssociationOwnedByContainedSide() );
+		assumeTrue(
+				isAssociationOwnedByContainedSide(),
+				"This test only makes sense if the association is owned by the contained side;" +
+						" if the association is owned by the containing side," +
+						" deleting a contained entity requires updating the association to avoid violating foreign key constraints."
+		);
 
 		PropertyAccessor<TContaining, TContained> containingAssociation = _containing().containedIndexedEmbedded();
 		PropertyAccessor<TContained, TContaining> containedAssociation = _contained().containingAsIndexedEmbedded();

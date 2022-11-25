@@ -10,8 +10,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hibernate.search.util.impl.integrationtest.common.assertion.SearchHitsAssert.assertThatHits;
 import static org.hibernate.search.util.impl.integrationtest.common.assertion.SearchResultAssert.assertThatQuery;
 import static org.hibernate.search.util.impl.integrationtest.mapper.stub.StubMapperUtils.documentProvider;
-import static org.junit.Assume.assumeFalse;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.time.MonthDay;
 import java.time.temporal.Temporal;
@@ -154,8 +154,9 @@ public class FieldSortBaseIT<F> {
 			FieldTypeDescriptor<F> fieldType, SortMode sortMode,
 			DataSet<F> dataSetForAsc, DataSet<F> dataSetForDesc) {
 		assumeTrue(
-				"This test is only relevant when using SortMode.MEDIAN in nested fields",
-				isMedianWithNestedField( sortMode, fieldStructure ) && !isSumOrAvgOrMedianWithStringField( sortMode, fieldType )
+				isMedianWithNestedField( sortMode, fieldStructure )
+						&& !isSumOrAvgOrMedianWithStringField( sortMode, fieldType ),
+				"This test is only relevant when using SortMode.MEDIAN in nested fields"
 		);
 
 		String fieldPath = getFieldPath( fieldStructure, fieldType );
@@ -178,8 +179,8 @@ public class FieldSortBaseIT<F> {
 			FieldTypeDescriptor<F> fieldType, SortMode sortMode,
 			DataSet<F> dataSetForAsc, DataSet<F> dataSetForDesc) {
 		assumeTrue(
-				"This test is only relevant when using SortMode.SUM/AVG/MEDIAN on String fields",
-				isSumOrAvgOrMedianWithStringField( sortMode, fieldType )
+				isSumOrAvgOrMedianWithStringField( sortMode, fieldType ),
+				"This test is only relevant when using SortMode.SUM/AVG/MEDIAN on String fields"
 		);
 
 		String fieldPath = getFieldPath( fieldStructure, fieldType );
@@ -202,8 +203,8 @@ public class FieldSortBaseIT<F> {
 			FieldTypeDescriptor<F> fieldType, SortMode sortMode,
 			DataSet<F> dataSetForAsc, DataSet<F> dataSetForDesc) {
 		assumeTrue(
-				"This test is only relevant when using SortMode.SUM on Temporal fields",
-				isSumWithTemporalField( sortMode, fieldType )
+				isSumWithTemporalField( sortMode, fieldType ),
+				"This test is only relevant when using SortMode.SUM on Temporal fields"
 		);
 
 		String fieldPath = getFieldPath( fieldStructure, fieldType );
@@ -477,8 +478,10 @@ public class FieldSortBaseIT<F> {
 
 		AbstractObjectBinding parentObjectBinding = index.binding().getParentObject( fieldStructure );
 
-		assumeTrue( "This test is only relevant when the field is located on an object field",
-				parentObjectBinding.absolutePath != null );
+		assumeTrue(
+				parentObjectBinding.absolutePath != null,
+				"This test is only relevant when the field is located on an object field"
+		);
 
 		DataSet<F> dataSet = dataSetForAsc;
 		assertThatQuery( index.query()
@@ -661,10 +664,10 @@ public class FieldSortBaseIT<F> {
 	private void assumeTestParametersWork(TestedFieldStructure fieldStructure, FieldTypeDescriptor<F> fieldType,
 			SortMode sortMode) {
 		assumeFalse(
-				"This combination is not expected to work",
 				isMedianWithNestedField( sortMode, fieldStructure )
-						|| isSumOrAvgOrMedianWithStringField( sortMode, fieldType ) || isSumWithTemporalField(
-								sortMode, fieldType )
+						|| isSumOrAvgOrMedianWithStringField( sortMode, fieldType )
+						|| isSumWithTemporalField( sortMode, fieldType ),
+				"This combination is not expected to work"
 		);
 	}
 

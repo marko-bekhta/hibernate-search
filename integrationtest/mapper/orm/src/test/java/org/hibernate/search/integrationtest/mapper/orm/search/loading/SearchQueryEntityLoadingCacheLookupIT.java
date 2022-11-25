@@ -7,7 +7,7 @@
 package org.hibernate.search.integrationtest.mapper.orm.search.loading;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -190,8 +190,8 @@ public class SearchQueryEntityLoadingCacheLookupIT<T> extends AbstractSearchQuer
 			EntityLoadingCacheLookupStrategy defaultCacheLookupStrategy) {
 		init( model, mapping, defaultCacheLookupStrategy );
 		assumeTrue(
-				"This test only makes sense if cache lookups are supported",
-				mapping.isCacheLookupSupported()
+				mapping.isCacheLookupSupported(),
+				"This test only makes sense if cache lookups are supported"
 		);
 
 		testLoadingCacheLookup(
@@ -218,8 +218,8 @@ public class SearchQueryEntityLoadingCacheLookupIT<T> extends AbstractSearchQuer
 			EntityLoadingCacheLookupStrategy defaultCacheLookupStrategy) {
 		init( model, mapping, defaultCacheLookupStrategy );
 		assumeTrue(
-				"This test only makes sense if cache lookups are supported",
-				mapping.isCacheLookupSupported()
+				mapping.isCacheLookupSupported(),
+				"This test only makes sense if cache lookups are supported"
 		);
 
 		testLoadingCacheLookup(

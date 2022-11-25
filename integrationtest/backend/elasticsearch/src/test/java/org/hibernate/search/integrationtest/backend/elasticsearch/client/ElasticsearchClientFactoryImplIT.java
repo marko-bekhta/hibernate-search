@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.fail;
 import static org.awaitility.Awaitility.await;
 import static org.hibernate.search.util.impl.test.JsonHelper.assertJsonEquals;
-import static org.junit.Assume.assumeFalse;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -153,6 +153,11 @@ public class ElasticsearchClientFactoryImplIT {
 		// Ideally WiremockRule should do that by itself, but it doesn't...
 		wireMockRule1.resetAll();
 		wireMockRule2.resetAll();
+	}
+
+	@RetryExtension.TestWithRetry(retries = 10)
+	void name() {
+		assumeFalse( true );
 	}
 
 	@RetryExtension.TestWithRetry
@@ -856,10 +861,10 @@ public class ElasticsearchClientFactoryImplIT {
 	@TestForIssue(jiraKey = "HSEARCH-2453")
 	public void authentication() {
 		assumeFalse(
+				ElasticsearchTestHostConnectionConfiguration.get().isAws(),
 				"This test only is only relevant if Elasticsearch request are *NOT* automatically" +
 						" augmented with an \"Authentication:\" header." +
-						" \"Authentication:\" headers are added by the AWS integration in particular.",
-				ElasticsearchTestHostConnectionConfiguration.get().isAws()
+						" \"Authentication:\" headers are added by the AWS integration in particular."
 		);
 		String username = "ironman";
 		String password = "j@rV1s";
