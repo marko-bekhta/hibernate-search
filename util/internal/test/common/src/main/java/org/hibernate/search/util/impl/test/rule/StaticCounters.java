@@ -9,8 +9,8 @@ package org.hibernate.search.util.impl.test.rule;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.junit.jupiter.api.extension.AfterTestExecutionCallback;
-import org.junit.jupiter.api.extension.BeforeTestExecutionCallback;
+import org.junit.jupiter.api.extension.AfterEachCallback;
+import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
 /**
@@ -18,7 +18,7 @@ import org.junit.jupiter.api.extension.ExtensionContext;
  * This rule ensures static counters are set to zero before the test,
  * allows to increment them from static methods, and allows to check the counters from the rule itself.
  */
-public final class StaticCounters implements BeforeTestExecutionCallback, AfterTestExecutionCallback {
+public final class StaticCounters implements BeforeEachCallback, AfterEachCallback {
 
 	private static final StaticCounters DUMMY_INSTANCE = create();
 	private static StaticCounters activeInstance = null;
@@ -55,7 +55,7 @@ public final class StaticCounters implements BeforeTestExecutionCallback, AfterT
 	private final Map<Key, Integer> counters = new ConcurrentHashMap<>();
 
 	@Override
-	public void beforeTestExecution(ExtensionContext context) {
+	public void beforeEach(ExtensionContext context) {
 		counters.clear();
 		if ( activeInstance != null ) {
 			throw new IllegalStateException( "Using StaticCounters twice in a single test is forbidden."
@@ -66,7 +66,7 @@ public final class StaticCounters implements BeforeTestExecutionCallback, AfterT
 	}
 
 	@Override
-	public void afterTestExecution(ExtensionContext context) {
+	public void afterEach(ExtensionContext context) {
 		activeInstance = null;
 		counters.clear();
 	}
