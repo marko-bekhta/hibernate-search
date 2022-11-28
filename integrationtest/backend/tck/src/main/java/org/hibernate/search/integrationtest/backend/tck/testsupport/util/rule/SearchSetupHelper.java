@@ -102,31 +102,24 @@ public class SearchSetupHelper
 		this.setupStrategy = setupStrategyFunction.apply( TckConfiguration.get().getBackendHelper() );
 		Optional<Extension> setupStrategyTestExtension = setupStrategy.extension();
 
-		ComposedExtension.FullExtension ownActions = new ComposedExtension.FullExtension(
-				afterAllContext -> {
+		ComposedExtension.FullExtension ownActions = new ComposedExtension.FullExtension.Builder()
+				.withAfterAll( afterAllContext -> {
 					if ( Type.CLASS.equals( type ) ) {
 						cleanUp();
 					}
-				},
-				afterEachContext -> {
+				} ).withAfterEach( afterEachContext -> {
 					if ( Type.METHOD.equals( type ) ) {
 						cleanUp();
 					}
-				},
-				afterTestExecutionContext -> {},
-				beforeAllContext -> {},
-				beforeEachContext -> {},
-				beforeTestExecutionContext -> {},
-				(testExecutionExceptionContext, throwable) -> {
-					// When used as a @ClassRule, exceptions are not properly reported by JUnit.
+				} ).withTestExecutionExceptionHandler( (testExecutionExceptionContext, throwable) -> {
+					// When used as a "ClassExtension", exceptions are not properly reported by JUnit.
 					// Log them so that we have something in the logs, at least.
 					log.warn(
 							"Exception thrown by test and caught by SearchSetupHelper rule: " + throwable.getMessage(),
-							throwable );
+							throwable
+					);
 					throw throwable;
-				}
-
-		);
+				} ).build();
 
 		this.delegate = new ComposedExtension(
 				ownActions,
