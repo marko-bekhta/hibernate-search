@@ -673,6 +673,11 @@
                 <artifactId>testcontainers</artifactId>
                 <version>${testcontainers.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>jdbc</artifactId>
+                <version>${testcontainers.version}</version>
+            </dependency>
             <!--
                 Manage the upgrade from Hamcrest 1.x to 2.x:
                 http://hamcrest.org/JavaHamcrest/distributables#upgrading-from-hamcrest-1x
