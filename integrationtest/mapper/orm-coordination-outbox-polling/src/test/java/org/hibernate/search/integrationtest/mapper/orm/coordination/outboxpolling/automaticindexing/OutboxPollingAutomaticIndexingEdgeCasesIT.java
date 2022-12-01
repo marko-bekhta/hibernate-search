@@ -73,7 +73,7 @@ public class OutboxPollingAutomaticIndexingEdgeCasesIT {
 	}
 
 	@Test
-	public void multipleChangesSameTransaction() {
+	void multipleChangesSameTransaction() {
 		setupHolder.runInTransaction( session -> {
 			IndexedEntity entity1 = new IndexedEntity( 1, "initialValue I" );
 			session.persist( entity1 );
@@ -109,7 +109,7 @@ public class OutboxPollingAutomaticIndexingEdgeCasesIT {
 	}
 
 	@Test
-	public void massiveInsert() {
+	void massiveInsert() {
 		for ( int i = 0; i < 5; i++ ) {
 			int finalI = i;
 			setupHolder.runInTransaction( session -> {
@@ -134,7 +134,7 @@ public class OutboxPollingAutomaticIndexingEdgeCasesIT {
 	}
 
 	@Test
-	public void addIndexedAndContained_addAndUpdateEventsProcessedInDifferentBatches() {
+	void addIndexedAndContained_addAndUpdateEventsProcessedInDifferentBatches() {
 		setupHolder.runInTransaction( session -> {
 			IndexedEntity containing = new IndexedEntity( 1, "initialValue" );
 			session.persist( containing );

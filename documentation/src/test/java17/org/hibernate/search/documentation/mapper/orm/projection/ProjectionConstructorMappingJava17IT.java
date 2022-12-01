@@ -108,7 +108,7 @@ public class ProjectionConstructorMappingJava17IT {
 
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	public void simple(Boolean annotationProcessingEnabled, HibernateOrmSearchMappingConfigurer mappingContributor) {
+	void simple(Boolean annotationProcessingEnabled, HibernateOrmSearchMappingConfigurer mappingContributor) {
 		init( annotationProcessingEnabled, mappingContributor );
 		with( entityManagerFactory ).runInTransaction( entityManager -> {
 			SearchSession searchSession = Search.session( entityManager );
@@ -173,7 +173,7 @@ public class ProjectionConstructorMappingJava17IT {
 
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	public void multiConstructor_class(Boolean annotationProcessingEnabled, HibernateOrmSearchMappingConfigurer mappingContributor) {
+	void multiConstructor_class(Boolean annotationProcessingEnabled, HibernateOrmSearchMappingConfigurer mappingContributor) {
 		init( annotationProcessingEnabled, mappingContributor );
 		with( entityManagerFactory ).runInTransaction( entityManager -> {
 			SearchSession searchSession = Search.session( entityManager );
@@ -195,7 +195,7 @@ public class ProjectionConstructorMappingJava17IT {
 
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	public void multiConstructor_record(Boolean annotationProcessingEnabled, HibernateOrmSearchMappingConfigurer mappingContributor) {
+	void multiConstructor_record(Boolean annotationProcessingEnabled, HibernateOrmSearchMappingConfigurer mappingContributor) {
 		init( annotationProcessingEnabled, mappingContributor );
 		with( entityManagerFactory ).runInTransaction( entityManager -> {
 			SearchSession searchSession = Search.session( entityManager );

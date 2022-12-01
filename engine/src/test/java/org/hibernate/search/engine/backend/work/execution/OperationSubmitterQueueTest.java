@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class OperationSubmitterQueueTest {
+class OperationSubmitterQueueTest {
 
 	private BlockingQueue<Integer> queue;
 
@@ -33,7 +33,7 @@ public class OperationSubmitterQueueTest {
 	}
 
 	@Test
-	public void blockingOperationSubmitterBlocksTheOperation() throws InterruptedException {
+	void blockingOperationSubmitterBlocksTheOperation() throws InterruptedException {
 		CompletableFuture<Boolean> future = CompletableFuture.supplyAsync( () -> {
 			try {
 				OperationSubmitter.blocking().submitToQueue( queue, 3, i -> {}, (e, t) -> {} );
@@ -57,7 +57,7 @@ public class OperationSubmitterQueueTest {
 
 
 	@Test
-	public void nonBlockingOperationSubmitterThrowsException() {
+	void nonBlockingOperationSubmitterThrowsException() {
 		Integer element = 3;
 		assertThatThrownBy( () -> OperationSubmitter.rejecting().submitToQueue( queue, element, i -> {}, (e, t) -> {} ) )
 				.isInstanceOf( RejectedExecutionException.class );

@@ -25,7 +25,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import org.apache.logging.log4j.Level;
 
-public class FailureReportIT {
+class FailureReportIT {
 
 	private static final String FAILURE_LOG_INTRODUCTION = "Hibernate Search encountered a failure during bootstrap;"
 			+ " continuing for now to list all problems,"
@@ -52,7 +52,7 @@ public class FailureReportIT {
 	 * and check that every failure is reported, and that failures are grouped into a single list.
 	 */
 	@Test
-	public void multipleFailuresSameContext() {
+	void multipleFailuresSameContext() {
 		final String indexName = "indexName";
 		@Indexed(index = indexName)
 		class IndexedEntity {
@@ -108,7 +108,7 @@ public class FailureReportIT {
 	 * and check that every failure is reported.
 	 */
 	@Test
-	public void multipleFailuresMultipleProperties() {
+	void multipleFailuresMultipleProperties() {
 		final String indexName = "indexName";
 		@Indexed(index = indexName)
 		class IndexedEntity {
@@ -167,7 +167,7 @@ public class FailureReportIT {
 	 * and check that every failure is reported.
 	 */
 	@Test
-	public void multipleFailuresMultipleTypes() {
+	void multipleFailuresMultipleTypes() {
 		final String indexName1 = "indexName1";
 		@Indexed(index = indexName1)
 		class IndexedEntity1 {
@@ -229,7 +229,7 @@ public class FailureReportIT {
 	}
 
 	@Test
-	public void failuresFromBackend() {
+	void failuresFromBackend() {
 		final String indexName = "indexName";
 		@Indexed(index = indexName)
 		class IndexedEntity {

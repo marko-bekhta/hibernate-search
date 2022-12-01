@@ -23,7 +23,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class IdentifierBridgeParamAnnotationIT {
+class IdentifierBridgeParamAnnotationIT {
 	@RegisterExtension
 	public DocumentationSetupHelper setupHelper = DocumentationSetupHelper.withSingleBackend( BackendConfigurations.simple() );
 
@@ -35,7 +35,7 @@ public class IdentifierBridgeParamAnnotationIT {
 	}
 
 	@Test
-	public void smoke() {
+	void smoke() {
 		with( entityManagerFactory ).runInTransaction( entityManager -> {
 			Book book1 = new Book();
 			book1.setId( 0 );

@@ -78,7 +78,7 @@ public class ToSearchSessionFromSessionProxyIT {
 	}
 
 	@Test
-	public void testSessionWrapper() {
+	void testSessionWrapper() {
 		setupHolder.runNoTransaction( s -> {
 			DelegationWrapper wrapper = new DelegationWrapper( s );
 			Session wrapped = (Session) Proxy.newProxyInstance(
@@ -101,7 +101,7 @@ public class ToSearchSessionFromSessionProxyIT {
 	}
 
 	@Test
-	public void testThreadBoundSessionWrappingInTransaction() {
+	void testThreadBoundSessionWrappingInTransaction() {
 		final Session sessionFromFirstThread = setupHolder.sessionFactory().getCurrentSession();
 		try {
 			runInTransaction( sessionFromFirstThread, ignored -> {
@@ -134,7 +134,7 @@ public class ToSearchSessionFromSessionProxyIT {
 	}
 
 	@Test
-	public void testThreadBoundSessionWrappingOutOfTransaction() {
+	void testThreadBoundSessionWrappingOutOfTransaction() {
 		final Session sessionFromFirstThread = setupHolder.sessionFactory().getCurrentSession();
 		try {
 			SearchSession searchSessionFromFirstThread = Search.session( sessionFromFirstThread );

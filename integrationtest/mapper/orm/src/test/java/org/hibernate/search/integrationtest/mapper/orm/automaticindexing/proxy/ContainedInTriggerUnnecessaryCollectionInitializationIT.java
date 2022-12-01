@@ -33,7 +33,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 @TestForIssue(jiraKey = "HSEARCH-1710")
-public class ContainedInTriggerUnnecessaryCollectionInitializationIT {
+class ContainedInTriggerUnnecessaryCollectionInitializationIT {
 
 	@RegisterExtension
 	public BackendMock backendMock = BackendMock.create();
@@ -57,7 +57,7 @@ public class ContainedInTriggerUnnecessaryCollectionInitializationIT {
 	}
 
 	@Test
-	public void test() {
+	void test() {
 		with( sessionFactory ).runInTransaction( session -> {
 			Group group = new Group();
 			group.setId( 1 );

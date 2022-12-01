@@ -82,7 +82,7 @@ public class RegexpPredicateSpecificsIT {
 	}
 
 	@Test
-	public void analyzedField() {
+	void analyzedField() {
 		StubMappingScope scope = index.createScope();
 		String absoluteFieldPath = index.binding().analyzedField.relativeFieldName;
 		Function<String, SearchQueryFinalStep<DocumentReference>> createQuery = queryString -> scope.query()
@@ -100,7 +100,7 @@ public class RegexpPredicateSpecificsIT {
 	}
 
 	@Test
-	public void normalizedField() {
+	void normalizedField() {
 		StubMappingScope scope = index.createScope();
 		String absoluteFieldPath = index.binding().normalizedField.relativeFieldName;
 		Function<String, SearchQueryFinalStep<DocumentReference>> createQuery = queryString -> scope.query()
@@ -122,7 +122,7 @@ public class RegexpPredicateSpecificsIT {
 	}
 
 	@Test
-	public void nonAnalyzedField() {
+	void nonAnalyzedField() {
 		StubMappingScope scope = index.createScope();
 		String absoluteFieldPath = index.binding().nonAnalyzedField.relativeFieldName;
 		Function<String, SearchQueryFinalStep<DocumentReference>> createQuery = queryString -> scope.query()
@@ -137,7 +137,7 @@ public class RegexpPredicateSpecificsIT {
 	}
 
 	@Test
-	public void moreCases() {
+	void moreCases() {
 		StubMappingScope scope = index.createScope();
 		String absoluteFieldPath = index.binding().nonAnalyzedField.relativeFieldName;
 		Function<String, SearchQueryFinalStep<DocumentReference>> createQuery = queryString -> scope.query()
@@ -154,7 +154,7 @@ public class RegexpPredicateSpecificsIT {
 	}
 
 	@Test
-	public void emptyString() {
+	void emptyString() {
 		String absoluteFieldPath = index.binding().analyzedField.relativeFieldName;
 
 		assertThatQuery( index.query()
@@ -163,7 +163,7 @@ public class RegexpPredicateSpecificsIT {
 	}
 
 	@Test
-	public void flag_complement() {
+	void flag_complement() {
 		StubMappingScope scope = index.createScope();
 		String absoluteFieldPath = index.binding().complementField.relativeFieldName;
 
@@ -206,7 +206,7 @@ public class RegexpPredicateSpecificsIT {
 	}
 
 	@Test
-	public void flag_interval() {
+	void flag_interval() {
 		StubMappingScope scope = index.createScope();
 		String absoluteFieldPath = index.binding().intervalField.relativeFieldName;
 
@@ -249,7 +249,7 @@ public class RegexpPredicateSpecificsIT {
 	}
 
 	@Test
-	public void flag_intersection() {
+	void flag_intersection() {
 		StubMappingScope scope = index.createScope();
 		String absoluteFieldPath = index.binding().intersectionField.relativeFieldName;
 
@@ -292,7 +292,7 @@ public class RegexpPredicateSpecificsIT {
 	}
 
 	@Test
-	public void flag_anyString() {
+	void flag_anyString() {
 		StubMappingScope scope = index.createScope();
 		String absoluteFieldPath = index.binding().anyStringField.relativeFieldName;
 

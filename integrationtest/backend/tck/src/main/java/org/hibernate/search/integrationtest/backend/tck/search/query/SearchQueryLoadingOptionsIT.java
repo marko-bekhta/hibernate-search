@@ -53,7 +53,7 @@ public class SearchQueryLoadingOptionsIT {
 	}
 
 	@Test
-	public void defaultResultType() {
+	void defaultResultType() {
 		SearchLoadingContext<StubEntity> loadingContextMock = mock( SearchLoadingContext.class );
 		Consumer<Object> loadingOptionsStepMock = mock( Consumer.class );
 
@@ -76,7 +76,7 @@ public class SearchQueryLoadingOptionsIT {
 	}
 
 	@Test
-	public void selectEntity() {
+	void selectEntity() {
 		SearchLoadingContext<StubEntity> loadingContextMock = mock( SearchLoadingContext.class );
 		Consumer<Object> loadingOptionsStepMock = mock( Consumer.class );
 
@@ -100,7 +100,7 @@ public class SearchQueryLoadingOptionsIT {
 	}
 
 	@Test
-	public void selectEntityReference() {
+	void selectEntityReference() {
 		SearchLoadingContext<StubEntity> loadingContextMock = mock( SearchLoadingContext.class );
 		Consumer<Object> loadingOptionsStepMock = mock( Consumer.class );
 
@@ -122,7 +122,7 @@ public class SearchQueryLoadingOptionsIT {
 	}
 
 	@Test
-	public void select() {
+	void select() {
 		SearchLoadingContext<StubEntity> loadingContextMock =
 				mock( SearchLoadingContext.class );
 		Consumer<Object> loadingOptionsStepMock = mock( Consumer.class );

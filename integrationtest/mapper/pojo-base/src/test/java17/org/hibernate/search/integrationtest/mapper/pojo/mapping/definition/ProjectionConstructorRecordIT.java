@@ -22,13 +22,13 @@ import org.hibernate.search.util.impl.test.annotation.TestForIssue;
 
 import org.junit.jupiter.api.Test;
 
-public class ProjectionConstructorRecordIT extends AbstractProjectionConstructorIT {
+class ProjectionConstructorRecordIT extends AbstractProjectionConstructorIT {
 
 	@RegisterExtension
 	public StandalonePojoMappingSetupHelper setupHelper = StandalonePojoMappingSetupHelper.withBackendMock( MethodHandles.lookup(), backendMock );
 
 	@Test
-	public void typeLevelAnnotation() {
+	void typeLevelAnnotation() {
 		@Indexed(index = INDEX_NAME)
 		class IndexedEntity {
 			@DocumentId
@@ -69,7 +69,7 @@ public class ProjectionConstructorRecordIT extends AbstractProjectionConstructor
 
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-4853")
-	public void constructorLevelAnnotation_canonical() {
+	void constructorLevelAnnotation_canonical() {
 		@Indexed(index = INDEX_NAME)
 		class IndexedEntity {
 			@DocumentId
@@ -115,7 +115,7 @@ public class ProjectionConstructorRecordIT extends AbstractProjectionConstructor
 	}
 
 	@Test
-	public void constructorLevelAnnotation_nonCanonical() {
+	void constructorLevelAnnotation_nonCanonical() {
 		@Indexed(index = INDEX_NAME)
 		class IndexedEntity {
 			@DocumentId

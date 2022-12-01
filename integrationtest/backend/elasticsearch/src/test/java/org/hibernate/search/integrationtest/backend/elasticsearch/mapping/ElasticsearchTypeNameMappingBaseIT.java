@@ -68,7 +68,7 @@ public class ElasticsearchTypeNameMappingBaseIT {
 
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	public void singleIndexScope(String strategyName, JsonObject expectedMappingContent,
+	void singleIndexScope(String strategyName, JsonObject expectedMappingContent,
 			IrregularIndexNameSupport irregularIndexNameSupport) {
 		setup( StubMappingSchemaManagementStrategy.DROP_AND_CREATE_AND_DROP, strategyName );
 		assertThatQuery(
@@ -82,7 +82,7 @@ public class ElasticsearchTypeNameMappingBaseIT {
 
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	public void multiIndexScope(String strategyName, JsonObject expectedMappingContent,
+	void multiIndexScope(String strategyName, JsonObject expectedMappingContent,
 			IrregularIndexNameSupport irregularIndexNameSupport) {
 		setup( StubMappingSchemaManagementStrategy.DROP_AND_CREATE_AND_DROP, strategyName );
 
@@ -99,7 +99,7 @@ public class ElasticsearchTypeNameMappingBaseIT {
 
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	public void irregularIndexName_correctNamingSchemeAndIncorrectUniqueKey_singleIndexScope(String strategyName,
+	void irregularIndexName_correctNamingSchemeAndIncorrectUniqueKey_singleIndexScope(String strategyName,
 			JsonObject expectedMappingContent,
 			IrregularIndexNameSupport irregularIndexNameSupport) {
 		createIndexesWithCorrectNamingSchemeIncorrectUniqueKeyAndCorrectAliases( expectedMappingContent );
@@ -119,7 +119,7 @@ public class ElasticsearchTypeNameMappingBaseIT {
 
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	public void irregularIndexName_correctNamingSchemeAndIncorrectUniqueKey_multiIndexScope(String strategyName,
+	void irregularIndexName_correctNamingSchemeAndIncorrectUniqueKey_multiIndexScope(String strategyName,
 			JsonObject expectedMappingContent,
 			IrregularIndexNameSupport irregularIndexNameSupport) {
 		createIndexesWithCorrectNamingSchemeIncorrectUniqueKeyAndCorrectAliases( expectedMappingContent );
@@ -146,7 +146,7 @@ public class ElasticsearchTypeNameMappingBaseIT {
 
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	public void irregularIndexName_incorrectNamingScheme_singleIndexScope(String strategyName,
+	void irregularIndexName_incorrectNamingScheme_singleIndexScope(String strategyName,
 			JsonObject expectedMappingContent,
 			IrregularIndexNameSupport irregularIndexNameSupport) {
 		createIndexesWithIncorrectNamingSchemeAndCorrectAliases( expectedMappingContent );
@@ -166,7 +166,7 @@ public class ElasticsearchTypeNameMappingBaseIT {
 
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	public void irregularIndexName_incorrectNamingScheme_multiIndexScope(String strategyName, JsonObject expectedMappingContent,
+	void irregularIndexName_incorrectNamingScheme_multiIndexScope(String strategyName, JsonObject expectedMappingContent,
 			IrregularIndexNameSupport irregularIndexNameSupport) {
 		createIndexesWithIncorrectNamingSchemeAndCorrectAliases( expectedMappingContent );
 		setup( StubMappingSchemaManagementStrategy.DROP_ON_SHUTDOWN_ONLY, strategyName );

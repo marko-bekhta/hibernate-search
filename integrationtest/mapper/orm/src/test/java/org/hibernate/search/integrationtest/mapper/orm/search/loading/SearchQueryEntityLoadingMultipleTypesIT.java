@@ -191,7 +191,7 @@ public class SearchQueryEntityLoadingMultipleTypesIT extends AbstractSearchQuery
 	 */
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-3349")
-	public void singleHierarchy() {
+	void singleHierarchy() {
 		testLoading(
 				Arrays.asList(
 						Hierarchy1_A_B.class,
@@ -218,7 +218,7 @@ public class SearchQueryEntityLoadingMultipleTypesIT extends AbstractSearchQuery
 	 */
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-3349")
-	public void singleHierarchy_middleMappedSuperClass() {
+	void singleHierarchy_middleMappedSuperClass() {
 		testLoading(
 				Arrays.asList(
 						Hierarchy5_A_B_C.class,
@@ -245,7 +245,7 @@ public class SearchQueryEntityLoadingMultipleTypesIT extends AbstractSearchQuery
 	 */
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-3349")
-	public void mixedHierarchies() {
+	void mixedHierarchies() {
 		testLoading(
 				Arrays.asList(
 						Hierarchy1_A_B.class,
@@ -286,7 +286,7 @@ public class SearchQueryEntityLoadingMultipleTypesIT extends AbstractSearchQuery
 	}
 
 	@Test
-	public void mixedHierarchies_entityLoadingTimeout() {
+	void mixedHierarchies_entityLoadingTimeout() {
 		assertThatThrownBy( () -> testLoading(
 				Arrays.asList(
 						Hierarchy1_A_B.class,
@@ -336,7 +336,7 @@ public class SearchQueryEntityLoadingMultipleTypesIT extends AbstractSearchQuery
 	 */
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-3203")
-	public void mixedDocumentIdMapping_entityIdAndProperty_mixedHierarchies() {
+	void mixedDocumentIdMapping_entityIdAndProperty_mixedHierarchies() {
 		testLoading(
 				Arrays.asList(
 						Hierarchy4_A_B__integer1DocumentId.class,
@@ -362,7 +362,7 @@ public class SearchQueryEntityLoadingMultipleTypesIT extends AbstractSearchQuery
 	 */
 	@Test
 	@TestForIssue(jiraKey = { "HSEARCH-3203", "HSEARCH-3349" })
-	public void mixedDocumentIdMapping_entityIdAndProperty_singleHierarchy() {
+	void mixedDocumentIdMapping_entityIdAndProperty_singleHierarchy() {
 		testLoading(
 				Arrays.asList(
 						Hierarchy4_A_B__integer1DocumentId.class,
@@ -389,7 +389,7 @@ public class SearchQueryEntityLoadingMultipleTypesIT extends AbstractSearchQuery
 	 */
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-3203")
-	public void mixedDocumentIdMapping_differentProperty() {
+	void mixedDocumentIdMapping_differentProperty() {
 		testLoading(
 				Arrays.asList(
 						Hierarchy4_A_B__integer1DocumentId.class,
@@ -418,7 +418,7 @@ public class SearchQueryEntityLoadingMultipleTypesIT extends AbstractSearchQuery
 	 */
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-3349")
-	public void secondLevelCacheLookup() {
+	void secondLevelCacheLookup() {
 		testLoading(
 				session -> {}, // No particular session setup needed
 				Arrays.asList(
@@ -466,7 +466,7 @@ public class SearchQueryEntityLoadingMultipleTypesIT extends AbstractSearchQuery
 	 */
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-3349")
-	public void typeChanged() {
+	void typeChanged() {
 		testLoading(
 				Arrays.asList( Interface1.class ), // Implemented by B and C, but not D
 				Arrays.asList(
@@ -497,7 +497,7 @@ public class SearchQueryEntityLoadingMultipleTypesIT extends AbstractSearchQuery
 	 */
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-3349")
-	public void typeChanged_secondLevelCacheLookup() {
+	void typeChanged_secondLevelCacheLookup() {
 		testLoading(
 				session -> {}, // No particular session setup needed
 				Arrays.asList( Interface2.class ), // Implemented by B and C, but not D

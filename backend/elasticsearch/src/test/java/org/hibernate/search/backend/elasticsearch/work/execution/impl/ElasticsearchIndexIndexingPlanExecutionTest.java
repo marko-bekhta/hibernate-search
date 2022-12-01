@@ -44,7 +44,7 @@ import org.mockito.quality.Strictness;
 @MockitoSettings(strictness = Strictness.STRICT_STUBS)
 @ExtendWith(MockitoExtension.class)
 @SuppressWarnings("unchecked") // Raw types are the only way to mock parameterized types
-public class ElasticsearchIndexIndexingPlanExecutionTest {
+class ElasticsearchIndexIndexingPlanExecutionTest {
 
 	private static final String TYPE_NAME = "SomeTypeName";
 
@@ -63,7 +63,7 @@ public class ElasticsearchIndexIndexingPlanExecutionTest {
 	}
 
 	@Test
-	public void success() {
+	void success() {
 		// Work futures: we will complete them
 		ArgumentCaptor<CompletableFuture<Void>> work1FutureCaptor = futureCaptor();
 		ArgumentCaptor<CompletableFuture<Void>> work2FutureCaptor = futureCaptor();
@@ -110,7 +110,7 @@ public class ElasticsearchIndexIndexingPlanExecutionTest {
 	}
 
 	@Test
-	public void failure_work() {
+	void failure_work() {
 		RuntimeException work1Exception = new RuntimeException( "work1" );
 
 		// Work futures: we will complete them
@@ -160,7 +160,7 @@ public class ElasticsearchIndexIndexingPlanExecutionTest {
 	}
 
 	@Test
-	public void failure_multipleWorks() {
+	void failure_multipleWorks() {
 		RuntimeException work1Exception = new RuntimeException( "work1" );
 		RuntimeException work3Exception = new RuntimeException( "work3" );
 
@@ -220,7 +220,7 @@ public class ElasticsearchIndexIndexingPlanExecutionTest {
 
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-3851")
-	public void failure_multipleWorksAndCreateEntityReference() {
+	void failure_multipleWorksAndCreateEntityReference() {
 		RuntimeException work1Exception = new RuntimeException( "work1" );
 		RuntimeException work3Exception = new RuntimeException( "work3" );
 

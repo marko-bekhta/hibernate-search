@@ -69,7 +69,7 @@ public class CompositeProjectionSingleStepIT {
 	}
 
 	@Test
-	public void compositeList_fromSearchProjectionObjects() {
+	void compositeList_fromSearchProjectionObjects() {
 		StubMappingScope scope = index.createScope();
 
 		SearchQuery<List<?>> query = scope.query()
@@ -92,7 +92,7 @@ public class CompositeProjectionSingleStepIT {
 	}
 
 	@Test
-	public void compositeList_fromTerminalContexts() {
+	void compositeList_fromTerminalContexts() {
 		StubMappingScope scope = index.createScope();
 
 		SearchQuery<List<?>> query = scope.query()
@@ -115,7 +115,7 @@ public class CompositeProjectionSingleStepIT {
 	}
 
 	@Test
-	public void compositeList_transformer_fromSearchProjectionObjects() {
+	void compositeList_transformer_fromSearchProjectionObjects() {
 		StubMappingScope scope = index.createScope();
 
 		SearchQuery<Book_Bi> query = scope.query()
@@ -139,7 +139,7 @@ public class CompositeProjectionSingleStepIT {
 	}
 
 	@Test
-	public void compositeList_transformer_fromTerminalContext() {
+	void compositeList_transformer_fromTerminalContext() {
 		StubMappingScope scope = index.createScope();
 
 		SearchQuery<Book_Bi> query = scope.query()
@@ -163,7 +163,7 @@ public class CompositeProjectionSingleStepIT {
 	}
 
 	@Test
-	public void compositeFunction_fromSearchProjectionObjects() {
+	void compositeFunction_fromSearchProjectionObjects() {
 		StubMappingScope scope = index.createScope();
 
 		SearchQuery<Book> query = scope.query()
@@ -183,7 +183,7 @@ public class CompositeProjectionSingleStepIT {
 	}
 
 	@Test
-	public void compositeFunction_fromTerminalContext() {
+	void compositeFunction_fromTerminalContext() {
 		StubMappingScope scope = index.createScope();
 
 		SearchQuery<Book> query = scope.query()
@@ -203,7 +203,7 @@ public class CompositeProjectionSingleStepIT {
 	}
 
 	@Test
-	public void compositeBiFunction_fromSearchProjectionObjects() {
+	void compositeBiFunction_fromSearchProjectionObjects() {
 		StubMappingScope scope = index.createScope();
 
 		SearchQuery<Book_Bi> query = scope.query()
@@ -227,7 +227,7 @@ public class CompositeProjectionSingleStepIT {
 	}
 
 	@Test
-	public void compositeBiFunction_fromTerminalContexts() {
+	void compositeBiFunction_fromTerminalContexts() {
 		StubMappingScope scope = index.createScope();
 
 		SearchQuery<Book_Bi> query = scope.query()
@@ -251,7 +251,7 @@ public class CompositeProjectionSingleStepIT {
 	}
 
 	@Test
-	public void compositeTriFunction_fromSearchProjectionObjects() {
+	void compositeTriFunction_fromSearchProjectionObjects() {
 		StubMappingScope scope = index.createScope();
 
 		SearchQuery<Book_Tri> query = scope.query()
@@ -279,7 +279,7 @@ public class CompositeProjectionSingleStepIT {
 	}
 
 	@Test
-	public void compositeTriFunction_fromTerminalContexts() {
+	void compositeTriFunction_fromTerminalContexts() {
 		StubMappingScope scope = index.createScope();
 
 		SearchQuery<Book_Tri> query = scope.query()
@@ -307,7 +307,7 @@ public class CompositeProjectionSingleStepIT {
 	}
 
 	@Test
-	public void nestedComposite() {
+	void nestedComposite() {
 		StubMappingScope scope = index.createScope();
 
 		SearchQuery<Book_Bi_Score> query = scope.query()

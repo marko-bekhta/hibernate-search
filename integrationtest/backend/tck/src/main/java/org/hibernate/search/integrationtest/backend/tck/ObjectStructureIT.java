@@ -58,7 +58,7 @@ public class ObjectStructureIT {
 	}
 
 	@Test
-	public void index_error_invalidFieldForDocumentElement_root() {
+	void index_error_invalidFieldForDocumentElement_root() {
 		assertThatThrownBy( () -> index.index( "willNotWork", document -> {
 			DocumentElement flattenedObject = document.addObject( index.binding().flattenedObject.self );
 			flattenedObject.addValue( index.binding().string, "willNotWork" );
@@ -72,7 +72,7 @@ public class ObjectStructureIT {
 	}
 
 	@Test
-	public void index_error_invalidFieldForDocumentElement_flattened() {
+	void index_error_invalidFieldForDocumentElement_flattened() {
 		assertThatThrownBy( () -> index.index( "willNotWork",
 				document -> document.addValue( index.binding().flattenedObject.string, "willNotWork" ) ) )
 				.isInstanceOf( SearchException.class )
@@ -83,7 +83,7 @@ public class ObjectStructureIT {
 	}
 
 	@Test
-	public void index_error_invalidFieldForDocumentElement_nested() {
+	void index_error_invalidFieldForDocumentElement_nested() {
 		assertThatThrownBy( () -> index.index( "willNotWork",
 				document -> document.addValue( index.binding().nestedObject.string, "willNotWork" ) ) )
 				.isInstanceOf( SearchException.class )
@@ -94,7 +94,7 @@ public class ObjectStructureIT {
 	}
 
 	@Test
-	public void search_match() {
+	void search_match() {
 		StubMappingScope scope = index.createScope();
 
 		SearchQuery<DocumentReference> query = scope.query()
@@ -123,7 +123,7 @@ public class ObjectStructureIT {
 	}
 
 	@Test
-	public void search_range() {
+	void search_range() {
 		StubMappingScope scope = index.createScope();
 
 		SearchQuery<DocumentReference> query = scope.query()
@@ -159,7 +159,7 @@ public class ObjectStructureIT {
 	}
 
 	@Test
-	public void search_error_nonNestedField() {
+	void search_error_nonNestedField() {
 		StubMappingScope scope = index.createScope();
 
 		assertThatThrownBy( () -> scope.predicate().nested( "flattenedObject" )
@@ -171,7 +171,7 @@ public class ObjectStructureIT {
 	}
 
 	@Test
-	public void search_error_nonObjectField() {
+	void search_error_nonObjectField() {
 		StubMappingScope scope = index.createScope();
 
 		assertThatThrownBy( () -> scope.predicate().nested( "flattenedObject.string" )
@@ -182,7 +182,7 @@ public class ObjectStructureIT {
 	}
 
 	@Test
-	public void search_error_missingField() {
+	void search_error_missingField() {
 		StubMappingScope scope = index.createScope();
 
 		assertThatThrownBy( () -> scope.predicate().nested( "doesNotExist" )

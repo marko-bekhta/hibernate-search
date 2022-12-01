@@ -56,7 +56,7 @@ public abstract class AbstractEntityReferenceProjectionIT {
 			SearchQuerySelectStep<?, R, E, LOS, ?, ?> step);
 
 	@Test
-	public void test() {
+	void test() {
 		DocumentReference doc1Reference = reference( mainIndex.typeName(), DOCUMENT_1_ID );
 		DocumentReference doc2Reference = reference( mainIndex.typeName(), DOCUMENT_2_ID );
 		EntityReference doc1EntityReference = StubEntity.reference( doc1Reference );

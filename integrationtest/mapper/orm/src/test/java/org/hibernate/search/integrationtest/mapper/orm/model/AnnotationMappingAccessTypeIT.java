@@ -44,7 +44,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
  * Note that more thorough testing is performed in {@code HibernateOrmBootstrapIntrospectorAccessTypeTest},
  * including tests of access type on an embeddable that is only ever mentioned in an element collection.
  */
-public class AnnotationMappingAccessTypeIT {
+class AnnotationMappingAccessTypeIT {
 
 	@RegisterExtension
 	public BackendMock backendMock = BackendMock.create();
@@ -87,7 +87,7 @@ public class AnnotationMappingAccessTypeIT {
 	}
 
 	@Test
-	public void index() {
+	void index() {
 		with( sessionFactory ).runInTransaction( session -> {
 			IndexedEntity entity1 = new IndexedEntity();
 			entity1.id = 1;

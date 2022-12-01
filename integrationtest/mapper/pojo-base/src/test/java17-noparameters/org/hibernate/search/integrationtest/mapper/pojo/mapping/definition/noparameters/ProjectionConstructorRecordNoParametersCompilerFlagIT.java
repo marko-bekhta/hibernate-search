@@ -25,7 +25,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class ProjectionConstructorRecordNoParametersCompilerFlagIT extends AbstractProjectionConstructorIT {
+class ProjectionConstructorRecordNoParametersCompilerFlagIT extends AbstractProjectionConstructorIT {
 
 	@RegisterExtension
 	public StandalonePojoMappingSetupHelper setupHelper = StandalonePojoMappingSetupHelper.withBackendMock( MethodHandles.lookup(), backendMock );
@@ -39,7 +39,7 @@ public class ProjectionConstructorRecordNoParametersCompilerFlagIT extends Abstr
 	}
 
 	@Test
-	public void typeLevelAnnotation() {
+	void typeLevelAnnotation() {
 		@Indexed(index = INDEX_NAME)
 		class IndexedEntity {
 			@DocumentId
@@ -78,7 +78,7 @@ public class ProjectionConstructorRecordNoParametersCompilerFlagIT extends Abstr
 	}
 
 	@Test
-	public void constructorLevelAnnotation_canonical() {
+	void constructorLevelAnnotation_canonical() {
 		@Indexed(index = INDEX_NAME)
 		class IndexedEntity {
 			@DocumentId

@@ -27,7 +27,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class MappingConfigurationIT {
+class MappingConfigurationIT {
 
 	@RegisterExtension
 	public TestConfigurationProvider configurationProvider = new TestConfigurationProvider();
@@ -75,7 +75,7 @@ public class MappingConfigurationIT {
 	}
 
 	@Test
-	public void simple() {
+	void simple() {
 		try ( SearchSession session = searchMapping.createSessionWithOptions()
 				.indexingPlanSynchronizationStrategy( IndexingPlanSynchronizationStrategy.sync() )
 				.build() ) {

@@ -89,7 +89,7 @@ public class SessionProxyIT {
 	}
 
 	@Test
-	public void useSingleSearchSessionFromMultipleThreads() {
+	void useSingleSearchSessionFromMultipleThreads() {
 		TransactionTemplate template = new TransactionTemplate( transactionManager );
 
 		template.execute( status -> {

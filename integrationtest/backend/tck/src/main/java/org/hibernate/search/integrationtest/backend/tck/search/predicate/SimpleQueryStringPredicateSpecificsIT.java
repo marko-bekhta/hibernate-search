@@ -376,7 +376,7 @@ public class SimpleQueryStringPredicateSpecificsIT {
 	}
 
 	@Test
-	public void prefix() {
+	void prefix() {
 		StubMappingScope scope = index.createScope();
 		String absoluteFieldPath = index.binding().analyzedStringField1.relativeFieldName;
 
@@ -476,7 +476,7 @@ public class SimpleQueryStringPredicateSpecificsIT {
 	}
 
 	@Test
-	public void incompatibleNestedPaths() {
+	void incompatibleNestedPaths() {
 		String fieldInRootPath = index.binding().analyzedStringField1.relativeFieldName;
 		String fieldInNestedPath = index.binding().nested.fieldPath();
 		assertThatThrownBy( () -> index.createScope()

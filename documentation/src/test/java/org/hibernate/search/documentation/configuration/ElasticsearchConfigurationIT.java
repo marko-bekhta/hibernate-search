@@ -21,7 +21,7 @@ import org.hibernate.search.mapper.pojo.work.IndexingPlanSynchronizationStrategy
 
 import org.junit.jupiter.api.Test;
 
-public class ElasticsearchConfigurationIT {
+class ElasticsearchConfigurationIT {
 	// tag::build-hibernate-configuration[]
 	private Properties buildHibernateConfiguration() {
 		Properties config = new Properties();
@@ -45,7 +45,7 @@ public class ElasticsearchConfigurationIT {
 	// end::build-hibernate-configuration[]
 
 	@Test
-	public void shouldBuildHibernateConfiguration() {
+	void shouldBuildHibernateConfiguration() {
 		assertThat( buildHibernateConfiguration() )
 				.containsOnly(
 						entry( "hibernate.search.backend.hosts", "127.0.0.1:9200" ),

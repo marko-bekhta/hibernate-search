@@ -53,7 +53,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
  * This test is rather simplistic because "dynamic-map" entity mapping is not fully supported in Hibernate Search yet.
  */
 @SuppressWarnings("rawtypes")
-public class DynamicMapBaseIT {
+class DynamicMapBaseIT {
 
 	private static final String INDEX1_NAME = "Index1Name";
 
@@ -66,7 +66,7 @@ public class DynamicMapBaseIT {
 	public OrmSetupHelper ormSetupHelper = OrmSetupHelper.withBackendMock( backendMock );
 
 	@Test
-	public void simple() {
+	void simple() {
 		String hbmPath = "/DynamicMapBaseIT/simple.hbm.xml";
 		String entityTypeName = "Book";
 
@@ -134,7 +134,7 @@ public class DynamicMapBaseIT {
 
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-4656")
-	public void typeName_invalid() {
+	void typeName_invalid() {
 		String hbmPath = "/DynamicMapBaseIT/simple.hbm.xml";
 		String entityTypeName = "Book";
 
@@ -159,7 +159,7 @@ public class DynamicMapBaseIT {
 
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-3848")
-	public void searchObject() {
+	void searchObject() {
 		String hbmPath = "/DynamicMapBaseIT/simple.hbm.xml";
 		String entityTypeName = "Book";
 
@@ -218,7 +218,7 @@ public class DynamicMapBaseIT {
 	}
 
 	@Test
-	public void massIndexing() {
+	void massIndexing() {
 		String hbmPath = "/DynamicMapBaseIT/simple.hbm.xml";
 		String entityTypeName = "Book";
 
@@ -277,7 +277,7 @@ public class DynamicMapBaseIT {
 	}
 
 	@Test
-	public void nonEntityIdDocumentId() {
+	void nonEntityIdDocumentId() {
 		String hbmPath = "/DynamicMapBaseIT/simple.hbm.xml";
 		String entityTypeName = "Book";
 
@@ -337,7 +337,7 @@ public class DynamicMapBaseIT {
 	}
 
 	@Test
-	public void inheritance() {
+	void inheritance() {
 		String hbmPath = "/DynamicMapBaseIT/inheritance.hbm.xml";
 		String entityATypeName = "A";
 		String entityA_BTypeName = "A_B";
@@ -425,7 +425,7 @@ public class DynamicMapBaseIT {
 	}
 
 	@Test
-	public void embedded_dynamicMap() {
+	void embedded_dynamicMap() {
 		String hbmPath = "/DynamicMapBaseIT/embedded_dynamicmap.hbm.xml";
 		String bookTypeName = "Book";
 		String quoteTypeName = "Book.quote";
@@ -481,7 +481,7 @@ public class DynamicMapBaseIT {
 	}
 
 	@Test
-	public void embedded_class() {
+	void embedded_class() {
 		String hbmPath = "/DynamicMapBaseIT/embedded_class.hbm.xml";
 		String bookTypeName = "Book";
 
@@ -536,7 +536,7 @@ public class DynamicMapBaseIT {
 	}
 
 	@Test
-	public void embedded_class_list() {
+	void embedded_class_list() {
 		String hbmPath = "/DynamicMapBaseIT/embedded_class_list.hbm.xml";
 		String bookTypeName = "Book";
 
@@ -603,7 +603,7 @@ public class DynamicMapBaseIT {
 	}
 
 	@Test
-	public void basic_list() {
+	void basic_list() {
 		String hbmPath = "/DynamicMapBaseIT/basic_list.hbm.xml";
 		String bookTypeName = "Book";
 
@@ -651,7 +651,7 @@ public class DynamicMapBaseIT {
 
 	@Test
 	@Disabled("toone associations are buggy in dynamic-map mode -- see https://hibernate.atlassian.net/browse/HHH-16100")
-	public void toOne() {
+	void toOne() {
 		String hbmPath = "/DynamicMapBaseIT/toone.hbm.xml";
 		String bookTypeName = "Book";
 		String quoteTypeName = "Quote";
@@ -710,7 +710,7 @@ public class DynamicMapBaseIT {
 	}
 
 	@Test
-	public void onetomany_bag() {
+	void onetomany_bag() {
 		String hbmPath = "/DynamicMapBaseIT/onetomany_bag.hbm.xml";
 		String bookTypeName = "Book";
 		String quoteTypeName = "Quote";
@@ -787,7 +787,7 @@ public class DynamicMapBaseIT {
 	}
 
 	@Test
-	public void onetomany_list() {
+	void onetomany_list() {
 		String hbmPath = "/DynamicMapBaseIT/onetomany_list.hbm.xml";
 		String bookTypeName = "Book";
 		String quoteTypeName = "Quote";
@@ -864,7 +864,7 @@ public class DynamicMapBaseIT {
 	}
 
 	@Test
-	public void onetomany_set() {
+	void onetomany_set() {
 		String hbmPath = "/DynamicMapBaseIT/onetomany_set.hbm.xml";
 		String bookTypeName = "Book";
 		String quoteTypeName = "Quote";
@@ -941,7 +941,7 @@ public class DynamicMapBaseIT {
 	}
 
 	@Test
-	public void onetomany_map_key() {
+	void onetomany_map_key() {
 		String hbmPath = "/DynamicMapBaseIT/onetomany_map_key.hbm.xml";
 		String bookTypeName = "Book";
 		String quoteTypeName = "Quote";
@@ -1020,7 +1020,7 @@ public class DynamicMapBaseIT {
 	}
 
 	@Test
-	public void onetomany_map_value() {
+	void onetomany_map_value() {
 		String hbmPath = "/DynamicMapBaseIT/onetomany_map_value.hbm.xml";
 		String bookTypeName = "Book";
 		String quoteTypeName = "Quote";

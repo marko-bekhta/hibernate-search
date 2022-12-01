@@ -64,7 +64,7 @@ public abstract class AbstractFieldContainerExtractorIT {
 	}
 
 	@Test
-	public void objectArray() {
+	void objectArray() {
 		doTest(
 				testModelProvider.objectArray(),
 				String.class, true,
@@ -162,7 +162,7 @@ public abstract class AbstractFieldContainerExtractorIT {
 	}
 
 	@Test
-	public void iterable() {
+	void iterable() {
 		doTest(
 				testModelProvider.iterable(),
 				String.class, true,
@@ -172,7 +172,7 @@ public abstract class AbstractFieldContainerExtractorIT {
 	}
 
 	@Test
-	public void collection() {
+	void collection() {
 		doTest(
 				testModelProvider.collection(),
 				String.class, true,
@@ -182,7 +182,7 @@ public abstract class AbstractFieldContainerExtractorIT {
 	}
 
 	@Test
-	public void list() {
+	void list() {
 		doTest(
 				testModelProvider.list(),
 				String.class, true,
@@ -192,7 +192,7 @@ public abstract class AbstractFieldContainerExtractorIT {
 	}
 
 	@Test
-	public void set() {
+	void set() {
 		doTest(
 				testModelProvider.set(),
 				String.class, true,
@@ -216,7 +216,7 @@ public abstract class AbstractFieldContainerExtractorIT {
 	}
 
 	@Test
-	public void mapValues() {
+	void mapValues() {
 		Map<String, String> map = new LinkedHashMap<>();
 		map.put( STRING_VALUE_1, STRING_VALUE_4 );
 		map.put( STRING_VALUE_2, STRING_VALUE_5 );
@@ -246,7 +246,7 @@ public abstract class AbstractFieldContainerExtractorIT {
 	}
 
 	@Test
-	public void chain_mapListValues() {
+	void chain_mapListValues() {
 		Map<String, List<String>> map = new LinkedHashMap<>();
 		map.put( STRING_VALUE_1, CollectionHelper.asList( STRING_VALUE_2, STRING_VALUE_3 ) );
 		map.put( STRING_VALUE_4, CollectionHelper.asList( STRING_VALUE_5, STRING_VALUE_6 ) );
@@ -259,7 +259,7 @@ public abstract class AbstractFieldContainerExtractorIT {
 	}
 
 	@Test
-	public void optional_nonEmpty() {
+	void optional_nonEmpty() {
 		doTest(
 				testModelProvider.optional(),
 				String.class, false,
@@ -269,7 +269,7 @@ public abstract class AbstractFieldContainerExtractorIT {
 	}
 
 	@Test
-	public void optional_empty() {
+	void optional_empty() {
 		doTestExpectMissing(
 				testModelProvider.optional(),
 				String.class, false,
@@ -278,7 +278,7 @@ public abstract class AbstractFieldContainerExtractorIT {
 	}
 
 	@Test
-	public void optionalDouble_nonEmpty() {
+	void optionalDouble_nonEmpty() {
 		doTest(
 				testModelProvider.optionalDouble(),
 				Double.class, false,
@@ -288,7 +288,7 @@ public abstract class AbstractFieldContainerExtractorIT {
 	}
 
 	@Test
-	public void optionalDouble_empty() {
+	void optionalDouble_empty() {
 		doTestExpectMissing(
 				testModelProvider.optionalDouble(),
 				Double.class, false,
@@ -297,7 +297,7 @@ public abstract class AbstractFieldContainerExtractorIT {
 	}
 
 	@Test
-	public void optionalInt_nonEmpty() {
+	void optionalInt_nonEmpty() {
 		doTest(
 				testModelProvider.optionalInt(),
 				Integer.class, false,
@@ -307,7 +307,7 @@ public abstract class AbstractFieldContainerExtractorIT {
 	}
 
 	@Test
-	public void optionalInt_empty() {
+	void optionalInt_empty() {
 		doTestExpectMissing(
 				testModelProvider.optionalInt(),
 				Integer.class, false,
@@ -316,7 +316,7 @@ public abstract class AbstractFieldContainerExtractorIT {
 	}
 
 	@Test
-	public void optionalLong_nonEmpty() {
+	void optionalLong_nonEmpty() {
 		doTest(
 				testModelProvider.optionalLong(),
 				Long.class, false,
@@ -326,7 +326,7 @@ public abstract class AbstractFieldContainerExtractorIT {
 	}
 
 	@Test
-	public void optionalLong_empty() {
+	void optionalLong_empty() {
 		doTestExpectMissing(
 				testModelProvider.optionalLong(),
 				Long.class, false,
@@ -338,7 +338,7 @@ public abstract class AbstractFieldContainerExtractorIT {
 	 * Test that value bridges are actually applied to each element.
 	 */
 	@Test
-	public void list_nonPassThroughBridge() {
+	void list_nonPassThroughBridge() {
 		doTest(
 				testModelProvider.list_implicitEnumBridge(),
 				String.class, true,
@@ -352,7 +352,7 @@ public abstract class AbstractFieldContainerExtractorIT {
 	 * even when using a container value extractor.
 	 */
 	@Test
-	public void list_customBridge() {
+	void list_customBridge() {
 		doTest(
 				() -> setupHelper.start().expectCustomBeans(),
 				testModelProvider.list_explicitPrefixedStringBridge(),

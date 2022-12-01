@@ -38,7 +38,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
  * Test that defining a routing bridge that generates (mutable) routing keys works as expected
  * with a full setup (real mapper + real backend).
  */
-public class RoutingBridgeRoutingKeyIT {
+class RoutingBridgeRoutingKeyIT {
 
 	// Use high enough shard count that it's unlikely that our two routing keys end up in the same shard
 	private static final int SHARD_COUNT = 64;
@@ -62,7 +62,7 @@ public class RoutingBridgeRoutingKeyIT {
 	}
 
 	@Test
-	public void testLifecycle() {
+	void testLifecycle() {
 		assertThat( searchIdsByRoutingKey( Genre.SCIENCE_FICTION ) ).isEmpty();
 		assertThat( searchIdsByRoutingKey( Genre.CRIME_FICTION ) ).isEmpty();
 

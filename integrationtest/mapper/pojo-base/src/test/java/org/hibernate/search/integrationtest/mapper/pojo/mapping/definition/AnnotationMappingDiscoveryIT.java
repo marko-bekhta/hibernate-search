@@ -34,7 +34,7 @@ import org.hibernate.search.util.impl.integrationtest.mapper.pojo.standalone.Sta
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class AnnotationMappingDiscoveryIT {
+class AnnotationMappingDiscoveryIT {
 
 	@RegisterExtension
 	public BackendMock backendMock = BackendMock.create();
@@ -44,7 +44,7 @@ public class AnnotationMappingDiscoveryIT {
 			StandalonePojoMappingSetupHelper.withBackendMock( MethodHandles.lookup(), backendMock );
 
 	@Test
-	public void discoveryEnabled() {
+	void discoveryEnabled() {
 		backendMock.expectSchema( IndexedEntity.INDEX, b -> b
 				.objectField( "annotationMappedEmbedded", b2 -> b2
 						/*
@@ -89,7 +89,7 @@ public class AnnotationMappingDiscoveryIT {
 	}
 
 	@Test
-	public void discoveryDisabled() {
+	void discoveryDisabled() {
 		backendMock.expectSchema( IndexedEntity.INDEX, b -> b
 				.objectField( "annotationMappedEmbedded", b2 -> {
 					/*

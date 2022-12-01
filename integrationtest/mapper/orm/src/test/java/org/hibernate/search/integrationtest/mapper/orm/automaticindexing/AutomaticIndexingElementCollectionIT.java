@@ -59,7 +59,7 @@ public class AutomaticIndexingElementCollectionIT {
 	}
 
 	@Test
-	public void directValueUpdate_indexedElementCollectionField() {
+	void directValueUpdate_indexedElementCollectionField() {
 		setupHolder.runInTransaction( session -> {
 			IndexedEntity entity1 = new IndexedEntity();
 			entity1.setId( 1 );
@@ -118,7 +118,7 @@ public class AutomaticIndexingElementCollectionIT {
 	 */
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-3199")
-	public void directValueReplace_indexedElementCollectionField() {
+	void directValueReplace_indexedElementCollectionField() {
 		setupHolder.runInTransaction( session -> {
 			IndexedEntity entity1 = new IndexedEntity();
 			entity1.setId( 1 );
@@ -160,7 +160,7 @@ public class AutomaticIndexingElementCollectionIT {
 	 */
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-3199")
-	public void directValueUpdate_nonIndexedElementCollectionField() {
+	void directValueUpdate_nonIndexedElementCollectionField() {
 		setupHolder.runInTransaction( session -> {
 			IndexedEntity entity1 = new IndexedEntity();
 			entity1.setId( 1 );
@@ -201,7 +201,7 @@ public class AutomaticIndexingElementCollectionIT {
 	 */
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-3204")
-	public void directValueReplace_nonIndexedElementCollectionField() {
+	void directValueReplace_nonIndexedElementCollectionField() {
 		setupHolder.runInTransaction( session -> {
 			IndexedEntity entity1 = new IndexedEntity();
 			entity1.setId( 1 );
@@ -236,7 +236,7 @@ public class AutomaticIndexingElementCollectionIT {
 	 */
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-4001")
-	public void directValueUpdate_shallowReindexOnUpdateElementCollectionField() {
+	void directValueUpdate_shallowReindexOnUpdateElementCollectionField() {
 		setupHolder.runInTransaction( session -> {
 			IndexedEntity entity1 = new IndexedEntity();
 			entity1.setId( 1 );
@@ -289,7 +289,7 @@ public class AutomaticIndexingElementCollectionIT {
 	 */
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-4001")
-	public void directValueReplace_shallowReindexOnUpdateElementCollectionField() {
+	void directValueReplace_shallowReindexOnUpdateElementCollectionField() {
 		setupHolder.runInTransaction( session -> {
 			IndexedEntity entity1 = new IndexedEntity();
 			entity1.setId( 1 );
@@ -325,7 +325,7 @@ public class AutomaticIndexingElementCollectionIT {
 	 */
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-3206")
-	public void directValueUpdate_noReindexOnUpdateElementCollectionField() {
+	void directValueUpdate_noReindexOnUpdateElementCollectionField() {
 		setupHolder.runInTransaction( session -> {
 			IndexedEntity entity1 = new IndexedEntity();
 			entity1.setId( 1 );
@@ -368,7 +368,7 @@ public class AutomaticIndexingElementCollectionIT {
 	 */
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-3204")
-	public void directValueReplace_noReindexOnUpdateElementCollectionField() {
+	void directValueReplace_noReindexOnUpdateElementCollectionField() {
 		setupHolder.runInTransaction( session -> {
 			IndexedEntity entity1 = new IndexedEntity();
 			entity1.setId( 1 );

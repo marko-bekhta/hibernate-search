@@ -71,7 +71,7 @@ public class SearchMappingNoDefaultBackendIT {
 
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-4656")
-	public void backend_default_nonExisting() {
+	void backend_default_nonExisting() {
 		assertThatThrownBy( () -> mapping.backend() )
 				.isInstanceOf( SearchException.class )
 				.hasMessageContainingAll(
@@ -83,7 +83,7 @@ public class SearchMappingNoDefaultBackendIT {
 
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-4656")
-	public void backend_byName_invalidName() {
+	void backend_byName_invalidName() {
 		assertThatThrownBy( () -> mapping.backend( "invalid" ) )
 				.isInstanceOf( SearchException.class )
 				.hasMessageContainingAll(

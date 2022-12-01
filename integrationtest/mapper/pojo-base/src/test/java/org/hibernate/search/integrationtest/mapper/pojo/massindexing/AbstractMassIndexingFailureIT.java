@@ -186,7 +186,7 @@ public abstract class AbstractMassIndexingFailureIT {
 	}
 
 	@Test
-	public void indexing() {
+	void indexing() {
 		SearchMapping mapping = setup();
 
 		String entityName = Book.NAME;
@@ -224,7 +224,7 @@ public abstract class AbstractMassIndexingFailureIT {
 	}
 
 	@Test
-	public void getId() {
+	void getId() {
 		SearchMapping mapping = setup();
 
 		String entityName = Book.NAME;
@@ -265,7 +265,7 @@ public abstract class AbstractMassIndexingFailureIT {
 	}
 
 	@Test
-	public void getTitle() {
+	void getTitle() {
 		SearchMapping mapping = setup();
 
 		String entityName = Book.NAME;
@@ -306,7 +306,7 @@ public abstract class AbstractMassIndexingFailureIT {
 	}
 
 	@Test
-	public void dropAndCreateSchema_exception() {
+	void dropAndCreateSchema_exception() {
 		SearchMapping mapping = setup();
 
 		String exceptionMessage = "DROP_AND_CREATE failure";
@@ -329,7 +329,7 @@ public abstract class AbstractMassIndexingFailureIT {
 	}
 
 	@Test
-	public void purge() {
+	void purge() {
 		SearchMapping mapping = setup();
 
 		String exceptionMessage = "PURGE failure";
@@ -355,7 +355,7 @@ public abstract class AbstractMassIndexingFailureIT {
 	}
 
 	@Test
-	public void mergeSegmentsBefore() {
+	void mergeSegmentsBefore() {
 		SearchMapping mapping = setup();
 
 		String exceptionMessage = "MERGE_SEGMENTS failure";
@@ -382,7 +382,7 @@ public abstract class AbstractMassIndexingFailureIT {
 	}
 
 	@Test
-	public void mergeSegmentsAfter() {
+	void mergeSegmentsAfter() {
 		SearchMapping mapping = setup();
 
 		String exceptionMessage = "MERGE_SEGMENTS failure";
@@ -412,7 +412,7 @@ public abstract class AbstractMassIndexingFailureIT {
 	}
 
 	@Test
-	public void flush() {
+	void flush() {
 		SearchMapping mapping = setup();
 
 		String exceptionMessage = "FLUSH failure";
@@ -441,7 +441,7 @@ public abstract class AbstractMassIndexingFailureIT {
 	}
 
 	@Test
-	public void refresh() {
+	void refresh() {
 		SearchMapping mapping = setup();
 
 		String exceptionMessage = "REFRESH failure";
@@ -471,7 +471,7 @@ public abstract class AbstractMassIndexingFailureIT {
 	}
 
 	@Test
-	public void indexingAndFlush() {
+	void indexingAndFlush() {
 		SearchMapping mapping = setup();
 
 		String entityName = Book.NAME;
@@ -519,7 +519,7 @@ public abstract class AbstractMassIndexingFailureIT {
 	}
 
 	@Test
-	public void indexingAndRefresh() {
+	void indexingAndRefresh() {
 		SearchMapping mapping = setup();
 
 		String entityName = Book.NAME;

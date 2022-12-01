@@ -20,7 +20,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class DependenciesFromOtherEntityIT {
+class DependenciesFromOtherEntityIT {
 	@RegisterExtension
 	public DocumentationSetupHelper setupHelper = DocumentationSetupHelper.withSingleBackend( BackendConfigurations.simple() );
 
@@ -32,7 +32,7 @@ public class DependenciesFromOtherEntityIT {
 	}
 
 	@Test
-	public void smoke() {
+	void smoke() {
 		with( entityManagerFactory ).runInTransaction( entityManager -> {
 			ScientificPaper paper1 = new ScientificPaper( 1 );
 			paper1.setTitle(

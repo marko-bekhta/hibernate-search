@@ -27,7 +27,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import org.apache.lucene.document.Document;
 
-public class LuceneFieldTypesIT {
+class LuceneFieldTypesIT {
 
 	private static final String TEXT_1 = "This is a text containing things. Red house with a blue carpet on the road...";
 	private static final String TEXT_2 = "This is a text containing other things. Such as move the line on the right margin...";
@@ -48,7 +48,7 @@ public class LuceneFieldTypesIT {
 
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-1640")
-	public void verifyProjectionsOnDifferentTypes() {
+	void verifyProjectionsOnDifferentTypes() {
 		SearchQuery<Document> query = index.createScope().query()
 				.select(
 						f -> f.extension( LuceneExtension.get() ).document()

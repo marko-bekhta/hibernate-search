@@ -54,7 +54,7 @@ public class ElasticsearchIndexSchemaManagerValidationMappingBaseIT {
 
 	@ParameterizedTest(name = "With operation {0}")
 	@MethodSource("params")
-	public void success_1(ElasticsearchIndexSchemaManagerValidationOperation operation) {
+	void success_1(ElasticsearchIndexSchemaManagerValidationOperation operation) {
 		StubMappedIndex index = StubMappedIndex.ofNonRetrievable( root -> {
 			root.field( "myField", f -> f.asLocalDate() )
 					.toReference();
@@ -84,7 +84,7 @@ public class ElasticsearchIndexSchemaManagerValidationMappingBaseIT {
 
 	@ParameterizedTest(name = "With operation {0}")
 	@MethodSource("params")
-	public void success_2(ElasticsearchIndexSchemaManagerValidationOperation operation) {
+	void success_2(ElasticsearchIndexSchemaManagerValidationOperation operation) {
 		StubMappedIndex index = StubMappedIndex.ofNonRetrievable( root -> {
 			root.field( "myField", f -> f.asBoolean() )
 					.toReference();
@@ -111,7 +111,7 @@ public class ElasticsearchIndexSchemaManagerValidationMappingBaseIT {
 
 	@ParameterizedTest(name = "With operation {0}")
 	@MethodSource("params")
-	public void success_3(ElasticsearchIndexSchemaManagerValidationOperation operation) {
+	void success_3(ElasticsearchIndexSchemaManagerValidationOperation operation) {
 		StubMappedIndex index = StubMappedIndex.ofNonRetrievable( root -> {
 			root.field(
 					"myField",
@@ -140,7 +140,7 @@ public class ElasticsearchIndexSchemaManagerValidationMappingBaseIT {
 
 	@ParameterizedTest(name = "With operation {0}")
 	@MethodSource("params")
-	public void attribute_field_notPresent(ElasticsearchIndexSchemaManagerValidationOperation operation) {
+	void attribute_field_notPresent(ElasticsearchIndexSchemaManagerValidationOperation operation) {
 		StubMappedIndex index = StubMappedIndex.ofNonRetrievable(
 				root -> root.field( "myField", f -> f.asInteger() ).toReference()
 		);
@@ -169,7 +169,7 @@ public class ElasticsearchIndexSchemaManagerValidationMappingBaseIT {
 	 */
 	@ParameterizedTest(name = "With operation {0}")
 	@MethodSource("params")
-	public void property_attribute_leniency(ElasticsearchIndexSchemaManagerValidationOperation operation) {
+	void property_attribute_leniency(ElasticsearchIndexSchemaManagerValidationOperation operation) {
 		StubMappedIndex index = StubMappedIndex.ofNonRetrievable( root -> {
 			root.field( "myField", f -> f.asLong() )
 					.toReference();
@@ -198,7 +198,7 @@ public class ElasticsearchIndexSchemaManagerValidationMappingBaseIT {
 
 	@ParameterizedTest(name = "With operation {0}")
 	@MethodSource("params")
-	public void floatAndDouble_nullValue(ElasticsearchIndexSchemaManagerValidationOperation operation) {
+	void floatAndDouble_nullValue(ElasticsearchIndexSchemaManagerValidationOperation operation) {
 		StubMappedIndex index = StubMappedIndex.ofNonRetrievable( root -> {
 			root.field( "float", f -> f.asFloat().indexNullAs( 1.7F ) ).toReference();
 			root.field( "double", f -> f.asDouble().indexNullAs( 1.7 ) ).toReference();
@@ -223,7 +223,7 @@ public class ElasticsearchIndexSchemaManagerValidationMappingBaseIT {
 
 	@ParameterizedTest(name = "With operation {0}")
 	@MethodSource("params")
-	public void floatAndDouble_nullValue_invalids(ElasticsearchIndexSchemaManagerValidationOperation operation) {
+	void floatAndDouble_nullValue_invalids(ElasticsearchIndexSchemaManagerValidationOperation operation) {
 		StubMappedIndex index = StubMappedIndex.ofNonRetrievable( root -> {
 			root.field( "float", f -> f.asFloat().indexNullAs( 1.7F ) ).toReference();
 			root.field( "double", f -> f.asDouble().indexNullAs( 1.7 ) ).toReference();
@@ -257,7 +257,7 @@ public class ElasticsearchIndexSchemaManagerValidationMappingBaseIT {
 
 	@ParameterizedTest(name = "With operation {0}")
 	@MethodSource("params")
-	public void floatAndDouble_nullValue_invalids_notNumbers(ElasticsearchIndexSchemaManagerValidationOperation operation) {
+	void floatAndDouble_nullValue_invalids_notNumbers(ElasticsearchIndexSchemaManagerValidationOperation operation) {
 		StubMappedIndex index = StubMappedIndex.ofNonRetrievable( root -> {
 			root.field( "float", f -> f
 					.extension( ElasticsearchExtension.get() )
@@ -300,7 +300,7 @@ public class ElasticsearchIndexSchemaManagerValidationMappingBaseIT {
 	 */
 	@ParameterizedTest(name = "With operation {0}")
 	@MethodSource("params")
-	public void nestedProperty_attribute_invalid(ElasticsearchIndexSchemaManagerValidationOperation operation) {
+	void nestedProperty_attribute_invalid(ElasticsearchIndexSchemaManagerValidationOperation operation) {
 		StubMappedIndex index = StubMappedIndex.ofNonRetrievable( root -> {
 			IndexSchemaObjectField objectField =
 					root.objectField( "myObjectField" );
@@ -339,7 +339,7 @@ public class ElasticsearchIndexSchemaManagerValidationMappingBaseIT {
 
 	@ParameterizedTest(name = "With operation {0}")
 	@MethodSource("params")
-	public void multipleErrors(ElasticsearchIndexSchemaManagerValidationOperation operation) {
+	void multipleErrors(ElasticsearchIndexSchemaManagerValidationOperation operation) {
 		StubMappedIndex index = StubMappedIndex.ofNonRetrievable( root -> {
 			root.field( "myField", f -> f.asString() )
 					.toReference();

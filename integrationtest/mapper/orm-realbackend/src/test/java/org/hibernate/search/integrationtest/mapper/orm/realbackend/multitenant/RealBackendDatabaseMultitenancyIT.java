@@ -29,7 +29,7 @@ import org.hibernate.search.util.impl.test.AssertionAndAssumptionViolationFallTh
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class RealBackendDatabaseMultitenancyIT {
+class RealBackendDatabaseMultitenancyIT {
 
 	public static final String TENANT_ID_1 = "TENANT 1";
 	public static final String TENANT_ID_2 = "TENANT 2";
@@ -42,7 +42,7 @@ public class RealBackendDatabaseMultitenancyIT {
 	private SessionFactory sessionFactory;
 
 	@Test
-	public void multiTenancyStrategy_discriminator() {
+	void multiTenancyStrategy_discriminator() {
 		sessionFactory = setupHelper.start()
 				.withProperty( "hibernate.search.backend.multi_tenancy.strategy", "discriminator" )
 				.withProperty( "hibernate.search.indexing.plan.synchronization.strategy", "sync" )
@@ -53,7 +53,7 @@ public class RealBackendDatabaseMultitenancyIT {
 	}
 
 	@Test
-	public void multiTenancyStrategy_enabledByMapping() {
+	void multiTenancyStrategy_enabledByMapping() {
 		sessionFactory = setupHelper.start()
 				.withProperty( "hibernate.search.indexing.plan.synchronization.strategy", "sync" )
 				.tenants( TENANT_ID_1, TENANT_ID_2 )
@@ -63,7 +63,7 @@ public class RealBackendDatabaseMultitenancyIT {
 	}
 
 	@Test
-	public void multiTenancyStrategy_none() {
+	void multiTenancyStrategy_none() {
 		assertThatThrownBy( () -> setupHelper.start()
 				.withProperty( "hibernate.search.backend.multi_tenancy.strategy", "none" )
 				.tenants( TENANT_ID_1, TENANT_ID_2 )

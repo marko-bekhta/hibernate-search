@@ -59,7 +59,7 @@ public class AnalysisBuiltinIT {
 
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	public void analyzer_default(Function<TckBackendHelper, TckBackendSetupStrategy<?>> setupStrategyFunction) {
+	void analyzer_default(Function<TckBackendHelper, TckBackendSetupStrategy<?>> setupStrategyFunction) {
 		init( setupStrategyFunction );
 		SimpleFieldModel<String> field = index.binding().defaultAnalyzer;
 		initData( field );
@@ -83,7 +83,7 @@ public class AnalysisBuiltinIT {
 
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	public void analyzer_standard(Function<TckBackendHelper, TckBackendSetupStrategy<?>> setupStrategyFunction) {
+	void analyzer_standard(Function<TckBackendHelper, TckBackendSetupStrategy<?>> setupStrategyFunction) {
 		init( setupStrategyFunction );
 		SimpleFieldModel<String> field = index.binding().standardAnalyzer;
 		initData( field );
@@ -107,7 +107,7 @@ public class AnalysisBuiltinIT {
 
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	public void analyzer_simple(Function<TckBackendHelper, TckBackendSetupStrategy<?>> setupStrategyFunction) {
+	void analyzer_simple(Function<TckBackendHelper, TckBackendSetupStrategy<?>> setupStrategyFunction) {
 		init( setupStrategyFunction );
 		SimpleFieldModel<String> field = index.binding().simpleAnalyzer;
 		initData( field );
@@ -131,7 +131,7 @@ public class AnalysisBuiltinIT {
 
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	public void analyzer_whitespace(Function<TckBackendHelper, TckBackendSetupStrategy<?>> setupStrategyFunction) {
+	void analyzer_whitespace(Function<TckBackendHelper, TckBackendSetupStrategy<?>> setupStrategyFunction) {
 		init( setupStrategyFunction );
 		SimpleFieldModel<String> field = index.binding().whitespaceAnalyzer;
 		initData( field );
@@ -155,7 +155,7 @@ public class AnalysisBuiltinIT {
 
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	public void analyzer_stop(Function<TckBackendHelper, TckBackendSetupStrategy<?>> setupStrategyFunction) {
+	void analyzer_stop(Function<TckBackendHelper, TckBackendSetupStrategy<?>> setupStrategyFunction) {
 		init( setupStrategyFunction );
 		SimpleFieldModel<String> field = index.binding().stopAnalyzer;
 		initData( field );
@@ -179,7 +179,7 @@ public class AnalysisBuiltinIT {
 
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	public void analyzer_keyword(Function<TckBackendHelper, TckBackendSetupStrategy<?>> setupStrategyFunction) {
+	void analyzer_keyword(Function<TckBackendHelper, TckBackendSetupStrategy<?>> setupStrategyFunction) {
 		init( setupStrategyFunction );
 		SimpleFieldModel<String> field = index.binding().keywordAnalyzer;
 		initData( field );

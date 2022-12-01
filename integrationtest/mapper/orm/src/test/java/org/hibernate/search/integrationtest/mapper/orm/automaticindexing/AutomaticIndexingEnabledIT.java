@@ -36,7 +36,7 @@ import org.junit.runners.Parameterized;
  */
 @TestForIssue(jiraKey = { "HSEARCH-4268", "HSEARCH-4616" })
 @RunWith(Parameterized.class)
-public class AutomaticIndexingEnabledIT {
+class AutomaticIndexingEnabledIT {
 
 	@Parameterized.Parameters(name = "Configuration Setting = {0}")
 	@SuppressWarnings("deprecation")
@@ -86,7 +86,7 @@ public class AutomaticIndexingEnabledIT {
 	}
 
 	@Test
-	public void enabled_default() {
+	void enabled_default() {
 		logged.expectMessage( DEPRECATED_STRATEGY_PROPERTY_MESSAGE ).never();
 
 		SessionFactory sessionFactory = setup( null, null );
@@ -105,7 +105,7 @@ public class AutomaticIndexingEnabledIT {
 	}
 
 	@Test
-	public void enabled_explicit() {
+	void enabled_explicit() {
 		logged.expectMessage( DEPRECATED_STRATEGY_PROPERTY_MESSAGE ).never();
 
 		SessionFactory sessionFactory = setup( true, null );
@@ -124,7 +124,7 @@ public class AutomaticIndexingEnabledIT {
 	}
 
 	@Test
-	public void disabled() {
+	void disabled() {
 		logged.expectMessage( DEPRECATED_STRATEGY_PROPERTY_MESSAGE ).never();
 
 		SessionFactory sessionFactory = setup( false, null );
@@ -140,7 +140,7 @@ public class AutomaticIndexingEnabledIT {
 	}
 
 	@Test
-	public void legacy_strategy_none() {
+	void legacy_strategy_none() {
 		logged.expectMessage( DEPRECATED_STRATEGY_PROPERTY_MESSAGE ).once();
 
 		SessionFactory sessionFactory = setup( null, "none" );
@@ -156,7 +156,7 @@ public class AutomaticIndexingEnabledIT {
 	}
 
 	@Test
-	public void legacy_strategy_session() {
+	void legacy_strategy_session() {
 		logged.expectMessage( DEPRECATED_STRATEGY_PROPERTY_MESSAGE ).once();
 
 		SessionFactory sessionFactory = setup( null, "session" );

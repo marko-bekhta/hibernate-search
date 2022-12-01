@@ -41,7 +41,7 @@ import org.hibernate.search.util.impl.test.annotation.TestForIssue;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class GenericFieldIT {
+class GenericFieldIT {
 
 	private static final String INDEX_NAME = "IndexName";
 
@@ -53,7 +53,7 @@ public class GenericFieldIT {
 			StandalonePojoMappingSetupHelper.withBackendMock( MethodHandles.lookup(), backendMock );
 
 	@Test
-	public void defaultAttributes() {
+	void defaultAttributes() {
 		@Indexed(index = INDEX_NAME)
 		class IndexedEntity {
 			@DocumentId
@@ -70,7 +70,7 @@ public class GenericFieldIT {
 	}
 
 	@Test
-	public void name() {
+	void name() {
 		@Indexed(index = INDEX_NAME)
 		class IndexedEntity {
 			@DocumentId
@@ -87,7 +87,7 @@ public class GenericFieldIT {
 	}
 
 	@Test
-	public void name_invalid_dot() {
+	void name_invalid_dot() {
 		@Indexed(index = INDEX_NAME)
 		class IndexedEntity {
 			@DocumentId
@@ -108,7 +108,7 @@ public class GenericFieldIT {
 	}
 
 	@Test
-	public void searchable() {
+	void searchable() {
 		@Indexed(index = INDEX_NAME)
 		class IndexedEntity {
 			@DocumentId
@@ -134,7 +134,7 @@ public class GenericFieldIT {
 	}
 
 	@Test
-	public void aggregable() {
+	void aggregable() {
 		@Indexed(index = INDEX_NAME)
 		class IndexedEntity {
 			@DocumentId
@@ -160,7 +160,7 @@ public class GenericFieldIT {
 	}
 
 	@Test
-	public void customBridge_implicitFieldType() {
+	void customBridge_implicitFieldType() {
 		@Indexed(index = INDEX_NAME)
 		class IndexedEntity {
 			@DocumentId
@@ -177,7 +177,7 @@ public class GenericFieldIT {
 	}
 
 	@Test
-	public void customBridge_explicitFieldType() {
+	void customBridge_explicitFieldType() {
 		@Indexed(index = INDEX_NAME)
 		class IndexedEntity {
 			@DocumentId
@@ -194,7 +194,7 @@ public class GenericFieldIT {
 	}
 
 	@Test
-	public void customBridge_withParams_annotationMapping() {
+	void customBridge_withParams_annotationMapping() {
 		@Indexed(index = INDEX_NAME)
 		class IndexedEntity {
 			@DocumentId
@@ -230,7 +230,7 @@ public class GenericFieldIT {
 	}
 
 	@Test
-	public void customBridge_withParams_paramNotDefined() {
+	void customBridge_withParams_paramNotDefined() {
 		@Indexed(index = INDEX_NAME)
 		class IndexedEntity {
 			@DocumentId
@@ -256,7 +256,7 @@ public class GenericFieldIT {
 	}
 
 	@Test
-	public void customBridge_withParams_paramDefinedTwice() {
+	void customBridge_withParams_paramDefinedTwice() {
 		@Indexed(index = INDEX_NAME)
 		class IndexedEntity {
 			@DocumentId
@@ -285,7 +285,7 @@ public class GenericFieldIT {
 	}
 
 	@Test
-	public void customBridge_withParams_programmaticMapping() {
+	void customBridge_withParams_programmaticMapping() {
 		class IndexedEntity {
 			Integer id;
 			Integer value;
@@ -328,7 +328,7 @@ public class GenericFieldIT {
 	}
 
 	@Test
-	public void customBridge_explicitFieldType_invalid() {
+	void customBridge_explicitFieldType_invalid() {
 		@Indexed(index = INDEX_NAME)
 		class IndexedEntity {
 			@DocumentId
@@ -355,7 +355,7 @@ public class GenericFieldIT {
 
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-3243")
-	public void customBridge_implicitFieldType_generic() {
+	void customBridge_implicitFieldType_generic() {
 		@Indexed(index = INDEX_NAME)
 		class IndexedEntity {
 			@DocumentId

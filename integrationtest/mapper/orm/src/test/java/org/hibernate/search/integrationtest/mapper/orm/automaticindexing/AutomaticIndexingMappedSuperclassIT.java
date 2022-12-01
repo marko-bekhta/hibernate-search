@@ -58,7 +58,7 @@ public class AutomaticIndexingMappedSuperclassIT {
 	}
 
 	@Test
-	public void inversePathHandlesMappedSuperclassDefinedAssociations() {
+	void inversePathHandlesMappedSuperclassDefinedAssociations() {
 		setupHolder.runInTransaction( session -> {
 			IndexedEntity indexedEntity = new IndexedEntity();
 			indexedEntity.setId( 1 );

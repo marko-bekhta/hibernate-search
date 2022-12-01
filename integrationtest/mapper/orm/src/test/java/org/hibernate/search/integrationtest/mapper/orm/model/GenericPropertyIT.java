@@ -31,7 +31,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class GenericPropertyIT {
+class GenericPropertyIT {
 
 	@RegisterExtension
 	public BackendMock backendMock = BackendMock.create();
@@ -64,7 +64,7 @@ public class GenericPropertyIT {
 	}
 
 	@Test
-	public void index() {
+	void index() {
 		with( sessionFactory ).runInTransaction( session -> {
 			IndexedEntity entity1 = new IndexedEntity();
 			entity1.setId( 1 );

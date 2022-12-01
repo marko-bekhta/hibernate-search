@@ -49,7 +49,7 @@ public class ElasticsearchIndexSchemaManagerValidationCustomMappingIT {
 
 	@ParameterizedTest(name = "With operation {0}")
 	@MethodSource("params")
-	public void success(ElasticsearchIndexSchemaManagerValidationOperation operation) {
+	void success(ElasticsearchIndexSchemaManagerValidationOperation operation) {
 		elasticsearchClient.index( index.name() ).deleteAndCreate();
 		elasticsearchClient.index( index.name() ).type().putMapping(
 				" { " +
@@ -81,7 +81,7 @@ public class ElasticsearchIndexSchemaManagerValidationCustomMappingIT {
 
 	@ParameterizedTest(name = "With operation {0}")
 	@MethodSource("params")
-	public void wrongSource(ElasticsearchIndexSchemaManagerValidationOperation operation) {
+	void wrongSource(ElasticsearchIndexSchemaManagerValidationOperation operation) {
 		elasticsearchClient.index( index.name() ).deleteAndCreate();
 		elasticsearchClient.index( index.name() ).type().putMapping(
 				" { " +
@@ -118,7 +118,7 @@ public class ElasticsearchIndexSchemaManagerValidationCustomMappingIT {
 
 	@ParameterizedTest(name = "With operation {0}")
 	@MethodSource("params")
-	public void missingSource(ElasticsearchIndexSchemaManagerValidationOperation operation) {
+	void missingSource(ElasticsearchIndexSchemaManagerValidationOperation operation) {
 		elasticsearchClient.index( index.name() ).deleteAndCreate();
 		elasticsearchClient.index( index.name() ).type().putMapping(
 				" { " +
@@ -151,7 +151,7 @@ public class ElasticsearchIndexSchemaManagerValidationCustomMappingIT {
 
 	@ParameterizedTest(name = "With operation {0}")
 	@MethodSource("params")
-	public void wrongField(ElasticsearchIndexSchemaManagerValidationOperation operation) {
+	void wrongField(ElasticsearchIndexSchemaManagerValidationOperation operation) {
 		elasticsearchClient.index( index.name() ).deleteAndCreate();
 		elasticsearchClient.index( index.name() ).type().putMapping(
 				" { " +
@@ -193,7 +193,7 @@ public class ElasticsearchIndexSchemaManagerValidationCustomMappingIT {
 
 	@ParameterizedTest(name = "With operation {0}")
 	@MethodSource("params")
-	public void missingField(ElasticsearchIndexSchemaManagerValidationOperation operation) {
+	void missingField(ElasticsearchIndexSchemaManagerValidationOperation operation) {
 		elasticsearchClient.index( index.name() ).deleteAndCreate();
 		elasticsearchClient.index( index.name() ).type().putMapping(
 				" { " +

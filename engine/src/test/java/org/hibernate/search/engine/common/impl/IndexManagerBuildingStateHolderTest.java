@@ -97,7 +97,7 @@ public class IndexManagerBuildingStateHolderTest {
 	}
 
 	@Test
-	public void defaultBackend_noNameSet() {
+	void defaultBackend_noNameSet() {
 		ArgumentCaptor<ConfigurationPropertySource> backendPropertySourceCapture =
 				ArgumentCaptor.forClass( ConfigurationPropertySource.class );
 		ArgumentCaptor<ConfigurationPropertySource> indexPropertySourceCapture =
@@ -160,7 +160,7 @@ public class IndexManagerBuildingStateHolderTest {
 	}
 
 	@Test
-	public void explicitBackend() {
+	void explicitBackend() {
 		ArgumentCaptor<ConfigurationPropertySource> backendPropertySourceCapture =
 				ArgumentCaptor.forClass( ConfigurationPropertySource.class );
 		ArgumentCaptor<ConfigurationPropertySource> indexPropertySourceCapture =
@@ -230,7 +230,7 @@ public class IndexManagerBuildingStateHolderTest {
 	}
 
 	@Test
-	public void error_missingBackendType_nullType() {
+	void error_missingBackendType_nullType() {
 		String keyPrefix = "somePrefix.";
 
 		ArgumentCaptor<Throwable> throwableCaptor = ArgumentCaptor.forClass( Throwable.class );
@@ -264,7 +264,7 @@ public class IndexManagerBuildingStateHolderTest {
 	}
 
 	@Test
-	public void error_missingBackendType_emptyType() {
+	void error_missingBackendType_emptyType() {
 		String keyPrefix = "somePrefix.";
 
 		ArgumentCaptor<Throwable> throwableCaptor = ArgumentCaptor.forClass( Throwable.class );
@@ -298,7 +298,7 @@ public class IndexManagerBuildingStateHolderTest {
 	}
 
 	@Test
-	public void differentTenancyModeNamedBackend() {
+	void differentTenancyModeNamedBackend() {
 		assertThatThrownBy( () -> {
 			BackendsInfo result = new BackendsInfo();
 			result.collect( Optional.of( "backend-name" ), TenancyMode.MULTI_TENANCY );
@@ -309,7 +309,7 @@ public class IndexManagerBuildingStateHolderTest {
 	}
 
 	@Test
-	public void differentTenancyModeDefaultBackend() {
+	void differentTenancyModeDefaultBackend() {
 		assertThatThrownBy( () -> {
 			BackendsInfo result = new BackendsInfo();
 			result.collect( Optional.empty(), TenancyMode.SINGLE_TENANCY );

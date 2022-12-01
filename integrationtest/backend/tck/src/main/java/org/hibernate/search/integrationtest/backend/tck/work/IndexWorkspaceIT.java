@@ -52,7 +52,7 @@ public class IndexWorkspaceIT {
 	}
 
 	@Test
-	public void runMergeSegmentsPurgeAndFlushAndRefreshInSequence() {
+	void runMergeSegmentsPurgeAndFlushAndRefreshInSequence() {
 		setupHelper.start().withIndex( index ).setup();
 		StubSession noTenantSessionContext = index.mapping().session();
 
@@ -75,7 +75,7 @@ public class IndexWorkspaceIT {
 	}
 
 	@Test
-	public void runMergeSegmentsPurgeAndFlushAndRefreshWithMultiTenancy() {
+	void runMergeSegmentsPurgeAndFlushAndRefreshWithMultiTenancy() {
 		multiTenancySetupHelper.start().withIndex( index ).withMultiTenancy().setup();
 		StubSession tenant1SessionContext = index.mapping().session( TENANT_1 );
 		StubSession tenant2SessionContext = index.mapping().session( TENANT_2 );

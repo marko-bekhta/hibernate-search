@@ -37,7 +37,7 @@ import org.assertj.core.data.Percentage;
  * with configuration specific to the outbox-polling coordination strategy.
  */
 @TestForIssue(jiraKey = "HSEARCH-4316")
-public class OutboxPollingAutomaticIndexingMultiTenancyIT {
+class OutboxPollingAutomaticIndexingMultiTenancyIT {
 
 	private static final String TENANT_1_ID = "tenant1";
 	private static final String TENANT_2_ID = "tenant2";
@@ -71,7 +71,7 @@ public class OutboxPollingAutomaticIndexingMultiTenancyIT {
 	}
 
 	@Test
-	public void perTenantEventProcessorConfiguration() {
+	void perTenantEventProcessorConfiguration() {
 		// Session factory 0 is configured to handle all tenants (which is the default)
 		setup( "create-drop", c -> c );
 		// Session factory 1 is configured to handle tenant 1 only

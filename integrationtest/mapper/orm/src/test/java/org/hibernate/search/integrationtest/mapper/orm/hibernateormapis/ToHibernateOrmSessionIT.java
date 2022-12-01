@@ -54,13 +54,13 @@ public class ToHibernateOrmSessionIT {
 	}
 
 	@Test
-	public void toHibernateOrmSessionFactory() {
+	void toHibernateOrmSessionFactory() {
 		SearchMapping searchMapping = Search.mapping( setupHolder.sessionFactory() );
 		assertThat( searchMapping.toOrmSessionFactory() ).isSameAs( setupHolder.sessionFactory() );
 	}
 
 	@Test
-	public void toHibernateOrmSession() {
+	void toHibernateOrmSession() {
 		setupHolder.runNoTransaction( session -> {
 			SearchSession searchSession = Search.session( session );
 			assertThat( searchSession.toOrmSession() ).isSameAs( session );
@@ -69,7 +69,7 @@ public class ToHibernateOrmSessionIT {
 
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-1857")
-	public void reuseSearchSessionAfterOrmSessionIsClosed_noMatching() {
+	void reuseSearchSessionAfterOrmSessionIsClosed_noMatching() {
 		Session session = setupHolder.sessionFactory().openSession();
 		SearchSession searchSession = Search.session( session );
 		// a SearchSession instance is created lazily,
@@ -83,7 +83,7 @@ public class ToHibernateOrmSessionIT {
 	}
 
 	@Test
-	public void lazyCreateSearchSessionAfterOrmSessionIsClosed() {
+	void lazyCreateSearchSessionAfterOrmSessionIsClosed() {
 		Session session = setupHolder.sessionFactory().openSession();
 		// Search session is not created, since we don't use it
 		SearchSession searchSession = Search.session( session );
@@ -96,7 +96,7 @@ public class ToHibernateOrmSessionIT {
 
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-1857")
-	public void reuseSearchQueryAfterOrmSessionIsClosed() {
+	void reuseSearchQueryAfterOrmSessionIsClosed() {
 		Session session = setupHolder.sessionFactory().openSession();
 		SearchSession searchSession = Search.session( session );
 		SearchQuery<IndexedEntity> query = createSimpleQuery( searchSession );

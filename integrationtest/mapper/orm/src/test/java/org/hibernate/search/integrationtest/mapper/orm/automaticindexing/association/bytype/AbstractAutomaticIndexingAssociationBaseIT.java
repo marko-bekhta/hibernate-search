@@ -3750,7 +3750,7 @@ public abstract class AbstractAutomaticIndexingAssociationBaseIT<
 	}
 
 	@Test
-	public void indirectValueUpdate_compose_singleValue_indexed() {
+	void indirectValueUpdate_compose_singleValue_indexed() {
 		PropertyAccessor<TContaining, TContained> containingAssociation = _containing().containedIndexedEmbedded();
 		PropertyAccessor<TContained, TContaining> containedAssociation = _contained().containingAsIndexedEmbedded();
 		PropertyAccessor<TContained, String> field = _contained().indexedField();
@@ -3924,7 +3924,7 @@ public abstract class AbstractAutomaticIndexingAssociationBaseIT<
 	}
 
 	@Test
-	public void indirectValueUpdate_compose_elementCollectionValue_indexed() {
+	void indirectValueUpdate_compose_elementCollectionValue_indexed() {
 		PropertyAccessor<TContaining, TContained> containingAssociation = _containing().containedIndexedEmbedded();
 		PropertyAccessor<TContained, TContaining> containedAssociation = _contained().containingAsIndexedEmbedded();
 		MultiValuedPropertyAccessor<TContained, String, List<String>> field = _contained().indexedElementCollectionField();
@@ -4233,7 +4233,7 @@ public abstract class AbstractAutomaticIndexingAssociationBaseIT<
 	}
 
 	@Test
-	public void indirectValueUpdate_compose_containedDerivedValue_indexed() {
+	void indirectValueUpdate_compose_containedDerivedValue_indexed() {
 		PropertyAccessor<TContaining, TContained> containingAssociation = _containing().containedIndexedEmbedded();
 		PropertyAccessor<TContained, TContaining> containedAssociation = _contained().containingAsIndexedEmbedded();
 		PropertyAccessor<TContained, String> field1 = _contained().fieldUsedInContainedDerivedField1();
@@ -4319,7 +4319,7 @@ public abstract class AbstractAutomaticIndexingAssociationBaseIT<
 	 * does trigger reindexing of the indexed entity.
 	 */
 	@Test
-	public void indirectValueUpdate_usedInCrossEntityDerivedProperty_crossEntityDerivedValue_indexed() {
+	void indirectValueUpdate_usedInCrossEntityDerivedProperty_crossEntityDerivedValue_indexed() {
 		PropertyAccessor<TContaining, TContained> containingAssociation =
 				_containing().containedUsedInCrossEntityDerivedProperty();
 		PropertyAccessor<TContained, TContaining> containedAssociation =

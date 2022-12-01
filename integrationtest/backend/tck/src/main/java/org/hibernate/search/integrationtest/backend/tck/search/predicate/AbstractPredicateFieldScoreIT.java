@@ -29,7 +29,7 @@ public abstract class AbstractPredicateFieldScoreIT<V extends AbstractPredicateT
 		extends AbstractPredicateScoreIT {
 	@ParameterizedTest(name = "{1}")
 	@MethodSource("params")
-	public void fieldLevelBoost(SimpleMappedIndex<IndexBinding> index, DataSet<?, V> dataSet) {
+	void fieldLevelBoost(SimpleMappedIndex<IndexBinding> index, DataSet<?, V> dataSet) {
 		assertThatQuery( index.query()
 				.where( f -> f.or(
 						predicate( f, field0Path( index, dataSet ), 0, dataSet ),
@@ -47,7 +47,7 @@ public abstract class AbstractPredicateFieldScoreIT<V extends AbstractPredicateT
 
 	@ParameterizedTest(name = "{1}")
 	@MethodSource("params")
-	public void predicateLevelBoost_fieldLevelBoost(SimpleMappedIndex<IndexBinding> index, DataSet<?, V> dataSet) {
+	void predicateLevelBoost_fieldLevelBoost(SimpleMappedIndex<IndexBinding> index, DataSet<?, V> dataSet) {
 		assertThatQuery( index.query()
 				.where( f -> f.or(
 						// 2 * 2 => boost x4
@@ -77,7 +77,7 @@ public abstract class AbstractPredicateFieldScoreIT<V extends AbstractPredicateT
 
 	@ParameterizedTest(name = "{1}")
 	@MethodSource("params")
-	public void constantScore_fieldLevelBoost(SimpleMappedIndex<IndexBinding> index, DataSet<?, V> dataSet) {
+	void constantScore_fieldLevelBoost(SimpleMappedIndex<IndexBinding> index, DataSet<?, V> dataSet) {
 		assumeConstantScoreSupported();
 
 		SearchPredicateFactory f = index.createScope().predicate();
@@ -93,7 +93,7 @@ public abstract class AbstractPredicateFieldScoreIT<V extends AbstractPredicateT
 
 	@ParameterizedTest(name = "{1}")
 	@MethodSource("params")
-	public void predicateLevelBoost_multiFields(SimpleMappedIndex<IndexBinding> index, DataSet<?, V> dataSet) {
+	void predicateLevelBoost_multiFields(SimpleMappedIndex<IndexBinding> index, DataSet<?, V> dataSet) {
 		assertThatQuery( index.query()
 				.where( f -> f.or(
 						predicateWithPredicateLevelBoost( f, new String[] {

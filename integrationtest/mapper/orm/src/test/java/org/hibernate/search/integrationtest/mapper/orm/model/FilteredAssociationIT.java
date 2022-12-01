@@ -35,7 +35,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 /**
  * Check that we can use @IndexedEmbedded on an association "filtered" from another.
  */
-public class FilteredAssociationIT {
+class FilteredAssociationIT {
 
 	@RegisterExtension
 	public BackendMock backendMock = BackendMock.create();
@@ -44,7 +44,7 @@ public class FilteredAssociationIT {
 	public OrmSetupHelper ormSetupHelper = OrmSetupHelper.withBackendMock( backendMock );
 
 	@Test
-	public void test() {
+	void test() {
 		backendMock.expectSchema( IndexedEntity.NAME, b -> b
 				.objectField( "contained", b2 -> b2
 						.multiValued( true )

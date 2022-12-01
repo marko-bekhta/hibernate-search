@@ -24,7 +24,7 @@ import org.hibernate.search.mapper.pojo.work.IndexingPlanSynchronizationStrategy
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class HibernateOrmIndexingPlanSynchronizationStrategyIT {
+class HibernateOrmIndexingPlanSynchronizationStrategyIT {
 	private static final String BOOK1_TITLE = "I, Robot";
 
 	private static final String BOOK2_TITLE = "The Caves of Steel";
@@ -35,7 +35,7 @@ public class HibernateOrmIndexingPlanSynchronizationStrategyIT {
 	public DocumentationSetupHelper setupHelper = DocumentationSetupHelper.withSingleBackend( BackendConfigurations.simple() );
 
 	@Test
-	public void synchronizationStrategyOverride() {
+	void synchronizationStrategyOverride() {
 		EntityManagerFactory entityManagerFactory = setupHelper.start()
 				.withProperty(
 						HibernateOrmMapperSettings.INDEXING_PLAN_SYNCHRONIZATION_STRATEGY,

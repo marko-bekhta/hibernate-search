@@ -38,7 +38,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
  * (and, in ORM 6.2+, there are at least two referenced columns).
  */
 @TestForIssue(jiraKey = { "HSEARCH-4156", "HSEARCH-4733" })
-public class SyntheticPropertyIT {
+class SyntheticPropertyIT {
 
 	@RegisterExtension
 	public BackendMock backendMock = BackendMock.create();
@@ -47,7 +47,7 @@ public class SyntheticPropertyIT {
 	public OrmSetupHelper ormSetupHelper = OrmSetupHelper.withBackendMock( backendMock );
 
 	@Test
-	public void test() {
+	void test() {
 		backendMock.expectSchema( IndexedEntity.NAME, b -> b
 				.objectField( "contained", b2 -> b2
 						.field( "ref1", String.class, b3 -> {} )

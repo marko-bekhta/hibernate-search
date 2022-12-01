@@ -65,14 +65,14 @@ public class OrPredicateSpecificsIT {
 	}
 
 	@Test
-	public void empty() {
+	void empty() {
 		assertThatQuery( index.query()
 				.where( f -> f.or() ) )
 				.hasNoHits();
 	}
 
 	@Test
-	public void or() {
+	void or() {
 		assertThatQuery( index.query()
 				.where( f -> f.or( f.match().field( "field1" ).matching( FIELD1_VALUE1 ) ) ) )
 				.hasDocRefHitsAnyOrder( index.typeName(), DOCUMENT_1 );
@@ -86,7 +86,7 @@ public class OrPredicateSpecificsIT {
 	}
 
 	@Test
-	public void or_separatePredicateObject() {
+	void or_separatePredicateObject() {
 		StubMappingScope scope = index.createScope();
 
 		SearchPredicate predicate1 = scope.predicate().match().field( "field1" ).matching( FIELD1_VALUE1 )
@@ -104,7 +104,7 @@ public class OrPredicateSpecificsIT {
 	}
 
 	@Test
-	public void nested() {
+	void nested() {
 		assertThatQuery( index.query()
 				.where( f -> f.or(
 						f.and( f.match().field( "field1" ).matching( FIELD1_VALUE1 ) ),
@@ -114,7 +114,7 @@ public class OrPredicateSpecificsIT {
 	}
 
 	@Test
-	public void add() {
+	void add() {
 		assertThatQuery( index.query()
 				.where( f -> f.or()
 						.add( f.match().field( "field1" ).matching( FIELD1_VALUE1 ) ) ) )
@@ -128,7 +128,7 @@ public class OrPredicateSpecificsIT {
 	}
 
 	@Test
-	public void add_separatePredicateObject() {
+	void add_separatePredicateObject() {
 		StubMappingScope scope = index.createScope();
 
 		SearchPredicate predicate1 = scope.predicate().match().field( "field1" ).matching( FIELD1_VALUE1 )
@@ -149,7 +149,7 @@ public class OrPredicateSpecificsIT {
 	}
 
 	@Test
-	public void add_function() {
+	void add_function() {
 		assertThatQuery( index.query()
 				.where( f -> f.or()
 						.add( f2 -> f2.match().field( "field1" ).matching( FIELD1_VALUE1 ) ) ) )
@@ -163,7 +163,7 @@ public class OrPredicateSpecificsIT {
 	}
 
 	@Test
-	public void with() {
+	void with() {
 		assertThatQuery( index.query()
 				.where( f -> f.or()
 						.with( or -> or.add( f.match().field( "field1" ).matching( FIELD1_VALUE1 ) ) ) ) )

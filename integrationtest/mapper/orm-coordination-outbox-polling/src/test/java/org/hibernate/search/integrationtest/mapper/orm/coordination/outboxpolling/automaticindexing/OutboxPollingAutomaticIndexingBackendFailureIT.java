@@ -41,7 +41,7 @@ import org.awaitility.core.ThrowingRunnable;
 /**
  * Extensive tests of backend failures for automatic indexing with outbox-polling.
  */
-public class OutboxPollingAutomaticIndexingBackendFailureIT {
+class OutboxPollingAutomaticIndexingBackendFailureIT {
 
 	@RegisterExtension
 	public BackendMock backendMock = BackendMock.create();
@@ -58,7 +58,7 @@ public class OutboxPollingAutomaticIndexingBackendFailureIT {
 	private TestFailureHandler failureHandler;
 
 	@Test
-	public void backendFailure() {
+	void backendFailure() {
 		setup( 0 );
 		with( sessionFactory ).runInTransaction( session -> {
 			IndexedEntity entity1 = new IndexedEntity();
@@ -110,7 +110,7 @@ public class OutboxPollingAutomaticIndexingBackendFailureIT {
 	}
 
 	@Test
-	public void backendFailure_retryAfter() {
+	void backendFailure_retryAfter() {
 		setup( 3 );
 		AtomicLong timeOfTheException = new AtomicLong();
 		with( sessionFactory ).runInTransaction( session -> {
@@ -166,7 +166,7 @@ public class OutboxPollingAutomaticIndexingBackendFailureIT {
 	}
 
 	@Test
-	public void backendFailure_twoFailuresOfTheSameIndexingWork() {
+	void backendFailure_twoFailuresOfTheSameIndexingWork() {
 		setup( 0 );
 		with( sessionFactory ).runInTransaction( session -> {
 			IndexedEntity entity1 = new IndexedEntity();
@@ -225,7 +225,7 @@ public class OutboxPollingAutomaticIndexingBackendFailureIT {
 	}
 
 	@Test
-	public void backendFailure_numberOfTrialsExhausted() {
+	void backendFailure_numberOfTrialsExhausted() {
 		setup( 0 );
 		with( sessionFactory ).runInTransaction( session -> {
 			IndexedEntity entity1 = new IndexedEntity();

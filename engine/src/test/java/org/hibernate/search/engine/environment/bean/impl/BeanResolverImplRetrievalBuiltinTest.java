@@ -41,7 +41,7 @@ import org.mockito.quality.Strictness;
 
 @MockitoSettings(strictness = Strictness.STRICT_STUBS)
 @ExtendWith(MockitoExtension.class)
-public class BeanResolverImplRetrievalBuiltinTest {
+class BeanResolverImplRetrievalBuiltinTest {
 
 	@Mock
 	private ClassResolver classResolverMock;
@@ -93,7 +93,7 @@ public class BeanResolverImplRetrievalBuiltinTest {
 	}
 
 	@Test
-	public void resolve_matchingConfiguredBeans() {
+	void resolve_matchingConfiguredBeans() {
 		BeanHolder<InternalType1> type1BeanHolder = BeanHolder.of( new InternalType1() );
 		BeanHolder<InternalType2> type2BeanHolder = BeanHolder.of( new InternalType2() );
 		BeanHolder<InternalType3> type3BeanHolder1 = BeanHolder.of( new InternalType3() );
@@ -135,7 +135,7 @@ public class BeanResolverImplRetrievalBuiltinTest {
 	}
 
 	@Test
-	public void resolve_noMatch() {
+	void resolve_noMatch() {
 		// resolve(Class)
 		assertThatThrownBy( () -> beanResolver.resolve( InvalidType.class, BeanRetrieval.BUILTIN ) )
 				.isInstanceOf( SearchException.class )
@@ -179,7 +179,7 @@ public class BeanResolverImplRetrievalBuiltinTest {
 	}
 
 	@Test
-	public void resolve_configuredBeanFactoryFailure() {
+	void resolve_configuredBeanFactoryFailure() {
 		RuntimeException beanFactoryFailure = new RuntimeException( "internal failure in factory" );
 
 		// resolve(Class)
@@ -198,7 +198,7 @@ public class BeanResolverImplRetrievalBuiltinTest {
 	}
 
 	@Test
-	public void resolve_ambiguousInternalBean() {
+	void resolve_ambiguousInternalBean() {
 		// resolve(Class)
 		assertThatThrownBy( () -> beanResolver.resolve( InternalType3.class, BeanRetrieval.BUILTIN ) )
 				.isInstanceOf( SearchException.class )

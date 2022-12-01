@@ -82,7 +82,7 @@ public class ToHibernateOrmScrollableResultsIT {
 	}
 
 	@Test
-	public void next() {
+	void next() {
 		setupHolder.runInTransaction( session -> {
 			expectScrollCreate();
 			try ( ScrollableResults<?> scroll = createSimpleQuery( session ).scroll() ) {
@@ -126,7 +126,7 @@ public class ToHibernateOrmScrollableResultsIT {
 	}
 
 	@Test
-	public void previous() {
+	void previous() {
 		setupHolder.runInTransaction( session -> {
 			expectScrollCreate();
 			try ( ScrollableResults<?> scroll = createSimpleQuery( session ).scroll() ) {
@@ -181,7 +181,7 @@ public class ToHibernateOrmScrollableResultsIT {
 	}
 
 	@Test
-	public void scrollMode_forwardsOnly() {
+	void scrollMode_forwardsOnly() {
 		setupHolder.runInTransaction( session -> {
 			expectScrollCreate();
 			try ( ScrollableResults<?> scroll = createSimpleQuery( session ).scroll( ScrollMode.FORWARD_ONLY ) ) {
@@ -200,7 +200,7 @@ public class ToHibernateOrmScrollableResultsIT {
 	}
 
 	@Test
-	public void scrollMode_invalid() {
+	void scrollMode_invalid() {
 		setupHolder.runInTransaction( session -> {
 			Query<IndexedEntity> query = createSimpleQuery( session );
 
@@ -218,7 +218,7 @@ public class ToHibernateOrmScrollableResultsIT {
 	}
 
 	@Test
-	public void fetchSize() {
+	void fetchSize() {
 		setupHolder.runInTransaction( session -> {
 			int customFetchSize = 10;
 			backendMock.expectScrollObjects( Collections.singletonList( IndexedEntity.NAME ),
@@ -260,7 +260,7 @@ public class ToHibernateOrmScrollableResultsIT {
 	}
 
 	@Test
-	public void maxResults() {
+	void maxResults() {
 		setupHolder.runInTransaction( session -> {
 			int maxResults = 200;
 			Query<IndexedEntity> query = Search.toOrmQuery( Search.session( session )
@@ -301,7 +301,7 @@ public class ToHibernateOrmScrollableResultsIT {
 	}
 
 	@Test
-	public void scroll() {
+	void scroll() {
 		setupHolder.runInTransaction( session -> {
 			expectScrollCreate();
 			try ( ScrollableResults<?> scroll = createSimpleQuery( session ).scroll() ) {
@@ -410,7 +410,7 @@ public class ToHibernateOrmScrollableResultsIT {
 	}
 
 	@Test
-	public void scroll_backwards() {
+	void scroll_backwards() {
 		setupHolder.runInTransaction( session -> {
 			expectScrollCreate();
 			try ( ScrollableResults<?> scroll = createSimpleQuery( session ).scroll() ) {
@@ -465,7 +465,7 @@ public class ToHibernateOrmScrollableResultsIT {
 	}
 
 	@Test
-	public void setRowNumber() {
+	void setRowNumber() {
 		setupHolder.runInTransaction( session -> {
 			expectScrollCreate();
 			try ( ScrollableResults<?> scroll = createSimpleQuery( session ).scroll() ) {
@@ -549,7 +549,7 @@ public class ToHibernateOrmScrollableResultsIT {
 	}
 
 	@Test
-	public void setRowNumber_backwards() {
+	void setRowNumber_backwards() {
 		setupHolder.runInTransaction( session -> {
 			expectScrollCreate();
 			try ( ScrollableResults<?> scroll = createSimpleQuery( session ).scroll() ) {
@@ -591,7 +591,7 @@ public class ToHibernateOrmScrollableResultsIT {
 	}
 
 	@Test
-	public void setRowNumber_relativeToEnd() {
+	void setRowNumber_relativeToEnd() {
 		setupHolder.runInTransaction( session -> {
 			expectScrollCreate();
 			try ( ScrollableResults<?> scroll = createSimpleQuery( session ).scroll() ) {
@@ -801,7 +801,7 @@ public class ToHibernateOrmScrollableResultsIT {
 	}
 
 	@Test
-	public void beforeFirst_fromBeforeFirst() {
+	void beforeFirst_fromBeforeFirst() {
 		setupHolder.runInTransaction( session -> {
 			expectScrollCreate();
 			try ( ScrollableResults<?> scroll = createSimpleQuery( session ).scroll() ) {
@@ -838,7 +838,7 @@ public class ToHibernateOrmScrollableResultsIT {
 	}
 
 	@Test
-	public void beforeFirst_fromFirstOrAfter() {
+	void beforeFirst_fromFirstOrAfter() {
 		setupHolder.runInTransaction( session -> {
 			expectScrollCreate();
 			try ( ScrollableResults<?> scroll = createSimpleQuery( session ).scroll() ) {
@@ -874,7 +874,7 @@ public class ToHibernateOrmScrollableResultsIT {
 	}
 
 	@Test
-	public void first() {
+	void first() {
 		setupHolder.runInTransaction( session -> {
 			expectScrollCreate();
 			try ( ScrollableResults<?> scroll = createSimpleQuery( session ).scroll() ) {
@@ -928,7 +928,7 @@ public class ToHibernateOrmScrollableResultsIT {
 	}
 
 	@Test
-	public void first_fromAfterFirst() {
+	void first_fromAfterFirst() {
 		setupHolder.runInTransaction( session -> {
 			expectScrollCreate();
 			try ( ScrollableResults<?> scroll = createSimpleQuery( session ).scroll() ) {
@@ -959,7 +959,7 @@ public class ToHibernateOrmScrollableResultsIT {
 	}
 
 	@Test
-	public void last() {
+	void last() {
 		setupHolder.runInTransaction( session -> {
 			expectScrollCreate();
 			try ( ScrollableResults<?> scroll = createSimpleQuery( session ).scroll() ) {
@@ -1036,7 +1036,7 @@ public class ToHibernateOrmScrollableResultsIT {
 	}
 
 	@Test
-	public void afterLast_fromLastOrBefore() {
+	void afterLast_fromLastOrBefore() {
 		setupHolder.runInTransaction( session -> {
 			expectScrollCreate();
 			try ( ScrollableResults<?> scroll = createSimpleQuery( session ).scroll() ) {
@@ -1066,7 +1066,7 @@ public class ToHibernateOrmScrollableResultsIT {
 	}
 
 	@Test
-	public void afterLast_fromAfterLast() {
+	void afterLast_fromAfterLast() {
 		setupHolder.runInTransaction( session -> {
 			expectScrollCreate();
 			try ( ScrollableResults<?> scroll = createSimpleQuery( session ).scroll() ) {
@@ -1125,7 +1125,7 @@ public class ToHibernateOrmScrollableResultsIT {
 	}
 
 	@Test
-	public void close() {
+	void close() {
 		setupHolder.runInTransaction( session -> {
 			expectScrollCreate();
 			try ( ScrollableResults<?> scroll = createSimpleQuery( session ).scroll() ) {
@@ -1166,7 +1166,7 @@ public class ToHibernateOrmScrollableResultsIT {
 	}
 
 	@Test
-	public void timeout() {
+	void timeout() {
 		setupHolder.runInTransaction( session -> {
 			backendMock.expectScrollObjects( Collections.singletonList( IndexedEntity.NAME ),
 					DEFAULT_FETCH_SIZE, b -> b.failAfter( 200, TimeUnit.MILLISECONDS ) );

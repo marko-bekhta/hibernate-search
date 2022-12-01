@@ -66,7 +66,7 @@ public class IndexValueFieldTypeDescriptorBaseIT {
 
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	public void isSearchable(FieldTypeDescriptor<?> fieldType) {
+	void isSearchable(FieldTypeDescriptor<?> fieldType) {
 		init( fieldType );
 		assertThat( getTypeDescriptor( "default" ) )
 				.returns( true, IndexValueFieldTypeDescriptor::searchable );
@@ -78,7 +78,7 @@ public class IndexValueFieldTypeDescriptorBaseIT {
 
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	public void isSortable(FieldTypeDescriptor<?> fieldType) {
+	void isSortable(FieldTypeDescriptor<?> fieldType) {
 		init( fieldType );
 		boolean projectable = TckConfiguration.get().getBackendFeatures().fieldsProjectableByDefault();
 
@@ -96,7 +96,7 @@ public class IndexValueFieldTypeDescriptorBaseIT {
 
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	public void isProjectable(FieldTypeDescriptor<?> fieldType) {
+	void isProjectable(FieldTypeDescriptor<?> fieldType) {
 		init( fieldType );
 		boolean projectable = TckConfiguration.get().getBackendFeatures().fieldsProjectableByDefault();
 		assertThat( getTypeDescriptor( "default" ) )
@@ -109,7 +109,7 @@ public class IndexValueFieldTypeDescriptorBaseIT {
 
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	public void isAggregable(FieldTypeDescriptor<?> fieldType) {
+	void isAggregable(FieldTypeDescriptor<?> fieldType) {
 		init( fieldType );
 		assertThat( getTypeDescriptor( "default" ) )
 				.returns( false, IndexValueFieldTypeDescriptor::aggregable );
@@ -123,7 +123,7 @@ public class IndexValueFieldTypeDescriptorBaseIT {
 
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	public void dslArgumentClass(FieldTypeDescriptor<?> fieldType) {
+	void dslArgumentClass(FieldTypeDescriptor<?> fieldType) {
 		init( fieldType );
 		assertThat( getTypeDescriptor( "default" ) )
 				.returns( fieldType.getJavaType(), IndexValueFieldTypeDescriptor::dslArgumentClass );
@@ -135,7 +135,7 @@ public class IndexValueFieldTypeDescriptorBaseIT {
 
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	public void projectedValueClass(FieldTypeDescriptor<?> fieldType) {
+	void projectedValueClass(FieldTypeDescriptor<?> fieldType) {
 		init( fieldType );
 		assertThat( getTypeDescriptor( "default" ) )
 				.returns( fieldType.getJavaType(), IndexValueFieldTypeDescriptor::projectedValueClass );
@@ -147,7 +147,7 @@ public class IndexValueFieldTypeDescriptorBaseIT {
 
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	public void valueClass(FieldTypeDescriptor<?> fieldType) {
+	void valueClass(FieldTypeDescriptor<?> fieldType) {
 		init( fieldType );
 		assertThat( getTypeDescriptor( "default" ) )
 				.returns( fieldType.getJavaType(), IndexValueFieldTypeDescriptor::valueClass );
@@ -159,7 +159,7 @@ public class IndexValueFieldTypeDescriptorBaseIT {
 
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	public void searchAnalyzerName(FieldTypeDescriptor<?> fieldType) {
+	void searchAnalyzerName(FieldTypeDescriptor<?> fieldType) {
 		init( fieldType );
 		IndexValueFieldTypeDescriptor typeDescriptor = getTypeDescriptor( "default" );
 
@@ -175,7 +175,7 @@ public class IndexValueFieldTypeDescriptorBaseIT {
 
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	public void normalizerName(FieldTypeDescriptor<?> fieldType) {
+	void normalizerName(FieldTypeDescriptor<?> fieldType) {
 		init( fieldType );
 		IndexValueFieldTypeDescriptor typeDescriptor = getTypeDescriptor( "default" );
 

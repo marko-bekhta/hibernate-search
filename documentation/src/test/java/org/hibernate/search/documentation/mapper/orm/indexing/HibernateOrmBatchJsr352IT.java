@@ -31,7 +31,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class HibernateOrmBatchJsr352IT {
+class HibernateOrmBatchJsr352IT {
 
 	private static final int JOB_TIMEOUT_MS = 30_000;
 	private static final int THREAD_SLEEP = 1000;
@@ -51,7 +51,7 @@ public class HibernateOrmBatchJsr352IT {
 	}
 
 	@Test
-	public void simple() throws Exception {
+	void simple() throws Exception {
 		// tag::simple[]
 		Properties jobProps = MassIndexingJob.parameters() // <1>
 				.forEntities( Book.class, Author.class ) // <2>
@@ -74,7 +74,7 @@ public class HibernateOrmBatchJsr352IT {
 	}
 
 	@Test
-	public void hql() throws Exception {
+	void hql() throws Exception {
 		// tag::hql[]
 		Properties jobProps = MassIndexingJob.parameters() // <1>
 				.forEntities( Author.class ) // <2>

@@ -34,7 +34,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
  * Test adding default value bridges so that custom types are supported by the {@code @GenericField} annotation.
  */
 @TestForIssue(jiraKey = "HSEARCH-3096")
-public class FieldDefaultBridgeAdditionIT {
+class FieldDefaultBridgeAdditionIT {
 	private static final String INDEX_NAME = "indexName";
 
 	@RegisterExtension
@@ -45,7 +45,7 @@ public class FieldDefaultBridgeAdditionIT {
 			StandalonePojoMappingSetupHelper.withBackendMock( MethodHandles.lookup(), backendMock );
 
 	@Test
-	public void exactType() {
+	void exactType() {
 		Consumer<BridgesConfigurationContext> configurer = b -> b.exactType( CustomClass.class )
 				.valueBridge( new CustomClassBridge() );
 
@@ -59,7 +59,7 @@ public class FieldDefaultBridgeAdditionIT {
 	}
 
 	@Test
-	public void subTypesOf() {
+	void subTypesOf() {
 		Consumer<BridgesConfigurationContext> configurer = b -> b.subTypesOf( CustomClass.class )
 				.valueBinder( bindingContext -> {
 					Class<?> rawType = bindingContext.bridgedElement().rawType();
@@ -86,7 +86,7 @@ public class FieldDefaultBridgeAdditionIT {
 	}
 
 	@Test
-	public void strictSubTypesOf() {
+	void strictSubTypesOf() {
 		Consumer<BridgesConfigurationContext> configurer = b -> b.strictSubTypesOf( CustomClass.class )
 				.valueBinder( bindingContext -> {
 					Class<?> rawType = bindingContext.bridgedElement().rawType();

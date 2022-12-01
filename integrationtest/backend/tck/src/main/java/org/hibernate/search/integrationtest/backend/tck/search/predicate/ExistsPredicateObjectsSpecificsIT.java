@@ -96,7 +96,7 @@ public class ExistsPredicateObjectsSpecificsIT {
 	}
 
 	@Test
-	public void nested() {
+	void nested() {
 		assertThatQuery( mainIndex.query()
 				.where( f -> f.exists().field( "nested" ) ) )
 				// DOCUMENT_2 won't be matched either, since it hasn't got any not-null field
@@ -105,14 +105,14 @@ public class ExistsPredicateObjectsSpecificsIT {
 	}
 
 	@Test
-	public void nested_noChild() {
+	void nested_noChild() {
 		assertThatQuery( mainIndex.query()
 				.where( f -> f.exists().field( "nestedNoChild" ) ) )
 				.hasNoHits();
 	}
 
 	@Test
-	public void nested_multiIndexes_compatibleIndexBinding() {
+	void nested_multiIndexes_compatibleIndexBinding() {
 		StubMappingScope scope = mainIndex.createScope( compatibleIndex );
 
 		assertThatQuery( scope.query()
@@ -123,7 +123,7 @@ public class ExistsPredicateObjectsSpecificsIT {
 	}
 
 	@Test
-	public void nested_multiIndexes_incompatibleIndexBinding() {
+	void nested_multiIndexes_incompatibleIndexBinding() {
 		SearchPredicateFactory f = mainIndex.createScope( incompatibleIndex ).predicate();
 		String fieldPath = "nested";
 
@@ -138,7 +138,7 @@ public class ExistsPredicateObjectsSpecificsIT {
 	}
 
 	@Test
-	public void nested_multiIndexes_emptyIndexBinding() {
+	void nested_multiIndexes_emptyIndexBinding() {
 		StubMappingScope scope = mainIndex.createScope( emptyIndex );
 
 		assertThatQuery( scope.query()
@@ -149,7 +149,7 @@ public class ExistsPredicateObjectsSpecificsIT {
 	}
 
 	@Test
-	public void nested_multiIndexes_wrongStructure() {
+	void nested_multiIndexes_wrongStructure() {
 		SearchPredicateFactory f = mainIndex.createScope( invertedIndex ).predicate();
 
 		String fieldPath = "nested";
@@ -167,7 +167,7 @@ public class ExistsPredicateObjectsSpecificsIT {
 	}
 
 	@Test
-	public void nested_multiIndexes_differentFields() {
+	void nested_multiIndexes_differentFields() {
 		String fieldPath = "nested";
 
 		assertThatQuery( mainIndex.createScope( differentFieldsIndex ).query()
@@ -194,7 +194,7 @@ public class ExistsPredicateObjectsSpecificsIT {
 	}
 
 	@Test
-	public void flattened() {
+	void flattened() {
 		assertThatQuery( mainIndex.query()
 				.where( p -> p.exists().field( "flattened" ) ) )
 				// DOCUMENT_2 won't be matched either, since it hasn't got any not-null field
@@ -203,14 +203,14 @@ public class ExistsPredicateObjectsSpecificsIT {
 	}
 
 	@Test
-	public void flattened_noChild() {
+	void flattened_noChild() {
 		assertThatQuery( mainIndex.query()
 				.where( p -> p.exists().field( "flattenedNoChild" ) ) )
 				.hasNoHits();
 	}
 
 	@Test
-	public void flattened_multiIndexes_compatibleIndexBinding() {
+	void flattened_multiIndexes_compatibleIndexBinding() {
 		assertThatQuery( mainIndex.query()
 				.where( p -> p.exists().field( "flattened" ) ) )
 				// DOCUMENT_2 won't be matched either, since it hasn't got any not-null field
@@ -219,7 +219,7 @@ public class ExistsPredicateObjectsSpecificsIT {
 	}
 
 	@Test
-	public void flattened_multiIndexes_incompatibleIndexBinding() {
+	void flattened_multiIndexes_incompatibleIndexBinding() {
 		SearchPredicateFactory f = incompatibleIndex.createScope( mainIndex ).predicate();
 		String fieldPath = "flattened";
 
@@ -234,7 +234,7 @@ public class ExistsPredicateObjectsSpecificsIT {
 	}
 
 	@Test
-	public void flattened_multiIndexes_emptyIndexBinding() {
+	void flattened_multiIndexes_emptyIndexBinding() {
 		StubMappingScope scope = mainIndex.createScope( emptyIndex );
 
 		assertThatQuery( scope.query()
@@ -245,7 +245,7 @@ public class ExistsPredicateObjectsSpecificsIT {
 	}
 
 	@Test
-	public void flattened_multiIndexes_wrongStructure() {
+	void flattened_multiIndexes_wrongStructure() {
 		SearchPredicateFactory f = invertedIndex.createScope( mainIndex ).predicate();
 
 		String fieldPath = "flattened";
@@ -263,7 +263,7 @@ public class ExistsPredicateObjectsSpecificsIT {
 	}
 
 	@Test
-	public void flattened_multiIndexes_differentFields() {
+	void flattened_multiIndexes_differentFields() {
 		StubMappingScope scope = differentFieldsIndex.createScope( mainIndex );
 		String fieldPath = "flattened";
 

@@ -74,7 +74,7 @@ public class AutomaticIndexingAssociationDeletionIT {
 	}
 
 	@Test
-	public void optionalOneToOne_deleteOwner() {
+	void optionalOneToOne_deleteOwner() {
 		initOptionalOneToOne();
 
 		setupHolder.runInTransaction( session -> {
@@ -93,7 +93,7 @@ public class AutomaticIndexingAssociationDeletionIT {
 	}
 
 	@Test
-	public void optionalOneToOne_deleteNonOwner() {
+	void optionalOneToOne_deleteNonOwner() {
 		initOptionalOneToOne();
 
 		setupHolder.runInTransaction( session -> {
@@ -118,7 +118,7 @@ public class AutomaticIndexingAssociationDeletionIT {
 	}
 
 	@Test
-	public void optionalOneToOne_deleteBoth() {
+	void optionalOneToOne_deleteBoth() {
 		initOptionalOneToOne();
 
 		setupHolder.runInTransaction( session -> {
@@ -165,7 +165,7 @@ public class AutomaticIndexingAssociationDeletionIT {
 	}
 
 	@Test
-	public void manyToOne_deleteOwner() {
+	void manyToOne_deleteOwner() {
 		initManyToOne();
 
 		setupHolder.runInTransaction( session -> {
@@ -187,7 +187,7 @@ public class AutomaticIndexingAssociationDeletionIT {
 	}
 
 	@Test
-	public void manyToOne_deleteNonOwner() {
+	void manyToOne_deleteNonOwner() {
 		initManyToOne();
 
 		setupHolder.runInTransaction( session -> {
@@ -218,7 +218,7 @@ public class AutomaticIndexingAssociationDeletionIT {
 	}
 
 	@Test
-	public void manyToOne_deleteBoth() {
+	void manyToOne_deleteBoth() {
 		initManyToOne();
 
 		setupHolder.runInTransaction( session -> {
@@ -285,7 +285,7 @@ public class AutomaticIndexingAssociationDeletionIT {
 	}
 
 	@Test
-	public void manyToMany_deleteOwner() {
+	void manyToMany_deleteOwner() {
 		initManyToMany();
 
 		setupHolder.runInTransaction( session -> {
@@ -304,7 +304,7 @@ public class AutomaticIndexingAssociationDeletionIT {
 	}
 
 	@Test
-	public void manyToMany_deleteNonOwner() {
+	void manyToMany_deleteNonOwner() {
 		initManyToMany();
 
 		setupHolder.runInTransaction( session -> {
@@ -341,7 +341,7 @@ public class AutomaticIndexingAssociationDeletionIT {
 	}
 
 	@Test
-	public void manyToMany_deleteBoth() {
+	void manyToMany_deleteBoth() {
 		initManyToMany();
 
 		setupHolder.runInTransaction( session -> {

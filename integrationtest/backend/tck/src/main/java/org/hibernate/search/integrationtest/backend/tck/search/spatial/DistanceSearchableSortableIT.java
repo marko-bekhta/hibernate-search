@@ -53,7 +53,7 @@ public class DistanceSearchableSortableIT {
 	}
 
 	@Test
-	public void searchableSortable() {
+	void searchableSortable() {
 		StubMappingScope scope = index.createScope();
 		SearchQuery<DocumentReference> query = scope.query()
 				.where( f -> f.spatial().within().field( "searchableSortable" ).circle( METRO_GARIBALDI, 1_500 ) )
@@ -64,7 +64,7 @@ public class DistanceSearchableSortableIT {
 	}
 
 	@Test
-	public void searchableNotSortable() {
+	void searchableNotSortable() {
 		assumeFalse(
 				TckConfiguration.get().getBackendFeatures().fieldsProjectableByDefault(),
 				"Skipping test for ES GeoPoint as those would become sortable by default in this case."
@@ -92,7 +92,7 @@ public class DistanceSearchableSortableIT {
 	}
 
 	@Test
-	public void searchableNotSortableNotProjectable() {
+	void searchableNotSortableNotProjectable() {
 		StubMappingScope scope = index.createScope();
 		String fieldPath = "searchableNotSortableNotProjectable";
 
@@ -116,7 +116,7 @@ public class DistanceSearchableSortableIT {
 	}
 
 	@Test
-	public void searchableDefaultSortable() {
+	void searchableDefaultSortable() {
 		assumeFalse(
 				TckConfiguration.get().getBackendFeatures().fieldsProjectableByDefault(),
 				"Skipping test for ES GeoPoint as those would become sortable by default in this case."
@@ -144,7 +144,7 @@ public class DistanceSearchableSortableIT {
 	}
 
 	@Test
-	public void notSearchableSortable() {
+	void notSearchableSortable() {
 		StubMappingScope scope = index.createScope();
 		String fieldPath = "notSearchableSortable";
 
@@ -168,7 +168,7 @@ public class DistanceSearchableSortableIT {
 	}
 
 	@Test
-	public void defaultSearchableSortable() {
+	void defaultSearchableSortable() {
 		StubMappingScope scope = index.createScope();
 		SearchQuery<DocumentReference> query = scope.query()
 				.where( f -> f.spatial().within().field( "defaultSearchableSortable" ).circle( METRO_GARIBALDI, 1_500 ) )

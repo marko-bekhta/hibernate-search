@@ -32,7 +32,8 @@ import org.junit.jupiter.api.extension.TestTemplateInvocationContextProvider;
 
 import org.opentest4j.TestAbortedException;
 
-public final class RetryExtension implements TestTemplateInvocationContextProvider, BeforeEachCallback,
+public final class RetryExtension
+		implements TestTemplateInvocationContextProvider, BeforeEachCallback,
 		TestExecutionExceptionHandler {
 
 	@Target({ ElementType.METHOD })

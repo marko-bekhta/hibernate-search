@@ -23,7 +23,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class ProgrammaticMappingSimpleIT {
+class ProgrammaticMappingSimpleIT {
 
 	@RegisterExtension
 	public DocumentationSetupHelper setupHelper = DocumentationSetupHelper.withSingleBackend( BackendConfigurations.simple() );
@@ -41,7 +41,7 @@ public class ProgrammaticMappingSimpleIT {
 	}
 
 	@Test
-	public void simple() {
+	void simple() {
 		with( entityManagerFactory ).runInTransaction( entityManager -> {
 			Book book = new Book();
 			book.setId( 1 );

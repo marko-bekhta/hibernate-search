@@ -41,7 +41,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
  * Test of automatic rebalancing for dynamic sharding with the outbox-polling coordination strategy.
  */
 @TestForIssue(jiraKey = "HSEARCH-4140")
-public class OutboxPollingAutomaticIndexingDynamicShardingRebalancingIT {
+class OutboxPollingAutomaticIndexingDynamicShardingRebalancingIT {
 
 	// Use a low polling interval, pulse interval and batch size when testing rebalancing
 	// so that we can observe rebalancing on a reasonably small timescale.
@@ -102,7 +102,7 @@ public class OutboxPollingAutomaticIndexingDynamicShardingRebalancingIT {
 	}
 
 	@Test
-	public void agentLeft() {
+	void agentLeft() {
 		setup();
 
 		SessionFactory sessionFactory = indexingCountHelper.sessionFactory( 0 );
@@ -151,7 +151,7 @@ public class OutboxPollingAutomaticIndexingDynamicShardingRebalancingIT {
 	}
 
 	@Test
-	public void agentExpired() {
+	void agentExpired() {
 		setup();
 
 		SessionFactory sessionFactory = indexingCountHelper.sessionFactory( 0 );
@@ -194,7 +194,7 @@ public class OutboxPollingAutomaticIndexingDynamicShardingRebalancingIT {
 	}
 
 	@Test
-	public void agentJoined() {
+	void agentJoined() {
 		setup();
 
 		SessionFactory sessionFactory = indexingCountHelper.sessionFactory( 0 );

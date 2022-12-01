@@ -43,7 +43,7 @@ public class IndexNullAsValueIT {
 	private final SimpleMappedIndex<IndexBinding> index = SimpleMappedIndex.of( IndexBinding::new );
 
 	@Test
-	public void indexNullAsValue_match() {
+	void indexNullAsValue_match() {
 		setUp();
 		StubMappingScope scope = index.createScope();
 
@@ -61,7 +61,7 @@ public class IndexNullAsValueIT {
 	}
 
 	@Test
-	public void indexNullAsValue_spatial() {
+	void indexNullAsValue_spatial() {
 		setUp();
 		SearchQuery<DocumentReference> query = index.createScope().query()
 				.where( f -> f.spatial().within().field( "geoPointField" ).circle( GeoPoint.of( 0.0, 0.0 ), 1 ) )
@@ -72,7 +72,7 @@ public class IndexNullAsValueIT {
 	}
 
 	@Test
-	public void indexNullAsValue_fullText() {
+	void indexNullAsValue_fullText() {
 		assertThatThrownBy( () -> setupHelper.start()
 				.withIndex( StubMappedIndex.ofNonRetrievable(
 						root -> root.field(

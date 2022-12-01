@@ -27,7 +27,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import org.apache.lucene.analysis.Analyzer;
 
-public class LuceneGetAnalyzerIT {
+class LuceneGetAnalyzerIT {
 
 	@RegisterExtension
 	public DocumentationSetupHelper setupHelper =
@@ -41,7 +41,7 @@ public class LuceneGetAnalyzerIT {
 	}
 
 	@Test
-	public void fromBackend() {
+	void fromBackend() {
 		//tag::fromBackend[]
 		SearchMapping mapping = /* ... */ // <1>
 				//end::fromBackend[]
@@ -57,7 +57,7 @@ public class LuceneGetAnalyzerIT {
 	}
 
 	@Test
-	public void fromIndexManager() {
+	void fromIndexManager() {
 		//tag::fromIndexManager[]
 		SearchMapping mapping = /* ... */ // <1>
 				//end::fromIndexManager[]

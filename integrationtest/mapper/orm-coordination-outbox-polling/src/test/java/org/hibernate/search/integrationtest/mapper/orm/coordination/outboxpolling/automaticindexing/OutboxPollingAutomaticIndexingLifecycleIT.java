@@ -32,7 +32,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class OutboxPollingAutomaticIndexingLifecycleIT {
+class OutboxPollingAutomaticIndexingLifecycleIT {
 
 	// The value doesn't matter, we just need to be sure that's the one that was configured.
 	private static final long BATCH_SIZE =
@@ -54,7 +54,7 @@ public class OutboxPollingAutomaticIndexingLifecycleIT {
 	}
 
 	@Test
-	public void stopWhileOutboxEventsIsBeingProcessed() {
+	void stopWhileOutboxEventsIsBeingProcessed() {
 		SessionFactory sessionFactory = setup();
 		backendMock.verifyExpectationsMet();
 		int size = 10000;
@@ -108,7 +108,7 @@ public class OutboxPollingAutomaticIndexingLifecycleIT {
 	}
 
 	@Test
-	public void processCreateUpdateDelete() {
+	void processCreateUpdateDelete() {
 		SessionFactory sessionFactory = setup();
 		backendMock.verifyExpectationsMet();
 

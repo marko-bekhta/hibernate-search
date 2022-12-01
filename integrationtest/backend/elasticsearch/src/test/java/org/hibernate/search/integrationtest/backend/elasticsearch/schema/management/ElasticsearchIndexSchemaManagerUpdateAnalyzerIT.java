@@ -27,7 +27,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
  * Tests related to analyzers when updating indexes.
  */
 @PortedFromSearch5(original = "org.hibernate.search.elasticsearch.test.ElasticsearchAnalyzerDefinitionMigrationIT")
-public class ElasticsearchIndexSchemaManagerUpdateAnalyzerIT {
+class ElasticsearchIndexSchemaManagerUpdateAnalyzerIT {
 
 	@RegisterExtension
 	public final SearchSetupHelper setupHelper = SearchSetupHelper.create();
@@ -46,7 +46,7 @@ public class ElasticsearchIndexSchemaManagerUpdateAnalyzerIT {
 	}
 
 	@Test
-	public void nothingToDo() throws Exception {
+	void nothingToDo() throws Exception {
 		elasticSearchClient.index( index.name() ).deleteAndCreate(
 				"index.analysis",
 				"{"
@@ -143,7 +143,7 @@ public class ElasticsearchIndexSchemaManagerUpdateAnalyzerIT {
 	}
 
 	@Test
-	public void analyzer_missing() throws Exception {
+	void analyzer_missing() throws Exception {
 		elasticSearchClient.index( index.name() ).deleteAndCreate(
 				"index.analysis",
 				"{"
@@ -228,7 +228,7 @@ public class ElasticsearchIndexSchemaManagerUpdateAnalyzerIT {
 	}
 
 	@Test
-	public void analyzer_componentDefinition_missing() throws Exception {
+	void analyzer_componentDefinition_missing() throws Exception {
 		elasticSearchClient.index( index.name() ).deleteAndCreate(
 				"index.analysis",
 				"{"
@@ -310,7 +310,7 @@ public class ElasticsearchIndexSchemaManagerUpdateAnalyzerIT {
 	}
 
 	@Test
-	public void analyzer_componentReference_invalid() throws Exception {
+	void analyzer_componentReference_invalid() throws Exception {
 		elasticSearchClient.index( index.name() ).deleteAndCreate(
 				"index.analysis",
 				"{"
@@ -402,7 +402,7 @@ public class ElasticsearchIndexSchemaManagerUpdateAnalyzerIT {
 	}
 
 	@Test
-	public void analyzer_componentDefinition_invalid() throws Exception {
+	void analyzer_componentDefinition_invalid() throws Exception {
 		elasticSearchClient.index( index.name() ).deleteAndCreate(
 				"index.analysis",
 				"{"

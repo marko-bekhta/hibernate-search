@@ -156,7 +156,7 @@ public class SearchQueryBaseIT {
 	}
 
 	@Test
-	public void target_byClass_singleType() {
+	void target_byClass_singleType() {
 		setupHolder.runInTransaction( session -> {
 			SearchSession searchSession = Search.session( session );
 
@@ -185,7 +185,7 @@ public class SearchQueryBaseIT {
 
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-3896")
-	public void target_byClass_singleType_reuseQueryInstance() {
+	void target_byClass_singleType_reuseQueryInstance() {
 		setupHolder.runInTransaction( session -> {
 			SearchSession searchSession = Search.session( session );
 
@@ -216,7 +216,7 @@ public class SearchQueryBaseIT {
 	}
 
 	@Test
-	public void target_byClass_multipleTypes() {
+	void target_byClass_multipleTypes() {
 		setupHolder.runInTransaction( session -> {
 			SearchSession searchSession = Search.session( session );
 
@@ -242,7 +242,7 @@ public class SearchQueryBaseIT {
 	}
 
 	@Test
-	public void target_byClass_multipleTypes_entityLoadingTimeout_clientSideTimeout() {
+	void target_byClass_multipleTypes_entityLoadingTimeout_clientSideTimeout() {
 		setupHolder.runInTransaction( session -> {
 			SearchSession searchSession = Search.session( session );
 			SlowerLoadingListener.registerSlowerLoadingListener( session, 100 );
@@ -269,7 +269,7 @@ public class SearchQueryBaseIT {
 	}
 
 	@Test
-	public void target_byClass_multipleTypes_entityLoadingTimeout_jdbcTimeout() {
+	void target_byClass_multipleTypes_entityLoadingTimeout_jdbcTimeout() {
 		setupHolder.runInTransaction( session -> {
 			SearchSession searchSession = Search.session( session );
 			TimeoutLoadingListener.registerTimingOutLoadingListener( session );
@@ -296,7 +296,7 @@ public class SearchQueryBaseIT {
 	}
 
 	@Test
-	public void target_byClass_invalidClass() {
+	void target_byClass_invalidClass() {
 		setupHolder.runInTransaction( session -> {
 			SearchSession searchSession = Search.session( session );
 
@@ -314,7 +314,7 @@ public class SearchQueryBaseIT {
 	}
 
 	@Test
-	public void target_byName_singleType() {
+	void target_byName_singleType() {
 		setupHolder.runInTransaction( session -> {
 			SearchSession searchSession = Search.session( session );
 
@@ -342,7 +342,7 @@ public class SearchQueryBaseIT {
 	}
 
 	@Test
-	public void target_byName_multipleTypes() {
+	void target_byName_multipleTypes() {
 		setupHolder.runInTransaction( session -> {
 			SearchSession searchSession = Search.session( session );
 
@@ -370,7 +370,7 @@ public class SearchQueryBaseIT {
 	}
 
 	@Test
-	public void target_byName_invalidType() {
+	void target_byName_invalidType() {
 		setupHolder.runInTransaction( session -> {
 			SearchSession searchSession = Search.session( session );
 
@@ -388,7 +388,7 @@ public class SearchQueryBaseIT {
 	}
 
 	@Test
-	public void target_byName_invalidName() {
+	void target_byName_invalidName() {
 		setupHolder.runInTransaction( session -> {
 			SearchSession searchSession = Search.session( session );
 
@@ -414,7 +414,7 @@ public class SearchQueryBaseIT {
 	}
 
 	@Test
-	public void selectEntity() {
+	void selectEntity() {
 		setupHolder.runInTransaction( session -> {
 			SearchSession searchSession = Search.session( session );
 
@@ -443,7 +443,7 @@ public class SearchQueryBaseIT {
 	}
 
 	@Test
-	public void select_searchProjection_single() {
+	void select_searchProjection_single() {
 		setupHolder.runInTransaction( session -> {
 			SearchSession searchSession = Search.session( session );
 
@@ -475,7 +475,7 @@ public class SearchQueryBaseIT {
 	}
 
 	@Test
-	public void select_searchProjection_multiple() {
+	void select_searchProjection_multiple() {
 		setupHolder.runInTransaction( session -> {
 			SearchSession searchSession = Search.session( session );
 
@@ -547,7 +547,7 @@ public class SearchQueryBaseIT {
 	}
 
 	@Test
-	public void select_lambda() {
+	void select_lambda() {
 		setupHolder.runInTransaction( session -> {
 			SearchSession searchSession = Search.session( session );
 
@@ -589,7 +589,7 @@ public class SearchQueryBaseIT {
 	}
 
 	@Test
-	public void select_compositeAndLoading() {
+	void select_compositeAndLoading() {
 		setupHolder.runInTransaction( session -> {
 			SearchSession searchSession = Search.session( session );
 
@@ -637,7 +637,7 @@ public class SearchQueryBaseIT {
 	 */
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-3671")
-	public void componentsFromMappingWithoutSession() {
+	void componentsFromMappingWithoutSession() {
 		SearchMapping mapping = Search.mapping( setupHolder.sessionFactory() );
 		SearchScope<Book> scope = mapping.scope( Book.class );
 

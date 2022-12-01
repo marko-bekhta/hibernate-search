@@ -45,7 +45,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 @RunWith(Parameterized.class)
-public class ProjectionDslJava17IT {
+class ProjectionDslJava17IT {
 
 	private static final int ASIMOV_ID = 1;
 	private static final int MARTINEZ_ID = 2;
@@ -218,7 +218,7 @@ public class ProjectionDslJava17IT {
 	}
 
 	@Test
-	public void entryPoint_mapped_record() {
+	void entryPoint_mapped_record() {
 		with( entityManagerFactory ).runInTransaction( entityManager -> {
 			SearchSession searchSession = Search.session( entityManager );
 
@@ -244,7 +244,7 @@ public class ProjectionDslJava17IT {
 	}
 
 	@Test
-	public void composite_mapped_record() {
+	void composite_mapped_record() {
 		withinSearchSession( searchSession -> {
 			// tag::composite-mapped-record[]
 			List<MyBookProjection> hits = searchSession.search( Book.class )
@@ -269,7 +269,7 @@ public class ProjectionDslJava17IT {
 	}
 
 	@Test
-	public void object_mapped_record() {
+	void object_mapped_record() {
 		withinSearchSession( searchSession -> {
 			// tag::object-mapped-record[]
 			List<List<MyAuthorProjection>> hits = searchSession.search( Book.class )

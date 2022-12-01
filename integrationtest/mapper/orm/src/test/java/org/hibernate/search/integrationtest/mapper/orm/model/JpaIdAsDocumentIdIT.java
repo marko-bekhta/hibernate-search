@@ -31,7 +31,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 /**
  * Check that the JPA @Id is correctly used as the default @DocumentId.
  */
-public class JpaIdAsDocumentIdIT {
+class JpaIdAsDocumentIdIT {
 
 	@RegisterExtension
 	public BackendMock backendMock = BackendMock.create();
@@ -40,7 +40,7 @@ public class JpaIdAsDocumentIdIT {
 	public OrmSetupHelper ormSetupHelper = OrmSetupHelper.withBackendMock( backendMock );
 
 	@Test
-	public void test() {
+	void test() {
 		backendMock.expectSchema( IndexedEntity.NAME, b -> b
 				.objectField( "contained", b2 -> b2
 						.multiValued( true )

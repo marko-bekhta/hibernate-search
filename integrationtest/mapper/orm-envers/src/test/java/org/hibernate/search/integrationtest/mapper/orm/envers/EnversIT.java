@@ -39,7 +39,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 @TestForIssue(jiraKey = { "HSEARCH-1293", "HSEARCH-3667" })
 @PortedFromSearch5(original = "org.hibernate.search.test.envers.SearchAndEnversIntegrationTest")
-public class EnversIT {
+class EnversIT {
 
 	@RegisterExtension
 	public BackendMock backendMock = BackendMock.create();
@@ -67,7 +67,7 @@ public class EnversIT {
 	}
 
 	@Test
-	public void test() {
+	void test() {
 		// Initial insert
 		with( sessionFactory ).runInTransaction( session -> {
 			IndexedEntity indexed = new IndexedEntity();

@@ -27,7 +27,7 @@ import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;
 
-public class ElasticsearchGetClientIT {
+class ElasticsearchGetClientIT {
 
 	@RegisterExtension
 	public DocumentationSetupHelper setupHelper =
@@ -41,7 +41,7 @@ public class ElasticsearchGetClientIT {
 	}
 
 	@Test
-	public void client() throws IOException {
+	void client() throws IOException {
 		//tag::client[]
 		SearchMapping mapping = /* ... */ // <1>
 				//end::client[]

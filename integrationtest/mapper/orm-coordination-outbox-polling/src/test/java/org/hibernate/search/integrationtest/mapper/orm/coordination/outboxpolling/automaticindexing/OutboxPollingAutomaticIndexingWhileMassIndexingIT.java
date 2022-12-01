@@ -29,7 +29,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 @TestForIssue(jiraKey = "HSEARCH-4358")
-public class OutboxPollingAutomaticIndexingWhileMassIndexingIT {
+class OutboxPollingAutomaticIndexingWhileMassIndexingIT {
 
 	@RegisterExtension
 	public BackendMock backendMock = BackendMock.create();
@@ -39,7 +39,7 @@ public class OutboxPollingAutomaticIndexingWhileMassIndexingIT {
 			.coordinationStrategy( CoordinationStrategyExpectations.outboxPollingAndMassIndexing() );
 
 	@Test
-	public void singleTenant() throws InterruptedException {
+	void singleTenant() throws InterruptedException {
 		backendMock.expectSchema( IndexedEntity.NAME, b -> b
 				.field( "text", String.class, f -> f.analyzerName( AnalyzerNames.DEFAULT ) ) );
 
@@ -106,7 +106,7 @@ public class OutboxPollingAutomaticIndexingWhileMassIndexingIT {
 	}
 
 	@Test
-	public void multiTenant() throws InterruptedException {
+	void multiTenant() throws InterruptedException {
 		String tenant1Id = "tenant1";
 		String tenant2Id = "tenant2";
 

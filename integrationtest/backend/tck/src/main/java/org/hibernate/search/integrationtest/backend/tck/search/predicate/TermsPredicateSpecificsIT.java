@@ -70,7 +70,7 @@ public class TermsPredicateSpecificsIT {
 	}
 
 	@Test
-	public void emptyTerms_matchingAny() {
+	void emptyTerms_matchingAny() {
 		StubMappingScope scope = index.createScope();
 
 		assertThatThrownBy( () -> scope.query()
@@ -81,7 +81,7 @@ public class TermsPredicateSpecificsIT {
 	}
 
 	@Test
-	public void emptyTerms_matchingAll() {
+	void emptyTerms_matchingAll() {
 		StubMappingScope scope = index.createScope();
 
 		assertThatThrownBy( () -> scope.query()
@@ -92,7 +92,7 @@ public class TermsPredicateSpecificsIT {
 	}
 
 	@Test
-	public void lotsOfTerms_matchingAny() {
+	void lotsOfTerms_matchingAny() {
 		StubMappingScope scope = index.createScope();
 
 		SearchQuery<DocumentReference> query = scope.query().where(
@@ -105,7 +105,7 @@ public class TermsPredicateSpecificsIT {
 	}
 
 	@Test
-	public void analyzedField_termIsNotAnalyzed() {
+	void analyzedField_termIsNotAnalyzed() {
 		StubMappingScope scope = index.createScope();
 
 		SearchQuery<DocumentReference> query = scope.query().where(
@@ -123,7 +123,7 @@ public class TermsPredicateSpecificsIT {
 	}
 
 	@Test
-	public void normalizedField_termIsNotNormalized() {
+	void normalizedField_termIsNotNormalized() {
 		StubMappingScope scope = index.createScope();
 
 		SearchQuery<DocumentReference> query = scope.query().where(
@@ -146,7 +146,7 @@ public class TermsPredicateSpecificsIT {
 	}
 
 	@Test
-	public void lowercaseWhitespaceAnalyzedField_termIsNotNormalized() {
+	void lowercaseWhitespaceAnalyzedField_termIsNotNormalized() {
 		StubMappingScope scope = index.createScope();
 
 		SearchQuery<DocumentReference> query = scope.query().where(

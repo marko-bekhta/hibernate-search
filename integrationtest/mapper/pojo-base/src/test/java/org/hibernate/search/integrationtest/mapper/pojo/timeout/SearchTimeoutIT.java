@@ -29,7 +29,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class SearchTimeoutIT {
+class SearchTimeoutIT {
 
 	private static final String INDEX_NAME = "IndexName";
 
@@ -50,7 +50,7 @@ public class SearchTimeoutIT {
 	}
 
 	@Test
-	public void truncateAfter() {
+	void truncateAfter() {
 		try ( SearchSession session = mapping.createSession() ) {
 			SearchQuery<EntityReference> query = session.search( IndexedEntity.class )
 					.selectEntityReference()
@@ -70,7 +70,7 @@ public class SearchTimeoutIT {
 	}
 
 	@Test
-	public void failAfter() {
+	void failAfter() {
 		try ( SearchSession session = mapping.createSession() ) {
 			SearchQuery<EntityReference> query = session.search( IndexedEntity.class )
 					.selectEntityReference()

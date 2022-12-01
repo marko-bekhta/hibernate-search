@@ -32,7 +32,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class HibernateOrmMassIndexerIT {
+class HibernateOrmMassIndexerIT {
 
 	private static final Log log = LoggerFactory.make( Log.class, MethodHandles.lookup() );
 
@@ -57,7 +57,7 @@ public class HibernateOrmMassIndexerIT {
 	}
 
 	@Test
-	public void simple() {
+	void simple() {
 		with( entityManagerFactory ).runNoTransaction( entityManager -> {
 			try {
 				// tag::simple[]
@@ -78,7 +78,7 @@ public class HibernateOrmMassIndexerIT {
 	}
 
 	@Test
-	public void reindexOnly() {
+	void reindexOnly() {
 		with( entityManagerFactory ).runNoTransaction( entityManager -> {
 			try {
 				// tag::reindexOnly[]
@@ -102,7 +102,7 @@ public class HibernateOrmMassIndexerIT {
 	}
 
 	@Test
-	public void selectType() {
+	void selectType() {
 		with( entityManagerFactory ).runNoTransaction( entityManager -> {
 			try {
 				SearchSession searchSession = Search.session( entityManager );
@@ -120,7 +120,7 @@ public class HibernateOrmMassIndexerIT {
 	}
 
 	@Test
-	public void async_reactive() {
+	void async_reactive() {
 		with( entityManagerFactory ).runNoTransaction( entityManager -> {
 			SearchSession searchSession = Search.session( entityManager );
 			// tag::async[]
@@ -142,7 +142,7 @@ public class HibernateOrmMassIndexerIT {
 	}
 
 	@Test
-	public void async_future() {
+	void async_future() {
 		with( entityManagerFactory ).runNoTransaction( entityManager -> {
 			SearchSession searchSession = Search.session( entityManager );
 			// tag::async[]
@@ -160,7 +160,7 @@ public class HibernateOrmMassIndexerIT {
 	}
 
 	@Test
-	public void parameters() {
+	void parameters() {
 		with( entityManagerFactory ).runNoTransaction( entityManager -> {
 			try {
 				SearchSession searchSession = Search.session( entityManager );

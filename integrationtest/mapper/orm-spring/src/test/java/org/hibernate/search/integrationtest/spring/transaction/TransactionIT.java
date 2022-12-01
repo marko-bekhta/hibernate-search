@@ -36,7 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 // otherwise there can be build errors when running all the tests via maven.
 @SpringBootTest(properties = "spring.jta.atomikos.datasource.bean-name=hsearch-datasource1")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-public class TransactionIT {
+class TransactionIT {
 
 	@Configuration
 	@EntityScan
@@ -53,7 +53,7 @@ public class TransactionIT {
 
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-1270")
-	public void innerTransactionRollback() {
+	void innerTransactionRollback() {
 		Integer outerId = 1;
 		Integer innerId = 2;
 
@@ -72,7 +72,7 @@ public class TransactionIT {
 
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-1270")
-	public void innerTransactionRollback_flushBeforeInner() {
+	void innerTransactionRollback_flushBeforeInner() {
 		Integer outerId = 1;
 		Integer innerId = 2;
 

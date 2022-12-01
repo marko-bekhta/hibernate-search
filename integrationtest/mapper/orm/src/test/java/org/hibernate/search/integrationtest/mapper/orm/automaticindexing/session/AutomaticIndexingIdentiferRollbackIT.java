@@ -52,7 +52,7 @@ public class AutomaticIndexingIdentiferRollbackIT {
 	}
 
 	@Test
-	public void jpaIdAsDocumentId() {
+	void jpaIdAsDocumentId() {
 		AtomicReference<Integer> entity1Id = new AtomicReference<>();
 
 		setupHolder.runInTransaction( session -> {
@@ -85,7 +85,7 @@ public class AutomaticIndexingIdentiferRollbackIT {
 	}
 
 	@Test
-	public void nonJpaIdAsDocumentId() {
+	void nonJpaIdAsDocumentId() {
 		AtomicReference<Integer> entity1Id = new AtomicReference<>();
 
 		setupHolder.runInTransaction( session -> {

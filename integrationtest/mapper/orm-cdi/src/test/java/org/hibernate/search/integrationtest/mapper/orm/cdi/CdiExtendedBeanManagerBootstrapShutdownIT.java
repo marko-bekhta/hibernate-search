@@ -45,7 +45,7 @@ import org.apache.logging.log4j.Level;
  * when using an {@link org.hibernate.resource.beans.container.spi.ExtendedBeanManager} in Hibernate ORM.
  */
 @TestForIssue(jiraKey = { "HSEARCH-3938" })
-public class CdiExtendedBeanManagerBootstrapShutdownIT {
+class CdiExtendedBeanManagerBootstrapShutdownIT {
 
 	@RegisterExtension
 	public final BackendMock backendMock = BackendMock.create();
@@ -67,7 +67,7 @@ public class CdiExtendedBeanManagerBootstrapShutdownIT {
 	}
 
 	@Test
-	public void successfulBoot() {
+	void successfulBoot() {
 		List<BeanHolder<DependentBean>> retrievedBeans = new ArrayList<>();
 
 		backendMock.onCreate( context -> {
@@ -120,7 +120,7 @@ public class CdiExtendedBeanManagerBootstrapShutdownIT {
 	}
 
 	@Test
-	public void failedBoot() {
+	void failedBoot() {
 		List<BeanHolder<DependentBean>> retrievedBeans = new ArrayList<>();
 
 		SearchException bootFailedException = new SearchException( "Simulated boot failure" );
@@ -178,7 +178,7 @@ public class CdiExtendedBeanManagerBootstrapShutdownIT {
 	}
 
 	@Test
-	public void cancelledBoot() {
+	void cancelledBoot() {
 		List<BeanHolder<DependentBean>> retrievedBeans = new ArrayList<>();
 
 		backendMock.onCreate( context -> {
@@ -217,7 +217,7 @@ public class CdiExtendedBeanManagerBootstrapShutdownIT {
 	}
 
 	@Test
-	public void failedShutdown() {
+	void failedShutdown() {
 		List<BeanHolder<DependentBean>> retrievedBeans = new ArrayList<>();
 
 		SearchException bootFailedException = new SearchException( "Simulated shutdown failure" );

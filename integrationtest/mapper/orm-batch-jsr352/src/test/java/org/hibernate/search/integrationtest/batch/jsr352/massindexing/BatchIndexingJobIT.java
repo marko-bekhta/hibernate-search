@@ -118,9 +118,7 @@ public class BatchIndexingJobIT {
 	}
 
 	@Test
-	public void simple()
-			throws InterruptedException,
-			IOException {
+	void simple() throws InterruptedException, IOException {
 		List<Company> companies = JobTestUtil.findIndexedResults( emf, Company.class, "name", "Google" );
 		List<Person> people = JobTestUtil.findIndexedResults( emf, Person.class, "firstName", "Linus" );
 		List<WhoAmI> whos = JobTestUtil.findIndexedResults( emf, WhoAmI.class, "id", "id01" );
@@ -151,9 +149,7 @@ public class BatchIndexingJobIT {
 	}
 
 	@Test
-	public void simple_defaultCheckpointInterval()
-			throws InterruptedException,
-			IOException {
+	void simple_defaultCheckpointInterval() throws InterruptedException, IOException {
 		List<Company> companies = JobTestUtil.findIndexedResults( emf, Company.class, "name", "Google" );
 		List<Person> people = JobTestUtil.findIndexedResults( emf, Person.class, "firstName", "Linus" );
 		List<WhoAmI> whos = JobTestUtil.findIndexedResults( emf, WhoAmI.class, "id", "id01" );
@@ -184,9 +180,7 @@ public class BatchIndexingJobIT {
 
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-2637")
-	public void indexedEmbeddedCollection()
-			throws InterruptedException,
-			IOException {
+	void indexedEmbeddedCollection() throws InterruptedException, IOException {
 		setupHolder.runInTransaction( em -> {
 			CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
 			CriteriaQuery<Company> criteria = criteriaBuilder.createQuery( Company.class );
@@ -237,7 +231,7 @@ public class BatchIndexingJobIT {
 	}
 
 	@Test
-	public void purge() throws InterruptedException, IOException {
+	void purge() throws InterruptedException, IOException {
 		int expectedCount = 10;
 
 		assertThat( JobTestUtil.nbDocumentsInIndex( emf, Company.class ) ).isZero();
@@ -263,7 +257,7 @@ public class BatchIndexingJobIT {
 	}
 
 	@Test
-	public void noPurge() throws InterruptedException, IOException {
+	void noPurge() throws InterruptedException, IOException {
 		int expectedCount = 10;
 
 		assertThat( JobTestUtil.nbDocumentsInIndex( emf, Company.class ) ).isZero();
@@ -289,9 +283,7 @@ public class BatchIndexingJobIT {
 	}
 
 	@Test
-	public void hql()
-			throws InterruptedException,
-			IOException {
+	public void hql() throws InterruptedException, IOException {
 		// searches before mass index,
 		// expected no results for each search
 		assertThat( JobTestUtil.findIndexedResults( emf, Company.class, "name", "Google" ) ).isEmpty();
@@ -317,9 +309,7 @@ public class BatchIndexingJobIT {
 	}
 
 	@Test
-	public void hql_maxResults()
-			throws InterruptedException,
-			IOException {
+	public void hql_maxResults() throws InterruptedException, IOException {
 		// searches before mass index,
 		// expected no results for each search
 		assertThat( JobTestUtil.nbDocumentsInIndex( emf, Company.class ) ).isZero();
@@ -342,9 +332,7 @@ public class BatchIndexingJobIT {
 	}
 
 	@Test
-	public void partitioned()
-			throws InterruptedException,
-			IOException {
+	public void partitioned() throws InterruptedException, IOException {
 		List<Company> companies = JobTestUtil.findIndexedResults( emf, Company.class, "name", "Google" );
 		List<Person> people = JobTestUtil.findIndexedResults( emf, Person.class, "firstName", "Linus" );
 		List<WhoAmI> whos = JobTestUtil.findIndexedResults( emf, WhoAmI.class, "id", "id01" );

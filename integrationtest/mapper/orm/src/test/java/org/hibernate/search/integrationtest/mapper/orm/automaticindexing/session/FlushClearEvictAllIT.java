@@ -37,7 +37,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 @TestForIssue(jiraKey = "HSEARCH-1350")
-public class FlushClearEvictAllIT {
+class FlushClearEvictAllIT {
 
 	@RegisterExtension
 	public BackendMock backendMock = BackendMock.create();
@@ -56,7 +56,7 @@ public class FlushClearEvictAllIT {
 	}
 
 	@Test
-	public void test() {
+	void test() {
 		with( entityManagerFactory ).runNoTransaction( entityManager -> {
 			Post post = new Post();
 			post.setName( "This is a post" );

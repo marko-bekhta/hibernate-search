@@ -21,8 +21,6 @@ import java.util.function.Function;
 import org.hibernate.search.engine.backend.types.ObjectStructure;
 import org.hibernate.search.engine.backend.types.Projectable;
 import org.hibernate.search.engine.backend.types.Searchable;
-import org.hibernate.search.integrationtest.mapper.pojo.smoke.AnnotationMappingSmokeIT;
-import org.hibernate.search.integrationtest.mapper.pojo.smoke.ProgrammaticMappingSmokeIT;
 import org.hibernate.search.integrationtest.mapper.pojo.testsupport.util.StartupStubBridge;
 import org.hibernate.search.mapper.pojo.automaticindexing.ReindexOnUpdate;
 import org.hibernate.search.mapper.pojo.bridge.IdentifierBridge;
@@ -69,10 +67,10 @@ import org.junit.jupiter.api.extension.RegisterExtension;
  * (the test is named {@code ConfiguredIndexSchemaManagerNestingContextTest} at the time of this writing).
  * <p>
  * Does not test uses of container value extractors (for now). Some of them are tested in
- * {@link AnnotationMappingSmokeIT} and {@link ProgrammaticMappingSmokeIT}.
+ * {@code AnnotationMappingSmokeIT} and {@code ProgrammaticMappingSmokeIT}.
  */
 @SuppressWarnings({ "unused", "deprecation" }) // deprecated IndexedEmbedded#prefix
-public class IndexedEmbeddedBaseIT {
+class IndexedEmbeddedBaseIT {
 
 	private static final String INDEX_NAME = "IndexName";
 
@@ -87,7 +85,7 @@ public class IndexedEmbeddedBaseIT {
 	public StaticCounters counters = StaticCounters.create();
 
 	@Test
-	public void defaultAttributes() {
+	void defaultAttributes() {
 		class IndexedEmbeddedLevel2 {
 			@GenericField
 			String level2Property;
@@ -141,7 +139,7 @@ public class IndexedEmbeddedBaseIT {
 	}
 
 	@Test
-	public void name() {
+	void name() {
 		class IndexedEmbeddedLevel1 {
 			@GenericField
 			String level1Property;
@@ -182,7 +180,7 @@ public class IndexedEmbeddedBaseIT {
 	}
 
 	@Test
-	public void name_invalid_dot() {
+	void name_invalid_dot() {
 		class IndexedEmbeddedLevel1 {
 			@GenericField
 			String level1Property;
@@ -213,7 +211,7 @@ public class IndexedEmbeddedBaseIT {
 	}
 
 	@Test
-	public void name_andPrefix() {
+	void name_andPrefix() {
 		class IndexedEmbeddedLevel1 {
 			@GenericField
 			String level1Property;
@@ -248,7 +246,7 @@ public class IndexedEmbeddedBaseIT {
 	}
 
 	@Test
-	public void repeatedIndexedEmbedded() {
+	void repeatedIndexedEmbedded() {
 		class Embedded {
 			String forDefault;
 			String flat;
@@ -346,7 +344,7 @@ public class IndexedEmbeddedBaseIT {
 	 */
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-3324")
-	public void multiValued() {
+	void multiValued() {
 		class IndexedEmbeddedLevel1 {
 			@GenericField
 			String level1SingleValuedProperty;
@@ -407,7 +405,7 @@ public class IndexedEmbeddedBaseIT {
 	 */
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-3324")
-	public void prefix_multiValued() {
+	void prefix_multiValued() {
 		class IndexedEmbeddedLevel2 {
 			String level2Property;
 
@@ -524,7 +522,7 @@ public class IndexedEmbeddedBaseIT {
 	 * Details of how filtering handles all corner cases is tested in the engine (see this class' javadoc).
 	 */
 	@Test
-	public void prefix() {
+	void prefix() {
 		class IndexedEmbeddedLevel1 {
 			@GenericField
 			String level1Property;
@@ -567,7 +565,7 @@ public class IndexedEmbeddedBaseIT {
 	 * Details of how filtering handles all corner cases is tested in the engine (see this class' javadoc).
 	 */
 	@Test
-	public void includePaths() {
+	void includePaths() {
 		class IndexedEmbeddedLevel1 {
 			String ignoredProperty;
 			String includedProperty;
@@ -671,7 +669,7 @@ public class IndexedEmbeddedBaseIT {
 	 */
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-3136")
-	public void error_includePaths_nonMatched() {
+	void error_includePaths_nonMatched() {
 		class IndexedEmbeddedLevel1 {
 			@GenericField
 			String ignoredProperty;
@@ -752,7 +750,7 @@ public class IndexedEmbeddedBaseIT {
 	 * Details of how filtering handles all corner cases is tested in the engine (see this class' javadoc).
 	 */
 	@Test
-	public void includeDepth() {
+	void includeDepth() {
 		class IndexedEmbeddedLevel2 {
 			String level2Property;
 
@@ -817,7 +815,7 @@ public class IndexedEmbeddedBaseIT {
 	 * Details of how filtering handles all corner cases is tested in the engine (see this class' javadoc).
 	 */
 	@Test
-	public void structure() {
+	void structure() {
 		class IndexedEmbeddedLevel1 {
 			@GenericField
 			String level1Property;
@@ -866,12 +864,12 @@ public class IndexedEmbeddedBaseIT {
 	 */
 	@Test
 	@TestForIssue(jiraKey = { "HSEARCH-3212", "HSEARCH-3213" })
-	public void includePaths_excludesBridges() {
+	void includePaths_excludesBridges() {
 		excludesBridges( true, "level1IncludedField" );
 	}
 
 	@Test
-	public void excludePaths_excludesBridges() {
+	void excludePaths_excludesBridges() {
 		excludesBridges( false,
 				"location", "filteredOut", "startupStubBridgeFieldFromTypeBridge",
 				"startupStubBridgeFieldFromPropertyBridge"
@@ -971,7 +969,7 @@ public class IndexedEmbeddedBaseIT {
 
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-3072")
-	public void targetType() {
+	void targetType() {
 		abstract class IndexedEmbeddedLevel1 {
 			public abstract String getLevel1Property();
 
@@ -1027,7 +1025,7 @@ public class IndexedEmbeddedBaseIT {
 
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-3072")
-	public void targetType_castException() {
+	void targetType_castException() {
 		abstract class IndexedEmbeddedLevel1 {
 			public abstract String getLevel1Property();
 
@@ -1101,7 +1099,7 @@ public class IndexedEmbeddedBaseIT {
 
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-4148")
-	public void targetType_preserveGenericTypeContext() {
+	void targetType_preserveGenericTypeContext() {
 		abstract class IndexedEmbeddedLevel1<T> {
 			public abstract T getLevel1Property();
 
@@ -1157,7 +1155,7 @@ public class IndexedEmbeddedBaseIT {
 
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-3071")
-	public void includeEmbeddedObjectId() {
+	void includeEmbeddedObjectId() {
 		class IndexedEmbeddedLevel1 {
 			@DocumentId
 			String theId;
@@ -1199,7 +1197,7 @@ public class IndexedEmbeddedBaseIT {
 
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-3071")
-	public void includeEmbeddedObjectId_nonEntity() {
+	void includeEmbeddedObjectId_nonEntity() {
 		class IndexedEmbeddedLevel1 {
 			@DocumentId
 			String theId;
@@ -1238,7 +1236,7 @@ public class IndexedEmbeddedBaseIT {
 
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-3071")
-	public void includeEmbeddedObjectId_fieldNameConflict() {
+	void includeEmbeddedObjectId_fieldNameConflict() {
 		class IndexedEmbeddedLevel1 {
 			@DocumentId
 			String theId;
@@ -1278,7 +1276,7 @@ public class IndexedEmbeddedBaseIT {
 
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-3071")
-	public void includeEmbeddedObjectId_multiValued() {
+	void includeEmbeddedObjectId_multiValued() {
 		class IndexedEmbeddedLevel1 {
 			@DocumentId
 			String theId;
@@ -1325,7 +1323,7 @@ public class IndexedEmbeddedBaseIT {
 
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-3071")
-	public void includeEmbeddedObjectId_noIdentifierBridge() {
+	void includeEmbeddedObjectId_noIdentifierBridge() {
 		class IndexedEmbeddedLevel1 {
 			@DocumentId
 			Long theId;
@@ -1369,7 +1367,7 @@ public class IndexedEmbeddedBaseIT {
 
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-3071")
-	public void includeEmbeddedObjectId_identifierBinder() {
+	void includeEmbeddedObjectId_identifierBinder() {
 		class IndexedEmbeddedLevel1 {
 			@DocumentId(identifierBinder = @IdentifierBinderRef(type = MyCustomIdentifierBinder.class))
 			Long theId;
@@ -1414,7 +1412,7 @@ public class IndexedEmbeddedBaseIT {
 
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-3071")
-	public void includeEmbeddedObjectId_identifierBridge() {
+	void includeEmbeddedObjectId_identifierBridge() {
 		class IndexedEmbeddedLevel1 {
 			@DocumentId(identifierBridge = @IdentifierBridgeRef(type = MyCustomIdentifierBinder.Bridge.class))
 			Long theId;
@@ -1483,7 +1481,7 @@ public class IndexedEmbeddedBaseIT {
 	}
 
 	@Test
-	public void includeEmbeddedObjectId_identifierBridge_withParams_annotationMapping() {
+	void includeEmbeddedObjectId_identifierBridge_withParams_annotationMapping() {
 		class IndexedEmbeddedLevel1 {
 			@DocumentId(identifierBinder = @IdentifierBinderRef(type = ParametricBinder.class,
 					params = @Param(name = "stringBase", value = "3")))
@@ -1528,7 +1526,7 @@ public class IndexedEmbeddedBaseIT {
 	}
 
 	@Test
-	public void includeEmbeddedObjectId_identifierBridge_withParams_programmaticMapping() {
+	void includeEmbeddedObjectId_identifierBridge_withParams_programmaticMapping() {
 		class IndexedEmbeddedLevel1 {
 			Long theId;
 			Object containing;
@@ -1627,7 +1625,7 @@ public class IndexedEmbeddedBaseIT {
 
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-3071")
-	public void includeEmbeddedObjectId_targetType() {
+	void includeEmbeddedObjectId_targetType() {
 		class IndexedEmbeddedLevel1 {
 			@DocumentId
 			String theId;
@@ -1670,7 +1668,7 @@ public class IndexedEmbeddedBaseIT {
 
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-899")
-	public void invalid_wrongType() {
+	void invalid_wrongType() {
 		@Indexed(index = INDEX_NAME)
 		class IndexedEntity {
 			@DocumentId
@@ -1694,7 +1692,7 @@ public class IndexedEmbeddedBaseIT {
 
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-899")
-	public void invalid_emptyNested() {
+	void invalid_emptyNested() {
 		class ValidNested {
 			String text;
 
@@ -1733,7 +1731,7 @@ public class IndexedEmbeddedBaseIT {
 	 * (even though the property is there it is explicitly excluded by a child, so we must fail)
 	 */
 	@Test
-	public void parentIncludeChildExclude() {
+	void parentIncludeChildExclude() {
 		class Model {
 			@Indexed(index = INDEX_NAME)
 			class IndexedEntity {
@@ -2253,7 +2251,7 @@ public class IndexedEmbeddedBaseIT {
 	 * it is ok to exclude a field in SubIncluded even if the IndexedEntity embedded doesn't need it anyway.
 	 */
 	@Test
-	public void parentIncludeChildExcludeForDifferentFieldsIsFine() {
+	void parentIncludeChildExcludeForDifferentFieldsIsFine() {
 		class Model {
 			@Indexed(index = INDEX_NAME)
 			class IndexedEntity {

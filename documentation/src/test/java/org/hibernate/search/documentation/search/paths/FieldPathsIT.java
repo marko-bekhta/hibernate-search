@@ -25,7 +25,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class FieldPathsIT {
+class FieldPathsIT {
 
 	private static final int BOOK1_ID = 1;
 	private static final int BOOK2_ID = 2;
@@ -45,7 +45,7 @@ public class FieldPathsIT {
 	}
 
 	@Test
-	public void root() {
+	void root() {
 		withinSearchSession( searchSession -> {
 			// tag::root[]
 			List<Book> hits = searchSession.search( Book.class )
@@ -60,7 +60,7 @@ public class FieldPathsIT {
 	}
 
 	@Test
-	public void nested_implicit() {
+	void nested_implicit() {
 		withinSearchSession( searchSession -> {
 			// tag::nested_implicit[]
 			List<Book> hits = searchSession.search( Book.class )
@@ -75,7 +75,7 @@ public class FieldPathsIT {
 	}
 
 	@Test
-	public void nested_explicit() {
+	void nested_explicit() {
 		withinSearchSession( searchSession -> {
 			// tag::nested_explicit[]
 			List<Book> hits = searchSession.search( Book.class )
@@ -94,7 +94,7 @@ public class FieldPathsIT {
 	}
 
 	@Test
-	public void withRoot() {
+	void withRoot() {
 		withinSearchSession( searchSession -> {
 			// tag::withRoot[]
 			List<Book> hits = searchSession.search( Book.class )

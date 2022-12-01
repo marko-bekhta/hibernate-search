@@ -50,7 +50,7 @@ public abstract class AbstractSearchSchemaManagerSimpleOperationIT {
 	}
 
 	@Test
-	public void success_fromMapping_single() {
+	void success_fromMapping_single() {
 		SearchSchemaManager manager = Search.mapping( setupHolder.sessionFactory() )
 				.scope( IndexedEntity1.class )
 				.schemaManager();
@@ -60,7 +60,7 @@ public abstract class AbstractSearchSchemaManagerSimpleOperationIT {
 	}
 
 	@Test
-	public void success_fromMapping_all() {
+	void success_fromMapping_all() {
 		SearchSchemaManager manager = Search.mapping( setupHolder.sessionFactory() )
 				.scope( Object.class )
 				.schemaManager();
@@ -71,7 +71,7 @@ public abstract class AbstractSearchSchemaManagerSimpleOperationIT {
 	}
 
 	@Test
-	public void success_fromSession_single() {
+	void success_fromSession_single() {
 		setupHolder.runNoTransaction( session -> {
 			SearchSchemaManager manager = Search.session( session )
 					.schemaManager( IndexedEntity1.class );
@@ -82,7 +82,7 @@ public abstract class AbstractSearchSchemaManagerSimpleOperationIT {
 	}
 
 	@Test
-	public void success_fromSession_all() {
+	void success_fromSession_all() {
 		setupHolder.runNoTransaction( session -> {
 			SearchSchemaManager manager = Search.session( session )
 					.schemaManager();
@@ -94,7 +94,7 @@ public abstract class AbstractSearchSchemaManagerSimpleOperationIT {
 	}
 
 	@Test
-	public void exception_single() {
+	void exception_single() {
 		SearchSchemaManager manager = Search.mapping( setupHolder.sessionFactory() )
 				.scope( Object.class )
 				.schemaManager();
@@ -111,7 +111,7 @@ public abstract class AbstractSearchSchemaManagerSimpleOperationIT {
 	}
 
 	@Test
-	public void exception_multiple() {
+	void exception_multiple() {
 		SearchSchemaManager manager = Search.mapping( setupHolder.sessionFactory() )
 				.scope( Object.class )
 				.schemaManager();

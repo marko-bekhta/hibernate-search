@@ -21,7 +21,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class StandalonePojoMultiTenancyIT {
+class StandalonePojoMultiTenancyIT {
 
 	@RegisterExtension
 	public TestConfigurationProvider configurationProvider = new TestConfigurationProvider();
@@ -54,7 +54,7 @@ public class StandalonePojoMultiTenancyIT {
 	}
 
 	@Test
-	public void test() {
+	void test() {
 		// tag::searchSession[]
 		SearchMapping searchMapping = /* ... */ // <1>
 				// end::searchSession[]

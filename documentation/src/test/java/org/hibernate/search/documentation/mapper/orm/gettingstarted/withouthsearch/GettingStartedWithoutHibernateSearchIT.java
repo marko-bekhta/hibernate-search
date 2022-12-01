@@ -20,7 +20,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class GettingStartedWithoutHibernateSearchIT {
+class GettingStartedWithoutHibernateSearchIT {
 
 	private EntityManagerFactory entityManagerFactory;
 
@@ -37,7 +37,7 @@ public class GettingStartedWithoutHibernateSearchIT {
 	}
 
 	@Test
-	public void test() {
+	void test() {
 		AtomicReference<Integer> bookIdHolder = new AtomicReference<>();
 
 		with( entityManagerFactory ).runInTransaction( entityManager -> {

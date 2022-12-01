@@ -32,7 +32,7 @@ import org.junit.jupiter.api.Test;
 /**
  * @author Mincong Huang
  */
-public class EntityManagerFactoryRetrievalIT {
+class EntityManagerFactoryRetrievalIT {
 
 	private static final String PERSISTENCE_UNIT_NAME = PersistenceUnitTestUtil.getPersistenceUnitName();
 
@@ -93,7 +93,7 @@ public class EntityManagerFactoryRetrievalIT {
 	}
 
 	@Test
-	public void defaultNamespace() throws Exception {
+	void defaultNamespace() throws Exception {
 		List<Company> companies = JobTestUtil.findIndexedResults( emf, Company.class, "name", "Google" );
 		assertThat( companies ).isEmpty();
 
@@ -113,7 +113,7 @@ public class EntityManagerFactoryRetrievalIT {
 	}
 
 	@Test
-	public void persistenceUnitNamespace() throws Exception {
+	void persistenceUnitNamespace() throws Exception {
 		List<Company> companies = JobTestUtil.findIndexedResults( emf, Company.class, "name", "Google" );
 		assertThat( companies ).isEmpty();
 
@@ -134,7 +134,7 @@ public class EntityManagerFactoryRetrievalIT {
 	}
 
 	@Test
-	public void sessionFactoryNamespace() throws Exception {
+	void sessionFactoryNamespace() throws Exception {
 		List<Company> companies = JobTestUtil.findIndexedResults( emf, Company.class, "name", "Google" );
 		assertThat( companies ).isEmpty();
 

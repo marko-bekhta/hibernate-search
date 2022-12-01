@@ -68,7 +68,7 @@ public class AutomaticIndexingGenericPolymorphicAssociationIT {
 	}
 
 	@Test
-	public void inversePathHandlesGenericTypes() {
+	void inversePathHandlesGenericTypes() {
 		setupHolder.runInTransaction( session -> {
 			IndexedEntity indexedEntity = new IndexedEntity();
 			indexedEntity.setId( 1 );
@@ -123,7 +123,7 @@ public class AutomaticIndexingGenericPolymorphicAssociationIT {
 	}
 
 	@Test
-	public void inversePathIgnoresUnrelatedTypes() {
+	void inversePathIgnoresUnrelatedTypes() {
 		setupHolder.runInTransaction( session -> {
 			UnrelatedContainingEntity unrelatedContainingEntity = new UnrelatedContainingEntity();
 			unrelatedContainingEntity.setId( 1 );

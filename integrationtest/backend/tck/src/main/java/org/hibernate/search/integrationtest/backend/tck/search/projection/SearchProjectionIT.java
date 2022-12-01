@@ -91,7 +91,7 @@ public class SearchProjectionIT {
 	}
 
 	@Test
-	public void noProjections() {
+	void noProjections() {
 		StubMappingScope scope = mainIndex.createScope();
 
 		SearchQuery<List<?>> query = scope.query()
@@ -103,7 +103,7 @@ public class SearchProjectionIT {
 	}
 
 	@Test
-	public void references_noLoadingContext() {
+	void references_noLoadingContext() {
 		StubMappingScope scope = mainIndex.createScope();
 
 		SearchQuery<List<?>> query;
@@ -208,7 +208,7 @@ public class SearchProjectionIT {
 	}
 
 	@Test
-	public void score() {
+	void score() {
 		StubMappingScope scope = mainIndex.createScope();
 
 		SearchQuery<Float> query = scope.query()
@@ -233,7 +233,7 @@ public class SearchProjectionIT {
 	 * Test projection on the score when we do not sort by score.
 	 */
 	@Test
-	public void score_noScoreSort() {
+	void score_noScoreSort() {
 		StubMappingScope scope = mainIndex.createScope();
 
 		SearchQuery<Float> query = scope.query()
@@ -253,7 +253,7 @@ public class SearchProjectionIT {
 	}
 
 	@Test
-	public void constant_nonNull() {
+	void constant_nonNull() {
 		StubMappingScope scope = mainIndex.createScope();
 
 		String constantValue = "foo";
@@ -282,7 +282,7 @@ public class SearchProjectionIT {
 	}
 
 	@Test
-	public void constant_null() {
+	void constant_null() {
 		StubMappingScope scope = mainIndex.createScope();
 
 		assertThatQuery( scope.query()
@@ -310,7 +310,7 @@ public class SearchProjectionIT {
 	}
 
 	@Test
-	public void constant_root() {
+	void constant_root() {
 		StubMappingScope scope = mainIndex.createScope();
 
 		String constantValue = "foo";
@@ -331,7 +331,7 @@ public class SearchProjectionIT {
 	 * and also multiple field projections.
 	 */
 	@Test
-	public void mixed() {
+	void mixed() {
 		StubMappingScope scope = mainIndex.createScope();
 
 		SearchQuery<List<?>> query;
@@ -374,7 +374,7 @@ public class SearchProjectionIT {
 	 * and also multiple field projections, using nested fields too.
 	 */
 	@Test
-	public void mixed_withNestedFields() {
+	void mixed_withNestedFields() {
 		StubMappingScope scope = mainIndex.createScope();
 
 		SearchQuery<List<?>> query;
@@ -423,7 +423,7 @@ public class SearchProjectionIT {
 	}
 
 	@Test
-	public void reuseProjectionInstance_onScopeTargetingSameIndexes() {
+	void reuseProjectionInstance_onScopeTargetingSameIndexes() {
 		StubMappingScope scope = mainIndex.createScope();
 		SearchProjection<String> projection = scope.projection()
 				.field( mainIndex.binding().string1Field.relativeFieldName, String.class ).toProjection();
@@ -470,7 +470,7 @@ public class SearchProjectionIT {
 	}
 
 	@Test
-	public void reuseProjectionInstance_onScopeTargetingDifferentIndexes() {
+	void reuseProjectionInstance_onScopeTargetingDifferentIndexes() {
 		StubMappingScope scope = mainIndex.createScope();
 		SearchProjection<String> projection = scope.projection()
 				.field( mainIndex.binding().string1Field.relativeFieldName, String.class ).toProjection();
@@ -500,7 +500,7 @@ public class SearchProjectionIT {
 	}
 
 	@Test
-	public void extension() {
+	void extension() {
 		StubMappingScope scope = mainIndex.createScope();
 		SearchQuery<String> query;
 

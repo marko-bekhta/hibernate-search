@@ -90,7 +90,7 @@ public class IndexIndexingPlanIT {
 
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	public void success(String label, Function<TckBackendHelper, TckBackendSetupStrategy<?>> setupStrategyFunction,
+	void success(String label, Function<TckBackendHelper, TckBackendSetupStrategy<?>> setupStrategyFunction,
 			String tenantId) {
 		init( label, setupStrategyFunction, tenantId );
 		IndexIndexingPlan plan = index.createIndexingPlan( sessionContext );
@@ -140,7 +140,7 @@ public class IndexIndexingPlanIT {
 
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	public void discard(String label, Function<TckBackendHelper, TckBackendSetupStrategy<?>> setupStrategyFunction,
+	void discard(String label, Function<TckBackendHelper, TckBackendSetupStrategy<?>> setupStrategyFunction,
 			String tenantId) {
 		init( label, setupStrategyFunction, tenantId );
 		IndexIndexingPlan plan = index.createIndexingPlan( sessionContext );
@@ -162,7 +162,7 @@ public class IndexIndexingPlanIT {
 
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	public void add_failure(String label, Function<TckBackendHelper, TckBackendSetupStrategy<?>> setupStrategyFunction,
+	void add_failure(String label, Function<TckBackendHelper, TckBackendSetupStrategy<?>> setupStrategyFunction,
 			String tenantId) {
 		init( label, setupStrategyFunction, tenantId );
 		IndexIndexingPlan plan = index.createIndexingPlan( sessionContext );
@@ -189,7 +189,7 @@ public class IndexIndexingPlanIT {
 
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	public void addOrUpdate_failure(String label, Function<TckBackendHelper, TckBackendSetupStrategy<?>> setupStrategyFunction,
+	void addOrUpdate_failure(String label, Function<TckBackendHelper, TckBackendSetupStrategy<?>> setupStrategyFunction,
 			String tenantId) {
 		init( label, setupStrategyFunction, tenantId );
 
@@ -217,7 +217,7 @@ public class IndexIndexingPlanIT {
 
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	public void delete_failure(String label, Function<TckBackendHelper, TckBackendSetupStrategy<?>> setupStrategyFunction,
+	void delete_failure(String label, Function<TckBackendHelper, TckBackendSetupStrategy<?>> setupStrategyFunction,
 			String tenantId) {
 		init( label, setupStrategyFunction, tenantId );
 

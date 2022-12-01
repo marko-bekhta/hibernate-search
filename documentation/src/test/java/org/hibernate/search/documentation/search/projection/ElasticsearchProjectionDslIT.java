@@ -30,7 +30,7 @@ import com.google.gson.JsonObject;
 
 import org.skyscreamer.jsonassert.JSONCompareMode;
 
-public class ElasticsearchProjectionDslIT {
+class ElasticsearchProjectionDslIT {
 
 	private static final int ASIMOV_ID = 1;
 	private static final int MARTINEZ_ID = 2;
@@ -52,7 +52,7 @@ public class ElasticsearchProjectionDslIT {
 	}
 
 	@Test
-	public void source() {
+	void source() {
 		withinSearchSession( searchSession -> {
 			// tag::elasticsearch-source[]
 			List<JsonObject> hits = searchSession.search( Book.class )
@@ -66,7 +66,7 @@ public class ElasticsearchProjectionDslIT {
 	}
 
 	@Test
-	public void explanation() {
+	void explanation() {
 		withinSearchSession( searchSession -> {
 			// tag::elasticsearch-explanation[]
 			List<JsonObject> hits = searchSession.search( Book.class )
@@ -80,7 +80,7 @@ public class ElasticsearchProjectionDslIT {
 	}
 
 	@Test
-	public void jsonHit() {
+	void jsonHit() {
 		withinSearchSession( searchSession -> {
 			// tag::elasticsearch-jsonHit[]
 			List<JsonObject> hits = searchSession.search( Book.class )

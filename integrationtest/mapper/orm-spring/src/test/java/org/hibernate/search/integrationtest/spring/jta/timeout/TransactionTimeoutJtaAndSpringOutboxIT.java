@@ -33,7 +33,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @SpringBootTest(classes = JtaAndSpringOutboxApplicationConfiguration.class)
 @ActiveProfiles({ "jta", "outbox", "transaction-timeout" })
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-public class TransactionTimeoutJtaAndSpringOutboxIT {
+class TransactionTimeoutJtaAndSpringOutboxIT {
 
 	@Autowired
 	private SnertDAO snertDAO;
@@ -56,7 +56,7 @@ public class TransactionTimeoutJtaAndSpringOutboxIT {
 	}
 
 	@Test
-	public void test() throws Exception {
+	void test() throws Exception {
 		Snert snert = new Snert();
 		snert.setId( 1L );
 		snert.setName( "dave" );

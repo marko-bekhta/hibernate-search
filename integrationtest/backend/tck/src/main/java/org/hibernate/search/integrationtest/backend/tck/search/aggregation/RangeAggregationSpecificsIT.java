@@ -275,7 +275,7 @@ public class RangeAggregationSpecificsIT<F> {
 
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	public void rangesOverlap(FieldTypeDescriptor<F> fieldType, DataSet<F> dataSet) {
+	void rangesOverlap(FieldTypeDescriptor<F> fieldType, DataSet<F> dataSet) {
 		String fieldPath = index.binding().fieldModels.get( fieldType ).relativeFieldName;
 
 		AggregationKey<Map<Range<F>, Long>> aggregationKey = AggregationKey.of( AGGREGATION_NAME );
@@ -320,7 +320,7 @@ public class RangeAggregationSpecificsIT<F> {
 
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	public void rangesNull(FieldTypeDescriptor<F> fieldType, DataSet<F> dataSet) {
+	void rangesNull(FieldTypeDescriptor<F> fieldType, DataSet<F> dataSet) {
 		String fieldPath = index.binding().fieldModels.get( fieldType ).relativeFieldName;
 
 		assertThatThrownBy( () -> index.createScope().aggregation().range()
@@ -334,7 +334,7 @@ public class RangeAggregationSpecificsIT<F> {
 
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	public void rangesContainingNull(FieldTypeDescriptor<F> fieldType, DataSet<F> dataSet) {
+	void rangesContainingNull(FieldTypeDescriptor<F> fieldType, DataSet<F> dataSet) {
 		String fieldPath = index.binding().fieldModels.get( fieldType ).relativeFieldName;
 
 		assertThatThrownBy( () -> index.createScope().aggregation().range()
@@ -410,7 +410,7 @@ public class RangeAggregationSpecificsIT<F> {
 	 */
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	public void limitAndOffset(FieldTypeDescriptor<F> fieldType, DataSet<F> dataSet) {
+	void limitAndOffset(FieldTypeDescriptor<F> fieldType, DataSet<F> dataSet) {
 		String fieldPath = index.binding().fieldModels.get( fieldType ).relativeFieldName;
 
 		AggregationKey<Map<Range<F>, Long>> aggregationKey = AggregationKey.of( AGGREGATION_NAME );
@@ -441,7 +441,7 @@ public class RangeAggregationSpecificsIT<F> {
 	 */
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	public void rangeOverlap(FieldTypeDescriptor<F> fieldType, DataSet<F> dataSet) {
+	void rangeOverlap(FieldTypeDescriptor<F> fieldType, DataSet<F> dataSet) {
 		String fieldPath = index.binding().fieldModels.get( fieldType ).relativeFieldName;
 
 		AggregationKey<Map<Range<F>, Long>> aggregationKey = AggregationKey.of( AGGREGATION_NAME );
@@ -481,7 +481,7 @@ public class RangeAggregationSpecificsIT<F> {
 	 */
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	public void order_asDefined(FieldTypeDescriptor<F> fieldType, DataSet<F> dataSet) {
+	void order_asDefined(FieldTypeDescriptor<F> fieldType, DataSet<F> dataSet) {
 		String fieldPath = index.binding().fieldModels.get( fieldType ).relativeFieldName;
 
 		AggregationKey<Map<Range<F>, Long>> aggregationKey = AggregationKey.of( AGGREGATION_NAME );
