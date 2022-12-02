@@ -412,7 +412,7 @@
         <test.database.run.cockroachdb.image.name>cockroachdb/cockroach</test.database.run.cockroachdb.image.name>
         <test.database.run.cockroachdb.image.tag>v23.1.4</test.database.run.cockroachdb.image.tag>
 
-        <!-- Docker images to be pulled. To be redefined in specific profiles of Elasticsearch/OpenSearch \
+        <!-- Docker images to be pulled. To be redefined in specific profiles of Elasticsearch/OpenSearch
              or database specific ones. -->
         <test.database.run.image.pull>false</test.database.run.image.pull>
         <test.database.run.image.name>h2</test.database.run.image.name>
