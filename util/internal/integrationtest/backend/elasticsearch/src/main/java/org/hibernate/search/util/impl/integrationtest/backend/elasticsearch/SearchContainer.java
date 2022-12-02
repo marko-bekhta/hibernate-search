@@ -127,7 +127,7 @@ public final class SearchContainer {
 		return new GenericContainer<>( DockerImageName.parse( image ).withTag( tag ) )
 				.withExposedPorts( 9200, 9300 )
 				.waitingFor( new HttpWaitStrategy().forPort( 9200 ).forStatusCode( 200 ) )
-				.withStartupTimeout( Duration.ofMinutes( 3 ) )
+				.withStartupTimeout( Duration.ofMinutes( 5 ) )
 				.withReuse( true );
 	}
 }
