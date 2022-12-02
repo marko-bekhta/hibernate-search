@@ -108,8 +108,7 @@ public final class DatabaseContainer {
 						.withEnv( "POSTGRES_USER", "hibernate_orm_test" )
 						.withEnv( "POSTGRES_PASSWORD", "hibernate_orm_test" )
 						.withEnv( "POSTGRES_DB", "hibernate_orm_test" )
-						.withStartupTimeout( Duration.ofMinutes( 2 ) )
-						.withReuse( true );
+						.withStartupTimeout( Duration.ofMinutes( 5 ) );
 			}
 		},
 		MARIADB {
@@ -153,8 +152,7 @@ public final class DatabaseContainer {
 						.withEnv( "MYSQL_DATABASE", "hibernate_orm_test" )
 						.withEnv( "MYSQL_RANDOM_ROOT_PASSWORD", "true" )
 						.withTmpFs( Collections.singletonMap( "/var/lib/mysql", "" ) )
-						.withStartupTimeout( Duration.ofMinutes( 2 ) )
-						.withReuse( true );
+						.withStartupTimeout( Duration.ofMinutes( 5 ) );
 			}
 		},
 		MYSQL {
@@ -198,8 +196,7 @@ public final class DatabaseContainer {
 						.withEnv( "MYSQL_DATABASE", "hibernate_orm_test" )
 						.withEnv( "MYSQL_RANDOM_ROOT_PASSWORD", "true" )
 						.withTmpFs( Collections.singletonMap( "/var/lib/mysql", "" ) )
-						.withStartupTimeout( Duration.ofMinutes( 2 ) )
-						.withReuse( true );
+						.withStartupTimeout( Duration.ofMinutes( 5 ) );
 			}
 		},
 		DB2 {
@@ -249,8 +246,7 @@ public final class DatabaseContainer {
 						// because it takes ages to start and select query will just get tired to retry
 						// this is a JDBCContainer specific setting
 						.withStartupTimeoutSeconds( 600 )
-						.withStartupTimeout( Duration.ofMinutes( 15 ) )
-						.withReuse( true );
+						.withStartupTimeout( Duration.ofMinutes( 15 ) );
 			}
 		},
 		ORACLE {
@@ -289,8 +285,7 @@ public final class DatabaseContainer {
 				}
 						.withExposedPorts( 1521 )
 						.withEnv( "ORACLE_PASSWORD", "hibernate_orm_test" )
-						.withStartupTimeout( Duration.ofMinutes( 10 ) )
-						.withReuse( true );
+						.withStartupTimeout( Duration.ofMinutes( 10 ) );
 			}
 		},
 		MSSQL {
@@ -330,8 +325,7 @@ public final class DatabaseContainer {
 						.withExposedPorts( 1433 )
 						.withEnv( "ACCEPT_EULA", "Y" )
 						.withEnv( "SA_PASSWORD", "ActuallyRequired11Complexity" )
-						.withStartupTimeout( Duration.ofMinutes( 10 ) )
-						.withReuse( true );
+						.withStartupTimeout( Duration.ofMinutes( 10 ) );
 			}
 		},
 		COCKROACHDB {
@@ -370,8 +364,7 @@ public final class DatabaseContainer {
 				}
 						.withExposedPorts( 26257 )
 						.withCommand( "start-single-node --insecure" )
-						.withStartupTimeout( Duration.ofMinutes( 5 ) )
-						.withReuse( true );
+						.withStartupTimeout( Duration.ofMinutes( 5 ) );
 			}
 		};
 
