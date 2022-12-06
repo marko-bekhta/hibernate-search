@@ -60,7 +60,7 @@ import org.springframework.stereotype.Component;
  * then checking the Spring-defined hooks (@PostConstruct and @PreDestroy) have been called
  * exactly as many times as expected.
  */
-@ExtendWith( HibernateSpringPropertiesSetterExtension.class )
+@ExtendWith(HibernateSpringPropertiesSetterExtension.class)
 @TestForIssue(jiraKey = { "HSEARCH-1316", "HSEARCH-3171" })
 class SpringBeanResolutionIT {
 
