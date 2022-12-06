@@ -25,6 +25,7 @@ import org.springframework.context.event.EventListener;
 @Configuration
 @EnableAutoConfiguration(exclude = JtaAutoConfiguration.class)
 public abstract class AbstractSpringITConfig {
+
 	private final CompletableFuture<BackendMappingHandle> mappingHandlePromise = new CompletableFuture<>();
 
 	@Bean
