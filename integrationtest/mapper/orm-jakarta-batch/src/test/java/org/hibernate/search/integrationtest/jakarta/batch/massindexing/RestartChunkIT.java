@@ -27,6 +27,7 @@ import jakarta.persistence.Id;
 import org.hibernate.search.integrationtest.jakarta.batch.util.BackendConfigurations;
 import org.hibernate.search.integrationtest.jakarta.batch.util.JobTestUtil;
 import org.hibernate.search.integrationtest.jakarta.batch.util.SimulatedFailure;
+import org.hibernate.search.integrationtest.jakarta.batch.util.extension.HibernatePropertiesSetterExtension;
 import org.hibernate.search.jakarta.batch.core.massindexing.MassIndexingJob;
 import org.hibernate.search.mapper.orm.cfg.HibernateOrmMapperSettings;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
@@ -38,11 +39,13 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * @author Mincong Huang
  */
+@ExtendWith(HibernatePropertiesSetterExtension.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class RestartChunkIT {
 
@@ -126,8 +129,8 @@ class RestartChunkIT {
 
 	private void doTest(String reindexOnly, long expectedTotal, long expectedGoogle) throws InterruptedException {
 		assertThat( JobTestUtil.nbDocumentsInIndex( emf, SimulatedFailureCompany.class ) ).isZero();
-		List<SimulatedFailureCompany> google =
-				JobTestUtil.findIndexedResults( emf, SimulatedFailureCompany.class, "name", "Google" );
+		List<SimulatedFailureCompany> google = JobTestUtil.findIndexedResults(
+				emf, SimulatedFailureCompany.class, "name", "Google" );
 		assertThat( google ).isEmpty();
 
 		// start the job

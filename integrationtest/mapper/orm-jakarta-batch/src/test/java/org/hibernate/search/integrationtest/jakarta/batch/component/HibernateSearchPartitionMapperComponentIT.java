@@ -24,6 +24,7 @@ import org.hibernate.search.integrationtest.jakarta.batch.massindexing.entity.Co
 import org.hibernate.search.integrationtest.jakarta.batch.massindexing.entity.Person;
 import org.hibernate.search.integrationtest.jakarta.batch.util.BackendConfigurations;
 import org.hibernate.search.integrationtest.jakarta.batch.util.JobTestUtil;
+import org.hibernate.search.integrationtest.jakarta.batch.util.extension.HibernatePropertiesSetterExtension;
 import org.hibernate.search.jakarta.batch.core.massindexing.impl.JobContextData;
 import org.hibernate.search.jakarta.batch.core.massindexing.step.impl.HibernateSearchPartitionMapper;
 import org.hibernate.search.jakarta.batch.core.massindexing.util.impl.MassIndexingPartitionProperties;
@@ -33,6 +34,7 @@ import org.hibernate.search.util.impl.integrationtest.mapper.orm.OrmSetupHelper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
@@ -41,6 +43,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
  * @author Mincong Huang
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@ExtendWith(HibernatePropertiesSetterExtension.class)
 class HibernateSearchPartitionMapperComponentIT {
 
 	private static final int COMP_ROWS = 3;
