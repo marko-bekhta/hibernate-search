@@ -14,6 +14,7 @@ import java.util.stream.Stream;
 import org.hibernate.search.integrationtest.jakarta.batch.massindexing.entity.Company;
 import org.hibernate.search.integrationtest.jakarta.batch.massindexing.entity.Person;
 import org.hibernate.search.integrationtest.jakarta.batch.util.BackendConfigurations;
+import org.hibernate.search.integrationtest.jakarta.batch.util.extension.HibernatePropertiesSetterExtension;
 import org.hibernate.search.jakarta.batch.core.massindexing.util.impl.ValidationUtil;
 import org.hibernate.search.mapper.orm.cfg.HibernateOrmMapperSettings;
 import org.hibernate.search.util.common.SearchException;
@@ -22,11 +23,13 @@ import org.hibernate.search.util.impl.integrationtest.mapper.orm.OrmSetupHelper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * @author Mincong Huang
  */
+@ExtendWith(HibernatePropertiesSetterExtension.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ValidationUtilComponentIT {
 

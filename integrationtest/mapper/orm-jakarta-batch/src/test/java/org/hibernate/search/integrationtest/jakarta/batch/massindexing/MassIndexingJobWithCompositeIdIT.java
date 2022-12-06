@@ -27,6 +27,7 @@ import jakarta.persistence.IdClass;
 
 import org.hibernate.search.integrationtest.jakarta.batch.util.BackendConfigurations;
 import org.hibernate.search.integrationtest.jakarta.batch.util.JobTestUtil;
+import org.hibernate.search.integrationtest.jakarta.batch.util.extension.HibernatePropertiesSetterExtension;
 import org.hibernate.search.jakarta.batch.core.massindexing.MassIndexingJob;
 import org.hibernate.search.mapper.orm.cfg.HibernateOrmMapperSettings;
 import org.hibernate.search.mapper.pojo.bridge.IdentifierBridge;
@@ -43,6 +44,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
@@ -52,6 +54,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
  *
  * @author Mincong Huang
  */
+@ExtendWith(HibernatePropertiesSetterExtension.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestForIssue(jiraKey = "HSEARCH-2615")
 class MassIndexingJobWithCompositeIdIT {
