@@ -33,7 +33,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@ExtendWith( HibernateSpringPropertiesSetterExtension.class )
+@ExtendWith(HibernateSpringPropertiesSetterExtension.class)
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = JtaAndSpringApplicationConfiguration.class)
 @ActiveProfiles("jta")
