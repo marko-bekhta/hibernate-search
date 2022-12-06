@@ -33,6 +33,7 @@ import org.hibernate.search.integrationtest.jakarta.batch.massindexing.entity.Pe
 import org.hibernate.search.integrationtest.jakarta.batch.massindexing.entity.WhoAmI;
 import org.hibernate.search.integrationtest.jakarta.batch.util.BackendConfigurations;
 import org.hibernate.search.integrationtest.jakarta.batch.util.JobTestUtil;
+import org.hibernate.search.integrationtest.jakarta.batch.util.extension.HibernatePropertiesSetterExtension;
 import org.hibernate.search.jakarta.batch.core.massindexing.MassIndexingJob;
 import org.hibernate.search.jakarta.batch.core.massindexing.step.impl.StepProgress;
 import org.hibernate.search.mapper.orm.Search;
@@ -47,12 +48,14 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * @author Mincong Huang
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@ExtendWith(HibernatePropertiesSetterExtension.class)
 class MassIndexingJobIT {
 
 	protected static final int INSTANCES_PER_DATA_TEMPLATE = 100;

@@ -20,15 +20,18 @@ import org.hibernate.search.integrationtest.jakarta.batch.massindexing.entity.Pe
 import org.hibernate.search.integrationtest.jakarta.batch.massindexing.entity.WhoAmI;
 import org.hibernate.search.integrationtest.jakarta.batch.util.JobTestUtil;
 import org.hibernate.search.integrationtest.jakarta.batch.util.PersistenceUnitTestUtil;
+import org.hibernate.search.integrationtest.jakarta.batch.util.extension.HibernatePropertiesSetterExtension;
 import org.hibernate.search.jakarta.batch.core.massindexing.MassIndexingJob;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author Mincong Huang
  */
+@ExtendWith(HibernatePropertiesSetterExtension.class)
 class EntityManagerFactoryRetrievalIT {
 
 	private static final String PERSISTENCE_UNIT_NAME = PersistenceUnitTestUtil.getPersistenceUnitName();
