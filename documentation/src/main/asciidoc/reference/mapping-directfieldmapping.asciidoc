@@ -400,7 +400,7 @@ or <<backend-elasticsearch-field-types,Elasticsearch field types>> depending on 
 |===
 
 [[mapping-directfieldmapping-supported-types-date-time,Possibly lower range/resolution]]
- [[mapper-orm-directfieldmapping-supported-types-date-time,Possibly lower range/resolution]][NOTE]
+[NOTE]
 .Range and resolution of date/time fields
 ====
 With a few exceptions, most date and time values are passed as-is to the backend;
