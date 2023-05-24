@@ -80,18 +80,15 @@ class ConfiguredIndexSchemaNestingContext implements IndexSchemaNestingContext {
 			IndexedEmbeddedPathTracker pathTracker,
 			NestedContextBuilder<T> contextBuilder) {
 		IndexSchemaFilter composedFilter = filter.compose( definition, pathTracker );
-		if ( !composedFilter.isEveryPathExcluded() ) {
+
+		// NOTE: shouldNotBeExcluded() has side effect of marking paths as encountered.
+		if ( !composedFilter.isEveryPathExcluded() && shouldNotBeExcluded( definition ) ) {
 			String prefixToParse = unconsumedPrefix + definition.relativePrefix();
 			int afterPreviousDotIndex = 0;
 			int nextDotIndex = prefixToParse.indexOf( '.', afterPreviousDotIndex );
 			while ( nextDotIndex >= 0 ) {
 				String objectName = prefixToParse.substring( afterPreviousDotIndex, nextDotIndex );
 				contextBuilder.appendObject( objectName );
-
-				// Make sure to mark the paths as encountered in the filter
-				String objectNameRelativeToFilter = prefixToParse.substring( 0, nextDotIndex );
-				// We only use isPathIncluded for its side effect: it marks the path as encountered
-				filter.isPathIncluded( objectNameRelativeToFilter );
 
 				afterPreviousDotIndex = nextDotIndex + 1;
 				nextDotIndex = prefixToParse.indexOf( '.', afterPreviousDotIndex );
@@ -105,6 +102,39 @@ class ConfiguredIndexSchemaNestingContext implements IndexSchemaNestingContext {
 		else {
 			return Optional.empty();
 		}
+	}
+
+	private boolean shouldNotBeExcluded(IndexedEmbeddedDefinition definition) {
+		String prefixToParse = unconsumedPrefix + definition.relativePrefix();
+		int afterPreviousDotIndex = 0;
+		int nextDotIndex = prefixToParse.indexOf( '.', afterPreviousDotIndex );
+		boolean shouldInclude = true;
+		while ( nextDotIndex >= 0 ) {
+			// Make sure to mark the paths as encountered in the filter
+			String objectNameRelativeToFilter = prefixToParse.substring( 0, nextDotIndex );
+
+			//TODO: to Yoann: I am not convinced if this is a correct way to address it or not, but based on the tests
+			// we have for prefixes I've guessed that if we have a prefixed embedded then `unconsumedPrefix` will have that prefix in it
+			// and we not necessarily need to "include" a path-with-prefix in the filter if we want to have a property to be included ( DeepPathWithLeadingPrefixCase )
+
+			boolean included =
+					// NOTE: isPathIncluded has a side effect: it marks the path as encountered
+					// first let's see if the object name as it is, is included by a filter:
+					filter.isPathIncluded( objectNameRelativeToFilter ) ||
+							// now if we had a prefixed path we want to check if the path was actually included (without a prefix)
+							// but we don't want to mark that path as encountered as we'd be reporting an incorrect path.
+							// if we don't have a prefix than the path will be the same as in the previous check and
+							// we've already marked it as encountered:
+							filter.isPathIncluded(
+									objectNameRelativeToFilter.substring( unconsumedPrefix.length() ), false
+							);
+			shouldInclude = shouldInclude && included;
+
+			afterPreviousDotIndex = nextDotIndex + 1;
+			nextDotIndex = prefixToParse.indexOf( '.', afterPreviousDotIndex );
+		}
+
+		return shouldInclude;
 	}
 
 	public interface NestedContextBuilder<T> {
