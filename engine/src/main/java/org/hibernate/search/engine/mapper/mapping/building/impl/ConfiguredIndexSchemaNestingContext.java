@@ -89,7 +89,7 @@ class ConfiguredIndexSchemaNestingContext implements IndexSchemaNestingContext {
 				String objectName = prefixToParse.substring( afterPreviousDotIndex, nextDotIndex );
 
 				// Make sure to mark the paths as encountered in the filter
-				String objectNameRelativeToFilter = prefixToParse.substring( 0, nextDotIndex );
+				String objectNameRelativeToFilter = prefixToParse.substring( unconsumedPrefix.length(), nextDotIndex );
 
 				// So that's as soon as excluded, right?
 				if ( !filter.isPathIncluded( objectNameRelativeToFilter ) ) {
