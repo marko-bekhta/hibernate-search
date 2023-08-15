@@ -31,23 +31,23 @@ import org.hibernate.search.util.common.SearchException;
 import org.hibernate.search.util.impl.integrationtest.backend.elasticsearch.dialect.ElasticsearchTestDialect;
 import org.hibernate.search.util.impl.integrationtest.mapper.pojo.standalone.StandalonePojoMappingSetupHelper;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.io.TempDir;
 
-public class ElasticsearchSchemaManagerExporterIT {
+class ElasticsearchSchemaManagerExporterIT {
 
-	@Rule
-	public final TemporaryFolder temporaryFolder = new TemporaryFolder();
-	@Rule
+	@TempDir
+	public Path temporaryFolder;
+	@RegisterExtension
 	public StandalonePojoMappingSetupHelper setupHelper =
 			StandalonePojoMappingSetupHelper.withSingleBackend(
 					MethodHandles.lookup(), BackendConfigurations.simple() );
 	private SearchMapping mapping;
 
-	@Before
-	public void setUp() throws Exception {
+	@BeforeEach
+	void setUp() throws Exception {
 		String version = ElasticsearchTestDialect.getActualVersion().toString();
 		this.mapping = setupHelper.start()
 				// so that we don't try to do anything with the schema and allow to run without ES being up:
@@ -64,7 +64,7 @@ public class ElasticsearchSchemaManagerExporterIT {
 	}
 
 	@Test
-	public void elasticsearch() throws IOException {
+	void elasticsearch() throws IOException {
 		assumeFalse(
 				"Older versions of Elasticsearch would not match the mappings",
 				isActualVersion(
@@ -73,7 +73,7 @@ public class ElasticsearchSchemaManagerExporterIT {
 				)
 		);
 
-		Path directory = temporaryFolder.newFolder().toPath();
+		Path directory = temporaryFolder;
 		mapping.scope( Object.class ).schemaManager().exportExpectedSchema( directory );
 
 		assertJsonEqualsIgnoringUnknownFields(
@@ -161,8 +161,8 @@ public class ElasticsearchSchemaManagerExporterIT {
 	}
 
 	@Test
-	public void exportToExistingDirectory() throws IOException {
-		Path directory = temporaryFolder.newFolder().toPath();
+	void exportToExistingDirectory() throws IOException {
+		Path directory = temporaryFolder;
 		Path path = Files.createDirectories( directory.resolve( "backend" )
 				.resolve( "indexes" )
 				.resolve( Book.NAME )
@@ -185,8 +185,8 @@ public class ElasticsearchSchemaManagerExporterIT {
 	}
 
 	@Test
-	public void exportToExistingFile() throws IOException {
-		Path directory = temporaryFolder.newFolder().toPath();
+	void exportToExistingFile() throws IOException {
+		Path directory = temporaryFolder;
 		Path path = Files.createDirectories( directory.resolve( "backend" )
 				.resolve( "indexes" )
 		);

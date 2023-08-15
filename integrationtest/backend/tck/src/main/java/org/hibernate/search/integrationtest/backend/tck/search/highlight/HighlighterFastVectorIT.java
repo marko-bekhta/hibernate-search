@@ -22,7 +22,7 @@ import org.hibernate.search.util.impl.integrationtest.mapper.stub.StubMappingSco
 
 import org.junit.Test;
 
-public class HighlighterFastVectorIT extends AbstractHighlighterIT {
+class HighlighterFastVectorIT extends AbstractHighlighterIT {
 
 	@Override
 	HighlighterFastVectorHighlighterOptionsStep highlighter(SearchHighlighterFactory factory) {
@@ -66,7 +66,7 @@ public class HighlighterFastVectorIT extends AbstractHighlighterIT {
 	}
 
 	@Test
-	public void boundaryScannerCharsExplicit() {
+	void boundaryScannerCharsExplicit() {
 		StubMappingScope scope = index.createScope();
 
 		SearchQuery<List<String>> highlights = scope.query().select(
@@ -89,7 +89,7 @@ public class HighlighterFastVectorIT extends AbstractHighlighterIT {
 	}
 
 	@Test
-	public void boundaryScannerWord() {
+	void boundaryScannerWord() {
 		StubMappingScope scope = index.createScope();
 
 		SearchQuery<List<String>> highlights = scope.query().select(
@@ -114,7 +114,7 @@ public class HighlighterFastVectorIT extends AbstractHighlighterIT {
 	}
 
 	@Test
-	public void boundaryScannerWordUsingLambda() {
+	void boundaryScannerWordUsingLambda() {
 		StubMappingScope scope = index.createScope();
 
 		SearchQuery<List<String>> highlights = scope.query().select(
@@ -136,7 +136,7 @@ public class HighlighterFastVectorIT extends AbstractHighlighterIT {
 	}
 
 	@Test
-	public void boundaryScannerSentence() {
+	void boundaryScannerSentence() {
 		StubMappingScope scope = index.createScope();
 
 		SearchQuery<List<String>> highlights = scope.query().select(
@@ -170,7 +170,7 @@ public class HighlighterFastVectorIT extends AbstractHighlighterIT {
 	}
 
 	@Test
-	public void styledSchema() {
+	void styledSchema() {
 		StubMappingScope scope = index.createScope();
 
 		SearchQuery<List<String>> highlights = scope.query().select(
@@ -192,7 +192,7 @@ public class HighlighterFastVectorIT extends AbstractHighlighterIT {
 	 * predefined styled schema.
 	 */
 	@Test
-	public void styledSchemaWinsOverTags() {
+	void styledSchemaWinsOverTags() {
 		StubMappingScope scope = index.createScope();
 
 		SearchQuery<List<String>> highlights = scope.query().select(
@@ -210,7 +210,7 @@ public class HighlighterFastVectorIT extends AbstractHighlighterIT {
 	}
 
 	@Test
-	public void tagsWinOverStyledSchema() {
+	void tagsWinOverStyledSchema() {
 		StubMappingScope scope = index.createScope();
 
 		SearchQuery<List<String>> highlights = scope.query().select(
@@ -228,7 +228,7 @@ public class HighlighterFastVectorIT extends AbstractHighlighterIT {
 	}
 
 	@Test
-	public void boundaryCharacters() {
+	void boundaryCharacters() {
 		StubMappingScope scope = index.createScope();
 
 		SearchQuery<List<String>> highlights = scope.query().select(
@@ -277,7 +277,7 @@ public class HighlighterFastVectorIT extends AbstractHighlighterIT {
 	}
 
 	@Test
-	public void boundaryCharactersAsArray() {
+	void boundaryCharactersAsArray() {
 		StubMappingScope scope = index.createScope();
 
 		SearchQuery<List<String>> highlights = scope.query().select(
@@ -302,7 +302,7 @@ public class HighlighterFastVectorIT extends AbstractHighlighterIT {
 	}
 
 	@Test
-	public void phraseLimit() {
+	void phraseLimit() {
 		StubMappingScope scope = index.createScope();
 
 		SearchQuery<List<String>> highlights = scope.query().select(
@@ -322,7 +322,7 @@ public class HighlighterFastVectorIT extends AbstractHighlighterIT {
 	}
 
 	@Test
-	public void multipleDifferentTags() {
+	void multipleDifferentTags() {
 		StubMappingScope scope = index.createScope();
 
 		SearchQuery<List<String>> highlights = scope.query().select(
@@ -345,7 +345,7 @@ public class HighlighterFastVectorIT extends AbstractHighlighterIT {
 	}
 
 	@Test
-	public void multipleStyledTags() {
+	void multipleStyledTags() {
 		StubMappingScope scope = index.createScope();
 
 		SearchQuery<List<String>> highlights = scope.query().select(

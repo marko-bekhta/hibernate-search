@@ -26,8 +26,9 @@ public final class SearchContainer {
 		String name = System.getProperty( "org.hibernate.search.integrationtest.backend.elasticsearch.name", "" );
 		String tag = System.getProperty( "org.hibernate.search.integrationtest.backend.elasticsearch.tag" );
 
-		ElasticsearchVersion version = ElasticsearchVersion.of( ElasticsearchDistributionName.of( distribution ), tag );
-		SEARCH_CONTAINER = name.contains( "elastic" ) ? elasticsearch( name, tag, version ) : opensearch( name, tag );
+		SEARCH_CONTAINER = name.contains( "elastic" )
+				? elasticsearch( name, tag, ElasticsearchVersion.of( ElasticsearchDistributionName.ELASTIC, tag ) )
+				: opensearch( name, tag );
 	}
 
 	public static int mappedPort(int port) {

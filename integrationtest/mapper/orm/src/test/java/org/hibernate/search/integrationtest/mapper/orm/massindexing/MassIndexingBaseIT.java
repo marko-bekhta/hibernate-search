@@ -37,6 +37,7 @@ import org.hibernate.search.util.impl.integrationtest.common.stub.backend.index.
 import org.hibernate.search.util.impl.integrationtest.mapper.orm.OrmSetupHelper;
 import org.hibernate.search.util.impl.integrationtest.mapper.orm.ReusableOrmSetupHolder;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.Extension;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -46,7 +47,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 /**
  * Very basic test to probe an use of {@link MassIndexer} api.
  */
-public class MassIndexingBaseIT {
+class MassIndexingBaseIT {
 
 	public static List<? extends Arguments> params() {
 		return Arrays.stream( TenancyMode.values() )
@@ -318,7 +319,7 @@ public class MassIndexingBaseIT {
 	}
 
 	@Test
-	public void fromMappingWithoutSession_explicitAllTenants() {
+	void fromMappingWithoutSession_explicitAllTenants() {
 		SearchMapping searchMapping = Search.mapping( setupHolder.sessionFactory() );
 		MassIndexer indexer = searchMapping.scope( Object.class ).massIndexer( allTenantIds() );
 
@@ -392,7 +393,7 @@ public class MassIndexingBaseIT {
 	}
 
 	@Test
-	public void fromMappingWithoutSession_implicitTenant() {
+	void fromMappingWithoutSession_implicitTenant() {
 		SearchMapping searchMapping = Search.mapping( setupHolder.sessionFactory() );
 		// We don't pass a tenant ID, it's implicit:
 		// in single-tenancy mode the tenant ID is set to `null`,

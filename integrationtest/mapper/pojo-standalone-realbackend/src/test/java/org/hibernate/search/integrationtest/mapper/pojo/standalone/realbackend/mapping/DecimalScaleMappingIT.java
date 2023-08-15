@@ -17,17 +17,17 @@ import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.hibernate.search.util.common.SearchException;
 import org.hibernate.search.util.impl.integrationtest.mapper.pojo.standalone.StandalonePojoMappingSetupHelper;
 
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class DecimalScaleMappingIT {
+class DecimalScaleMappingIT {
 
-	@Rule
+	@RegisterExtension
 	public StandalonePojoMappingSetupHelper setupHelper = StandalonePojoMappingSetupHelper.withSingleBackend(
 			MethodHandles.lookup(), BackendConfigurations.simple() );
 
 	@Test
-	public void testFailingWithHint() {
+	void testFailingWithHint() {
 		assertThatThrownBy( () -> setupHelper.start().setup( FailingEntity.class )
 		).isInstanceOf( SearchException.class )
 				.hasMessageContainingAll(

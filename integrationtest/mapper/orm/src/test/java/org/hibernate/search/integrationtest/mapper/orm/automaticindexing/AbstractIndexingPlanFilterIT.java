@@ -27,25 +27,24 @@ import org.hibernate.search.mapper.pojo.mapping.definition.annotation.GenericFie
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.IndexedEmbedded;
 import org.hibernate.search.mapper.pojo.mapping.definition.programmatic.TypeMappingStep;
-import org.hibernate.search.util.impl.integrationtest.common.rule.BackendMock;
+import org.hibernate.search.util.impl.integrationtest.common.extension.BackendMock;
 import org.hibernate.search.util.impl.integrationtest.mapper.orm.OrmSetupHelper;
 import org.hibernate.search.util.impl.integrationtest.mapper.orm.ReusableOrmSetupHolder;
 
 import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.rules.MethodRule;
+import org.junit.jupiter.api.extension.Extension;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 public abstract class AbstractIndexingPlanFilterIT {
 
-	@ClassRule
-	public static BackendMock backendMock = new BackendMock();
+	@RegisterExtension
+	public static BackendMock backendMock = BackendMock.createGlobal();
 
-	@ClassRule
+	@RegisterExtension
 	public static ReusableOrmSetupHolder setupHolder = ReusableOrmSetupHolder.withBackendMock( backendMock );
 
-	@Rule
-	public MethodRule setupHolderMethodRule = setupHolder.methodRule();
+	@RegisterExtension
+	public Extension setupHolderMethodRule = setupHolder.methodExtension();
 	protected static final String DYNAMIC_BASE_TYPE_A = "DynamicA";
 	protected static final String DYNAMIC_SUBTYPE_B = "DynamicA_B";
 	protected static final String DYNAMIC_SUBTYPE_C = "DynamicA_C";

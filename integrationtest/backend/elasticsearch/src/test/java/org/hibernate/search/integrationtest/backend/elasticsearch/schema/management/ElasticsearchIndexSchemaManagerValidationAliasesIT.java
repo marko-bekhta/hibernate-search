@@ -25,7 +25,6 @@ import org.hibernate.search.integrationtest.backend.tck.testsupport.util.extensi
 import org.hibernate.search.util.common.SearchException;
 import org.hibernate.search.util.common.impl.Futures;
 import org.hibernate.search.util.impl.integrationtest.backend.elasticsearch.extension.TestElasticsearchClient;
-import org.hibernate.search.util.impl.integrationtest.backend.elasticsearch.rule.TestElasticsearchClient;
 import org.hibernate.search.util.impl.integrationtest.mapper.stub.StubMappedIndex;
 import org.hibernate.search.util.impl.integrationtest.mapper.stub.StubMappingSchemaManagementStrategy;
 import org.hibernate.search.util.impl.test.annotation.TestForIssue;
@@ -40,7 +39,7 @@ import org.junit.jupiter.params.provider.MethodSource;
  * for all index-validating schema management operations.
  */
 @TestForIssue(jiraKey = "HSEARCH-3791")
-public class ElasticsearchIndexSchemaManagerValidationAliasesIT {
+class ElasticsearchIndexSchemaManagerValidationAliasesIT {
 
 	public static List<? extends Arguments> params() {
 		return ElasticsearchIndexSchemaManagerValidationOperation.all().stream()

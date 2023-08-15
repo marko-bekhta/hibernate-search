@@ -1033,7 +1033,7 @@ public class ElasticsearchClientFactoryImplIT {
 		}
 	}
 
-	@Test
+	@RetryExtension.TestWithRetry
 	public void maxKeepAliveNegativeValue() {
 		assertThatThrownBy( () -> createClient(
 				properties -> {
@@ -1046,12 +1046,12 @@ public class ElasticsearchClientFactoryImplIT {
 				);
 	}
 
-	@Test
+	@RetryExtension.TestWithRetry
 	public void maxKeepAliveConnectionIsNotClosed() throws InterruptedException {
 		maxKeepAliveConnection( 100000, 1 );
 	}
 
-	@Test
+	@RetryExtension.TestWithRetry
 	public void maxKeepAliveConnectionIsClosed() throws InterruptedException {
 		maxKeepAliveConnection( 10, 2 );
 	}

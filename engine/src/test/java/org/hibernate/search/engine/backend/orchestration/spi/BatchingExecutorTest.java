@@ -11,8 +11,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.fail;
 import static org.awaitility.Awaitility.await;
 import static org.hibernate.search.util.impl.test.FutureAssert.assertThatFuture;
-import static org.junit.Assume.assumeFalse;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
@@ -47,6 +47,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import org.awaitility.Awaitility;
@@ -60,7 +61,7 @@ import org.mockito.quality.Strictness;
 @MockitoSettings(strictness = Strictness.STRICT_STUBS)
 @ExtendWith(MockitoExtension.class)
 @SuppressWarnings({ "unchecked", "rawtypes" }) // Raw types are the only way to mock parameterized types
-public class BatchingExecutorTest {
+class BatchingExecutorTest {
 
 	private static final String NAME = "executor-name";
 
@@ -107,7 +108,7 @@ public class BatchingExecutorTest {
 
 	@ParameterizedTest(name = "operation submitter = {0}")
 	@MethodSource("params")
-	void simple_batchEndsImmediately(OperationSubmitter operationSubmitter) throws InterruptedException {
+	void simple_batchEndsImmediately(String name, OperationSubmitter operationSubmitter) throws InterruptedException {
 		createAndStartExecutor( 2, true );
 
 		StubWork work1Mock = workMock( 1 );
@@ -130,7 +131,7 @@ public class BatchingExecutorTest {
 
 	@ParameterizedTest(name = "operation submitter = {0}")
 	@MethodSource("params")
-	void simple_batchEndsLater_someAdditionalWorkBeforeComplete(OperationSubmitter operationSubmitter)
+	void simple_batchEndsLater_someAdditionalWorkBeforeComplete(String name, OperationSubmitter operationSubmitter)
 			throws InterruptedException {
 		createAndStartExecutor( 2, true );
 
@@ -190,7 +191,7 @@ public class BatchingExecutorTest {
 
 	@ParameterizedTest(name = "operation submitter = {0}")
 	@MethodSource("params")
-	void simple_batchEndsLater_noAdditionalWork(OperationSubmitter operationSubmitter) throws InterruptedException {
+	void simple_batchEndsLater_noAdditionalWork(String name, OperationSubmitter operationSubmitter) throws InterruptedException {
 		createAndStartExecutor( 2, true );
 
 		StubWork work1Mock = workMock( 1 );
@@ -222,7 +223,7 @@ public class BatchingExecutorTest {
 
 	@ParameterizedTest(name = "operation submitter = {0}")
 	@MethodSource("params")
-	void beginBatchFailure(OperationSubmitter operationSubmitter) throws InterruptedException {
+	void beginBatchFailure(String name, OperationSubmitter operationSubmitter) throws InterruptedException {
 		createAndStartExecutor( 4, true );
 
 		SimulatedFailure simulatedFailure = new SimulatedFailure();
@@ -261,7 +262,7 @@ public class BatchingExecutorTest {
 
 	@ParameterizedTest(name = "operation submitter = {0}")
 	@MethodSource("params")
-	void submitFailure(OperationSubmitter operationSubmitter) throws InterruptedException {
+	void submitFailure(String name, OperationSubmitter operationSubmitter) throws InterruptedException {
 		createAndStartExecutor( 4, true );
 
 		SimulatedFailure simulatedFailure = new SimulatedFailure();
@@ -303,7 +304,7 @@ public class BatchingExecutorTest {
 
 	@ParameterizedTest(name = "operation submitter = {0}")
 	@MethodSource("params")
-	void endBatchFailure(OperationSubmitter operationSubmitter) throws InterruptedException {
+	void endBatchFailure(String name, OperationSubmitter operationSubmitter) throws InterruptedException {
 		createAndStartExecutor( 4, true );
 
 		SimulatedFailure simulatedFailure = new SimulatedFailure();
@@ -347,12 +348,7 @@ public class BatchingExecutorTest {
 	@Test
 	void simple_newTasksBlockedException() throws InterruptedException {
 		createAndStartExecutor( 2, true );
-		OperationSubmitter operationSubmitter = OperationSubmitter.REJECTED_EXECUTION_EXCEPTION;
-
-		assumeTrue(
-				"This test only makes sense for nonblocking submitter",
-				OperationSubmitter.rejecting().equals( operationSubmitter )
-		);
+		OperationSubmitter operationSubmitter = OperationSubmitter.rejecting();
 
 		Runnable unblockExecutorSwitch = blockExecutor( operationSubmitter );
 
@@ -381,15 +377,15 @@ public class BatchingExecutorTest {
 		checkPostExecution( operationSubmitter );
 	}
 
-	@Test
-	void simple_newTasksBlockedWaitAndCompletes() throws InterruptedException {
+	@ParameterizedTest(name = "operation submitter = {0}")
+	@MethodSource("params")
+	void simple_newTasksBlockedWaitAndCompletes(String name, OperationSubmitter operationSubmitter) throws InterruptedException {
 		createAndStartExecutor( 2, true );
 
 		assumeTrue(
-				"This test only makes sense for blocking submitter",
-				OperationSubmitter.blocking().equals( operationSubmitter )
+				OperationSubmitter.blocking().equals( operationSubmitter ),
+				"This test only makes sense for blocking submitter"
 		);
-		OperationSubmitter operationSubmitter = OperationSubmitter.BLOCKING;
 
 		Runnable unblockExecutorSwitch = blockExecutor( operationSubmitter );
 
@@ -445,21 +441,22 @@ public class BatchingExecutorTest {
 		} );
 
 		// Submitting other works should start the executor/processor again
-		checkPostExecution();
+		checkPostExecution( operationSubmitter );
 	}
 
-	@Test
-	public void simple_newTasksBlockedAndOffloadedCompletes() throws InterruptedException {
+	@ParameterizedTest(name = "operation submitter = {0}")
+	@MethodSource("params")
+	void simple_newTasksBlockedAndOffloadedCompletes(String name, OperationSubmitter operationSubmitter) throws InterruptedException {
 		AtomicReference<Runnable> offloadAction = new AtomicReference<>( () -> {} );
 		createAndStartExecutor( 2, true, w -> offloadAction.get().run() );
 
 		assumeFalse(
-				"This test only makes sense for offloading submitter",
 				OperationSubmitter.blocking().equals( operationSubmitter )
-						|| OperationSubmitter.rejecting().equals( operationSubmitter )
+						|| OperationSubmitter.rejecting().equals( operationSubmitter ),
+				"This test only makes sense for offloading submitter"
 		);
 
-		Runnable unblockExecutorSwitch = blockExecutor();
+		Runnable unblockExecutorSwitch = blockExecutor( operationSubmitter );
 
 		StubWork work1Mock = workMock( 1 );
 		StubWork work2Mock = workMock( 2 );

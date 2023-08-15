@@ -35,7 +35,7 @@ import org.junit.jupiter.params.provider.MethodSource;
  * Test setting an entity graph on entity loading options when executing a search query
  * when only a single type is involved.
  */
-public class SearchQueryEntityLoadingGraphIT<T> extends AbstractSearchQueryEntityLoadingSingleTypeIT<T> {
+class SearchQueryEntityLoadingGraphIT<T> extends AbstractSearchQueryEntityLoadingSingleTypeIT<T> {
 
 	public static List<? extends Arguments> params() {
 		List<Arguments> result = new ArrayList<>();

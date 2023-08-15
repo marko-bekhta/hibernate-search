@@ -48,8 +48,6 @@ import org.hibernate.search.util.common.impl.Closer;
 import org.hibernate.search.util.common.impl.SuppressingCloser;
 import org.hibernate.search.util.impl.integrationtest.common.extension.BackendConfiguration;
 import org.hibernate.search.util.impl.integrationtest.common.extension.BackendMock;
-import org.hibernate.search.util.impl.integrationtest.common.rule.BackendConfiguration;
-import org.hibernate.search.util.impl.integrationtest.common.rule.BackendMock;
 import org.hibernate.search.util.impl.test.function.ThrowingBiFunction;
 import org.hibernate.search.util.impl.test.function.ThrowingConsumer;
 import org.hibernate.search.util.impl.test.function.ThrowingFunction;

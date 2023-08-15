@@ -27,9 +27,6 @@ import org.hibernate.search.util.impl.integrationtest.backend.elasticsearch.Sear
 import org.hibernate.search.util.impl.integrationtest.common.extension.BackendConfiguration;
 import org.hibernate.search.util.impl.integrationtest.common.extension.BackendSetupStrategy;
 import org.hibernate.search.util.impl.integrationtest.common.extension.MappingSetupHelper;
-import org.hibernate.search.util.impl.integrationtest.common.rule.BackendConfiguration;
-import org.hibernate.search.util.impl.integrationtest.common.rule.BackendSetupStrategy;
-import org.hibernate.search.util.impl.integrationtest.common.rule.MappingSetupHelper;
 import org.hibernate.search.util.impl.integrationtest.common.stub.backend.BackendMappingHandle;
 import org.hibernate.search.util.impl.integrationtest.mapper.orm.DatabaseContainer;
 import org.hibernate.search.util.impl.integrationtest.mapper.orm.HibernateOrmMappingHandle;

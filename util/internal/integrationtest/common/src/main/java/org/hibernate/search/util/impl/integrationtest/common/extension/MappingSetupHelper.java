@@ -32,7 +32,7 @@ import org.junit.jupiter.api.extension.Extension;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.TestExecutionExceptionHandler;
 
-public abstract class MappingSetupHelper<C extends MappingSetupHelper<C, B, R>.AbstractSetupContext, B, R>
+public abstract class MappingSetupHelper<C extends MappingSetupHelper<C, B, BC, R>.AbstractSetupContext, B, BC, R>
 		implements
 		AfterAllCallback, AfterEachCallback, AfterTestExecutionCallback,
 		BeforeAllCallback, BeforeEachCallback, BeforeTestExecutionCallback, TestExecutionExceptionHandler {
@@ -268,16 +268,16 @@ public abstract class MappingSetupHelper<C extends MappingSetupHelper<C, B, R>.A
 		protected abstract C thisAsC();
 	}
 
-	private static class Configuration<BC, R> {
-		private final Consumer<BC> beforeBuild;
+	private static class Configuration<B, R> {
+		private final Consumer<B> beforeBuild;
 		private final Consumer<R> afterBuild;
 
-		private Configuration(Consumer<BC> beforeBuild, Consumer<R> afterBuild) {
+		private Configuration(Consumer<B> beforeBuild, Consumer<R> afterBuild) {
 			this.beforeBuild = beforeBuild;
 			this.afterBuild = afterBuild;
 		}
 
-		void beforeBuild(BC builder) {
+		void beforeBuild(B builder) {
 			beforeBuild.accept( builder );
 		}
 

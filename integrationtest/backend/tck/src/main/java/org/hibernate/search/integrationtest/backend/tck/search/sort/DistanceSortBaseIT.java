@@ -227,7 +227,9 @@ public class DistanceSortBaseIT {
 			assertThatThrownBy( () -> simpleQuery(
 					dataSetForDesc,
 					b -> b.distance( fieldPath, CENTER_POINT.latitude(), CENTER_POINT.longitude() )
-							.desc().missing().lowest()
+							.desc().missing().lowest(),
+					sortMode,
+					fieldStructure
 			) )
 					.isInstanceOf( SearchException.class )
 					.hasMessageContainingAll( "Invalid use of 'missing().lowest()' for a descending distance sort.",
@@ -236,7 +238,9 @@ public class DistanceSortBaseIT {
 			assertThatThrownBy( () -> simpleQuery(
 					dataSetForDesc,
 					b -> b.distance( fieldPath, CENTER_POINT.latitude(), CENTER_POINT.longitude() )
-							.asc().missing().lowest()
+							.asc().missing().lowest(),
+					sortMode,
+					fieldStructure
 			) )
 					.isInstanceOf( SearchException.class )
 					.hasMessageContainingAll( "Invalid use of 'missing().lowest()' for an ascending distance sort.",
@@ -247,7 +251,9 @@ public class DistanceSortBaseIT {
 			query = simpleQuery(
 					dataSet,
 					b -> b.distance( fieldPath, CENTER_POINT.latitude(), CENTER_POINT.longitude() )
-							.asc().missing().lowest()
+							.asc().missing().lowest(),
+					sortMode,
+					fieldStructure
 			);
 			assertThatQuery( query )
 					.hasDocRefHitsExactOrder( index.typeName(), dataSet.emptyDoc1Id, dataSet.doc1Id, dataSet.doc2Id,
@@ -257,7 +263,9 @@ public class DistanceSortBaseIT {
 			query = simpleQuery(
 					dataSet,
 					b -> b.distance( fieldPath, CENTER_POINT.latitude(), CENTER_POINT.longitude() )
-							.desc().missing().lowest()
+							.desc().missing().lowest(),
+					sortMode,
+					fieldStructure
 			);
 			assertThatQuery( query )
 					.hasDocRefHitsExactOrder( index.typeName(), dataSet.doc3Id, dataSet.doc2Id, dataSet.doc1Id,
@@ -321,7 +329,9 @@ public class DistanceSortBaseIT {
 		query = simpleQuery(
 				dataSet,
 				b -> b.distance( fieldPath, CENTER_POINT.latitude(), CENTER_POINT.longitude() )
-						.desc().missing().highest()
+						.desc().missing().highest(),
+				sortMode,
+				fieldStructure
 		);
 		assertThatQuery( query )
 				.hasDocRefHitsExactOrder( index.typeName(), dataSet.emptyDoc1Id, dataSet.doc3Id, dataSet.doc2Id,
@@ -331,7 +341,9 @@ public class DistanceSortBaseIT {
 		query = simpleQuery(
 				dataSet,
 				b -> b.distance( fieldPath, CENTER_POINT.latitude(), CENTER_POINT.longitude() )
-						.asc().missing().highest()
+						.asc().missing().highest(),
+				sortMode,
+				fieldStructure
 		);
 		assertThatQuery( query )
 				.hasDocRefHitsExactOrder( index.typeName(), dataSet.doc1Id, dataSet.doc2Id, dataSet.doc3Id,

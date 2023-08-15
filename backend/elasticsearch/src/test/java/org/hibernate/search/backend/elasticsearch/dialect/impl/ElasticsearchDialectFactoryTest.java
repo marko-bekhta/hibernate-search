@@ -448,12 +448,6 @@ public class ElasticsearchDialectFactoryTest {
 		);
 	}
 
-	private static Arguments ambiguous(ElasticsearchDistributionName distribution, String configuredVersionString) {
-		return Arguments.of(
-				distribution, configuredVersionString, null, ExpectedOutcome.AMBIGUOUS, null, null
-		);
-	}
-
 	private static Arguments successWithWarning(ElasticsearchDistributionName distribution,
 			String configuredVersionString, String actualVersionString,
 			Class<? extends ElasticsearchModelDialect> expectedModelDialectClass,

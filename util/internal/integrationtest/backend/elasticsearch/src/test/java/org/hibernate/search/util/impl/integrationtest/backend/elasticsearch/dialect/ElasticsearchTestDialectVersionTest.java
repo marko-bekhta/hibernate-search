@@ -11,24 +11,24 @@ import static org.hibernate.search.util.impl.integrationtest.backend.elasticsear
 
 import org.hibernate.search.backend.elasticsearch.ElasticsearchVersion;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
-public class ElasticsearchTestDialectVersionTest {
+class ElasticsearchTestDialectVersionTest {
 
-	@BeforeClass
-	public static void beforeClass() {
+	@BeforeAll
+	static void beforeClass() {
 		System.setProperty( "org.hibernate.search.integrationtest.backend.elasticsearch.version", "elastic:1.1.1" );
 	}
 
-	@AfterClass
-	public static void afterClass() {
+	@AfterAll
+	static void afterClass() {
 		System.clearProperty( "org.hibernate.search.integrationtest.backend.elasticsearch.version" );
 	}
 
 	@Test
-	public void isBetween() {
+	void isBetween() {
 		assertThat(
 				isVersion(
 						ElasticsearchVersion.of( "elastic:6.7.0" ),
@@ -79,7 +79,7 @@ public class ElasticsearchTestDialectVersionTest {
 	}
 
 	@Test
-	public void anyNone() {
+	void anyNone() {
 		assertThat(
 				isVersion(
 						ElasticsearchVersion.of( "elastic:1.1.1" ),
@@ -114,7 +114,7 @@ public class ElasticsearchTestDialectVersionTest {
 	}
 
 	@Test
-	public void isMatching() {
+	void isMatching() {
 		assertThat(
 				isVersion(
 						ElasticsearchVersion.of( "elastic:1.1.1" ),
@@ -141,7 +141,7 @@ public class ElasticsearchTestDialectVersionTest {
 	}
 
 	@Test
-	public void isAtMost() {
+	void isAtMost() {
 		assertThat(
 				isVersion(
 						ElasticsearchVersion.of( "elastic:1.1.2" ),
@@ -176,7 +176,7 @@ public class ElasticsearchTestDialectVersionTest {
 	}
 
 	@Test
-	public void isLessThan() {
+	void isLessThan() {
 		assertThat(
 				isVersion(
 						ElasticsearchVersion.of( "elastic:1.1.1" ),

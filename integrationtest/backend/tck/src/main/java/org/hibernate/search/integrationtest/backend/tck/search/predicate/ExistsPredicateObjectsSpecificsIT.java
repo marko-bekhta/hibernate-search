@@ -18,7 +18,6 @@ import org.hibernate.search.engine.backend.types.ObjectStructure;
 import org.hibernate.search.engine.reporting.spi.EventContexts;
 import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
 import org.hibernate.search.integrationtest.backend.tck.testsupport.util.extension.SearchSetupHelper;
-import org.hibernate.search.integrationtest.backend.tck.testsupport.util.rule.SearchSetupHelper;
 import org.hibernate.search.util.common.SearchException;
 import org.hibernate.search.util.impl.integrationtest.common.reporting.FailureReportUtils;
 import org.hibernate.search.util.impl.integrationtest.mapper.stub.SimpleMappedIndex;
@@ -29,7 +28,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class ExistsPredicateObjectsSpecificsIT {
+class ExistsPredicateObjectsSpecificsIT {
 
 	// this document is empty
 	private static final String DOCUMENT_0 = "0";
@@ -84,7 +83,7 @@ public class ExistsPredicateObjectsSpecificsIT {
 
 
 	@BeforeAll
-	public static void setup() {
+	static void setup() {
 		setupHelper.start()
 				.withIndexes(
 						mainIndex, compatibleIndex, emptyIndex,

@@ -18,26 +18,25 @@ import org.hibernate.search.mapper.orm.Search;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.GenericField;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.hibernate.search.util.common.SearchException;
-import org.hibernate.search.util.impl.integrationtest.common.rule.BackendMock;
+import org.hibernate.search.util.impl.integrationtest.common.extension.BackendMock;
 import org.hibernate.search.util.impl.integrationtest.mapper.orm.OrmSetupHelper;
 import org.hibernate.search.util.impl.integrationtest.mapper.orm.ReusableOrmSetupHolder;
 
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.MethodRule;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.Extension;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class OutboxPollingIndexingPlanFilterIT {
+class OutboxPollingIndexingPlanFilterIT {
 
-	@ClassRule
-	public static BackendMock backendMock = new BackendMock();
+	@RegisterExtension
+	public static BackendMock backendMock = BackendMock.createGlobal();
 
-	@ClassRule
+	@RegisterExtension
 	public static ReusableOrmSetupHolder setupHolder = ReusableOrmSetupHolder.withBackendMock( backendMock );
 
-	@Rule
-	public MethodRule setupHolderMethodRule = setupHolder.methodRule();
+	@RegisterExtension
+	public Extension setupHolderMethodRule = setupHolder.methodExtension();
 
 	@ReusableOrmSetupHolder.Setup
 	public void setup(OrmSetupHelper.SetupContext setupContext) {
@@ -52,15 +51,15 @@ public class OutboxPollingIndexingPlanFilterIT {
 		);
 	}
 
-	@Before
-	public void clearFilter() throws Exception {
+	@BeforeEach
+	void clearFilter() throws Exception {
 		Search.mapping( setupHolder.entityManagerFactory() ).indexingPlanFilter(
 				ctx -> { /*clear out any settings from tests*/ }
 		);
 	}
 
 	@Test
-	public void partialSessionFilterFails() {
+	void partialSessionFilterFails() {
 		setupHolder.runInTransaction( session -> {
 			assertThatThrownBy( () -> Search.session( session ).indexingPlanFilter(
 					ctx -> ctx.exclude( Entity1A.class ) )
@@ -73,7 +72,7 @@ public class OutboxPollingIndexingPlanFilterIT {
 	}
 
 	@Test
-	public void allTypesMixSessionFilterFails() {
+	void allTypesMixSessionFilterFails() {
 		setupHolder.runInTransaction( session -> {
 			assertThatThrownBy( () -> Search.session( session ).indexingPlanFilter(
 					ctx -> ctx.exclude( EntityA.class )
@@ -89,7 +88,7 @@ public class OutboxPollingIndexingPlanFilterIT {
 	}
 
 	@Test
-	public void allTypesExcludeExplicitlySessionFilter() {
+	void allTypesExcludeExplicitlySessionFilter() {
 		setupHolder.runInTransaction( session -> {
 			Search.session( session ).indexingPlanFilter(
 					ctx -> ctx.exclude( EntityA.class )
@@ -106,7 +105,7 @@ public class OutboxPollingIndexingPlanFilterIT {
 	}
 
 	@Test
-	public void allTypesExcludeInheritanceSessionFilter() {
+	void allTypesExcludeInheritanceSessionFilter() {
 		setupHolder.runInTransaction( session -> {
 			Search.session( session ).indexingPlanFilter(
 					ctx -> ctx.exclude( EntityA.class )

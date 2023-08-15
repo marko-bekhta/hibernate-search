@@ -33,7 +33,7 @@ import org.hibernate.search.mapper.pojo.schema.management.SearchSchemaCollector;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.io.TempDir;
 
 class HibernateOrmSchemaManagerIT {
 
@@ -43,8 +43,8 @@ class HibernateOrmSchemaManagerIT {
 	@RegisterExtension
 	public DocumentationSetupHelper setupHelper = DocumentationSetupHelper.withSingleBackend( BackendConfigurations.simple() );
 
-	@Rule
-	public final TemporaryFolder temporaryFolder = new TemporaryFolder();
+	@TempDir
+	public Path temporaryFolder;
 
 	private EntityManagerFactory entityManagerFactory;
 
@@ -126,7 +126,7 @@ class HibernateOrmSchemaManagerIT {
 	public void exportSchemaToFiles() throws IOException {
 		with( entityManagerFactory ).runNoTransaction( entityManager -> {
 			SearchSession searchSession = Search.session( entityManager );
-			Path targetDirectory = temporaryFolder.newFolder().toPath();
+			Path targetDirectory = temporaryFolder;
 
 			// tag::schema-export[]
 			SearchSchemaManager schemaManager = searchSession.schemaManager(); // <1>

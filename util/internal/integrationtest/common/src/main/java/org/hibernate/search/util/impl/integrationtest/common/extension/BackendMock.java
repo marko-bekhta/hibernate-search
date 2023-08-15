@@ -263,11 +263,7 @@ public class BackendMock implements BeforeEachCallback, AfterEachCallback, Befor
 		);
 	}
 
-	public IndexScaleWorkCallListContext expectIndexScaleWorks(String indexName) {
-		return expectIndexScaleWorks( indexName, null );
-	}
-
-	public IndexScaleWorkCallListContext expectIndexScaleWorks(String indexName, String tenantId) {
+	public IndexScaleWorkCallListContext expectIndexScaleWorks(String indexName, String... tenantIds) {
 		CallQueue<IndexScaleWorkCall> callQueue = backendBehavior().getIndexScaleWorkCalls( indexName );
 		return new IndexScaleWorkCallListContext(
 				indexName,
