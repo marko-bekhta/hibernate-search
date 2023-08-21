@@ -13,6 +13,17 @@ updates:
     # We don't trigger Jenkins or GitHub Actions builds on pull requests from dependabot,
     # so we can safely use a high limit here.
     open-pull-requests-limit: 20
+    groups:
+      build-dependencies:
+        patterns:
+          # Maven plugin patterns:
+          - "*plugin*"
+          - "*maven*"
+          - "surefire"
+          # DB drivers:
+          - "h2|derby|postgresql|mariadb-java-client|mysql-connector-j|jcc|ojdbc8|mssql-jdbc"
+          # Other test dependencies
+          - "org.apache.commons:commons-lang3"
     ignore:
       # These dependencies are updated manually
       - dependency-name: "org.hibernate:*"
