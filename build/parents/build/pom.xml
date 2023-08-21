@@ -164,7 +164,7 @@
         <version.org.google.guava>32.1.2-jre</version.org.google.guava>
 
         <!-- >>> Spring integration tests -->
-        <version.org.springframework.boot>3.1.1</version.org.springframework.boot>
+        <version.org.springframework.boot>3.1.2</version.org.springframework.boot>
         <!-- Spring Boot 3 Atomikos starter and related libs version: -->
         <version.com.atomikos>6.0.0</version.com.atomikos>
 
