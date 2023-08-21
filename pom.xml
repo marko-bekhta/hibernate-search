@@ -262,7 +262,7 @@
         <version.compiler.plugin>3.11.0</version.compiler.plugin>
         <version.dependency.plugin>3.6.0</version.dependency.plugin>
         <!-- Check dependencies for security vulnerabilities -->
-        <version.dependency-check.plugin>8.3.1</version.dependency-check.plugin>
+        <version.dependency-check.plugin>8.4.0</version.dependency-check.plugin>
         <version.exec.plugin>3.1.0</version.exec.plugin>
         <version.forbiddenapis.plugin>3.5.1</version.forbiddenapis.plugin>
         <version.jandex.plugin>3.1.2</version.jandex.plugin>
@@ -278,16 +278,16 @@
         <version.surefire.plugin>3.1.2</version.surefire.plugin>
         <version.surefire.plugin.java-version.asm>9.5</version.surefire.plugin.java-version.asm>
         <version.jacoco.plugin>0.8.10</version.jacoco.plugin>
-        <version.com.buschmais.jqassistant.plugin>2.0.5</version.com.buschmais.jqassistant.plugin>
-        <version.docker.maven.plugin>0.43.3</version.docker.maven.plugin>
+        <version.com.buschmais.jqassistant.plugin>2.0.6</version.com.buschmais.jqassistant.plugin>
+        <version.docker.maven.plugin>0.43.4</version.docker.maven.plugin>
         <version.moditect.plugin>1.0.0.Final</version.moditect.plugin>
         <version.sonar.plugin>3.9.1.2184</version.sonar.plugin>
         <version.scripting.plugin>3.0.0</version.scripting.plugin>
         <version.org.apache.groovy.groovy-jsr223>4.0.13</version.org.apache.groovy.groovy-jsr223>
         <version.com.puppycrawl.tools.checkstyle>10.9.3</version.com.puppycrawl.tools.checkstyle>
         <version.versions.plugin>2.16.0</version.versions.plugin>
-        <version.maven-wrapper-plugin>3.1.1</version.maven-wrapper-plugin>
-        <version.impsort-maven-plugin>1.8.0</version.impsort-maven-plugin>
+        <version.maven-wrapper-plugin>3.2.0</version.maven-wrapper-plugin>
+        <version.impsort-maven-plugin>1.9.0</version.impsort-maven-plugin>
         <version.formatter-maven-plugin>2.23.0</version.formatter-maven-plugin>
         <version.org.eclipse.m2e.lifecycle-mapping>1.0.0</version.org.eclipse.m2e.lifecycle-mapping>
         <version.sisu-maven-plugin>0.9.0.M2</version.sisu-maven-plugin>
