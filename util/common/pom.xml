@@ -93,7 +93,7 @@
                     We want to use a different version of Spring Boot when testing with JDK11
                     since 3+ requires JDK17+ and our tests won't run on JDK11.
                 -->
-                <version.org.springframework.boot>2.7.14</version.org.springframework.boot>
+                <version.org.springframework.boot>3.1.2</version.org.springframework.boot>
             </properties>
         </profile>
     </profiles>
