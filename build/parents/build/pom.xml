@@ -150,7 +150,7 @@
         <version.mysql.mysql-connector-java>8.1.0</version.mysql.mysql-connector-java>
         <version.com.ibm.db2.jcc>11.5.8.0</version.com.ibm.db2.jcc>
         <version.com.oracle.database.jdbc>23.2.0.0</version.com.oracle.database.jdbc>
-        <version.com.microsoft.sqlserver.mssql-jdbc>12.2.0.jre11</version.com.microsoft.sqlserver.mssql-jdbc>
+        <version.com.microsoft.sqlserver.mssql-jdbc>12.4.0.jre11-preview</version.com.microsoft.sqlserver.mssql-jdbc>
 
         <!-- >>> Performance tests -->
         <version.org.openjdk.jmh>1.37</version.org.openjdk.jmh>
