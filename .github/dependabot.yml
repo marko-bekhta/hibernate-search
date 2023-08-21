@@ -13,6 +13,31 @@ updates:
     # We don't trigger Jenkins or GitHub Actions builds on pull requests from dependabot,
     # so we can safely use a high limit here.
     open-pull-requests-limit: 20
+    groups:
+      build-dependencies:
+        patterns:
+          # Maven plugin patterns:
+          - "*plugin*"
+          - "*maven*"
+          - "*surefire*"
+          - "*forbiddenapis*"
+          # DB drivers:
+          - "com.h2database:h2"
+          - "org.apache.derby:derby"
+          - "org.postgresql:postgresql"
+          - "org.mariadb.jdbc:mariadb-java-client"
+          - "com.mysql:mysql-connector-j"
+          - "com.ibm.db2:jcc"
+          - "com.oracle.database.jdbc:ojdbc*"
+          - "com.microsoft.sqlserver:mssql-jdbc"
+          # Other test dependencies
+          - "org.apache.groovy:groovy-jsr223" # used for scripting maven plugin
+          - "org.apache.commons:commons-lang3" # used in hibernate-search-util-common tests
+          - "org.apache.commons:commons-math3" # used to solve dependency convergence for Wiremock
+          - "org.openjdk.jmh:*" # performance testing dependency
+          - "com.google.guava:guava" # Guava is used in our test utils
+          - "org.asciidoctor:*" # Asciidoctor is used for rendering the documentation
+          - "org.codehaus.plexus:*" # Eclipse compiler
     ignore:
       # These dependencies are updated manually
       - dependency-name: "org.hibernate:*"
