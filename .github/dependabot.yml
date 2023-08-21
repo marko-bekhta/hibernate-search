@@ -9,47 +9,44 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-    assignees: ["yrodiere"]
+    assignees: ["marko-bekhta"]
     # We don't trigger Jenkins or GitHub Actions builds on pull requests from dependabot,
     # so we can safely use a high limit here.
     open-pull-requests-limit: 20
-    ignore:
-      # These dependencies are updated manually
-      - dependency-name: "org.hibernate:*"
-      - dependency-name: "org.hibernate.*:*"
-      # AWS SDK releases way too often (every week?); ignore all patch updates
-      - dependency-name: "software.amazon.awssdk:*"
-        update-types: ["version-update:semver-patch"]
-      # JRuby releases way too often (every two weeks?) and is only used during the build; ignore all patch updates
-      - dependency-name: "org.jruby:jruby-complete"
-        update-types: ["version-update:semver-patch"]
-      # Groovy is only used during the build; ignore all patch updates
-      - dependency-name: "org.apache.groovy:groovy-jsr223"
-        update-types: [ "version-update:semver-patch" ]
-      # We don't care that much about being on the very latest version of some integration test dependencies
-      - dependency-name: "org.springframework.boot:*"
-        update-types: [ "version-update:semver-patch" ]
-        # ignore spring boot 3+ for now as some required dependencies are not compatible with this version yet:
-        versions: ["[3.0.0,)"]
-      # We strictly align these dependencies on the version used in Hibernate ORM.
-      - dependency-name: "io.smallrye:jandex"
-      - dependency-name: "jakarta.persistence:jakarta.persistence-api"
-      - dependency-name: "jakarta.enterprise:jakarta.enterprise.cdi-api"
-      - dependency-name: "jakarta.xml.bind:jakarta.xml.bind-api"
-      - dependency-name: "net.bytebuddy:*"
-      # Sticking to Derby 10.15 for now since later versions require JDK 17+, and we need to test with JDK 11.
-      # See https://db.apache.org/derby/derby_downloads.html
-      - dependency-name: "org.apache.derby:*"
-        update-types: ["version-update:semver-major", "version-update:semver-minor"]
-      # This dependency uses classifiers (.jre11, -preview, ...) in its version, and dependabot can't decide which versions are relevant.
-      # See https://github.com/dependabot/dependabot-core/issues/4028
-      - dependency-name: "com.microsoft.sqlserver:mssql-jdbc"
-      # Sticking to SLF4J 1.x for now since later versions require to upgrade providers
-      # (Log4j, ... see https://www.slf4j.org/faq.html#changesInVersion200),
-      # and also because we only need this dependency for AWS SDK,
-      # which is currently still on SLF4J 1.x
-      # (see https://search.maven.org/artifact/software.amazon.awssdk/aws-sdk-java-pom/2.17.257/pom)
-      - dependency-name: "org.slf4j:*"
-        update-types: ["version-update:semver-major"]
-      # We only define a maven's minimum version, so we don't need it to be updated to the latest:
-      - dependency-name: "org.apache.maven:maven-core"
+    # Create a group of dependencies to be updated together in one pull request
+    groups:
+      # Specify a name for the group, which will be used in pull request titles
+      # and branch names
+      dev-dependencies:
+        # Define patterns to include dependencies in the group (based on
+        # dependency name)
+        patterns:
+          - "org.apache.commons:commons-lang3" # A single dependency name
+        #          - ""  # A wildcard string that matches multiple dependency names
+        #          - "*"       # A wildcard that matches all dependencies in the package
+        # ecosystem. Note: using "*" may open a large pull request
+        # Define patterns to exclude dependencies from the group (based on
+        # dependency name)
+      #        exclude-patterns:
+      #          - "gc_ruboconfig"
+      #          - "gocardless-*"
+      development:
+        # Define patterns to include dependencies in the group (based on
+        # dependency name)
+        patterns:
+          - "*plugin*" # A single dependency name
+          - "*maven*" # A single dependency name
+        #          - ""  # A wildcard string that matches multiple dependency names
+        #          - "*"       # A wildcard that matches all dependencies in the package
+        # ecosystem. Note: using "*" may open a large pull request
+        # Define patterns to exclude dependencies from the group (based on
+        # dependency name)
+      #        exclude-patterns:
+      #          - "gc_ruboconfig"
+      #          - "gocardless-*"
+      development-dependency-group:
+        patterns:
+          - "com.h2database:h2"
+
+    allow:
+      - dependency-type: development
