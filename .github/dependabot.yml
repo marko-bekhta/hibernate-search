@@ -22,10 +22,18 @@ updates:
       build-dependencies:
         patterns:
           # Maven plugin patterns:
-          - "*maven*plugin*"
-          - "*surefire*"
-          - "*forbiddenapis*"
-          - "*owasp*"
+          - "org.apache.maven.plugins:*" # "default plugins"
+          - "org.codehaus.mojo:*" # more "common" plugins like exec, build helper, flatten
+          - "org.sonatype.plugins:*" # deploy plugin
+          - "com.buschmais.jqassistant:*"
+          - "de.thetaphi:*" # forbidden apis
+          - "org.owasp:*" # owasp checks plugin
+          - "com.github.marschall:*" # jdeps plugin
+          - "org.bsc.maven:*" # annotation processor plugin
+          - "org.apache.felix:*" # any other plugin
+          - "org.moditect:*"
+          - "org.jboss.maven.plugins:*"
+          - "io.smallrye:jandex-maven-plugin"
           # DB drivers:
           - "com.h2database:h2"
           - "org.apache.derby:derby"
