@@ -22,7 +22,7 @@ updates:
       build-dependencies:
         patterns:
           # Maven plugin patterns:
-          - "*maven*plugin*"
+          - "org.apache.maven.plugins:*"
           - "*surefire*"
           - "*forbiddenapis*"
           - "*owasp*"
