@@ -22,10 +22,9 @@ updates:
       build-dependencies:
         patterns:
           # Maven plugin patterns:
-          - "*maven*plugin*"
-          - "*surefire*"
-          - "*forbiddenapis*"
-          - "*owasp*"
+          - "org.apache.maven.plugins:*"
+          - "de.thetaphi:*"
+          - "org.owasp:*"
           # DB drivers:
           - "com.h2database:h2"
           - "org.apache.derby:derby"
