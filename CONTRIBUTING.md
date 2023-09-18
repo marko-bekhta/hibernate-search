@@ -96,7 +96,9 @@ few prerequisite steps:
 * Make sure you have a [GitHub account](https://github.com/signup/free)
 * Make sure you have [set up git locally](https://help.github.com/articles/set-up-git)
 * On Windows, run `git config --global core.longpaths true`
-so that you are able to clone the Hibernate Search repository
+so that you are able to clone the Hibernate Search repository;
+also run `git config --global core.autocrlf input` to make sure that line ending characters are kept unchanged 
+when automatic formatter is applied.
 * [Fork](https://help.github.com/articles/fork-a-repo/) the [Hibernate Search repository](https://github.com/hibernate/hibernate-search)
 * Instruct git to ignore certain commits when using `git blame`.
 From the directory of your local clone, run this:
