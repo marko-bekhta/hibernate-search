@@ -19,6 +19,7 @@ on:
     tags:
       - '**'
   pull_request:
+    types: [opened, reopened, ready_for_review]
     branches:
       - '!3.*'
       - '!4.*'
@@ -36,9 +37,35 @@ concurrency:
 env:
   MAVEN_ARGS: "-e -B --settings .github/mvn-settings.xml --fail-at-end"
 jobs:
+  quick-build:
+    name: "Initial JDK Build"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: Generate .m2 cache key
+        id: m2-cache-key
+        run: |
+          echo "key=m2-cache-$(/bin/date -u "+%Y-%U")" >> $GITHUB_OUTPUT
+      - name: Cache Maven local repository
+        id: cache-maven
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          # refresh cache every week to avoid unlimited growth
+          key: ${{ steps.m2-cache-key.outputs.key }}
+      - name: Building code and running basic checks
+        run: ./mvnw $MAVEN_ARGS install -Pjqassistant -Pdist -Pci-sources-check -DskipTests
+      - name: Delete snapshots artifacts from cache
+        run: find ~/.m2 -name \*-SNAPSHOT -type d -exec rm -rf {} +
   build:
     name: ${{matrix.os.name}}
     runs-on: ${{ matrix.os.runs-on }}
+    needs: [quick-build]
     strategy:
       fail-fast: false
       matrix:
@@ -61,28 +88,31 @@ jobs:
       - name: Support longpaths on Windows
         if: "startsWith(matrix.os.runs-on, 'windows')"
         run: git config --global core.longpaths true
-      - uses: actions/checkout@v2
+      - name: Configure autocrlf on Windows to prevent unnecessary changes
+        if: "startsWith(matrix.os.runs-on, 'windows')"
+        run: git config --global core.autocrlf input
+      - uses: actions/checkout@v4
+        with:
+          # Number of commits to fetch. 0 indicates all history for all branches and tags.
+          # Default: 1
+          # To make sure that gitflow incremental builder can find main branch we fetch all.
+          fetch-depth: 0
       - name: Set up Java ${{ matrix.os.java.version }}
         uses: actions/setup-java@v1
         with:
           java-version: ${{ matrix.os.java.version }}
-      - name: Generate .m2 cache key
-        id: m2-cache-key
-        run: |
-          echo "key=m2-cache-$(/bin/date -u "+%Y-%U")" >> $GITHUB_OUTPUT
-      - name: Cache Maven local repository
-        id: cache-maven
-        uses: actions/cache@v3
-        with:
-          path: ~/.m2/repository
-          # refresh cache every week to avoid unlimited growth
-          key: ${{ steps.m2-cache-key.outputs.key }}
       - name: Set up Maven
         run: ./mvnw -v
       - name: Docker cleanup
         run: ./ci/docker-cleanup.sh
-      - name: Building code and running unit tests and basic checks
-        run: ./mvnw $MAVEN_ARGS install -Pjqassistant -Pdist -Pci-sources-check -DskipITs
+      - name: Restore Maven Repository
+        uses: actions/cache/restore@v3
+        with:
+          path: ~/.m2/repository
+          # refresh cache every week to avoid unlimited growth
+          key: ${{ needs.quick-build.outputs.m2-cache-key }}
+      - name: Building code and running unit tests
+        run: ./mvnw $MAVEN_ARGS install -DskipITs
       - name: Running integration tests in the default environment
         run: |
           ./mvnw $MAVEN_ARGS verify \
