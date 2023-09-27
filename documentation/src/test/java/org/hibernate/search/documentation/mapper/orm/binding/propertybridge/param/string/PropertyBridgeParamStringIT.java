@@ -7,6 +7,7 @@
 package org.hibernate.search.documentation.mapper.orm.binding.propertybridge.param.string;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hibernate.search.documentation.testsupport.DocumentationSetupHelper.SetupVariant.variant;
 import static org.hibernate.search.util.impl.integrationtest.mapper.orm.OrmUtils.with;
 
 import java.math.BigDecimal;
@@ -48,9 +49,8 @@ class PropertyBridgeParamStringIT {
 	private EntityManagerFactory entityManagerFactory;
 
 	public void init(Boolean annotationProcessingEnabled, HibernateOrmSearchMappingConfigurer mappingContributor) {
-		setupHelper.withAnnotationProcessingEnabled( annotationProcessingEnabled )
-				.withMappingConfigurer( mappingContributor );
-		entityManagerFactory = setupHelper.start().setup( Invoice.class );
+		entityManagerFactory = setupHelper.start( variant( annotationProcessingEnabled, mappingContributor ) )
+				.setup( Invoice.class );
 	}
 
 	@ParameterizedTest(name = "{0}")

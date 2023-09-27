@@ -7,6 +7,7 @@
 package org.hibernate.search.documentation.mapper.orm.binding.propertybridge.bridgedelement;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hibernate.search.documentation.testsupport.DocumentationSetupHelper.SetupVariant.variant;
 import static org.hibernate.search.util.impl.integrationtest.mapper.orm.OrmUtils.with;
 
 import java.math.BigDecimal;
@@ -41,14 +42,12 @@ class PropertyBridgeBridgedElementIT {
 	}
 
 	@RegisterExtension
-	public DocumentationSetupHelper setupHelper = DocumentationSetupHelper.withSingleBackend(
-			BackendConfigurations.simple() );
+	public DocumentationSetupHelper setupHelper = DocumentationSetupHelper.withSingleBackend( BackendConfigurations.simple() );
 	private EntityManagerFactory entityManagerFactory;
 
 	public void init(Boolean annotationProcessingEnabled, HibernateOrmSearchMappingConfigurer mappingContributor) {
-		setupHelper.withAnnotationProcessingEnabled( annotationProcessingEnabled )
-				.withMappingConfigurer( mappingContributor );
-		entityManagerFactory = setupHelper.start().setup( Invoice.class );
+		entityManagerFactory = setupHelper.start( variant( annotationProcessingEnabled, mappingContributor ) )
+				.setup( Invoice.class );
 	}
 
 	@ParameterizedTest(name = "{0}")

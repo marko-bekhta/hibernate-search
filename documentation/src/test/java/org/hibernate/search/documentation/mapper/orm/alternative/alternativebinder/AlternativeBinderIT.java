@@ -7,6 +7,7 @@
 package org.hibernate.search.documentation.mapper.orm.alternative.alternativebinder;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hibernate.search.documentation.testsupport.DocumentationSetupHelper.SetupVariant.variant;
 import static org.hibernate.search.util.impl.integrationtest.mapper.orm.OrmUtils.with;
 
 import java.util.List;
@@ -44,14 +45,12 @@ class AlternativeBinderIT {
 	}
 
 	@RegisterExtension
-	public DocumentationSetupHelper setupHelper = DocumentationSetupHelper.withSingleBackend(
-			BackendConfigurations.simple() );
+	public DocumentationSetupHelper setupHelper = DocumentationSetupHelper.withSingleBackend( BackendConfigurations.simple() );
 	private EntityManagerFactory entityManagerFactory;
 
 	public void init(Boolean annotationProcessingEnabled, HibernateOrmSearchMappingConfigurer mappingContributor) {
-		setupHelper.withAnnotationProcessingEnabled( annotationProcessingEnabled )
-				.withMappingConfigurer( mappingContributor );
-		entityManagerFactory = setupHelper.start().setup( BlogEntry.class );
+		entityManagerFactory = setupHelper.start( variant( annotationProcessingEnabled, mappingContributor ) )
+				.setup( BlogEntry.class );
 	}
 
 	@ParameterizedTest(name = "{0}")
