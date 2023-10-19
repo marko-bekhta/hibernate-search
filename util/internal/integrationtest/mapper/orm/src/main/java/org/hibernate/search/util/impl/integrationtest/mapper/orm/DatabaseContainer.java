@@ -6,6 +6,7 @@
  */
 package org.hibernate.search.util.impl.integrationtest.mapper.orm;
 
+import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Locale;
@@ -13,7 +14,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import org.testcontainers.containers.JdbcDatabaseContainer;
-import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.images.builder.ImageFromDockerfile;
 
 /*
  * Suppress "Resource leak: '<unassigned Closeable value>' is never closed". Testcontainers take care of closing
@@ -32,13 +33,15 @@ public final class DatabaseContainer {
 
 
 	static {
-		String name = System.getProperty( "org.hibernate.search.integrationtest.orm.database.image.name", "" );
-		String tag = System.getProperty( "org.hibernate.search.integrationtest.orm.database.image.tag" );
+		String name = System.getProperty( "org.hibernate.search.integrationtest.orm.database.kind", "" );
+		Path root = Path.of( System.getProperty( "org.hibernate.search.integrationtest.orm.project.root.directory", "" ) );
 		DATABASE = SupportedDatabase.from( name );
 
-		DATABASE_CONTAINER = DATABASE.container( name, tag );
+		DATABASE_CONTAINER = DATABASE.container(
+				root.resolve( "build" ).resolve( "container" ).resolve( name ).resolve( "Dockerfile" ),
+				name
+		);
 	}
-
 
 	public static Configuration configuration() {
 		return configure( Configuration::addAsSystemProperties );
@@ -94,7 +97,7 @@ public final class DatabaseContainer {
 			}
 
 			@Override
-			<SELF extends JdbcDatabaseContainer<SELF>> JdbcDatabaseContainer<SELF> container(String name, String tag) {
+			<SELF extends JdbcDatabaseContainer<SELF>> JdbcDatabaseContainer<SELF> container(Path dockerfile, String name) {
 				return null;
 			}
 		},
@@ -105,8 +108,8 @@ public final class DatabaseContainer {
 			}
 
 			@Override
-			<SELF extends JdbcDatabaseContainer<SELF>> JdbcDatabaseContainer<SELF> container(String name, String tag) {
-				return new JdbcDatabaseContainer<SELF>( DockerImageName.parse( name ).withTag( tag ) ) {
+			<SELF extends JdbcDatabaseContainer<SELF>> JdbcDatabaseContainer<SELF> container(Path dockerfile, String name) {
+				return new JdbcDatabaseContainer<SELF>( createImageFromDockerfile( dockerfile, name ) ) {
 					@Override
 					public String getDriverClassName() {
 						return "org.postgresql.Driver";
@@ -146,8 +149,8 @@ public final class DatabaseContainer {
 			}
 
 			@Override
-			<SELF extends JdbcDatabaseContainer<SELF>> JdbcDatabaseContainer<SELF> container(String name, String tag) {
-				return new JdbcDatabaseContainer<SELF>( DockerImageName.parse( name ).withTag( tag ) ) {
+			<SELF extends JdbcDatabaseContainer<SELF>> JdbcDatabaseContainer<SELF> container(Path dockerfile, String name) {
+				return new JdbcDatabaseContainer<SELF>( createImageFromDockerfile( dockerfile, name ) ) {
 					@Override
 					public String getDriverClassName() {
 						return "org.mariadb.jdbc.Driver";
@@ -190,8 +193,8 @@ public final class DatabaseContainer {
 			}
 
 			@Override
-			<SELF extends JdbcDatabaseContainer<SELF>> JdbcDatabaseContainer<SELF> container(String name, String tag) {
-				return new JdbcDatabaseContainer<SELF>( DockerImageName.parse( name ).withTag( tag ) ) {
+			<SELF extends JdbcDatabaseContainer<SELF>> JdbcDatabaseContainer<SELF> container(Path dockerfile, String name) {
+				return new JdbcDatabaseContainer<SELF>( createImageFromDockerfile( dockerfile, name ) ) {
 					@Override
 					public String getDriverClassName() {
 						return "com.mysql.jdbc.Driver";
@@ -234,8 +237,8 @@ public final class DatabaseContainer {
 			}
 
 			@Override
-			<SELF extends JdbcDatabaseContainer<SELF>> JdbcDatabaseContainer<SELF> container(String name, String tag) {
-				return new JdbcDatabaseContainer<SELF>( DockerImageName.parse( name ).withTag( tag ) ) {
+			<SELF extends JdbcDatabaseContainer<SELF>> JdbcDatabaseContainer<SELF> container(Path dockerfile, String name) {
+				return new JdbcDatabaseContainer<SELF>( createImageFromDockerfile( dockerfile, name ) ) {
 					@Override
 					public String getDriverClassName() {
 						return "com.ibm.db2.jcc.DB2Driver";
@@ -284,8 +287,8 @@ public final class DatabaseContainer {
 			}
 
 			@Override
-			<SELF extends JdbcDatabaseContainer<SELF>> JdbcDatabaseContainer<SELF> container(String name, String tag) {
-				return new JdbcDatabaseContainer<SELF>( DockerImageName.parse( name ).withTag( tag ) ) {
+			<SELF extends JdbcDatabaseContainer<SELF>> JdbcDatabaseContainer<SELF> container(Path dockerfile, String name) {
+				return new JdbcDatabaseContainer<SELF>( createImageFromDockerfile( dockerfile, name ) ) {
 					@Override
 					public String getDriverClassName() {
 						return "oracle.jdbc.OracleDriver";
@@ -323,8 +326,8 @@ public final class DatabaseContainer {
 			}
 
 			@Override
-			<SELF extends JdbcDatabaseContainer<SELF>> JdbcDatabaseContainer<SELF> container(String name, String tag) {
-				return new JdbcDatabaseContainer<SELF>( DockerImageName.parse( name ).withTag( tag ) ) {
+			<SELF extends JdbcDatabaseContainer<SELF>> JdbcDatabaseContainer<SELF> container(Path dockerfile, String name) {
+				return new JdbcDatabaseContainer<SELF>( createImageFromDockerfile( dockerfile, name ) ) {
 					@Override
 					public String getDriverClassName() {
 						return "com.microsoft.sqlserver.jdbc.SQLServerDriver";
@@ -363,8 +366,8 @@ public final class DatabaseContainer {
 			}
 
 			@Override
-			<SELF extends JdbcDatabaseContainer<SELF>> JdbcDatabaseContainer<SELF> container(String name, String tag) {
-				return new JdbcDatabaseContainer<SELF>( DockerImageName.parse( name ).withTag( tag ) ) {
+			<SELF extends JdbcDatabaseContainer<SELF>> JdbcDatabaseContainer<SELF> container(Path dockerfile, String name) {
+				return new JdbcDatabaseContainer<SELF>( createImageFromDockerfile( dockerfile, name ) ) {
 					@Override
 					public String getDriverClassName() {
 						return "org.postgresql.Driver";
@@ -409,7 +412,8 @@ public final class DatabaseContainer {
 
 		abstract String dialect();
 
-		abstract <SELF extends JdbcDatabaseContainer<SELF>> JdbcDatabaseContainer<SELF> container(String name, String tag);
+		abstract <SELF extends JdbcDatabaseContainer<SELF>> JdbcDatabaseContainer<SELF> container(Path dockerfile,
+				String name);
 
 		static SupportedDatabase from(String name) {
 			for ( SupportedDatabase database : values() ) {
@@ -466,4 +470,7 @@ public final class DatabaseContainer {
 		}
 	}
 
+	private static ImageFromDockerfile createImageFromDockerfile(Path dockerfile, String name) {
+		return new ImageFromDockerfile( "hibernate-search-" + name, true ).withDockerfile( dockerfile );
+	}
 }
