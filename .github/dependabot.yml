@@ -99,3 +99,8 @@ updates:
       # See https://github.com/dependabot/dependabot-core/issues/4028
       # And, additionally, it is only for performance testing.
       - dependency-name: "org.bsc.maven:maven-processor-plugin"
+  - package-ecosystem: "docker"
+    directory: "/build/container"
+    schedule:
+      interval: "weekly"
+      day: "tuesday"
