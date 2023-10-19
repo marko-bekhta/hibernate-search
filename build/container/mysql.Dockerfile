@@ -1,3 +1,3 @@
 # MySQL
 # See https://hub.docker.com/_/mysql
-FROM mysql:8.0.0
+FROM mysql:8.1.0
