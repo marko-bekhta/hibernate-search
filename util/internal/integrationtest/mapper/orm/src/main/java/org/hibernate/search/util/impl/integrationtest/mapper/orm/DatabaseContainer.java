@@ -38,7 +38,7 @@ public final class DatabaseContainer {
 		DATABASE = SupportedDatabase.from( name );
 
 		DATABASE_CONTAINER = DATABASE.container(
-				root.resolve( "build" ).resolve( "container" ).resolve( name ).resolve( "Dockerfile" ),
+				root.resolve( "build" ).resolve( "container" ).resolve( name + ".Dockerfile" ),
 				name
 		);
 	}
