@@ -1,1 +1,1 @@
-FROM elastic/elasticsearch:8.10.4
+FROM opensearchproject/opensearch:2.11.0

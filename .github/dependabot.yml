@@ -4,6 +4,13 @@
 # https://help.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
 
 version: 2
+registries:
+  dockerhub:
+    type: docker-registry
+    url: https://registry.hub.docker.com
+    username: ${{secrets.MY_DOCKERHUB_USER}}
+    password: ${{secrets.MY_DOCKERHUB_TOKEN}}
+    replaces-base: true
 updates:
   - package-ecosystem: "maven"
     directory: "/"
@@ -100,7 +107,9 @@ updates:
       # And, additionally, it is only for performance testing.
       - dependency-name: "org.bsc.maven:maven-processor-plugin"
   - package-ecosystem: "docker"
-    directory: "/build/container"
+    registries:
+      - dockerhub
+    directory: "/build/container/postgresql"
     schedule:
       interval: "weekly"
       day: "tuesday"
