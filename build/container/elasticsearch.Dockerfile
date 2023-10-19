@@ -1,0 +1,1 @@
+FROM elastic/elasticsearch:8.10.4
