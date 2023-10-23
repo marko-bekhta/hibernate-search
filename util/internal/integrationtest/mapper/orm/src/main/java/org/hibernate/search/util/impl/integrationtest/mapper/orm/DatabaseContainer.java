@@ -11,7 +11,7 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.images.builder.ImageFromDockerfile;
@@ -29,11 +29,8 @@ public final class DatabaseContainer {
 	private DatabaseContainer() {
 	}
 
-	private static final Object LOCK = new Object();
 	private static final SupportedDatabase DATABASE;
 	private static final JdbcDatabaseContainer<?> DATABASE_CONTAINER;
-	private static Boolean H2_INITIALIZED = Boolean.FALSE;
-
 
 	static {
 		String name = System.getProperty( "org.hibernate.search.integrationtest.orm.database.kind", "" );
@@ -47,14 +44,6 @@ public final class DatabaseContainer {
 	}
 
 	public static Configuration configuration() {
-		return configure( Configuration::addAsSystemProperties );
-	}
-
-	public static Configuration springConfiguration() {
-		return configure( Configuration::addAsSpringSystemProperties );
-	}
-
-	private static Configuration configure(Consumer<Configuration> propertySetter) {
 		if ( !SupportedDatabase.H2.equals( DATABASE ) ) {
 			DATABASE_CONTAINER.start();
 		}
@@ -64,15 +53,6 @@ public final class DatabaseContainer {
 			synchronized (DATABASE_CONTAINER) {
 				if ( !DATABASE_CONTAINER.isRunning() ) {
 					DATABASE_CONTAINER.start();
-					propertySetter.accept( configuration );
-				}
-			}
-		}
-		else if ( !H2_INITIALIZED ) {
-			synchronized (LOCK) {
-				if ( !H2_INITIALIZED ) {
-					propertySetter.accept( configuration );
-					H2_INITIALIZED = Boolean.TRUE;
 				}
 			}
 		}
@@ -452,6 +432,30 @@ public final class DatabaseContainer {
 			this.isolation = isolation;
 		}
 
+		public String dialect() {
+			return dialect;
+		}
+
+		public String driver() {
+			return driver;
+		}
+
+		public String url() {
+			return url;
+		}
+
+		public String user() {
+			return user;
+		}
+
+		public String pass() {
+			return pass;
+		}
+
+		public String isolation() {
+			return isolation;
+		}
+
 		public void add(Map<String, Object> map) {
 			map.put( "hibernate.dialect", this.dialect );
 			map.put( "hibernate.connection.driver_class", this.driver );
@@ -461,22 +465,11 @@ public final class DatabaseContainer {
 			map.put( "hibernate.connection.isolation", this.isolation );
 		}
 
-		private void addAsSystemProperties() {
-			System.setProperty( "hibernate.dialect", this.dialect );
-			System.setProperty( "hibernate.connection.driver_class", this.driver );
-			System.setProperty( "hibernate.connection.url", this.url );
-			System.setProperty( "hibernate.connection.username", this.user );
-			System.setProperty( "hibernate.connection.password", this.pass );
-			System.setProperty( "hibernate.connection.isolation", this.isolation );
-		}
-
-		private void addAsSpringSystemProperties() {
-			System.setProperty( "HIBERNATE_DIALECT", this.dialect );
-			System.setProperty( "JDBC_DRIVER", this.driver );
-			System.setProperty( "JDBC_URL", this.url );
-			System.setProperty( "JDBC_USERNAME", this.user );
-			System.setProperty( "JDBC_PASSWORD", this.pass );
-			System.setProperty( "JDBC_ISOLATION", this.isolation );
+		public void addAsSpring(BiConsumer<String, String> consumer) {
+			consumer.accept( "spring.datasource.driver-class-name", this.driver );
+			consumer.accept( "spring.datasource.url", this.url );
+			consumer.accept( "spring.datasource.username", this.user );
+			consumer.accept( "spring.datasource.password", this.pass );
 		}
 	}
 
