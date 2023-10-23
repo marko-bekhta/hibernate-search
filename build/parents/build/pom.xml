@@ -686,6 +686,13 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>testcontainers-bom</artifactId>
+                <version>${testcontainers.version}</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
 
             <dependency>
                 <groupId>org.mockito</groupId>
@@ -693,16 +700,6 @@
                 <version>${version.org.mockito}</version>
             </dependency>
 
-            <dependency>
-                <groupId>org.testcontainers</groupId>
-                <artifactId>testcontainers</artifactId>
-                <version>${testcontainers.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.testcontainers</groupId>
-                <artifactId>jdbc</artifactId>
-                <version>${testcontainers.version}</version>
-            </dependency>
             <!--
                 Manage the upgrade from Hamcrest 1.x to 2.x:
                 http://hamcrest.org/JavaHamcrest/distributables#upgrading-from-hamcrest-1x
