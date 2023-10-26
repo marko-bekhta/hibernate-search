@@ -286,7 +286,9 @@ public final class DatabaseContainer {
 
 		public HibernateSearchJdbcDatabaseContainer(Path dockerfile, String name, String driverClassName, String jdbcUrlPattern,
 				int port, String username, String password, String testQueryString) {
-			super( new ImageFromDockerfile( "hibernate-search-" + name, true ).withDockerfile( dockerfile ) );
+			// IMPORTANT: we do not want to delete the image on exit as then we cannot use container reuse.
+			// (these two options are somewhat mutually exclusive).
+			super( new ImageFromDockerfile( "hibernate-search-" + name, false ).withDockerfile( dockerfile ) );
 			this.driverClassName = driverClassName;
 			this.jdbcUrlPattern = jdbcUrlPattern;
 			this.port = port;
