@@ -8,14 +8,19 @@ package org.hibernate.search.util.impl.integrationtest.mapper.orm;
 
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 
 import org.hibernate.cfg.JdbcSettings;
 
 import org.testcontainers.containers.JdbcDatabaseContainer;
+import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
+import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 
 /*
@@ -102,7 +107,10 @@ public final class DatabaseContainer {
 						5432,
 						"hibernate_orm_test",
 						"hibernate_orm_test",
-						"select 1"
+						"select 1",
+						new LogMessageWaitStrategy()
+								.withRegEx( ".*database system is ready to accept connections.*\\s" )
+								.withTimes( 2 )
 				).withEnv( "POSTGRES_USER", "hibernate_orm_test" )
 						.withEnv( "POSTGRES_PASSWORD", "hibernate_orm_test" )
 						.withEnv( "POSTGRES_DB", "hibernate_orm_test" );
@@ -164,16 +172,19 @@ public final class DatabaseContainer {
 
 			@Override
 			HibernateSearchJdbcDatabaseContainer container(Path dockerfile, String name) {
+
 				return new HibernateSearchJdbcDatabaseContainer(
 						dockerfile, name,
 						"com.ibm.db2.jcc.DB2Driver",
-						"jdbc:db2://%s:%d/hreact",
+						"jdbc:db2://%s:%d/hreact:sslConnection=false;",
 						50000,
 						"hreact",
 						"hreact",
-						"SELECT 1 FROM SYSIBM.SYSDUMMY1"
-
-				).withNetworkMode( "bridge" )
+						"SELECT 1 FROM SYSIBM.SYSDUMMY1",
+						new LogMessageWaitStrategy()
+								.withRegEx( ".*Setup has completed\\..*" )
+				).withPrivilegedMode( true )
+						.withNetworkMode( "bridge" )
 						.withEnv( "DB2INSTANCE", "hreact" )
 						.withEnv( "DB2INST1_PASSWORD", "hreact" )
 						.withEnv( "DBNAME", "hreact" )
@@ -203,9 +214,11 @@ public final class DatabaseContainer {
 						1521,
 						"SYSTEM",
 						"hibernate_orm_test",
-						"select 1 from dual"
-				).withEnv( "ORACLE_PASSWORD", "hibernate_orm_test" )
-						.withStartupTimeout( EXTENDED_TIMEOUT );
+						"select 1 from dual",
+						new LogMessageWaitStrategy()
+								.withRegEx( ".*DATABASE IS READY TO USE!.*\\s" )
+								.withTimes( 1 )
+				).withEnv( "ORACLE_PASSWORD", "hibernate_orm_test" );
 			}
 		},
 		MSSQL {
@@ -219,13 +232,13 @@ public final class DatabaseContainer {
 				return new HibernateSearchJdbcDatabaseContainer(
 						dockerfile, name,
 						"com.microsoft.sqlserver.jdbc.SQLServerDriver",
-						"jdbc:sqlserver://%s:%d;databaseName=tempdb",
+						"jdbc:sqlserver://%s:%d;databaseName=tempdb;encrypt=true;trustServerCertificate=true;",
 						1433,
 						"SA",
 						"ActuallyRequired11Complexity",
 						"select 1"
 				).withEnv( "ACCEPT_EULA", "Y" )
-						.withEnv( "SA_PASSWORD", "ActuallyRequired11Complexity" )
+						.withEnv( "MSSQL_SA_PASSWORD", "ActuallyRequired11Complexity" )
 						.withStartupTimeout( EXTENDED_TIMEOUT );
 			}
 		},
@@ -244,7 +257,12 @@ public final class DatabaseContainer {
 						26257,
 						"root",
 						"",
-						"select 1"
+						"select 1",
+						new HttpWaitStrategy()
+								.forPath( "/health" )
+								.forPort( 8080 )
+								.forStatusCode( 200 ),
+						8080
 				).withCommand( "start-single-node --insecure" );
 			}
 		};
@@ -283,9 +301,16 @@ public final class DatabaseContainer {
 		private final String username;
 		private final String password;
 		private final String testQueryString;
+		private final Optional<WaitStrategy> customWaitStrategy;
 
 		public HibernateSearchJdbcDatabaseContainer(Path dockerfile, String name, String driverClassName, String jdbcUrlPattern,
 				int port, String username, String password, String testQueryString) {
+			this( dockerfile, name, driverClassName, jdbcUrlPattern, port, username, password, testQueryString, null );
+		}
+
+		public HibernateSearchJdbcDatabaseContainer(Path dockerfile, String name, String driverClassName, String jdbcUrlPattern,
+				int port, String username, String password, String testQueryString, WaitStrategy waitStrategy,
+				Integer... additionalExposedPorts) {
 			// IMPORTANT: we do not want to delete the image on exit as then we cannot use container reuse.
 			// (these two options are somewhat mutually exclusive).
 			super( new ImageFromDockerfile( "hibernate-search-" + name, false ).withDockerfile( dockerfile ) );
@@ -295,10 +320,36 @@ public final class DatabaseContainer {
 			this.username = username;
 			this.password = password;
 			this.testQueryString = testQueryString;
+			this.customWaitStrategy = Optional.ofNullable( waitStrategy );
 
-			withExposedPorts( port );
+			if ( additionalExposedPorts.length == 0 ) {
+				withExposedPorts( port );
+			}
+			else {
+				Integer[] ports = Arrays.copyOf( additionalExposedPorts, additionalExposedPorts.length + 1 );
+				ports[additionalExposedPorts.length] = port;
+				withExposedPorts( ports );
+			}
 			withReuse( true );
 			withStartupTimeout( REGULAR_TIMEOUT );
+		}
+
+		@Override
+		protected void waitUntilContainerStarted() {
+			if ( customWaitStrategy.isPresent() ) {
+				customWaitStrategy.get().waitUntilReady( this );
+			}
+			else {
+				super.waitUntilContainerStarted();
+			}
+		}
+
+		@Override
+		public HibernateSearchJdbcDatabaseContainer withStartupTimeout(Duration startupTimeout) {
+			if ( customWaitStrategy.isPresent() ) {
+				customWaitStrategy.get().withStartupTimeout( startupTimeout );
+			}
+			return super.withStartupTimeout( startupTimeout );
 		}
 
 		@Override
