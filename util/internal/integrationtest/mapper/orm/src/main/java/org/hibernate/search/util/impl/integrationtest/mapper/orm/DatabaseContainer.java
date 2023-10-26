@@ -52,20 +52,32 @@ public final class DatabaseContainer {
 	}
 
 	public static Configuration configuration() {
-		if ( !SupportedDatabase.H2.equals( DATABASE ) ) {
-			DATABASE_CONTAINER.start();
+		// Let's see if an external DB connection was provided:
+		String url = System.getProperty( "jdbc.url" );
+		if ( url != null && !url.trim().isEmpty() ) {
+			// -Dhibernate.dialect=${db.dialect}
+			// -Dhibernate.connection.driver_class=${jdbc.driver}
+			// -Dhibernate.connection.url=${jdbc.url}
+			// -Dhibernate.connection.username=${jdbc.user}
+			// -Dhibernate.connection.password=${jdbc.pass}
+			// -Dhibernate.connection.isolation=${jdbc.isolation}
+			return DATABASE.configuration( url, DATABASE_CONTAINER )
+					.withDialect( System.getProperty( "db.dialect" ) )
+					.withDriver( System.getProperty( "jdbc.driver" ) )
+					.withUser( System.getProperty( "jdbc.user" ) )
+					.withPass( System.getProperty( "jdbc.pass" ) )
+					.withIsolation( System.getProperty( "jdbc.isolation" ) );
 		}
-		Configuration configuration = DATABASE.configuration( DATABASE_CONTAINER );
-
-		if ( DATABASE_CONTAINER != null && !DATABASE_CONTAINER.isRunning() ) {
-			synchronized (DATABASE_CONTAINER) {
-				if ( !DATABASE_CONTAINER.isRunning() ) {
-					DATABASE_CONTAINER.start();
+		else {
+			if ( DATABASE_CONTAINER != null && !DATABASE_CONTAINER.isRunning() ) {
+				synchronized (DATABASE_CONTAINER) {
+					if ( !DATABASE_CONTAINER.isRunning() ) {
+						DATABASE_CONTAINER.start();
+					}
 				}
 			}
+			return DATABASE.configuration( DATABASE_CONTAINER );
 		}
-
-		return configuration;
 	}
 
 	private enum SupportedDatabase {
@@ -85,6 +97,11 @@ public final class DatabaseContainer {
 						"sa",
 						""
 				);
+			}
+
+			@Override
+			Configuration configuration(String jdbcUrl, JdbcDatabaseContainer<?> container) {
+				return configuration( container ).withUrl( jdbcUrl );
 			}
 
 			@Override
@@ -278,6 +295,17 @@ public final class DatabaseContainer {
 			);
 		}
 
+		Configuration configuration(String jdbcUrl, JdbcDatabaseContainer<?> container) {
+			return new Configuration(
+					dialect(),
+					container.getDriverClassName(),
+					jdbcUrl,
+					container.getUsername(),
+					container.getPassword(),
+					""
+			);
+		}
+
 		abstract String dialect();
 
 		abstract HibernateSearchJdbcDatabaseContainer container(Path dockerfile, String name);
@@ -387,7 +415,7 @@ public final class DatabaseContainer {
 		private final String pass;
 		private final String isolation;
 
-		public Configuration(String dialect, String driver, String url, String user, String pass, String isolation) {
+		private Configuration(String dialect, String driver, String url, String user, String pass, String isolation) {
 			this.dialect = dialect;
 			this.driver = driver;
 			this.url = url;
@@ -435,6 +463,48 @@ public final class DatabaseContainer {
 			consumer.accept( "spring.datasource.url", this.url );
 			consumer.accept( "spring.datasource.username", this.user );
 			consumer.accept( "spring.datasource.password", this.pass );
+		}
+
+		private Configuration withDialect(String dialect) {
+			if ( dialect == null ) {
+				return this;
+			}
+			return new Configuration( dialect, driver, url, user, pass, isolation );
+		}
+
+		private Configuration withDriver(String driver) {
+			if ( driver == null ) {
+				return this;
+			}
+			return new Configuration( dialect, driver, url, user, pass, isolation );
+		}
+
+		private Configuration withUrl(String url) {
+			if ( url == null ) {
+				return this;
+			}
+			return new Configuration( dialect, driver, url, user, pass, isolation );
+		}
+
+		private Configuration withUser(String user) {
+			if ( user == null ) {
+				return this;
+			}
+			return new Configuration( dialect, driver, url, user, pass, isolation );
+		}
+
+		private Configuration withPass(String pass) {
+			if ( pass == null ) {
+				return this;
+			}
+			return new Configuration( dialect, driver, url, user, pass, isolation );
+		}
+
+		private Configuration withIsolation(String isolation) {
+			if ( isolation == null ) {
+				return this;
+			}
+			return new Configuration( dialect, driver, url, user, pass, isolation );
 		}
 	}
 }
