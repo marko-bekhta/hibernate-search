@@ -257,7 +257,7 @@
         <maven.compiler.testTarget>${maven.compiler.testRelease}</maven.compiler.testTarget>
 
         <!-- Plugin versions -->
-        <version.clean.plugin>3.3.1</version.clean.plugin>
+        <version.clean.plugin>3.3.2</version.clean.plugin>
         <version.install.plugin>3.1.1</version.install.plugin>
         <version.enforcer.plugin>3.4.0</version.enforcer.plugin>
         <version.project-info.plugin>3.4.5</version.project-info.plugin>
