@@ -10,12 +10,16 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 
 import org.hibernate.cfg.JdbcSettings;
+
+import com.github.dockerjava.api.model.HostConfig;
+import com.github.dockerjava.api.model.Ulimit;
 
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
@@ -280,7 +284,15 @@ public final class DatabaseContainer {
 								.forPort( 8080 )
 								.forStatusCode( 200 ),
 						8080
-				).withCommand( "start-single-node --insecure" );
+				).withCommand( "start-single-node --insecure" )
+						.withStartupTimeout( EXTENDED_TIMEOUT )
+						.withCreateContainerCmdModifier( cmd -> {
+							HostConfig hostConfig = cmd.getHostConfig();
+							if ( hostConfig == null ) {
+								throw new IllegalStateException( "Host config is `null`. Cannot redefine the ulimits!" );
+							}
+							hostConfig.withUlimits( List.of( new Ulimit( "nofile", 1956L, 1956L ) ) );
+						} );
 			}
 		};
 
