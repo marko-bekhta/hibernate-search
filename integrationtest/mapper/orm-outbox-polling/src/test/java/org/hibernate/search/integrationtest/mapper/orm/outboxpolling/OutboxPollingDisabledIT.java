@@ -47,10 +47,10 @@ public class OutboxPollingDisabledIT {
 
 	public static List<? extends Arguments> params() {
 		return List.of(
-				// We must not add OutboxEvent to the model if the coordination strategy is "none"
-				Arguments.of( true, "none" ),
 				// We must not add OutboxEvent to the model if Hibernate Search is disabled
-				Arguments.of( false, HibernateOrmMapperOutboxPollingSettings.COORDINATION_STRATEGY_NAME )
+				Arguments.of( false, HibernateOrmMapperOutboxPollingSettings.COORDINATION_STRATEGY_NAME ),
+				// We must not add OutboxEvent to the model if the coordination strategy is "none"
+				Arguments.of( true, "none" )
 		);
 	}
 
