@@ -32,7 +32,7 @@
         </listener>
     </listeners>
 
-    <step id="beforeChunk" next="produceLuceneDoc">
+    <step id="beforeChunk" next="produceDocuments">
         <batchlet ref="org.hibernate.search.jakarta.batch.core.massindexing.step.beforechunk.impl.BeforeChunkBatchlet">
             <properties>
                 <property name="optimizeAfterPurge" value="#{jobParameters['optimizeAfterPurge']}" />
@@ -42,7 +42,7 @@
         </batchlet>
     </step>
 
-    <step id="produceLuceneDoc" next="afterChunk">
+    <step id="produceDocuments" next="afterChunk">
         <listeners>
             <listener ref="org.hibernate.search.jakarta.batch.core.massindexing.step.impl.StepProgressSetupListener">
                 <properties>

@@ -56,7 +56,7 @@ import org.hibernate.search.util.common.logging.impl.LoggerFactory;
  * @author Mincong Huang
  */
 // Same hack as in JobContextSetupListener.
-@Named(value = "org.hibernate.search.jsr352.massindexing.impl.steps.lucene.EntityReader")
+@Named(value = "org.hibernate.search.jakarta.batch.core.massindexing.step.spi.EntityReader")
 @HibernateSearchPartitionScoped
 public class EntityIdReader extends AbstractItemReader {
 

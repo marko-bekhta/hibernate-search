@@ -53,7 +53,7 @@ class RestartChunkIT {
 	@RegisterExtension
 	public static OrmSetupHelper ormSetupHelper = OrmSetupHelper.withSingleBackend( BackendConfigurations.simple() );
 
-	private EntityManagerFactory emf;
+	static EntityManagerFactory emf;
 	private JobOperator jobOperator;
 
 	@BeforeAll
@@ -166,7 +166,7 @@ class RestartChunkIT {
 
 	private Object getMainStepStatus(long execId1) {
 		for ( StepExecution stepExec : jobOperator.getStepExecutions( execId1 ) ) {
-			if ( stepExec.getStepName().equals( "produceLuceneDoc" ) ) {
+			if ( stepExec.getStepName().equals( "produceDocuments" ) ) {
 				return stepExec.getBatchStatus();
 			}
 		}

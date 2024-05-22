@@ -68,6 +68,12 @@
             <artifactId>hibernate-search-util-internal-integrationtest-jberet-se</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.jboss.weld.se</groupId>
+            <artifactId>weld-se-core</artifactId>
+            <version>5.1.2.Final</version>
+            <scope>test</scope>
+        </dependency>
 
         <!--
             Leave this dependency here, not in a utils module, so that we don't need to recompile

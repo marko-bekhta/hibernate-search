@@ -33,7 +33,7 @@ import org.hibernate.search.util.common.impl.StringHelper;
  * Otherwise it would just be instantiated using its default
  * constructor and would not be injected.
  */
-@Named(value = "org.hibernate.search.jsr352.massindexing.impl.JobContextSetupListener")
+@Named(value = "org.hibernate.search.jakarta.batch.core.massindexing.spi.JobContextSetupListener")
 @HibernateSearchJobScoped
 public class JobContextSetupListener extends AbstractJobListener {
 

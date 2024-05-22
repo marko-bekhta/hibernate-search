@@ -25,7 +25,7 @@ import org.hibernate.search.mapper.pojo.work.spi.PojoScopeWorkspace;
 import org.hibernate.search.util.common.impl.Futures;
 
 /**
- * Enhancements before the chunk step {@code produceLuceneDoc} (lucene document production)
+ * Enhancements before the chunk step {@code produceDocuments} (Document production)
  *
  * @author Mincong Huang
  */

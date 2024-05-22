@@ -72,7 +72,7 @@ class MassIndexingJobIT {
 	 */
 	private static final int CHECKPOINT_INTERVAL = INSTANCES_PER_DATA_TEMPLATE / 2;
 
-	private static final String MAIN_STEP_NAME = "produceLuceneDoc";
+	private static final String MAIN_STEP_NAME = "produceDocuments";
 
 	@RegisterExtension
 	public static OrmSetupHelper ormSetupHelper = OrmSetupHelper.withSingleBackend( BackendConfigurations.simple() );

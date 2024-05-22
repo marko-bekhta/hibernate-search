@@ -9,7 +9,7 @@ package org.hibernate.search.jakarta.batch.core.massindexing.step.impl;
 import java.io.Serializable;
 
 /**
- * Data model for each partition of step {@code produceLuceneDoc}. It contains a partition-level indexing progress.
+ * Data model for each partition of step {@code produceDocuments}. It contains a partition-level indexing progress.
  *
  * @author Gunnar Morling
  * @author Mincong Huang
