@@ -1,8 +1,6 @@
 /*
- * Hibernate Search, full-text search for your domain model
- *
- * License: GNU Lesser General Public License (LGPL), version 2.1 or later
- * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * SPDX-License-Identifier: Apache-2.0
+ * Copyright Red Hat Inc. and Hibernate Authors
  */
 package org.hibernate.search.mapper.pojo.logging.impl;
 
@@ -1008,4 +1006,15 @@ public interface Log extends BasicLogger {
 			value = "Invalid constructor parameter type: '%1$s'. The distance projection results in values of type '%2$s'.")
 	SearchException invalidParameterTypeForDistanceProjectionInProjectionConstructor(
 			@FormatWith(ClassFormatter.class) Class<?> rawClass, String expectedClass);
+
+	@Message(id = ID_OFFSET + 160,
+			value = "Requesting a schema drop-create on start is not allowed when multitenancy is enabled. "
+					+ "Schema would be dropped for all tenants, but data will only be indexed for tenant ids '%1$s'. "
+					+ "Do not use the schema drop-create on start when providing tenant ids. "
+					+ "If schema drop is actually required, do it through an SearchSchemaManager.")
+	SearchException schemaDropNotAllowedWithMultitenancy(Set<String> tenantIds);
+
+	@Message(id = ID_OFFSET + 161, value = "Invalid mass indexing default clean operation name: '%1$s'."
+			+ " Valid names are: %2$s.")
+	SearchException invalidMassIndexingDefaultCleanOperation(String name, List<String> names);
 }

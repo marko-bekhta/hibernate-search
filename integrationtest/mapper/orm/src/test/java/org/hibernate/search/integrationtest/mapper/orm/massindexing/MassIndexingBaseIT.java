@@ -1,8 +1,6 @@
 /*
- * Hibernate Search, full-text search for your domain model
- *
- * License: GNU Lesser General Public License (LGPL), version 2.1 or later
- * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * SPDX-License-Identifier: Apache-2.0
+ * Copyright Red Hat Inc. and Hibernate Authors
  */
 package org.hibernate.search.integrationtest.mapper.orm.massindexing;
 
@@ -10,6 +8,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Fail.fail;
 import static org.hibernate.search.util.common.impl.CollectionHelper.asSet;
 import static org.hibernate.search.util.impl.integrationtest.mapper.orm.OrmUtils.with;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -177,6 +176,10 @@ class MassIndexingBaseIT {
 
 	@Test
 	void dropAndCreateSchemaOnStart() {
+		assumeFalse(
+				TenancyMode.MULTI_TENANCY.equals( tenancyMode ),
+				"Drop and create schema only on makes sense if there's no multi-tenancy. "
+						+ "Otherwise mass indexer is created for a single tenant and schema cannot be dropped resulting in an exception" );
 		with( sessionFactory, targetTenantId() ).runNoTransaction( session -> {
 			SearchSession searchSession = Search.session( session );
 			MassIndexer indexer = searchSession.massIndexer().dropAndCreateSchemaOnStart( true );
@@ -460,6 +463,10 @@ class MassIndexingBaseIT {
 
 	@Test
 	void dropAndCreateSchemaOnStartAndPurgeBothEnabled() {
+		assumeFalse(
+				TenancyMode.MULTI_TENANCY.equals( tenancyMode ),
+				"Drop and create schema only on makes sense if there's no multi-tenancy. "
+						+ "Otherwise mass indexer is created for a single tenant and schema cannot be dropped resulting in an exception" );
 		with( sessionFactory, targetTenantId() ).runNoTransaction( session -> {
 			SearchSession searchSession = Search.session( session );
 			MassIndexer indexer = searchSession.massIndexer()

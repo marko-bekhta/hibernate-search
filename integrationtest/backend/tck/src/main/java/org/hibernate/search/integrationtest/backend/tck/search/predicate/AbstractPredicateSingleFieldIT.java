@@ -1,8 +1,6 @@
 /*
- * Hibernate Search, full-text search for your domain model
- *
- * License: GNU Lesser General Public License (LGPL), version 2.1 or later
- * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * SPDX-License-Identifier: Apache-2.0
+ * Copyright Red Hat Inc. and Hibernate Authors
  */
 package org.hibernate.search.integrationtest.backend.tck.search.predicate;
 
@@ -10,6 +8,7 @@ import static org.hibernate.search.util.impl.integrationtest.common.assertion.Se
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import org.hibernate.search.engine.backend.document.DocumentElement;
 import org.hibernate.search.engine.backend.document.model.dsl.IndexSchemaElement;
@@ -75,8 +74,16 @@ public abstract class AbstractPredicateSingleFieldIT<V extends AbstractPredicate
 	public static final class IndexBinding {
 		private final SimpleFieldModelsByType field;
 
-		public IndexBinding(IndexSchemaElement root, Collection<
-				? extends FieldTypeDescriptor<?, ? extends SearchableProjectableIndexFieldTypeOptionsStep<?, ?>>> fieldTypes) {
+		public IndexBinding(IndexSchemaElement root,
+				Collection<? extends FieldTypeDescriptor<?,
+						? extends SearchableProjectableIndexFieldTypeOptionsStep<?, ?>>> fieldTypes,
+				Consumer<? super SearchableProjectableIndexFieldTypeOptionsStep<?, ?>> additionalConfiguration) {
+			field = SimpleFieldModelsByType.mapAll( fieldTypes, root, "field0_", additionalConfiguration );
+		}
+
+		public IndexBinding(IndexSchemaElement root,
+				Collection<? extends FieldTypeDescriptor<?,
+						? extends SearchableProjectableIndexFieldTypeOptionsStep<?, ?>>> fieldTypes) {
 			field = SimpleFieldModelsByType.mapAll( fieldTypes, root, "field0_" );
 		}
 	}

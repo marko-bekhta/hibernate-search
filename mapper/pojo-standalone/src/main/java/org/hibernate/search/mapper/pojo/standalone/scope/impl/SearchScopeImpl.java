@@ -1,8 +1,6 @@
 /*
- * Hibernate Search, full-text search for your domain model
- *
- * License: GNU Lesser General Public License (LGPL), version 2.1 or later
- * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * SPDX-License-Identifier: Apache-2.0
+ * Copyright Red Hat Inc. and Hibernate Authors
  */
 package org.hibernate.search.mapper.pojo.standalone.scope.impl;
 
@@ -129,9 +127,11 @@ public class SearchScopeImpl<E> implements SearchScope<E> {
 
 	@Override
 	public MassIndexer massIndexer(Set<?> tenantIds) {
-		StandalonePojoLoadingContext context = mappingContext.loadingContextBuilder().build();
-		PojoMassIndexer massIndexerDelegate = delegate.massIndexer( context,
-				tenantIds.stream().map( tenancyConfiguration::convert ).collect( Collectors.toUnmodifiableSet() ) );
+		StandalonePojoLoadingContext context = mappingContext.loadingContextBuilder()
+				.tenancyMode( tenancyConfiguration.tenancyMode() )
+				.tenantIds( tenantIds.stream().map( tenancyConfiguration::convert ).collect( Collectors.toUnmodifiableSet() ) )
+				.build();
+		PojoMassIndexer massIndexerDelegate = delegate.massIndexer( context );
 		return new StandalonePojoMassIndexer( massIndexerDelegate, context );
 	}
 

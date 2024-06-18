@@ -1,8 +1,6 @@
 /*
- * Hibernate Search, full-text search for your domain model
- *
- * License: GNU Lesser General Public License (LGPL), version 2.1 or later
- * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * SPDX-License-Identifier: Apache-2.0
+ * Copyright Red Hat Inc. and Hibernate Authors
  */
 
 /*
@@ -208,6 +206,9 @@ stage('Configure') {
 					// -- generally that requires upgrading bytebuddy in Hibernate ORM after the JDK goes GA.
 					new JdkBuildEnvironment(version: '23', testCompilerTool: 'OpenJDK 23 Latest',
 							testLauncherArgs: '--enable-preview -Dnet.bytebuddy.experimental=true',
+							condition: TestCondition.AFTER_MERGE),
+					new JdkBuildEnvironment(version: '24', testCompilerTool: 'OpenJDK 24 Latest',
+							testLauncherArgs: '--enable-preview -Dnet.bytebuddy.experimental=true',
 							condition: TestCondition.AFTER_MERGE)
 					// IMPORTANT: Make sure to update the documentation for any newly supported Java versions
 					//            See java-version.main.compatible.expected.text in POMs.
@@ -267,7 +268,8 @@ stage('Configure') {
 					new LocalElasticsearchBuildEnvironment(version: '8.10.4', condition: TestCondition.ON_DEMAND),
 					new LocalElasticsearchBuildEnvironment(version: '8.11.4', condition: TestCondition.ON_DEMAND),
 					new LocalElasticsearchBuildEnvironment(version: '8.12.2', condition: TestCondition.ON_DEMAND),
-					new LocalElasticsearchBuildEnvironment(version: '8.13.4', condition: TestCondition.BEFORE_MERGE, isDefault: true),
+					new LocalElasticsearchBuildEnvironment(version: '8.13.4', condition: TestCondition.ON_DEMAND),
+					new LocalElasticsearchBuildEnvironment(version: '8.14.1', condition: TestCondition.BEFORE_MERGE, isDefault: true),
 					// IMPORTANT: Make sure to update the documentation for any newly supported Elasticsearch versions
 					//            See version.org.elasticsearch.compatible.expected.text
 					//            and version.org.elasticsearch.compatible.regularly-tested.text in POMs.
@@ -275,7 +277,7 @@ stage('Configure') {
 					// --------------------------------------------
 					// OpenSearch
 					// Not testing 1.0 - 1.2 as these versions are EOL'ed.
-					new LocalOpenSearchBuildEnvironment(version: '1.3.16', condition: TestCondition.AFTER_MERGE),
+					new LocalOpenSearchBuildEnvironment(version: '1.3.17', condition: TestCondition.AFTER_MERGE),
 					// See https://opensearch.org/lines/1x.html for a list of all 1.x versions
 					new LocalOpenSearchBuildEnvironment(version: '2.0.1', condition: TestCondition.ON_DEMAND),
 					new LocalOpenSearchBuildEnvironment(version: '2.1.0', condition: TestCondition.ON_DEMAND),

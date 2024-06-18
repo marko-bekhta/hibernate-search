@@ -37,22 +37,18 @@
 
             Also make sure to update Javadocs for RewriteMethod.
         -->
-        <version.org.apache.lucene>9.10.0</version.org.apache.lucene>
+        <version.org.apache.lucene>9.11.0</version.org.apache.lucene>
         <javadoc.org.apache.lucene.tag>${parsed-version.org.apache.lucene.majorVersion}_${parsed-version.org.apache.lucene.minorVersion}_${parsed-version.org.apache.lucene.incrementalVersion}</javadoc.org.apache.lucene.tag>
         <javadoc.org.apache.lucene.core.url>https://lucene.apache.org/core/${javadoc.org.apache.lucene.tag}/core/</javadoc.org.apache.lucene.core.url>
         <javadoc.org.apache.lucene.analysis.common.url>https://lucene.apache.org/core/${javadoc.org.apache.lucene.tag}/analysis/common/</javadoc.org.apache.lucene.analysis.common.url>
         <javadoc.org.apache.lucene.queryparser.url>https://lucene.apache.org/core/${javadoc.org.apache.lucene.tag}/queryparser/</javadoc.org.apache.lucene.queryparser.url>
-        <!-- These version must be kept in sync with the version of the dependency in Lucene.
-            This dependency has a runtime scope in the lucene-facet lib,
-            as a result the maven-enforcer-plugin cannot detect if the version is different from the one we are relying on.
-            So if dependabot reports an update - check if the version would be aligned or not.
-         -->
-        <version.com.carrotsearch.hppc>0.9.1</version.com.carrotsearch.hppc>
+
+        <version.com.carrotsearch.hppc>0.10.0</version.com.carrotsearch.hppc>
 
         <!-- >>> Elasticsearch -->
         <!-- The version of the Elasticsearch client used by Hibernate Search, independently of the version of the remote cluster -->
         <!-- Use the latest open-source version here. Currently, low-level clients are open-source even in 8.5+ -->
-        <version.org.elasticsearch.client>8.13.4</version.org.elasticsearch.client>
+        <version.org.elasticsearch.client>8.14.1</version.org.elasticsearch.client>
         <!-- The main compatible version of Elasticsearch, advertised by default. Used in documentation links. -->
         <version.org.elasticsearch.compatible.main>${version.org.elasticsearch.latest}</version.org.elasticsearch.compatible.main>
         <documentation.org.elasticsearch.url>https://www.elastic.co/guide/en/elasticsearch/reference/${parsed-version.org.elasticsearch.compatible.main.majorVersion}.${parsed-version.org.elasticsearch.compatible.main.minorVersion}</documentation.org.elasticsearch.url>
@@ -60,7 +56,7 @@
         <!-- The versions of Elasticsearch advertised as compatible with Hibernate Search -->
         <!-- Make sure to only mention tested versions here -->
         <!-- Make sure that 7.10 stays explicitly mentioned here, because that's the last open-source version -->
-        <version.org.elasticsearch.compatible.regularly-tested.text>7.10, 7.17 or 8.13</version.org.elasticsearch.compatible.regularly-tested.text>
+        <version.org.elasticsearch.compatible.regularly-tested.text>7.10, 7.17 or 8.14</version.org.elasticsearch.compatible.regularly-tested.text>
         <!-- These are the versions same as above, but pointing only to the major part (used in compatibility section of ES backend documentation
           as versions that Hibernate Search is compatible with. -->
         <!-- NOTE: Adding new major versions would require to update the compatibility table in `backend-elasticsearch-compatibility` section of `backend-elasticsearch.asciidoc`. -->
@@ -85,7 +81,7 @@
         <documentation.org.opensearch.url>https://opensearch.org/docs/${parsed-version.org.opensearch.compatible.main.majorVersion}.${parsed-version.org.opensearch.compatible.main.minorVersion}</documentation.org.opensearch.url>
 
         <version.com.google.code.gson>2.11.0</version.com.google.code.gson>
-        <version.software.amazon.awssdk>2.25.2</version.software.amazon.awssdk>
+        <version.software.amazon.awssdk>2.26.4</version.software.amazon.awssdk>
         <!-- Jackson: used by the Elasticsearch REST client, by Avro, by the AWS SDK and in tests (wiremock, ...) -->
         <version.com.fasterxml.jackson>2.17.1</version.com.fasterxml.jackson>
         <!-- slf4j: used by the AWS SDK -->
@@ -177,7 +173,7 @@
 
         <!-- >>> Spring integration tests -->
         <!-- When updating Spring Boot check if it supports JDK23 and enable testing with it if so (see testWithJdk23 profile). -->
-        <version.org.springframework.boot>3.2.0</version.org.springframework.boot>
+        <version.org.springframework.boot>3.3.0</version.org.springframework.boot>
         <!-- Spring Boot 3 Atomikos starter and related libs version: -->
         <version.com.atomikos>6.0.0</version.com.atomikos>
 

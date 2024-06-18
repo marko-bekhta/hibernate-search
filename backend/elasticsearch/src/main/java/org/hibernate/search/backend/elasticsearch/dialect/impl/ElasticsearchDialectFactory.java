@@ -1,8 +1,6 @@
 /*
- * Hibernate Search, full-text search for your domain model
- *
- * License: GNU Lesser General Public License (LGPL), version 2.1 or later
- * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * SPDX-License-Identifier: Apache-2.0
+ * Copyright Red Hat Inc. and Hibernate Authors
  */
 package org.hibernate.search.backend.elasticsearch.dialect.impl;
 
@@ -13,6 +11,7 @@ import org.hibernate.search.backend.elasticsearch.ElasticsearchDistributionName;
 import org.hibernate.search.backend.elasticsearch.ElasticsearchVersion;
 import org.hibernate.search.backend.elasticsearch.dialect.model.impl.Elasticsearch7ModelDialect;
 import org.hibernate.search.backend.elasticsearch.dialect.model.impl.Elasticsearch812ModelDialect;
+import org.hibernate.search.backend.elasticsearch.dialect.model.impl.Elasticsearch814ModelDialect;
 import org.hibernate.search.backend.elasticsearch.dialect.model.impl.Elasticsearch8ModelDialect;
 import org.hibernate.search.backend.elasticsearch.dialect.model.impl.ElasticsearchModelDialect;
 import org.hibernate.search.backend.elasticsearch.dialect.model.impl.OpenSearch1ModelDialect;
@@ -104,7 +103,11 @@ public class ElasticsearchDialectFactory {
 			if ( major == 8 && ( minorOptional.isEmpty() || minorOptional.getAsInt() < 12 ) ) {
 				return new Elasticsearch8ModelDialect();
 			}
-			return new Elasticsearch812ModelDialect();
+			if ( major == 8 && minorOptional.getAsInt() < 14 ) {
+				return new Elasticsearch812ModelDialect();
+			}
+
+			return new Elasticsearch814ModelDialect();
 		}
 	}
 
@@ -190,7 +193,7 @@ public class ElasticsearchDialectFactory {
 	}
 
 	private ElasticsearchProtocolDialect createProtocolDialectElasticV8(ElasticsearchVersion version, int minor) {
-		if ( minor > 13 ) {
+		if ( minor > 14 ) {
 			log.unknownElasticsearchVersion( version );
 		}
 		else if ( minor == 0 ) {

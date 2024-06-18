@@ -1,8 +1,6 @@
 /*
- * Hibernate Search, full-text search for your domain model
- *
- * License: GNU Lesser General Public License (LGPL), version 2.1 or later
- * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * SPDX-License-Identifier: Apache-2.0
+ * Copyright Red Hat Inc. and Hibernate Authors
  */
 package org.hibernate.search.backend.elasticsearch.types.mapping.impl;
 
@@ -26,7 +24,7 @@ public class Elasticsearch812VectorFieldTypeMappingContributor implements Elasti
 		if ( resolvedVectorSimilarity != null ) {
 			mapping.setSimilarity( resolvedVectorSimilarity );
 		}
-		if ( context.m() != null || context.efConstruction() != null ) {
+		if ( indexOptionAddCondition( context ) ) {
 			ElasticsearchDenseVectorIndexOptions indexOptions = new ElasticsearchDenseVectorIndexOptions();
 			indexOptions.setType( "hnsw" );
 			if ( context.m() != null ) {
@@ -37,6 +35,10 @@ public class Elasticsearch812VectorFieldTypeMappingContributor implements Elasti
 			}
 			mapping.setIndexOptions( indexOptions );
 		}
+	}
+
+	protected boolean indexOptionAddCondition(Context context) {
+		return context.m() != null || context.efConstruction() != null;
 	}
 
 	@Override

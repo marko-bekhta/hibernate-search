@@ -1,8 +1,6 @@
 /*
- * Hibernate Search, full-text search for your domain model
- *
- * License: GNU Lesser General Public License (LGPL), version 2.1 or later
- * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * SPDX-License-Identifier: Apache-2.0
+ * Copyright Red Hat Inc. and Hibernate Authors
  */
 package org.hibernate.search.jakarta.batch.core.logging.impl;
 
@@ -178,7 +176,7 @@ public interface Log extends BasicLogger {
 
 	@Message(id = ID_OFFSET + 36,
 			value = "A tenant id '%1$s' was provided, while requesting a schema drop-create on start. " +
-					"Schema is going to be dropped for all tenants. " +
+					"Schema would be dropped for all tenants. " +
 					"Either do not use the schema drop-create on start or do not provide the tenant id.")
 	SearchException tenantIdProvidedWithSchemaDrop(String tenantId);
 

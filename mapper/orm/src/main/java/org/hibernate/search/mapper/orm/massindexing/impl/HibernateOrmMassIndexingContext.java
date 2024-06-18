@@ -1,8 +1,6 @@
 /*
- * Hibernate Search, full-text search for your domain model
- *
- * License: GNU Lesser General Public License (LGPL), version 2.1 or later
- * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * SPDX-License-Identifier: Apache-2.0
+ * Copyright Red Hat Inc. and Hibernate Authors
  */
 package org.hibernate.search.mapper.orm.massindexing.impl;
 
@@ -10,12 +8,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 import org.hibernate.CacheMode;
+import org.hibernate.search.engine.tenancy.spi.TenancyMode;
 import org.hibernate.search.mapper.orm.loading.impl.HibernateOrmMassLoadingContext;
 import org.hibernate.search.mapper.orm.loading.spi.ConditionalExpression;
 import org.hibernate.search.mapper.orm.tenancy.spi.TenancyConfiguration;
 import org.hibernate.search.mapper.pojo.loading.spi.PojoLoadingTypeContext;
+import org.hibernate.search.mapper.pojo.massindexing.MassIndexingDefaultCleanOperation;
 import org.hibernate.search.mapper.pojo.massindexing.spi.PojoMassIndexingContext;
 
 public final class HibernateOrmMassIndexingContext
@@ -23,14 +24,16 @@ public final class HibernateOrmMassIndexingContext
 
 	private final HibernateOrmMassIndexingMappingContext mapping;
 	private final Map<Class<?>, ConditionalExpression> conditionalExpressions = new HashMap<>();
+	private final Set<String> actualTenantIds;
 	private CacheMode cacheMode = CacheMode.IGNORE;
 	private Integer idLoadingTransactionTimeout;
 	private int idFetchSize = 100; //reasonable default as we only load IDs
 	private int objectLoadingBatchSize = 10;
 	private long objectsLimit = 0; //means no limit at all
 
-	public HibernateOrmMassIndexingContext(HibernateOrmMassIndexingMappingContext mapping) {
+	public HibernateOrmMassIndexingContext(HibernateOrmMassIndexingMappingContext mapping, Set<String> actualTenantIds) {
 		this.mapping = mapping;
+		this.actualTenantIds = actualTenantIds;
 	}
 
 	@Override
@@ -111,4 +114,18 @@ public final class HibernateOrmMassIndexingContext
 		return mapping.tenancyConfiguration();
 	}
 
+	@Override
+	public Set<String> tenantIds() {
+		return actualTenantIds;
+	}
+
+	@Override
+	public TenancyMode tenancyMode() {
+		return mapping.tenancyConfiguration().tenancyMode();
+	}
+
+	@Override
+	public MassIndexingDefaultCleanOperation massIndexingDefaultCleanOperation() {
+		return mapping.massIndexingDefaultCleanOperation();
+	}
 }

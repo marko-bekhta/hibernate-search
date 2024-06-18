@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- ~ Hibernate Search, full-text search for your domain model
- ~
- ~ License: GNU Lesser General Public License (LGPL), version 2.1 or later
- ~ See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
-  -->
+    SPDX-License-Identifier: Apache-2.0
+    Copyright Red Hat Inc. and Hibernate Authors
+-->
 <!-- child.project.url.inherit.append.path is weird but necessary to have correct URLs in flattened POMs,
      see XSD for more info. -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -47,9 +45,10 @@
 
     <licenses>
         <license>
-            <name>GNU Lesser General Public License v2.1 or later</name>
-            <url>http://www.opensource.org/licenses/LGPL-2.1</url>
-            <comments>See also: http://hibernate.org/license</comments>
+            <name>Apache-2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+            <comments>See also: https://hibernate.org/license</comments>
         </license>
     </licenses>
 
@@ -274,7 +273,7 @@
         <version.flatten-maven-plugin>1.6.0</version.flatten-maven-plugin>
         <version.assembly.plugin>3.7.1</version.assembly.plugin>
         <version.buildhelper.plugin>3.6.0</version.buildhelper.plugin>
-        <version.checkstyle.plugin>3.3.1</version.checkstyle.plugin>
+        <version.checkstyle.plugin>3.4.0</version.checkstyle.plugin>
         <version.bundle.plugin>5.1.9</version.bundle.plugin>
         <version.compiler.plugin>3.13.0</version.compiler.plugin>
         <version.dependency.plugin>3.6.1</version.dependency.plugin>
@@ -305,7 +304,7 @@
         <version.versions.plugin>2.16.2</version.versions.plugin>
         <version.maven-wrapper-plugin>3.3.2</version.maven-wrapper-plugin>
         <version.impsort-maven-plugin>1.10.0</version.impsort-maven-plugin>
-        <version.formatter-maven-plugin>2.23.0</version.formatter-maven-plugin>
+        <version.formatter-maven-plugin>2.24.1</version.formatter-maven-plugin>
         <version.org.eclipse.m2e.lifecycle-mapping>1.0.0</version.org.eclipse.m2e.lifecycle-mapping>
         <version.sisu-maven-plugin>0.9.0.M3</version.sisu-maven-plugin>
         <gitflow-incremental-builder.version>4.5.3</gitflow-incremental-builder.version>
@@ -349,7 +348,7 @@
         <version.asciidoctor.plugin>3.0.0</version.asciidoctor.plugin>
         <version.org.hibernate.infra.hibernate-asciidoctor-theme>4.0.0.Final</version.org.hibernate.infra.hibernate-asciidoctor-theme>
         <version.org.asciidoctor.asciidoctorj>2.5.13</version.org.asciidoctor.asciidoctorj>
-        <version.org.asciidoctor.asciidoctorj-pdf>2.3.15</version.org.asciidoctor.asciidoctorj-pdf>
+        <version.org.asciidoctor.asciidoctorj-pdf>2.3.17</version.org.asciidoctor.asciidoctorj-pdf>
 
         <!--
             Defines what to do with dependency management section of the flattened pom.
@@ -382,7 +381,7 @@
 
         <!-- Container images for various integration tests -->
         <!-- The latest version of Elasticsearch tested against by default -->
-        <version.org.elasticsearch.latest>8.13.4</version.org.elasticsearch.latest>
+        <version.org.elasticsearch.latest>8.14.1</version.org.elasticsearch.latest>
         <test.elasticsearch.version></test.elasticsearch.version>
         <test.elasticsearch.distribution>elastic</test.elasticsearch.distribution>
 
@@ -443,7 +442,7 @@
         <goal.formatter-maven-plugin>format</goal.formatter-maven-plugin>
 
         <!-- For Reproducible Builds -->
-        <project.build.outputTimestamp>2024-05-16T10:30:15Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>2024-06-10T15:45:22Z</project.build.outputTimestamp>
 
         <!-- Sonar options -->
         <!--
@@ -1363,6 +1362,20 @@
             </activation>
             <properties>
                 <!-- Spring Boot 3 isn't ready for JDK23 yet -->
+                <failsafe.spring.skip>true</failsafe.spring.skip>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>testWithJdk24</id>
+            <activation>
+                <property>
+                    <name>java-version.test.release</name>
+                    <value>24</value>
+                </property>
+            </activation>
+            <properties>
+                <!-- Spring Boot 3 isn't ready for JDK24 yet -->
                 <failsafe.spring.skip>true</failsafe.spring.skip>
             </properties>
         </profile>

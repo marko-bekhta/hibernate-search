@@ -1,8 +1,6 @@
 /*
- * Hibernate Search, full-text search for your domain model
- *
- * License: GNU Lesser General Public License (LGPL), version 2.1 or later
- * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * SPDX-License-Identifier: Apache-2.0
+ * Copyright Red Hat Inc. and Hibernate Authors
  */
 package org.hibernate.search.util.impl.integrationtest.backend.elasticsearch.dialect;
 
@@ -82,15 +80,23 @@ public class ElasticsearchTestDialect {
 						+ "  'element_type': '" + elementType.getName() + "',"
 						+ "  'dims': " + dim
 						+ similarity.map( s -> ",  'similarity': '" + s + "'" ).orElse( "" )
-						+ ( ( m.isPresent() || efConstruction.isPresent() )
-								? ( ",  'index_options': {"
-										+ ( m.isPresent() ? "    'm': " + m.getAsInt() + "," : "" )
-										+ ( efConstruction.isPresent()
-												? "    'ef_construction': " + efConstruction.getAsInt() + ","
-												: "" )
-										+ "    'type': 'hnsw'"
-										+ "  }" )
-								: "" )
+						+ ( ( m.isPresent()
+								|| efConstruction.isPresent()
+								|| !isActualVersion(
+										esVersion -> esVersion.isLessThan( "8.14.0" ),
+										osVersion -> {
+											throw new AssertionFailure(
+													"OpenSearch cannot be called within this condition block" );
+										}
+								) )
+										? ( ",  'index_options': {"
+												+ ( m.isPresent() ? "    'm': " + m.getAsInt() + "," : "" )
+												+ ( efConstruction.isPresent()
+														? "    'ef_construction': " + efConstruction.getAsInt() + ","
+														: "" )
+												+ "    'type': 'hnsw'"
+												+ "  }" )
+										: "" )
 						+ "}";
 			case OPENSEARCH:
 			case AMAZON_OPENSEARCH_SERVERLESS:

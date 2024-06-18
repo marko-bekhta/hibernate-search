@@ -1,8 +1,6 @@
 /*
- * Hibernate Search, full-text search for your domain model
- *
- * License: GNU Lesser General Public License (LGPL), version 2.1 or later
- * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * SPDX-License-Identifier: Apache-2.0
+ * Copyright Red Hat Inc. and Hibernate Authors
  */
 package org.hibernate.search.backend.elasticsearch.dialect.impl;
 
@@ -16,6 +14,7 @@ import org.hibernate.search.backend.elasticsearch.ElasticsearchDistributionName;
 import org.hibernate.search.backend.elasticsearch.ElasticsearchVersion;
 import org.hibernate.search.backend.elasticsearch.dialect.model.impl.Elasticsearch7ModelDialect;
 import org.hibernate.search.backend.elasticsearch.dialect.model.impl.Elasticsearch812ModelDialect;
+import org.hibernate.search.backend.elasticsearch.dialect.model.impl.Elasticsearch814ModelDialect;
 import org.hibernate.search.backend.elasticsearch.dialect.model.impl.Elasticsearch8ModelDialect;
 import org.hibernate.search.backend.elasticsearch.dialect.model.impl.ElasticsearchModelDialect;
 import org.hibernate.search.backend.elasticsearch.dialect.model.impl.OpenSearch1ModelDialect;
@@ -257,17 +256,25 @@ class ElasticsearchDialectFactoryTest {
 						ElasticsearchDistributionName.ELASTIC, "8.13.0", "8.13.0",
 						Elasticsearch812ModelDialect.class, Elasticsearch81ProtocolDialect.class
 				),
-				successWithWarning(
+				success(
 						ElasticsearchDistributionName.ELASTIC, "8.14", "8.14.0",
-						Elasticsearch812ModelDialect.class, Elasticsearch81ProtocolDialect.class
+						Elasticsearch814ModelDialect.class, Elasticsearch81ProtocolDialect.class
+				),
+				success(
+						ElasticsearchDistributionName.ELASTIC, "8.14.0", "8.14.0",
+						Elasticsearch814ModelDialect.class, Elasticsearch81ProtocolDialect.class
 				),
 				successWithWarning(
-						ElasticsearchDistributionName.ELASTIC, "8.14.0", "8.14.0",
-						Elasticsearch812ModelDialect.class, Elasticsearch81ProtocolDialect.class
+						ElasticsearchDistributionName.ELASTIC, "8.15", "8.15.0",
+						Elasticsearch814ModelDialect.class, Elasticsearch81ProtocolDialect.class
+				),
+				successWithWarning(
+						ElasticsearchDistributionName.ELASTIC, "8.15.0", "8.15.0",
+						Elasticsearch814ModelDialect.class, Elasticsearch81ProtocolDialect.class
 				),
 				successWithWarning(
 						ElasticsearchDistributionName.ELASTIC, "9.0.0", "9.0.0",
-						Elasticsearch812ModelDialect.class, Elasticsearch81ProtocolDialect.class
+						Elasticsearch814ModelDialect.class, Elasticsearch81ProtocolDialect.class
 				),
 				success(
 						ElasticsearchDistributionName.OPENSEARCH, "1", "1.3.1",

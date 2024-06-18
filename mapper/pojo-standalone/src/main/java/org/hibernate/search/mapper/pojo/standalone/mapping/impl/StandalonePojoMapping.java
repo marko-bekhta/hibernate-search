@@ -1,8 +1,6 @@
 /*
- * Hibernate Search, full-text search for your domain model
- *
- * License: GNU Lesser General Public License (LGPL), version 2.1 or later
- * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * SPDX-License-Identifier: Apache-2.0
+ * Copyright Red Hat Inc. and Hibernate Authors
  */
 package org.hibernate.search.mapper.pojo.standalone.mapping.impl;
 
@@ -20,6 +18,7 @@ import org.hibernate.search.engine.mapper.mapping.spi.MappingPreStopContext;
 import org.hibernate.search.engine.mapper.mapping.spi.MappingStartContext;
 import org.hibernate.search.mapper.pojo.mapping.spi.AbstractPojoMappingImplementor;
 import org.hibernate.search.mapper.pojo.mapping.spi.PojoMappingDelegate;
+import org.hibernate.search.mapper.pojo.massindexing.MassIndexingDefaultCleanOperation;
 import org.hibernate.search.mapper.pojo.massindexing.spi.PojoMassIndexerAgent;
 import org.hibernate.search.mapper.pojo.massindexing.spi.PojoMassIndexerAgentCreateContext;
 import org.hibernate.search.mapper.pojo.model.spi.PojoRuntimeIntrospector;
@@ -46,6 +45,7 @@ public class StandalonePojoMapping extends AbstractPojoMappingImplementor<Standa
 	private final StandalonePojoTypeContextContainer typeContextContainer;
 	private final SchemaManagementListener schemaManagementListener;
 	private final ConfiguredIndexingPlanSynchronizationStrategyHolder configuredIndexingPlanSynchronizationStrategyHolder;
+	private final MassIndexingDefaultCleanOperation massIndexingDefaultCleanOperation;
 
 	private SearchIntegration.Handle integrationHandle;
 	private TenancyConfiguration tenancyConfiguration;
@@ -53,13 +53,15 @@ public class StandalonePojoMapping extends AbstractPojoMappingImplementor<Standa
 
 
 	StandalonePojoMapping(PojoMappingDelegate mappingDelegate, StandalonePojoTypeContextContainer typeContextContainer,
-			SchemaManagementListener schemaManagementListener) {
+			SchemaManagementListener schemaManagementListener,
+			MassIndexingDefaultCleanOperation massIndexingDefaultCleanOperation) {
 		super( mappingDelegate );
 		this.typeContextContainer = typeContextContainer;
 		this.schemaManagementListener = schemaManagementListener;
 		this.configuredIndexingPlanSynchronizationStrategyHolder = new ConfiguredIndexingPlanSynchronizationStrategyHolder(
 				this );
 		this.active = true;
+		this.massIndexingDefaultCleanOperation = massIndexingDefaultCleanOperation;
 	}
 
 	@Override
@@ -120,6 +122,11 @@ public class StandalonePojoMapping extends AbstractPojoMappingImplementor<Standa
 	@Override
 	public PojoRuntimeIntrospector runtimeIntrospector() {
 		return PojoRuntimeIntrospector.simple();
+	}
+
+	@Override
+	public MassIndexingDefaultCleanOperation massIndexingDefaultCleanOperation() {
+		return massIndexingDefaultCleanOperation;
 	}
 
 	@Override

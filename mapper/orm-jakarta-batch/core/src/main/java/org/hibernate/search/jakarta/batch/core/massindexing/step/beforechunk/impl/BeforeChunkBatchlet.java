@@ -1,8 +1,6 @@
 /*
- * Hibernate Search, full-text search for your domain model
- *
- * License: GNU Lesser General Public License (LGPL), version 2.1 or later
- * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * SPDX-License-Identifier: Apache-2.0
+ * Copyright Red Hat Inc. and Hibernate Authors
  */
 package org.hibernate.search.jakarta.batch.core.massindexing.step.beforechunk.impl;
 
@@ -24,6 +22,7 @@ import org.hibernate.search.jakarta.batch.core.massindexing.impl.JobContextData;
 import org.hibernate.search.jakarta.batch.core.massindexing.util.impl.SerializationUtil;
 import org.hibernate.search.mapper.orm.Search;
 import org.hibernate.search.mapper.orm.spi.BatchMappingContext;
+import org.hibernate.search.mapper.pojo.massindexing.MassIndexingDefaultCleanOperation;
 import org.hibernate.search.mapper.pojo.work.spi.PojoScopeWorkspace;
 import org.hibernate.search.util.common.impl.Futures;
 import org.hibernate.search.util.common.logging.impl.LoggerFactory;
@@ -58,14 +57,30 @@ public class BeforeChunkBatchlet extends AbstractBatchlet {
 
 	@Override
 	public String process() throws Exception {
+		final JobContextData jobData = (JobContextData) jobContext.getTransientUserData();
+		final boolean purgeDefault;
+		final boolean dropDefault;
+
+		if ( serializedDropAndCreateSchemaOnStart == null && serializedPurgeAllOnStart == null ) {
+			// no parameters for cleaning the data were provided hence we should decide on the defaults:
+			MassIndexingDefaultCleanOperation operation = jobData.getMassIndexingDefaultCleanOperation();
+			purgeDefault = MassIndexingDefaultCleanOperation.PURGE.equals( operation );
+			dropDefault = MassIndexingDefaultCleanOperation.DROP_AND_CREATE.equals( operation );
+		}
+		else {
+			purgeDefault = MassIndexingJobParameters.Defaults.PURGE_ALL_ON_START;
+			dropDefault = MassIndexingJobParameters.Defaults.DROP_AND_CREATE_SCHEMA_ON_START;
+		}
+
 		boolean purgeAllOnStart = SerializationUtil.parseBooleanParameterOptional(
-				MassIndexingJobParameters.PURGE_ALL_ON_START, serializedPurgeAllOnStart,
-				MassIndexingJobParameters.Defaults.PURGE_ALL_ON_START
+				MassIndexingJobParameters.PURGE_ALL_ON_START,
+				serializedPurgeAllOnStart,
+				purgeDefault
 		);
 		boolean dropAndCreateSchemaOnStart = SerializationUtil.parseBooleanParameterOptional(
 				MassIndexingJobParameters.DROP_AND_CREATE_SCHEMA_ON_START,
 				serializedDropAndCreateSchemaOnStart,
-				MassIndexingJobParameters.Defaults.DROP_AND_CREATE_SCHEMA_ON_START
+				dropDefault
 		);
 		boolean mergeSegmentsAfterPurge = SerializationUtil.parseBooleanParameterOptional(
 				MassIndexingJobParameters.MERGE_SEGMENTS_AFTER_PURGE, serializedMergeSegmentsAfterPurge,
@@ -80,7 +95,6 @@ public class BeforeChunkBatchlet extends AbstractBatchlet {
 				//   or do the schema drop through a schema manager.
 				throw log.tenantIdProvidedWithSchemaDrop( tenantId );
 			}
-			JobContextData jobData = (JobContextData) jobContext.getTransientUserData();
 			EntityManagerFactory emf = jobData.getEntityManagerFactory();
 			Search.mapping( emf ).scope( jobData.getEntityTypes() ).schemaManager().dropAndCreate();
 		}
@@ -92,7 +106,6 @@ public class BeforeChunkBatchlet extends AbstractBatchlet {
 
 		// No need to purge if we've dropped-created the schema already
 		if ( purgeAllOnStart && !dropAndCreateSchemaOnStart ) {
-			JobContextData jobData = (JobContextData) jobContext.getTransientUserData();
 			EntityManagerFactory emf = jobData.getEntityManagerFactory();
 			BatchMappingContext mappingContext = (BatchMappingContext) Search.mapping( emf );
 			PojoScopeWorkspace workspace =

@@ -1,8 +1,6 @@
 /*
- * Hibernate Search, full-text search for your domain model
- *
- * License: GNU Lesser General Public License (LGPL), version 2.1 or later
- * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * SPDX-License-Identifier: Apache-2.0
+ * Copyright Red Hat Inc. and Hibernate Authors
  */
 package org.hibernate.search.mapper.pojo.massindexing.impl;
 
@@ -12,7 +10,9 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
+import org.hibernate.search.engine.tenancy.spi.TenancyMode;
 import org.hibernate.search.mapper.pojo.logging.impl.Log;
+import org.hibernate.search.mapper.pojo.massindexing.MassIndexingDefaultCleanOperation;
 import org.hibernate.search.mapper.pojo.massindexing.MassIndexingEnvironment;
 import org.hibernate.search.mapper.pojo.massindexing.MassIndexingFailureHandler;
 import org.hibernate.search.mapper.pojo.massindexing.MassIndexingMonitor;
@@ -51,7 +51,6 @@ public class PojoDefaultMassIndexer implements PojoMassIndexer {
 	private final PojoMassIndexingTypeContextProvider typeContextProvider;
 	private final Set<? extends PojoMassIndexingIndexedTypeContext<?>> targetedIndexedTypes;
 	private final PojoScopeSchemaManager scopeSchemaManager;
-	private final Set<String> tenantIds;
 	private final PojoScopeDelegate<?, ?, ?> pojoScopeDelegate;
 
 	// default settings defined here:
@@ -72,14 +71,12 @@ public class PojoDefaultMassIndexer implements PojoMassIndexer {
 			PojoMassIndexingTypeContextProvider typeContextProvider,
 			Set<? extends PojoMassIndexingIndexedTypeContext<?>> targetedIndexedTypes,
 			PojoScopeSchemaManager scopeSchemaManager,
-			Set<String> tenantIds,
 			PojoScopeDelegate<?, ?, ?> pojoScopeDelegate) {
 		this.massIndexingContext = massIndexingContext;
 		this.mappingContext = mappingContext;
 		this.typeContextProvider = typeContextProvider;
 		this.targetedIndexedTypes = targetedIndexedTypes;
 		this.scopeSchemaManager = scopeSchemaManager;
-		this.tenantIds = tenantIds;
 		this.pojoScopeDelegate = pojoScopeDelegate;
 	}
 
@@ -175,8 +172,23 @@ public class PojoDefaultMassIndexer implements PojoMassIndexer {
 				failureFloodingThreshold
 		);
 
-		if ( Boolean.TRUE.equals( dropAndCreateSchemaOnStart ) && Boolean.TRUE.equals( purgeAtStart ) ) {
-			log.redundantPurgeAfterDrop();
+		if ( dropAndCreateSchemaOnStart == null && purgeAtStart == null ) {
+			// we should decide the defaults:
+			MassIndexingDefaultCleanOperation operation = massIndexingContext.massIndexingDefaultCleanOperation();
+			purgeAtStart = MassIndexingDefaultCleanOperation.PURGE.equals( operation );
+			dropAndCreateSchemaOnStart = MassIndexingDefaultCleanOperation.DROP_AND_CREATE.equals( operation );
+		}
+
+		boolean actualDropAndCreateSchemaOnStart = Boolean.TRUE.equals( dropAndCreateSchemaOnStart );
+		if ( actualDropAndCreateSchemaOnStart ) {
+			if ( Boolean.TRUE.equals( purgeAtStart ) ) {
+				log.redundantPurgeAfterDrop();
+			}
+			if ( TenancyMode.MULTI_TENANCY.equals( massIndexingContext.tenancyMode() ) ) {
+				// Users are not setting the tenants explicitly,
+				//  hence if multitenancy is enabled we cannot  drop the schema:
+				throw log.schemaDropNotAllowedWithMultitenancy( massIndexingContext.tenantIds() );
+			}
 		}
 
 		return new PojoMassIndexingBatchCoordinator(
@@ -184,14 +196,14 @@ public class PojoDefaultMassIndexer implements PojoMassIndexer {
 				notifier,
 				typeGroupsToIndex, massIndexingContext,
 				scopeSchemaManager,
-				tenantIds, pojoScopeDelegate,
+				pojoScopeDelegate,
 				resolvedMassIndexingEnvironment(),
 				typesToIndexInParallel, documentBuilderThreads,
 				mergeSegmentsOnFinish,
 				// false by default:
-				Boolean.TRUE.equals( dropAndCreateSchemaOnStart ),
+				actualDropAndCreateSchemaOnStart,
 				// false if not set explicitly and dropAndCreateSchemaOnStart is set to true, otherwise true by default:
-				purgeAtStart == null ? !Boolean.TRUE.equals( dropAndCreateSchemaOnStart ) : purgeAtStart,
+				purgeAtStart == null ? !actualDropAndCreateSchemaOnStart : purgeAtStart,
 				mergeSegmentsAfterPurge
 		);
 	}
