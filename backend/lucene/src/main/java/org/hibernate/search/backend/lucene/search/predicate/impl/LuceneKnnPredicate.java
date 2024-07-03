@@ -57,10 +57,11 @@ public abstract class LuceneKnnPredicate<T> extends AbstractLuceneSingleFieldPre
 		private LuceneSearchPredicate filter;
 		private Float similarity;
 
+		@SuppressWarnings("unchecked")
 		protected Builder(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<F> field) {
 			super( scope, field );
 
-			LuceneFieldCodec<F> codec = field.type().codec();
+			LuceneFieldCodec<F, ?> codec = field.type().codec();
 			if ( codec instanceof LuceneVectorFieldCodec ) {
 				vectorCodec = (LuceneVectorFieldCodec<F>) codec;
 				vectorElementsType = vectorCodec.vectorElementsType();

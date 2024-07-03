@@ -29,6 +29,11 @@ public class LuceneByteVectorCodec extends AbstractLuceneVectorFieldCodec<byte[]
 	}
 
 	@Override
+	public Class<byte[]> encodedType() {
+		return byte[].class;
+	}
+
+	@Override
 	protected byte[] toByteArray(byte[] value) {
 		return value;
 	}
