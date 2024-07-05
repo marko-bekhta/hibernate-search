@@ -67,6 +67,12 @@ The index format and schema in Hibernate Search {hibernateSearchVersion}
 is backward-compatible with Hibernate Search {hibernateSearchPreviousStableVersionShort}:
 older indexes can be read from and written to without reindexing.
 
+The Lucene backend changed the way of indexing `OffsetTime` values.
+If `OffsetTime` properties are used in your index, to prevent any unexpected issues,
+you must recreate your Lucene indexes and reindex your database.
+The easiest way to do so is to use link:{hibernateSearchDocUrl}#indexing-massindexer[the `MassIndexer`]
+with link:{hibernateSearchDocUrl}#indexing-massindexer-parameters-drop-and-create-schema[`dropAndCreateSchemaOnStart(true)`].
+
 [[outboxpolling]]
 === Outbox polling database tables
 

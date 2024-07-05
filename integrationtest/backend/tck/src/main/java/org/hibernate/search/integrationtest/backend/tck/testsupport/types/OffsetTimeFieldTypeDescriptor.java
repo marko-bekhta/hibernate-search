@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import org.hibernate.search.engine.cfg.spi.NormalizeUtils;
 import org.hibernate.search.integrationtest.backend.tck.testsupport.types.expectations.IndexNullAsMatchPredicateExpectactions;
 import org.hibernate.search.integrationtest.backend.tck.testsupport.types.values.AscendingUniqueTermValues;
 import org.hibernate.search.integrationtest.backend.tck.testsupport.types.values.IndexableValues;
@@ -31,7 +32,7 @@ public class OffsetTimeFieldTypeDescriptor extends StandardFieldTypeDescriptor<O
 
 	@Override
 	public OffsetTime toExpectedDocValue(OffsetTime indexed) {
-		return indexed == null ? null : indexed.withOffsetSameInstant( ZoneOffset.UTC );
+		return indexed == null ? null : NormalizeUtils.normalizeOffsetTime( indexed );
 	}
 
 	@Override

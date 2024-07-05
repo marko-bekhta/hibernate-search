@@ -4,17 +4,15 @@
  */
 package org.hibernate.search.backend.lucene.types.codec.impl;
 
-import java.time.Instant;
 import java.time.OffsetTime;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.ResolverStyle;
-import java.time.temporal.ChronoUnit;
 import java.util.Locale;
 
 import org.hibernate.search.backend.lucene.types.lowlevel.impl.LuceneLongDomain;
 import org.hibernate.search.backend.lucene.types.lowlevel.impl.LuceneNumericDomain;
+import org.hibernate.search.engine.cfg.spi.NormalizeUtils;
 
 import org.apache.lucene.document.StoredField;
 import org.apache.lucene.index.IndexableField;
@@ -64,9 +62,7 @@ public final class LuceneOffsetTimeFieldCodec extends AbstractLuceneNumericField
 
 	@Override
 	public OffsetTime decode(Long encoded) {
-		// See encode; we just add the nanos to EPOCH, and get the corresponding UTC time
-		return Instant.EPOCH.plus( encoded, ChronoUnit.NANOS )
-				.atOffset( ZoneOffset.UTC ).toOffsetTime();
+		return NormalizeUtils.normalizeOffsetTime( encoded );
 	}
 
 	@Override
