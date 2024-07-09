@@ -43,7 +43,7 @@ public final class StubIndexObjectField
 	}
 
 	@Override
-	public StubIndexValueField<?> toValueField() {
+	public StubIndexValueField<?, ?> toValueField() {
 		return SearchIndexSchemaElementContextHelper.throwingToValueField( this );
 	}
 

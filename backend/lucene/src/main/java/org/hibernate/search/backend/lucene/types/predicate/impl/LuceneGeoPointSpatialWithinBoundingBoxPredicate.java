@@ -27,7 +27,7 @@ public class LuceneGeoPointSpatialWithinBoundingBoxPredicate extends AbstractLuc
 			extends
 			AbstractLuceneValueFieldSearchQueryElementFactory<SpatialWithinBoundingBoxPredicateBuilder, GeoPoint> {
 		@Override
-		public Builder create(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<GeoPoint> field) {
+		public Builder create(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<GeoPoint, E> field) {
 			return new Builder( scope, field );
 		}
 	}
@@ -35,7 +35,7 @@ public class LuceneGeoPointSpatialWithinBoundingBoxPredicate extends AbstractLuc
 	private static class Builder extends AbstractBuilder<GeoPoint> implements SpatialWithinBoundingBoxPredicateBuilder {
 		protected GeoBoundingBox boundingBox;
 
-		private Builder(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<GeoPoint> field) {
+		private Builder(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<GeoPoint, E> field) {
 			super( scope, field );
 		}
 

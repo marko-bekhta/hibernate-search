@@ -71,7 +71,7 @@ public abstract class AbstractLuceneDocumentValueSort extends AbstractLuceneReve
 		protected LuceneSearchPredicate nestedFilter;
 
 		protected AbstractBuilder(LuceneSearchIndexScope<?> scope,
-				LuceneSearchIndexValueFieldContext<?> field) {
+				LuceneSearchIndexValueFieldContext<?, ?> field) {
 			this( scope, field.absolutePath(), field.nestedDocumentPath() );
 		}
 

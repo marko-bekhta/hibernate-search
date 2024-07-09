@@ -35,31 +35,29 @@ public class LuceneTextTermsPredicate extends AbstractLuceneLeafSingleFieldPredi
 
 	public static class Factory<F>
 			extends
-			AbstractLuceneCodecAwareSearchQueryElementFactory<TermsPredicateBuilder, F, LuceneStandardFieldCodec<F, String>> {
+			AbstractLuceneCodecAwareSearchQueryElementFactory<TermsPredicateBuilder,
+					F,
+					String,
+					LuceneStandardFieldCodec<F, String>> {
 		public Factory(LuceneStandardFieldCodec<F, String> codec) {
 			super( codec );
 		}
 
 		@Override
-		public Builder<F> create(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<F> field) {
-			return new Builder<>( codec, scope, field );
+		public Builder<F> create(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<F, String> field) {
+			return new Builder<>(scope, field );
 		}
 	}
 
-	private static class Builder<F> extends AbstractBuilder<F> implements TermsPredicateBuilder {
-		private final LuceneStandardFieldCodec<F, String> codec;
-
+	private static class Builder<F> extends AbstractBuilder<F, String> implements TermsPredicateBuilder {
 		private String term;
 		private List<String> terms;
 		private boolean allMatch;
 
-		private Builder(LuceneStandardFieldCodec<F, String> codec, LuceneSearchIndexScope<?> scope,
-				LuceneSearchIndexValueFieldContext<F> field) {
+		private Builder(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<F, String> field) {
 			super( scope, field );
 			// Score is always constant for this query
 			constantScore();
-
-			this.codec = codec;
 		}
 
 		@Override
@@ -100,7 +98,7 @@ public class LuceneTextTermsPredicate extends AbstractLuceneLeafSingleFieldPredi
 
 		private void fillTerms(Collection<?> terms, ValueModel valueModel) {
 			if ( terms.size() == 1 ) {
-				this.term = convertAndEncode( codec, terms.iterator().next(), valueModel );
+				this.term = convertAndEncode( terms.iterator().next(), valueModel );
 				this.terms = null;
 				return;
 			}
@@ -108,7 +106,7 @@ public class LuceneTextTermsPredicate extends AbstractLuceneLeafSingleFieldPredi
 			this.term = null;
 			this.terms = new ArrayList<>( terms.size() );
 			for ( Object termItem : terms ) {
-				this.terms.add( convertAndEncode( codec, termItem, valueModel ) );
+				this.terms.add( convertAndEncode( termItem, valueModel ) );
 			}
 		}
 	}

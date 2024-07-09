@@ -21,25 +21,25 @@ import org.apache.lucene.util.BytesRef;
 
 public class LuceneTextWildcardPredicate extends AbstractLuceneLeafSingleFieldPredicate {
 
-	private LuceneTextWildcardPredicate(Builder<?> builder) {
+	private LuceneTextWildcardPredicate(Builder<?, ?> builder) {
 		super( builder );
 	}
 
-	public static class Factory<F>
-			extends AbstractLuceneValueFieldSearchQueryElementFactory<WildcardPredicateBuilder, F> {
+	public static class Factory<F, E>
+			extends AbstractLuceneValueFieldSearchQueryElementFactory<WildcardPredicateBuilder, F, E> {
 		@Override
-		public Builder<F> create(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<F> field) {
+		public Builder<F, E> create(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<F, E> field) {
 			return new Builder<>( scope, field );
 		}
 	}
 
-	private static class Builder<F> extends AbstractBuilder<F> implements WildcardPredicateBuilder {
+	private static class Builder<F, E> extends AbstractBuilder<F, E> implements WildcardPredicateBuilder {
 
 		private final Analyzer analyzerOrNormalizer;
 
 		private String pattern;
 
-		private Builder(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<F> field) {
+		private Builder(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<F, E> field) {
 			super( scope, field );
 			this.analyzerOrNormalizer = field.type().searchAnalyzerOrNormalizer();
 		}

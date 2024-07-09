@@ -40,7 +40,7 @@ public abstract class LuceneStandardFieldSort extends AbstractLuceneDocumentValu
 	}
 
 	abstract static class AbstractFactory<F, E, C extends LuceneStandardFieldCodec<F, E>>
-			extends AbstractLuceneCodecAwareSearchQueryElementFactory<FieldSortBuilder, F, C> {
+			extends AbstractLuceneCodecAwareSearchQueryElementFactory<FieldSortBuilder, F, E, C> {
 		protected AbstractFactory(C codec) {
 			super( codec );
 		}
@@ -55,7 +55,7 @@ public abstract class LuceneStandardFieldSort extends AbstractLuceneDocumentValu
 	abstract static class AbstractBuilder<F, E, C extends LuceneStandardFieldCodec<F, E>>
 			extends AbstractLuceneDocumentValueSort.AbstractBuilder
 			implements FieldSortBuilder {
-		protected final LuceneSearchIndexValueFieldContext<F> field;
+		protected final LuceneSearchIndexValueFieldContext<F, E> field;
 		protected final C codec;
 		private final Object sortMissingValueFirstPlaceholder;
 		private final Object sortMissingValueLastPlaceholder;
@@ -63,7 +63,7 @@ public abstract class LuceneStandardFieldSort extends AbstractLuceneDocumentValu
 		protected Object missingValue = SortMissingValue.MISSING_LAST;
 
 		protected AbstractBuilder(LuceneSearchIndexScope<?> scope,
-				LuceneSearchIndexValueFieldContext<F> field, C codec,
+				LuceneSearchIndexValueFieldContext<F, E> field, C codec,
 				Object sortMissingValueFirstPlaceholder, Object sortMissingValueLastPlaceholder) {
 			super( scope, field );
 			this.field = field;
@@ -94,18 +94,17 @@ public abstract class LuceneStandardFieldSort extends AbstractLuceneDocumentValu
 
 		@Override
 		public void missingAs(Object value, ValueModel valueModel) {
-			DslConverter<?, ? extends F> dslToIndexConverter = field.type().dslConverter( valueModel );
 			try {
-				F converted = dslToIndexConverter.unknownTypeToDocumentValue( value, scope.toDocumentValueConvertContext() );
-				missingValue = encodeMissingAs( converted );
+				missingValue = mapEncodedMissingAs( field.type().dslConverter( valueModel )
+						.unknownTypeToDocumentValue( value, scope.toDocumentValueConvertContext() ) );
 			}
 			catch (RuntimeException e) {
 				throw log.cannotConvertDslParameter( e.getMessage(), e, getEventContext() );
 			}
 		}
 
-		protected Object encodeMissingAs(F converted) {
-			return codec.encode( converted );
+		protected Object mapEncodedMissingAs(E converted) {
+			return converted;
 		}
 
 		@SuppressWarnings("unchecked")
@@ -141,7 +140,7 @@ public abstract class LuceneStandardFieldSort extends AbstractLuceneDocumentValu
 		}
 
 		@Override
-		public FieldSortBuilder create(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<F> field) {
+		public FieldSortBuilder create(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<F, E> field) {
 			return new NumericFieldBuilder<>( codec, scope, field );
 		}
 	}
@@ -149,7 +148,7 @@ public abstract class LuceneStandardFieldSort extends AbstractLuceneDocumentValu
 	private static class NumericFieldBuilder<F, E extends Number>
 			extends AbstractBuilder<F, E, AbstractLuceneNumericFieldCodec<F, E>> {
 		private NumericFieldBuilder(AbstractLuceneNumericFieldCodec<F, E> codec, LuceneSearchIndexScope<?> scope,
-				LuceneSearchIndexValueFieldContext<F> field) {
+				LuceneSearchIndexValueFieldContext<F, E> field) {
 			super( scope, field, codec, codec.getDomain().getMinValue(), codec.getDomain().getMaxValue() );
 		}
 
@@ -185,20 +184,20 @@ public abstract class LuceneStandardFieldSort extends AbstractLuceneDocumentValu
 		}
 
 		@Override
-		public FieldSortBuilder create(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<F> field) {
+		public FieldSortBuilder create(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<F, String> field) {
 			return new TextFieldBuilder<>( codec, scope, field );
 		}
 	}
 
 	private static class TextFieldBuilder<F> extends AbstractBuilder<F, String, LuceneStandardFieldCodec<F, String>> {
 		private TextFieldBuilder(LuceneStandardFieldCodec<F, String> codec, LuceneSearchIndexScope<?> scope,
-				LuceneSearchIndexValueFieldContext<F> field) {
+				LuceneSearchIndexValueFieldContext<F, String> field) {
 			super( scope, field, codec, SortField.STRING_FIRST, SortField.STRING_LAST );
 		}
 
 		@Override
-		protected Object encodeMissingAs(F converted) {
-			return normalize( codec.encode( converted ) );
+		protected Object mapEncodedMissingAs(String converted) {
+			return normalize( converted );
 		}
 
 		@Override
@@ -254,7 +253,7 @@ public abstract class LuceneStandardFieldSort extends AbstractLuceneDocumentValu
 		}
 
 		@Override
-		public FieldSortBuilder create(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<F> field) {
+		public FieldSortBuilder create(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<F, E> field) {
 			return new TemporalFieldBuilder<>( codec, scope, field );
 		}
 	}
@@ -262,7 +261,7 @@ public abstract class LuceneStandardFieldSort extends AbstractLuceneDocumentValu
 	private static class TemporalFieldBuilder<F extends TemporalAccessor, E extends Number>
 			extends NumericFieldBuilder<F, E> {
 		private TemporalFieldBuilder(AbstractLuceneNumericFieldCodec<F, E> codec, LuceneSearchIndexScope<?> scope,
-				LuceneSearchIndexValueFieldContext<F> field) {
+				LuceneSearchIndexValueFieldContext<F, E> field) {
 			super( codec, scope, field );
 		}
 

@@ -4,6 +4,8 @@
  */
 package org.hibernate.search.backend.lucene.types.codec.impl;
 
+import org.hibernate.search.engine.backend.types.converter.spi.Codec;
+
 import org.apache.lucene.index.IndexableField;
 
 /**
@@ -15,7 +17,7 @@ import org.apache.lucene.index.IndexableField;
  * @param <F> The field type as declared on
  * @param <E> The encoded type. For example, for a {@code LocalDate} field this will be {@code Long}.
  */
-public interface LuceneFieldCodec<F, E> {
+public interface LuceneFieldCodec<F, E> extends Codec<F, E> {
 
 	/**
 	 * Encode the given value in the document by adding new fields to the Lucene document.
@@ -36,6 +38,7 @@ public interface LuceneFieldCodec<F, E> {
 	 */
 	F decode(IndexableField field);
 
+	@Override
 	F decode(E field);
 
 	/**
@@ -45,6 +48,7 @@ public interface LuceneFieldCodec<F, E> {
 	 *
 	 * @param value The value to encode.
 	 */
+	@Override
 	E encode(F value);
 
 	/**

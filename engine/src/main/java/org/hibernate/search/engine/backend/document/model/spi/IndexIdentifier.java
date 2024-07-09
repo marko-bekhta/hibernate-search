@@ -12,11 +12,11 @@ import org.hibernate.search.util.common.reporting.EventContext;
 
 public final class IndexIdentifier implements SearchIndexIdentifierContext {
 
-	private final DslConverter<?, String> dslConverter;
-	private final DslConverter<?, String> parser;
+	private final DslConverter<?, String, String> dslConverter;
+	private final DslConverter<?, String, String> parser;
 	private final ProjectionConverter<String, ?> projectionConverter;
 
-	public IndexIdentifier(DslConverter<?, String> dslConverter, DslConverter<?, String> parser,
+	public IndexIdentifier(DslConverter<?, String, String> dslConverter, DslConverter<?, String, String> parser,
 			ProjectionConverter<String, ?> projectionConverter) {
 		this.dslConverter = dslConverter != null ? dslConverter : RAW_DSL_CONVERTER;
 		this.parser = parser != null ? parser : RAW_DSL_CONVERTER;
@@ -34,12 +34,12 @@ public final class IndexIdentifier implements SearchIndexIdentifierContext {
 	}
 
 	@Override
-	public DslConverter<?, String> mappingDslConverter() {
+	public DslConverter<?, String, String> mappingDslConverter() {
 		return dslConverter;
 	}
 
 	@Override
-	public DslConverter<?, String> parserDslConverter() {
+	public DslConverter<?, String, String> parserDslConverter() {
 		return parser;
 	}
 

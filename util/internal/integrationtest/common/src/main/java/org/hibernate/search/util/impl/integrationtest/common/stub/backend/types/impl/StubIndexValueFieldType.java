@@ -29,16 +29,17 @@ import org.hibernate.search.util.impl.integrationtest.common.stub.backend.search
 import org.hibernate.search.util.impl.integrationtest.common.stub.backend.search.projection.impl.StubFieldProjection;
 import org.hibernate.search.util.impl.integrationtest.common.stub.backend.search.sort.impl.StubSearchSort;
 
-public final class StubIndexValueFieldType<F>
+public final class StubIndexValueFieldType<F, E>
 		extends AbstractIndexValueFieldType<
 				StubSearchIndexScope,
-				StubSearchIndexValueFieldContext<F>,
-				F>
-		implements IndexFieldType<F>, StubSearchIndexValueFieldTypeContext<F> {
+				StubSearchIndexValueFieldContext<F, E>,
+				F,
+				E>
+		implements IndexFieldType<F>, StubSearchIndexValueFieldTypeContext<F, E> {
 
 	private final List<Consumer<StubIndexSchemaDataNode.Builder>> modifiers;
 
-	public StubIndexValueFieldType(Builder<F> builder) {
+	public StubIndexValueFieldType(Builder<F, E> builder) {
 		super( builder );
 		this.modifiers = new ArrayList<>( builder.modifiers );
 	}
@@ -51,7 +52,7 @@ public final class StubIndexValueFieldType<F>
 	}
 
 	@Override
-	public DslConverter<?, F> rawDslConverter() {
+	public DslConverter<E, E, E> rawDslConverter() {
 		throw new UnsupportedOperationException(
 				"Raw DSL converter is backend specific and there's no implementation for a stub backend." );
 	}
@@ -62,11 +63,12 @@ public final class StubIndexValueFieldType<F>
 				"Raw projection converter is backend specific and there's no implementation for a stub backend." );
 	}
 
-	public static class Builder<F>
+	public static class Builder<F, E>
 			extends AbstractIndexValueFieldType.Builder<
 					StubSearchIndexScope,
-					StubSearchIndexValueFieldContext<F>,
-					F> {
+					StubSearchIndexValueFieldContext<F, E>,
+					F,
+					E> {
 		private final List<Consumer<StubIndexSchemaDataNode.Builder>> modifiers = new ArrayList<>();
 
 		public Builder(Class<F> valueClass) {
@@ -114,7 +116,7 @@ public final class StubIndexValueFieldType<F>
 		}
 
 		@Override
-		public StubIndexValueFieldType<F> build() {
+		public StubIndexValueFieldType<F, E> build() {
 			return new StubIndexValueFieldType<>( this );
 		}
 	}

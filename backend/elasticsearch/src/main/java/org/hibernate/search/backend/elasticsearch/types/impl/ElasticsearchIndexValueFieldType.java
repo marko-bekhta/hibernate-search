@@ -26,7 +26,7 @@ public class ElasticsearchIndexValueFieldType<F>
 		extends AbstractIndexValueFieldType<
 				ElasticsearchSearchIndexScope<?>,
 				ElasticsearchSearchIndexValueFieldContext<F>,
-				F>
+				F, E>
 		implements ElasticsearchSearchIndexValueFieldTypeContext<F> {
 	private final JsonPrimitive elasticsearchTypeAsJson;
 	private final ElasticsearchFieldCodec<F> codec;
@@ -83,7 +83,7 @@ public class ElasticsearchIndexValueFieldType<F>
 			extends AbstractIndexValueFieldType.Builder<
 					ElasticsearchSearchIndexScope<?>,
 					ElasticsearchSearchIndexValueFieldContext<F>,
-					F> {
+					F, E> {
 
 		private ElasticsearchFieldCodec<F> codec;
 		private final PropertyMapping mapping;

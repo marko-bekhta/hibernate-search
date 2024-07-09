@@ -10,10 +10,10 @@ import org.hibernate.search.engine.backend.types.converter.ToDocumentValueConver
 import org.hibernate.search.engine.backend.types.dsl.IndexFieldTypeOptionsStep;
 import org.hibernate.search.util.common.impl.Contracts;
 
-abstract class AbstractLuceneIndexFieldTypeOptionsStep<S extends AbstractLuceneIndexFieldTypeOptionsStep<?, F>, F>
+abstract class AbstractLuceneIndexFieldTypeOptionsStep<S extends AbstractLuceneIndexFieldTypeOptionsStep<?, F, E>, F, E>
 		implements IndexFieldTypeOptionsStep<S, F> {
 	protected final LuceneIndexFieldTypeBuildContext buildContext;
-	protected final LuceneIndexValueFieldType.Builder<F> builder;
+	protected final LuceneIndexValueFieldType.Builder<F, E> builder;
 
 	AbstractLuceneIndexFieldTypeOptionsStep(LuceneIndexFieldTypeBuildContext buildContext, Class<F> valueType) {
 		this.buildContext = buildContext;

@@ -179,12 +179,12 @@ class FieldDefaultBridgeBaseIT<V, F> {
 		setup( typeDescriptor, expectations );
 		// This cast may be unsafe, but only if something is deeply wrong, and then an exception will be thrown below
 		@SuppressWarnings("unchecked")
-		DslConverter<V, ?> dslConverter =
-				(DslConverter<V, ?>) index1Field.toValueField().type().mappingDslConverter();
-		DslConverter<?, ?> compatibleDslConverter =
+		DslConverter<V, ?, ?> dslConverter =
+				(DslConverter<V, ?, ?>) index1Field.toValueField().type().mappingDslConverter();
+		DslConverter<?, ?, ?> compatibleDslConverter =
 				index2Field.toValueField().type().mappingDslConverter();
-		DslConverter<?, ?> incompatibleDslConverter =
-				new DslConverter<>( typeDescriptor.getJavaType(), new IncompatibleToDocumentValueConverter<>() );
+		DslConverter<?, ?, ?> incompatibleDslConverter =
+				DslConverter.delegate( typeDescriptor.getJavaType(), new IncompatibleToDocumentValueConverter<>() );
 		ToDocumentValueConvertContext toDocumentConvertContext =
 				new ToDocumentValueConvertContextImpl( BridgeTestUtils.toBackendMappingContext( mapping ) );
 

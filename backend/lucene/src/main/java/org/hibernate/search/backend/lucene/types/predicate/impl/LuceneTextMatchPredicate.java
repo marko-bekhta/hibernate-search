@@ -40,19 +40,21 @@ public class LuceneTextMatchPredicate extends AbstractLuceneLeafSingleFieldPredi
 
 	public static class Factory<F>
 			extends
-			AbstractLuceneCodecAwareSearchQueryElementFactory<MatchPredicateBuilder, F, LuceneStandardFieldCodec<F, String>> {
+			AbstractLuceneCodecAwareSearchQueryElementFactory<MatchPredicateBuilder,
+					F,
+					String,
+					LuceneStandardFieldCodec<F, String>> {
 		public Factory(LuceneStandardFieldCodec<F, String> codec) {
 			super( codec );
 		}
 
 		@Override
-		public Builder<F> create(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<F> field) {
-			return new Builder<>( codec, scope, field );
+		public Builder<F> create(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<F, String> field) {
+			return new Builder<>( scope, field );
 		}
 	}
 
-	private static class Builder<F> extends AbstractBuilder<F> implements MatchPredicateBuilder {
-		private final LuceneStandardFieldCodec<F, String> codec;
+	private static class Builder<F> extends AbstractBuilder<F, String> implements MatchPredicateBuilder {
 		private final LuceneAnalysisDefinitionRegistry analysisDefinitionRegistry;
 		private final LuceneCommonMinimumShouldMatchConstraints minimumShouldMatchConstraints;
 
@@ -63,17 +65,15 @@ public class LuceneTextMatchPredicate extends AbstractLuceneLeafSingleFieldPredi
 
 		private Analyzer overrideAnalyzerOrNormalizer;
 
-		private Builder(LuceneStandardFieldCodec<F, String> codec, LuceneSearchIndexScope<?> scope,
-				LuceneSearchIndexValueFieldContext<F> field) {
+		private Builder(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<F, String> field) {
 			super( scope, field );
-			this.codec = codec;
 			this.analysisDefinitionRegistry = scope.analysisDefinitionRegistry();
 			this.minimumShouldMatchConstraints = new LuceneCommonMinimumShouldMatchConstraints();
 		}
 
 		@Override
 		public void value(Object value, ValueModel valueModel) {
-			this.value = convertAndEncode( codec, value, valueModel );
+			this.value = convertAndEncode( value, valueModel );
 		}
 
 		@Override

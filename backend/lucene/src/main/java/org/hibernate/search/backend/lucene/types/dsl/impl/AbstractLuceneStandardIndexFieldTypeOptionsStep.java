@@ -20,7 +20,7 @@ import org.hibernate.search.util.common.AssertionFailure;
 abstract class AbstractLuceneStandardIndexFieldTypeOptionsStep<
 		S extends AbstractLuceneStandardIndexFieldTypeOptionsStep<?, F>,
 		F>
-		extends AbstractLuceneIndexFieldTypeOptionsStep<S, F>
+		extends AbstractLuceneIndexFieldTypeOptionsStep<S, F, E>
 		implements LuceneStandardIndexFieldTypeOptionsStep<S, F> {
 
 	protected Projectable projectable = Projectable.DEFAULT;

@@ -26,7 +26,7 @@ public class LuceneGeoPointSpatialWithinCirclePredicate extends AbstractLuceneLe
 	public static class Factory
 			extends AbstractLuceneValueFieldSearchQueryElementFactory<SpatialWithinCirclePredicateBuilder, GeoPoint> {
 		@Override
-		public Builder create(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<GeoPoint> field) {
+		public Builder create(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<GeoPoint, E> field) {
 			return new Builder( scope, field );
 		}
 	}
@@ -35,7 +35,7 @@ public class LuceneGeoPointSpatialWithinCirclePredicate extends AbstractLuceneLe
 		protected GeoPoint center;
 		protected double radiusInMeters;
 
-		private Builder(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<GeoPoint> field) {
+		private Builder(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<GeoPoint, E> field) {
 			super( scope, field );
 		}
 

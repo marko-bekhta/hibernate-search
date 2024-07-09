@@ -29,7 +29,7 @@ public class LuceneGeoPointSpatialWithinPolygonPredicate extends AbstractLuceneL
 	public static class Factory
 			extends AbstractLuceneValueFieldSearchQueryElementFactory<SpatialWithinPolygonPredicateBuilder, GeoPoint> {
 		@Override
-		public Builder create(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<GeoPoint> field) {
+		public Builder create(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<GeoPoint, E> field) {
 			return new Builder( scope, field );
 		}
 	}
@@ -37,7 +37,7 @@ public class LuceneGeoPointSpatialWithinPolygonPredicate extends AbstractLuceneL
 	static class Builder extends AbstractBuilder<GeoPoint> implements SpatialWithinPolygonPredicateBuilder {
 		protected GeoPolygon polygon;
 
-		Builder(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<GeoPoint> field) {
+		Builder(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<GeoPoint, E> field) {
 			super( scope, field );
 		}
 

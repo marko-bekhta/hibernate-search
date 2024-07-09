@@ -19,7 +19,7 @@ public interface StubIndexNode
 	StubIndexObjectField toObjectField();
 
 	@Override
-	StubIndexValueField<?> toValueField();
+	StubIndexValueField<?, ?> toValueField();
 
 	StubIndexSchemaDataNode schemaData();
 

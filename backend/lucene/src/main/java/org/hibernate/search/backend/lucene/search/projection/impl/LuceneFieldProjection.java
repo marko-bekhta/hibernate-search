@@ -46,12 +46,12 @@ public class LuceneFieldProjection<F, V, P> extends AbstractLuceneProjection<P> 
 	private final ProjectionConverter<F, ? extends V> converter;
 	private final ProjectionAccumulator.Provider<V, P> accumulatorProvider;
 
-	private LuceneFieldProjection(Builder<F, V> builder, ProjectionAccumulator.Provider<V, P> accumulatorProvider) {
+	private LuceneFieldProjection(Builder<F, V, ?> builder, ProjectionAccumulator.Provider<V, P> accumulatorProvider) {
 		this( builder.scope, builder.field, builder.codec::decode, builder.converter, accumulatorProvider );
 	}
 
 	LuceneFieldProjection(LuceneSearchIndexScope<?> scope,
-			LuceneSearchIndexValueFieldContext<?> field,
+			LuceneSearchIndexValueFieldContext<?, ?> field,
 			Function<IndexableField, F> decodeFunction, ProjectionConverter<F, ? extends V> converter,
 			ProjectionAccumulator.Provider<V, P> accumulatorProvider) {
 		super( scope );
@@ -148,53 +148,56 @@ public class LuceneFieldProjection<F, V, P> extends AbstractLuceneProjection<P> 
 		}
 	}
 
-	public static class Factory<F>
+	public static class Factory<F, E>
 			extends
-			AbstractLuceneCodecAwareSearchQueryElementFactory<FieldProjectionBuilder.TypeSelector, F, LuceneFieldCodec<F, ?>> {
-		public Factory(LuceneFieldCodec<F, ?> codec) {
+			AbstractLuceneCodecAwareSearchQueryElementFactory<FieldProjectionBuilder.TypeSelector,
+					F,
+					E,
+					LuceneFieldCodec<F, E>> {
+		public Factory(LuceneFieldCodec<F, E> codec) {
 			super( codec );
 		}
 
 		@Override
-		public TypeSelector<?> create(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<F> field) {
+		public TypeSelector<?, ?> create(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<F, E> field) {
 			// Fail early if the nested structure differs in the case of multi-index search.
 			field.nestedPathHierarchy();
 			return new TypeSelector<>( codec, scope, field );
 		}
 	}
 
-	private static class TypeSelector<F> implements FieldProjectionBuilder.TypeSelector {
-		private final LuceneFieldCodec<F, ?> codec;
+	private static class TypeSelector<F, E> implements FieldProjectionBuilder.TypeSelector {
+		private final LuceneFieldCodec<F, E> codec;
 		private final LuceneSearchIndexScope<?> scope;
-		private final LuceneSearchIndexValueFieldContext<F> field;
+		private final LuceneSearchIndexValueFieldContext<F, E> field;
 
-		private TypeSelector(LuceneFieldCodec<F, ?> codec,
-				LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<F> field) {
+		private TypeSelector(LuceneFieldCodec<F, E> codec,
+				LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<F, E> field) {
 			this.codec = codec;
 			this.scope = scope;
 			this.field = field;
 		}
 
 		@Override
-		public <V> Builder<F, V> type(Class<V> expectedType, ValueModel valueModel) {
+		public <V> Builder<F, V, E> type(Class<V> expectedType, ValueModel valueModel) {
 			return new Builder<>( codec, scope, field,
 					field.type().projectionConverter( valueModel ).withConvertedType( expectedType, field ) );
 		}
 	}
 
-	private static class Builder<F, V> extends AbstractLuceneProjection.AbstractBuilder<V>
+	private static class Builder<F, V, E> extends AbstractLuceneProjection.AbstractBuilder<V>
 			implements FieldProjectionBuilder<V> {
 
 		private static final Log log = LoggerFactory.make( Log.class, MethodHandles.lookup() );
 
-		private final LuceneFieldCodec<F, ?> codec;
+		private final LuceneFieldCodec<F, E> codec;
 
-		private final LuceneSearchIndexValueFieldContext<F> field;
+		private final LuceneSearchIndexValueFieldContext<F, E> field;
 
 		private final ProjectionConverter<F, ? extends V> converter;
 
-		private Builder(LuceneFieldCodec<F, ?> codec, LuceneSearchIndexScope<?> scope,
-				LuceneSearchIndexValueFieldContext<F> field, ProjectionConverter<F, ? extends V> converter) {
+		private Builder(LuceneFieldCodec<F, E> codec, LuceneSearchIndexScope<?> scope,
+				LuceneSearchIndexValueFieldContext<F, E> field, ProjectionConverter<F, ? extends V> converter) {
 			super( scope );
 			this.codec = codec;
 			this.field = field;

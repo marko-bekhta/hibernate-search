@@ -43,8 +43,8 @@ public class LuceneIndexRootBuilder extends AbstractLuceneIndexCompositeNodeBuil
 	private final String mappedTypeName;
 	private final LuceneAnalysisDefinitionRegistry analysisDefinitionRegistry;
 
-	private DslConverter<?, String> idDslConverter;
-	private DslConverter<?, String> idParser;
+	private DslConverter<?, String, String> idDslConverter;
+	private DslConverter<?, String, String> idParser;
 	private ProjectionConverter<String, ?> idProjectionConverter;
 
 	public LuceneIndexRootBuilder(EventContext indexEventContext,
@@ -75,12 +75,12 @@ public class LuceneIndexRootBuilder extends AbstractLuceneIndexCompositeNodeBuil
 
 	@Override
 	public <I> void idDslConverter(Class<I> valueType, ToDocumentValueConverter<I, String> converter) {
-		this.idDslConverter = new DslConverter<>( valueType, converter );
+		this.idDslConverter = DslConverter.delegate( valueType, converter );
 	}
 
 	@Override
 	public void idParser(ToDocumentValueConverter<String, String> converter) {
-		this.idParser = new DslConverter<>( String.class, converter );
+		this.idParser = DslConverter.delegate( String.class, converter );
 	}
 
 	@Override
@@ -104,7 +104,7 @@ public class LuceneIndexRootBuilder extends AbstractLuceneIndexCompositeNodeBuil
 
 		LuceneIndexNodeCollector collector = new LuceneIndexNodeCollector() {
 			@Override
-			public void collect(String absoluteFieldPath, LuceneIndexValueField<?> node) {
+			public void collect(String absoluteFieldPath, LuceneIndexValueField<?, ?> node) {
 				staticFields.put( absoluteFieldPath, node );
 			}
 

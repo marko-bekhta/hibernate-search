@@ -10,8 +10,6 @@ import java.util.Optional;
 import org.hibernate.search.backend.lucene.logging.impl.Log;
 import org.hibernate.search.backend.lucene.search.common.impl.LuceneSearchIndexScope;
 import org.hibernate.search.backend.lucene.search.common.impl.LuceneSearchIndexValueFieldContext;
-import org.hibernate.search.backend.lucene.types.codec.impl.LuceneStandardFieldCodec;
-import org.hibernate.search.engine.backend.types.converter.spi.DslConverter;
 import org.hibernate.search.engine.search.common.ValueModel;
 import org.hibernate.search.util.common.data.Range;
 import org.hibernate.search.util.common.logging.impl.LoggerFactory;
@@ -22,9 +20,9 @@ public abstract class AbstractLuceneLeafSingleFieldPredicate extends AbstractLuc
 
 	private static final Log log = LoggerFactory.make( Log.class, MethodHandles.lookup() );
 
-	private final AbstractBuilder<?> builder;
+	private final AbstractBuilder<?, ?> builder;
 
-	protected AbstractLuceneLeafSingleFieldPredicate(AbstractBuilder<?> builder) {
+	protected AbstractLuceneLeafSingleFieldPredicate(AbstractBuilder<?, ?> builder) {
 		super( builder );
 		this.builder = builder;
 	}
@@ -34,47 +32,44 @@ public abstract class AbstractLuceneLeafSingleFieldPredicate extends AbstractLuc
 		return builder.buildQuery( context );
 	}
 
-	public abstract static class AbstractBuilder<F>
+	public abstract static class AbstractBuilder<F, E>
 			extends AbstractLuceneSingleFieldPredicate.AbstractBuilder {
-		protected final LuceneSearchIndexValueFieldContext<F> field;
+		protected final LuceneSearchIndexValueFieldContext<F, E> field;
 
-		protected AbstractBuilder(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<F> field) {
+		protected AbstractBuilder(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<F, E> field) {
 			super( scope, field );
 			this.field = field;
 		}
 
 		protected abstract Query buildQuery(PredicateRequestContext context);
 
-		protected <E> E convertAndEncode(LuceneStandardFieldCodec<F, E> codec, Object value, ValueModel valueModel) {
-			DslConverter<?, ? extends F> toFieldValueConverter = field.type().dslConverter( valueModel );
+		protected E convertAndEncode(Object value, ValueModel valueModel) {
 			try {
-				F converted = toFieldValueConverter.unknownTypeToDocumentValue( value,
-						scope.toDocumentValueConvertContext() );
-				return codec.encode( converted );
+				return field.type().dslConverter( valueModel )
+						.unknownTypeToDocumentValue( value, scope.toDocumentValueConvertContext() );
 			}
 			catch (RuntimeException e) {
 				throw log.cannotConvertDslParameter( e.getMessage(), e, field.eventContext() );
 			}
 		}
 
-		protected <E> Range<E> convertAndEncode(LuceneStandardFieldCodec<F, E> codec, Range<?> range,
-				ValueModel lowerBoundModel,
-				ValueModel upperBoundModel) {
+		protected Range<E> convertAndEncode(Range<?> range,
+											ValueModel lowerBoundModel,
+											ValueModel upperBoundModel) {
 			return Range.between(
-					convertAndEncode( codec, range.lowerBoundValue(), lowerBoundModel ),
+					convertAndEncode( range.lowerBoundValue(), lowerBoundModel ),
 					range.lowerBoundInclusion(),
-					convertAndEncode( codec, range.upperBoundValue(), upperBoundModel ),
+					convertAndEncode( range.upperBoundValue(), upperBoundModel ),
 					range.upperBoundInclusion()
 			);
 		}
 
-		private <E> E convertAndEncode(LuceneStandardFieldCodec<F, E> codec, Optional<?> valueOptional,
-				ValueModel valueModel) {
+		private E convertAndEncode(Optional<?> valueOptional, ValueModel valueModel) {
 			if ( valueOptional.isEmpty() ) {
 				return null;
 			}
 			else {
-				return convertAndEncode( codec, valueOptional.get(), valueModel );
+				return convertAndEncode( valueOptional.get(), valueModel );
 			}
 		}
 	}

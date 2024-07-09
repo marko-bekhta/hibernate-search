@@ -9,10 +9,10 @@ import org.hibernate.search.engine.search.common.spi.SearchIndexValueFieldTypeCo
 
 import org.apache.lucene.analysis.Analyzer;
 
-public interface LuceneSearchIndexValueFieldTypeContext<F>
-		extends SearchIndexValueFieldTypeContext<LuceneSearchIndexScope<?>, LuceneSearchIndexValueFieldContext<F>, F> {
+public interface LuceneSearchIndexValueFieldTypeContext<F, E>
+		extends SearchIndexValueFieldTypeContext<LuceneSearchIndexScope<?>, LuceneSearchIndexValueFieldContext<F, E>, F, E> {
 
-	LuceneFieldCodec<F, ?> codec();
+	LuceneFieldCodec<F, E> codec();
 
 	Analyzer searchAnalyzerOrNormalizer();
 

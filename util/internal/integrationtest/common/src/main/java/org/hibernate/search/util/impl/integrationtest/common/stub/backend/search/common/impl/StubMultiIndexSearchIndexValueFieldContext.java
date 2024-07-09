@@ -9,31 +9,32 @@ import java.util.List;
 import org.hibernate.search.engine.search.common.spi.AbstractMultiIndexSearchIndexValueFieldContext;
 import org.hibernate.search.engine.search.common.spi.SearchIndexSchemaElementContextHelper;
 
-public class StubMultiIndexSearchIndexValueFieldContext<F>
+public class StubMultiIndexSearchIndexValueFieldContext<F, E>
 		extends AbstractMultiIndexSearchIndexValueFieldContext<
-				StubSearchIndexValueFieldContext<F>,
+				StubSearchIndexValueFieldContext<F, E>,
 				StubSearchIndexScope,
-				StubSearchIndexValueFieldTypeContext<F>,
-				F>
-		implements StubSearchIndexValueFieldContext<F>, StubSearchIndexValueFieldTypeContext<F> {
+				StubSearchIndexValueFieldTypeContext<F, E>,
+				F,
+				E>
+		implements StubSearchIndexValueFieldContext<F, E>, StubSearchIndexValueFieldTypeContext<F, E> {
 
 	public StubMultiIndexSearchIndexValueFieldContext(StubSearchIndexScope scope, String absolutePath,
-			List<? extends StubSearchIndexValueFieldContext<F>> fieldForEachIndex) {
+			List<? extends StubSearchIndexValueFieldContext<F, E>> fieldForEachIndex) {
 		super( scope, absolutePath, fieldForEachIndex );
 	}
 
 	@Override
-	protected StubSearchIndexValueFieldContext<F> self() {
+	protected StubSearchIndexValueFieldContext<F, E> self() {
 		return this;
 	}
 
 	@Override
-	protected StubSearchIndexValueFieldTypeContext<F> selfAsNodeType() {
+	protected StubSearchIndexValueFieldTypeContext<F, E> selfAsNodeType() {
 		return this;
 	}
 
 	@Override
-	protected StubSearchIndexValueFieldTypeContext<F> typeOf(StubSearchIndexValueFieldContext<F> indexElement) {
+	protected StubSearchIndexValueFieldTypeContext<F, E> typeOf(StubSearchIndexValueFieldContext<F, E> indexElement) {
 		return indexElement.type();
 	}
 

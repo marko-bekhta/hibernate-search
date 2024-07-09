@@ -38,7 +38,7 @@ abstract class AbstractStubIndexCompositeNodeBuilder implements IndexCompositeNo
 			TreeNodeInclusion inclusion, IndexFieldType<F> indexFieldType) {
 		StubIndexSchemaDataNode.Builder childSchemaNodeBuilder =
 				StubIndexSchemaDataNode.field( schemaDataNodeBuilder, relativeFieldName );
-		StubIndexValueFieldType<F> stubType = (StubIndexValueFieldType<F>) indexFieldType;
+		StubIndexValueFieldType<F, ?> stubType = (StubIndexValueFieldType<F, ?>) indexFieldType;
 		stubType.apply( childSchemaNodeBuilder );
 		if ( TreeNodeInclusion.INCLUDED.equals( inclusion ) ) {
 			getRootNodeBuilder().getBackendBehavior().onAddField(
@@ -47,7 +47,7 @@ abstract class AbstractStubIndexCompositeNodeBuilder implements IndexCompositeNo
 			);
 			schemaDataNodeBuilder.child( childSchemaNodeBuilder );
 		}
-		StubIndexValueFieldBuilder<F> childBuilder =
+		StubIndexValueFieldBuilder<F, ?> childBuilder =
 				new StubIndexValueFieldBuilder<>( childSchemaNodeBuilder, inclusion, stubType );
 		fieldBuilders.put( relativeFieldName, childBuilder );
 		return childBuilder;
@@ -90,7 +90,7 @@ abstract class AbstractStubIndexCompositeNodeBuilder implements IndexCompositeNo
 			TreeNodeInclusion inclusion, IndexFieldType<?> indexFieldType, String prefix) {
 		StubIndexSchemaDataNode.Builder childBuilder =
 				StubIndexSchemaDataNode.fieldTemplate( schemaDataNodeBuilder, templateName );
-		StubIndexValueFieldType<?> stubType = (StubIndexValueFieldType<?>) indexFieldType;
+		StubIndexValueFieldType<?, ?> stubType = (StubIndexValueFieldType<?, ?>) indexFieldType;
 		stubType.apply( childBuilder );
 		if ( TreeNodeInclusion.INCLUDED.equals( inclusion ) ) {
 			schemaDataNodeBuilder.child( childBuilder );

@@ -11,8 +11,8 @@ import org.hibernate.search.backend.lucene.types.codec.impl.LuceneFieldCodec;
 import org.hibernate.search.engine.search.common.spi.SearchQueryElementFactory;
 import org.hibernate.search.util.common.logging.impl.LoggerFactory;
 
-public abstract class AbstractLuceneCodecAwareSearchQueryElementFactory<T, F, C extends LuceneFieldCodec<F, ?>>
-		extends AbstractLuceneValueFieldSearchQueryElementFactory<T, F> {
+public abstract class AbstractLuceneCodecAwareSearchQueryElementFactory<T, F, E, C extends LuceneFieldCodec<F, E>>
+		extends AbstractLuceneValueFieldSearchQueryElementFactory<T, F, E> {
 
 	private static final Log log = LoggerFactory.make( Log.class, MethodHandles.lookup() );
 
@@ -25,8 +25,8 @@ public abstract class AbstractLuceneCodecAwareSearchQueryElementFactory<T, F, C 
 	@Override
 	public void checkCompatibleWith(SearchQueryElementFactory<?, ?, ?> other) {
 		super.checkCompatibleWith( other );
-		AbstractLuceneCodecAwareSearchQueryElementFactory<?, ?, ?> castedOther =
-				(AbstractLuceneCodecAwareSearchQueryElementFactory<?, ?, ?>) other;
+		AbstractLuceneCodecAwareSearchQueryElementFactory<?, ?, ?, ?> castedOther =
+				(AbstractLuceneCodecAwareSearchQueryElementFactory<?, ?, ?, ?>) other;
 		if ( !codec.isCompatibleWith( castedOther.codec ) ) {
 			throw log.differentFieldCodecForQueryElement( codec, castedOther.codec );
 		}

@@ -48,7 +48,7 @@ abstract class AbstractLuceneDocumentElementBuilder implements DocumentElement {
 	public <F> void addValue(IndexFieldReference<F> fieldReference, F value) {
 		LuceneIndexFieldReference<F> luceneFieldReference = (LuceneIndexFieldReference<F>) fieldReference;
 
-		LuceneIndexValueField<F> fieldSchemaNode = luceneFieldReference.getSchemaNode();
+		LuceneIndexValueField<F, ?> fieldSchemaNode = luceneFieldReference.getSchemaNode();
 
 		addValue( fieldSchemaNode, value );
 	}
@@ -165,11 +165,11 @@ abstract class AbstractLuceneDocumentElementBuilder implements DocumentElement {
 	 */
 	abstract void ensureDynamicValueDetectedByExistsPredicateOnObjectField();
 
-	private <F> void addValue(LuceneIndexValueField<F> node, F value) {
+	private <F> void addValue(LuceneIndexValueField<F, ?> node, F value) {
 		LuceneIndexCompositeNode expectedParentNode = node.parent();
 		checkTreeConsistency( expectedParentNode );
 
-		LuceneIndexValueFieldType<F> type = node.type();
+		LuceneIndexValueFieldType<F, ?> type = node.type();
 		String absolutePath = node.absolutePath();
 
 		if ( !node.multiValued() ) {
@@ -211,7 +211,7 @@ abstract class AbstractLuceneDocumentElementBuilder implements DocumentElement {
 	}
 
 	@SuppressWarnings("unchecked") // We check types explicitly using reflection
-	private void addValueUnknownType(LuceneIndexValueField<?> node, Object value) {
+	private void addValueUnknownType(LuceneIndexValueField<?, ?> node, Object value) {
 		if ( value == null ) {
 			addValue( node, null );
 		}

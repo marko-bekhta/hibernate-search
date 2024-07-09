@@ -31,7 +31,7 @@ public class LuceneFieldHighlightProjection<T> implements LuceneSearchProjection
 	private final String absoluteFieldPath;
 	private final String highlighterName;
 	private final String nestedDocumentPath;
-	private final LuceneSearchIndexValueFieldTypeContext<?> typeContext;
+	private final LuceneSearchIndexValueFieldTypeContext<?, ?> typeContext;
 	private final ProjectionAccumulator.Provider<String, T> accumulatorProvider;
 
 	private LuceneFieldHighlightProjection(Builder builder, ProjectionAccumulator.Provider<String, T> accumulatorProvider) {
@@ -39,7 +39,7 @@ public class LuceneFieldHighlightProjection<T> implements LuceneSearchProjection
 	}
 
 	LuceneFieldHighlightProjection(LuceneSearchIndexScope<?> scope,
-			LuceneSearchIndexValueFieldContext<?> field,
+			LuceneSearchIndexValueFieldContext<?, ?> field,
 			String highlighterName, ProjectionAccumulator.Provider<String, T> accumulatorProvider) {
 		this.indexNames = scope.hibernateSearchIndexNames();
 		this.analyzer = field.type().searchAnalyzerOrNormalizer();
@@ -145,11 +145,11 @@ public class LuceneFieldHighlightProjection<T> implements LuceneSearchProjection
 		protected abstract List<String> highlight(int doc) throws IOException;
 	}
 
-	public static class Factory<F>
-			extends AbstractLuceneValueFieldSearchQueryElementFactory<HighlightProjectionBuilder, F> {
+	public static class Factory<F, E>
+			extends AbstractLuceneValueFieldSearchQueryElementFactory<HighlightProjectionBuilder, F, E> {
 		@Override
 		public HighlightProjectionBuilder create(LuceneSearchIndexScope<?> scope,
-				LuceneSearchIndexValueFieldContext<F> field) {
+				LuceneSearchIndexValueFieldContext<F, E> field) {
 			if ( field.nestedDocumentPath() != null ) {
 				// see HSEARCH-4841 to remove this limitation.
 				throw log.cannotHighlightFieldFromNestedObjectStructure(
@@ -162,9 +162,9 @@ public class LuceneFieldHighlightProjection<T> implements LuceneSearchProjection
 
 	public static class Builder extends HighlightProjectionBuilder {
 		private final LuceneSearchIndexScope<?> scope;
-		private final LuceneSearchIndexValueFieldContext<?> field;
+		private final LuceneSearchIndexValueFieldContext<?, ?> field;
 
-		public Builder(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<?> field) {
+		public Builder(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<?, ?> field) {
 			super( field.absolutePath() );
 			this.scope = scope;
 			this.field = field;

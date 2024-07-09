@@ -38,8 +38,8 @@ public final class StubMultiIndexSearchIndexCompositeNodeContext
 	}
 
 	@Override
-	public StubSearchIndexValueFieldContext<?> toValueField() {
-		return (StubSearchIndexValueFieldContext<?>) super.toValueField();
+	public StubSearchIndexValueFieldContext<?, ?> toValueField() {
+		return (StubSearchIndexValueFieldContext<?, ?>) super.toValueField();
 	}
 
 	@Override

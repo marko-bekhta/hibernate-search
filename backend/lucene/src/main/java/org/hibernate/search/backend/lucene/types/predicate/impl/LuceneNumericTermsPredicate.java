@@ -30,18 +30,21 @@ public class LuceneNumericTermsPredicate extends AbstractLuceneLeafSingleFieldPr
 
 	public static class Factory<F, E extends Number>
 			extends
-			AbstractLuceneCodecAwareSearchQueryElementFactory<TermsPredicateBuilder, F, AbstractLuceneNumericFieldCodec<F, E>> {
+			AbstractLuceneCodecAwareSearchQueryElementFactory<TermsPredicateBuilder,
+					F,
+					E,
+					AbstractLuceneNumericFieldCodec<F, E>> {
 		public Factory(AbstractLuceneNumericFieldCodec<F, E> codec) {
 			super( codec );
 		}
 
 		@Override
-		public Builder<F, E> create(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<F> field) {
+		public Builder<F, E> create(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<F, E> field) {
 			return new Builder<>( codec, scope, field );
 		}
 	}
 
-	private static class Builder<F, E extends Number> extends AbstractBuilder<F> implements TermsPredicateBuilder {
+	private static class Builder<F, E extends Number> extends AbstractBuilder<F, E> implements TermsPredicateBuilder {
 		private final AbstractLuceneNumericFieldCodec<F, E> codec;
 
 		private E term;
@@ -49,7 +52,7 @@ public class LuceneNumericTermsPredicate extends AbstractLuceneLeafSingleFieldPr
 		private boolean allMatch;
 
 		private Builder(AbstractLuceneNumericFieldCodec<F, E> codec, LuceneSearchIndexScope<?> scope,
-				LuceneSearchIndexValueFieldContext<F> field) {
+				LuceneSearchIndexValueFieldContext<F, E> field) {
 			super( scope, field );
 			// Score is always constant for this query
 			constantScore();
@@ -94,7 +97,7 @@ public class LuceneNumericTermsPredicate extends AbstractLuceneLeafSingleFieldPr
 
 		private void fillTerms(Collection<?> terms, ValueModel valueModel) {
 			if ( terms.size() == 1 ) {
-				this.term = convertAndEncode( codec, terms.iterator().next(), valueModel );
+				this.term = convertAndEncode( terms.iterator().next(), valueModel );
 				this.terms = null;
 				return;
 			}
@@ -102,7 +105,7 @@ public class LuceneNumericTermsPredicate extends AbstractLuceneLeafSingleFieldPr
 			this.term = null;
 			this.terms = new ArrayList<>( terms.size() );
 			for ( Object termItem : terms ) {
-				this.terms.add( convertAndEncode( codec, termItem, valueModel ) );
+				this.terms.add( convertAndEncode( termItem, valueModel ) );
 			}
 		}
 	}

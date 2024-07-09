@@ -13,10 +13,10 @@ import org.hibernate.search.engine.search.predicate.spi.CommonQueryStringPredica
 public final class LuceneCommonQueryStringPredicateBuilderFieldState
 		implements CommonQueryStringPredicateBuilder.FieldState {
 
-	private final LuceneSearchIndexValueFieldContext<?> field;
+	private final LuceneSearchIndexValueFieldContext<?, ?> field;
 	private Float boost;
 
-	private LuceneCommonQueryStringPredicateBuilderFieldState(LuceneSearchIndexValueFieldContext<?> field) {
+	private LuceneCommonQueryStringPredicateBuilderFieldState(LuceneSearchIndexValueFieldContext<?, ?> field) {
 		this.field = field;
 	}
 
@@ -25,7 +25,7 @@ public final class LuceneCommonQueryStringPredicateBuilderFieldState
 		this.boost = boost;
 	}
 
-	public LuceneSearchIndexValueFieldContext<?> field() {
+	public LuceneSearchIndexValueFieldContext<?, ?> field() {
 		return field;
 	}
 
@@ -33,15 +33,16 @@ public final class LuceneCommonQueryStringPredicateBuilderFieldState
 		return boost;
 	}
 
-	public static class Factory<T, C extends LuceneFieldCodec<T, ?>>
-			extends AbstractLuceneCodecAwareSearchQueryElementFactory<LuceneCommonQueryStringPredicateBuilderFieldState, T, C> {
+	public static class Factory<T, E, C extends LuceneFieldCodec<T, E>>
+			extends
+			AbstractLuceneCodecAwareSearchQueryElementFactory<LuceneCommonQueryStringPredicateBuilderFieldState, T, E, C> {
 		public Factory(C codec) {
 			super( codec );
 		}
 
 		@Override
 		public LuceneCommonQueryStringPredicateBuilderFieldState create(LuceneSearchIndexScope<?> scope,
-				LuceneSearchIndexValueFieldContext<T> field) {
+				LuceneSearchIndexValueFieldContext<T, E> field) {
 			return new LuceneCommonQueryStringPredicateBuilderFieldState( field );
 		}
 	}

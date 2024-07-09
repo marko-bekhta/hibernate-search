@@ -91,9 +91,9 @@ public class StubFieldProjection<F, V, A, P> extends StubSearchProjection<P> {
 	}
 
 	public static class TypeSelector<F> implements FieldProjectionBuilder.TypeSelector {
-		private final StubSearchIndexValueFieldContext<F> field;
+		private final StubSearchIndexValueFieldContext<F, ?> field;
 
-		public TypeSelector(StubSearchIndexValueFieldContext<F> field) {
+		public TypeSelector(StubSearchIndexValueFieldContext<F, ?> field) {
 			this.field = field;
 		}
 

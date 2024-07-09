@@ -15,10 +15,10 @@ class LuceneIndexValueFieldTemplateBuilder
 				LuceneIndexValueFieldTemplateBuilder,
 				LuceneIndexValueFieldTemplate> {
 
-	private final LuceneIndexValueFieldType<?> type;
+	private final LuceneIndexValueFieldType<?, ?> type;
 
 	LuceneIndexValueFieldTemplateBuilder(AbstractLuceneIndexCompositeNodeBuilder parent,
-			String templateName, TreeNodeInclusion inclusion, LuceneIndexValueFieldType<?> type, String prefix) {
+			String templateName, TreeNodeInclusion inclusion, LuceneIndexValueFieldType<?, ?> type, String prefix) {
 		super( parent, templateName, inclusion, prefix );
 		this.type = type;
 	}

@@ -182,12 +182,12 @@ class DocumentIdDefaultBridgeBaseIT<I> {
 		setup( typeDescriptor, expectations );
 		// This cast may be unsafe, but only if something is deeply wrong, and then an exception will be thrown below
 		@SuppressWarnings("unchecked")
-		DslConverter<I, ?> dslConverter =
-				(DslConverter<I, ?>) index1Model.identifier().mappingDslConverter();
-		DslConverter<?, ?> compatibleDslConverter =
+		DslConverter<I, ?, ?> dslConverter =
+				(DslConverter<I, ?, ?>) index1Model.identifier().mappingDslConverter();
+		DslConverter<?, ?, ?> compatibleDslConverter =
 				index2Model.identifier().mappingDslConverter();
-		DslConverter<?, ?> incompatibleDslConverter =
-				new DslConverter<>( typeDescriptor.getJavaType(), new IncompatibleToDocumentValueConverter<>() );
+		DslConverter<?, ?, ?> incompatibleDslConverter =
+				DslConverter.delegate( typeDescriptor.getJavaType(), new IncompatibleToDocumentValueConverter<>() );
 		ToDocumentValueConvertContext convertContext =
 				new ToDocumentValueConvertContextImpl( BridgeTestUtils.toBackendMappingContext( mapping ) );
 

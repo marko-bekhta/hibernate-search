@@ -23,7 +23,7 @@ public final class ElasticsearchIndexValueField<F>
 				ElasticsearchSearchIndexScope<?>,
 				ElasticsearchIndexValueFieldType<F>,
 				ElasticsearchIndexCompositeNode,
-				F>
+				F, E>
 		implements ElasticsearchIndexField, ElasticsearchSearchIndexValueFieldContext<F> {
 
 	private static final Log log = LoggerFactory.make( Log.class, MethodHandles.lookup() );

@@ -6,10 +6,10 @@ package org.hibernate.search.backend.lucene.search.common.impl;
 
 import org.hibernate.search.engine.search.common.spi.SearchIndexValueFieldContext;
 
-public interface LuceneSearchIndexValueFieldContext<F>
+public interface LuceneSearchIndexValueFieldContext<F, E>
 		extends SearchIndexValueFieldContext<LuceneSearchIndexScope<?>>, LuceneSearchIndexNodeContext {
 
 	@Override
-	LuceneSearchIndexValueFieldTypeContext<F> type();
+	LuceneSearchIndexValueFieldTypeContext<F, E> type();
 
 }

@@ -34,7 +34,7 @@ import org.apache.lucene.index.VectorSimilarityFunction;
  * @param <F> The type of field values.
  */
 abstract class AbstractLuceneVectorFieldTypeOptionsStep<S extends AbstractLuceneVectorFieldTypeOptionsStep<?, F>, F>
-		extends AbstractLuceneIndexFieldTypeOptionsStep<S, F>
+		extends AbstractLuceneIndexFieldTypeOptionsStep<S, F, F>
 		implements LuceneVectorFieldTypeOptionsStep<S, F> {
 
 	private static final Log log = LoggerFactory.make( Log.class, MethodHandles.lookup() );
@@ -105,7 +105,7 @@ abstract class AbstractLuceneVectorFieldTypeOptionsStep<S extends AbstractLucene
 	}
 
 	@Override
-	public LuceneIndexValueFieldType<F> toIndexFieldType() {
+	public LuceneIndexValueFieldType<F, ?> toIndexFieldType() {
 		if ( dimension == null ) {
 			throw log.nullVectorDimension( buildContext.hints().missingVectorDimension(), buildContext.getEventContext() );
 		}
@@ -136,7 +136,7 @@ abstract class AbstractLuceneVectorFieldTypeOptionsStep<S extends AbstractLucene
 		return builder.build();
 	}
 
-	protected abstract AbstractLuceneValueFieldSearchQueryElementFactory<KnnPredicateBuilder, F> knnPredicateFactory();
+	protected abstract AbstractLuceneValueFieldSearchQueryElementFactory<KnnPredicateBuilder, F, F> knnPredicateFactory();
 
 	protected abstract AbstractLuceneVectorFieldCodec<F> createCodec(VectorSimilarityFunction vectorSimilarity, int dimension,
 			Storage storage, Indexing indexing, F indexNullAsValue, HibernateSearchKnnVectorsFormat knnVectorsFormat);

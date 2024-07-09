@@ -42,13 +42,13 @@ public class MultiIndexSearchIndexIdentifierContext
 	}
 
 	@Override
-	public DslConverter<?, String> mappingDslConverter() {
+	public DslConverter<?, String, String> mappingDslConverter() {
 		return fromContextsIfCompatible( SearchIndexIdentifierContext::mappingDslConverter, DslConverter::isCompatibleWith,
 				"mappingDslConverter" );
 	}
 
 	@Override
-	public DslConverter<?, String> parserDslConverter() {
+	public DslConverter<?, String, String> parserDslConverter() {
 		return fromContextsIfCompatible( SearchIndexIdentifierContext::parserDslConverter, DslConverter::isCompatibleWith,
 				"parserDslConverter" );
 	}

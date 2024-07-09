@@ -16,27 +16,27 @@ import org.hibernate.search.util.impl.integrationtest.common.stub.backend.docume
 import org.hibernate.search.util.impl.integrationtest.common.stub.backend.document.model.impl.StubIndexValueField;
 import org.hibernate.search.util.impl.integrationtest.common.stub.backend.types.impl.StubIndexValueFieldType;
 
-class StubIndexValueFieldBuilder<F>
-		implements IndexSchemaFieldOptionsStep<StubIndexValueFieldBuilder<F>, IndexFieldReference<F>>,
+class StubIndexValueFieldBuilder<F, E>
+		implements IndexSchemaFieldOptionsStep<StubIndexValueFieldBuilder<F, E>, IndexFieldReference<F>>,
 		StubIndexFieldBuilder {
 
 	private final StubIndexSchemaDataNode.Builder schemaDataNodeBuilder;
 	private final TreeNodeInclusion inclusion;
-	private final StubIndexValueFieldType<F> type;
+	private final StubIndexValueFieldType<F, E> type;
 
 	private boolean multiValued;
 
 	private IndexFieldReference<F> reference;
 
 	StubIndexValueFieldBuilder(StubIndexSchemaDataNode.Builder schemaDataNodeBuilder, TreeNodeInclusion inclusion,
-			StubIndexValueFieldType<F> type) {
+			StubIndexValueFieldType<F, E> type) {
 		this.schemaDataNodeBuilder = schemaDataNodeBuilder;
 		this.inclusion = inclusion;
 		this.type = type;
 	}
 
 	@Override
-	public StubIndexValueFieldBuilder<F> multiValued() {
+	public StubIndexValueFieldBuilder<F, E> multiValued() {
 		this.multiValued = true;
 		schemaDataNodeBuilder.multiValued( true );
 		return this;

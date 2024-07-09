@@ -47,7 +47,7 @@ public class LuceneGeoPointDistanceSort extends AbstractLuceneDocumentValueSort 
 			extends AbstractLuceneValueFieldSearchQueryElementFactory<DistanceSortBuilder, GeoPoint> {
 		@Override
 		public DistanceSortBuilder create(LuceneSearchIndexScope<?> scope,
-				LuceneSearchIndexValueFieldContext<GeoPoint> field) {
+				LuceneSearchIndexValueFieldContext<GeoPoint, E> field) {
 			return new Builder( scope, field );
 		}
 	}
@@ -56,7 +56,7 @@ public class LuceneGeoPointDistanceSort extends AbstractLuceneDocumentValueSort 
 		private GeoPoint center;
 		private Object missingValue;
 
-		private Builder(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<GeoPoint> field) {
+		private Builder(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<GeoPoint, E> field) {
 			super( scope, field );
 		}
 

@@ -8,6 +8,7 @@ import org.hibernate.search.engine.backend.types.converter.spi.DslConverter;
 import org.hibernate.search.engine.backend.types.converter.spi.ProjectionConverter;
 import org.hibernate.search.engine.search.common.ValueModel;
 import org.hibernate.search.engine.search.highlighter.spi.SearchHighlighterType;
+import org.hibernate.search.util.common.AssertionFailure;
 import org.hibernate.search.util.common.annotation.Incubating;
 
 /**
@@ -21,26 +22,27 @@ import org.hibernate.search.util.common.annotation.Incubating;
 public interface SearchIndexValueFieldTypeContext<
 		SC extends SearchIndexScope<?>,
 		N,
-		F>
+		F,
+		E>
 		extends SearchIndexNodeTypeContext<SC, N> {
 
 	Class<F> valueClass();
 
-	DslConverter<?, F> mappingDslConverter();
+	DslConverter<?, F, E> mappingDslConverter();
 
-	DslConverter<F, F> indexDslConverter();
+	DslConverter<F, F, E> indexDslConverter();
 
-	DslConverter<?, F> rawDslConverter();
+	DslConverter<E, E, E> rawDslConverter();
 
 	@Incubating
-	DslConverter<?, F> parserDslConverter();
+	DslConverter<?, F, E> parserDslConverter();
 
-	default DslConverter<?, F> dslConverter(ValueModel valueModel) {
+	default DslConverter<?, F, E> dslConverter(ValueModel valueModel) {
 		switch ( valueModel ) {
 			case INDEX:
 				return indexDslConverter();
 			case RAW:
-				return rawDslConverter();
+				throw new AssertionFailure( "Raw Dsl converter is not supported" );
 			case STRING:
 				return parserDslConverter();
 			case MAPPING:

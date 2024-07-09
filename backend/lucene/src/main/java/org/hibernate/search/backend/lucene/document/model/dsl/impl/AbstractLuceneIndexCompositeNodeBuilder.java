@@ -56,7 +56,7 @@ abstract class AbstractLuceneIndexCompositeNodeBuilder
 	@Override
 	public <F> IndexSchemaFieldOptionsStep<?, IndexFieldReference<F>> addField(
 			String relativeFieldName, TreeNodeInclusion inclusion, IndexFieldType<F> indexFieldType) {
-		LuceneIndexValueFieldType<F> luceneIndexFieldType = (LuceneIndexValueFieldType<F>) indexFieldType;
+		LuceneIndexValueFieldType<F, ?> luceneIndexFieldType = (LuceneIndexValueFieldType<F, ?>) indexFieldType;
 		LuceneIndexValueFieldBuilder<F> childBuilder = new LuceneIndexValueFieldBuilder<>(
 				this, relativeFieldName, inclusion, luceneIndexFieldType
 		);
@@ -90,9 +90,9 @@ abstract class AbstractLuceneIndexCompositeNodeBuilder
 	public IndexSchemaFieldTemplateOptionsStep<?> addFieldTemplate(String templateName,
 			TreeNodeInclusion inclusion, IndexFieldType<?> indexFieldType, String prefix) {
 		String prefixedTemplateName = FieldPaths.prefix( prefix, templateName );
-		LuceneIndexValueFieldType<?> elasticsearchIndexFieldType = (LuceneIndexValueFieldType<?>) indexFieldType;
+		LuceneIndexValueFieldType<?, ?> luceneIndexValueFieldType = (LuceneIndexValueFieldType<?,?>) indexFieldType;
 		LuceneIndexValueFieldTemplateBuilder templateBuilder = new LuceneIndexValueFieldTemplateBuilder(
-				this, prefixedTemplateName, inclusion, elasticsearchIndexFieldType, prefix
+				this, prefixedTemplateName, inclusion, luceneIndexValueFieldType, prefix
 		);
 		putTemplate( prefixedTemplateName, templateBuilder );
 		return templateBuilder;

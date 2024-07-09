@@ -29,31 +29,31 @@ public class LuceneTextRangePredicate extends AbstractLuceneLeafSingleFieldPredi
 
 	public static class Factory<F>
 			extends
-			AbstractLuceneCodecAwareSearchQueryElementFactory<RangePredicateBuilder, F, LuceneStandardFieldCodec<F, String>> {
+			AbstractLuceneCodecAwareSearchQueryElementFactory<RangePredicateBuilder,
+					F,
+					String,
+					LuceneStandardFieldCodec<F, String>> {
 		public Factory(LuceneStandardFieldCodec<F, String> codec) {
 			super( codec );
 		}
 
 		@Override
-		public Builder<F> create(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<F> field) {
-			return new Builder<>( codec, scope, field );
+		public Builder<F> create(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<F, String> field) {
+			return new Builder<>( scope, field );
 		}
 	}
 
-	private static class Builder<F> extends AbstractBuilder<F> implements RangePredicateBuilder {
-		private final LuceneStandardFieldCodec<F, String> codec;
+	private static class Builder<F> extends AbstractBuilder<F, String> implements RangePredicateBuilder {
 
 		private Range<String> range;
 
-		private Builder(LuceneStandardFieldCodec<F, String> codec, LuceneSearchIndexScope<?> scope,
-				LuceneSearchIndexValueFieldContext<F> field) {
+		private Builder(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<F, String> field) {
 			super( scope, field );
-			this.codec = codec;
 		}
 
 		@Override
 		public void within(Range<?> range, ValueModel lowerBoundModel, ValueModel upperBoundModel) {
-			this.range = convertAndEncode( codec, range, lowerBoundModel, upperBoundModel );
+			this.range = convertAndEncode( range, lowerBoundModel, upperBoundModel );
 		}
 
 		@Override

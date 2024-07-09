@@ -12,26 +12,27 @@ import org.hibernate.search.util.impl.integrationtest.common.stub.backend.search
 import org.hibernate.search.util.impl.integrationtest.common.stub.backend.search.common.impl.StubSearchIndexValueFieldContext;
 import org.hibernate.search.util.impl.integrationtest.common.stub.backend.types.impl.StubIndexValueFieldType;
 
-public final class StubIndexValueField<F>
+public final class StubIndexValueField<F, E>
 		extends AbstractIndexValueField<
-				StubIndexValueField<F>,
+				StubIndexValueField<F, E>,
 				StubSearchIndexScope,
-				StubIndexValueFieldType<F>,
+				StubIndexValueFieldType<F, E>,
 				StubIndexCompositeNode,
-				F>
-		implements StubIndexField, StubSearchIndexValueFieldContext<F> {
+				F,
+				E>
+		implements StubIndexField, StubSearchIndexValueFieldContext<F, E> {
 
 	private final StubIndexSchemaDataNode schemaData;
 
 	public StubIndexValueField(StubIndexCompositeNode parent, String relativeFieldName,
-			StubIndexValueFieldType<F> type, TreeNodeInclusion inclusion, boolean multiValued,
+			StubIndexValueFieldType<F, E> type, TreeNodeInclusion inclusion, boolean multiValued,
 			StubIndexSchemaDataNode schemaData) {
 		super( parent, relativeFieldName, type, inclusion, multiValued );
 		this.schemaData = schemaData;
 	}
 
 	@Override
-	protected StubIndexValueField<F> self() {
+	protected StubIndexValueField<F, E> self() {
 		return this;
 	}
 

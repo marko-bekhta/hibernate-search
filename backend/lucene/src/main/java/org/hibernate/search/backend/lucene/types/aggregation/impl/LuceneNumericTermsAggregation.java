@@ -59,6 +59,7 @@ public class LuceneNumericTermsAggregation<F, E extends Number, K>
 			extends
 			AbstractLuceneCodecAwareSearchQueryElementFactory<TermsAggregationBuilder.TypeSelector,
 					F,
+					E,
 					AbstractLuceneNumericFieldCodec<F, ?>> {
 		public Factory(AbstractLuceneNumericFieldCodec<F, ?> codec) {
 			super( codec );
@@ -66,7 +67,7 @@ public class LuceneNumericTermsAggregation<F, E extends Number, K>
 
 		@Override
 		public TermsAggregationBuilder.TypeSelector create(LuceneSearchIndexScope<?> scope,
-				LuceneSearchIndexValueFieldContext<F> field) {
+				LuceneSearchIndexValueFieldContext<F, E> field) {
 			return new TypeSelector<>( codec, scope, field );
 		}
 	}
@@ -126,7 +127,7 @@ public class LuceneNumericTermsAggregation<F, E extends Number, K>
 		private final AbstractLuceneNumericFieldCodec<F, ?> codec;
 
 		private TypeSelector(AbstractLuceneNumericFieldCodec<F, ?> codec,
-				LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<F> field) {
+				LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<F, E> field) {
 			super( scope, field );
 			this.codec = codec;
 		}
@@ -145,7 +146,7 @@ public class LuceneNumericTermsAggregation<F, E extends Number, K>
 		private final AbstractLuceneNumericFieldCodec<F, E> codec;
 
 		public Builder(AbstractLuceneNumericFieldCodec<F, E> codec, LuceneSearchIndexScope<?> scope,
-				LuceneSearchIndexValueFieldContext<F> field, ProjectionConverter<F, ? extends K> fromFieldValueConverter) {
+				LuceneSearchIndexValueFieldContext<F, E> field, ProjectionConverter<F, ? extends K> fromFieldValueConverter) {
 			super( scope, field, fromFieldValueConverter );
 			this.codec = codec;
 		}

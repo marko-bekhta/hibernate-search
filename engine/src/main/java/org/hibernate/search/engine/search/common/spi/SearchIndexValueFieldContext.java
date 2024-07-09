@@ -13,6 +13,6 @@ package org.hibernate.search.engine.search.common.spi;
 public interface SearchIndexValueFieldContext<SC extends SearchIndexScope<?>>
 		extends SearchIndexNodeContext<SC> {
 
-	SearchIndexValueFieldTypeContext<SC, ?, ?> type();
+	SearchIndexValueFieldTypeContext<SC, ?, ?, ?> type();
 
 }

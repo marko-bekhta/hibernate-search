@@ -31,13 +31,13 @@ class LuceneIndexValueFieldBuilder<F>
 	private final String relativeFieldName;
 	private final String absoluteFieldPath;
 	private final TreeNodeInclusion inclusion;
-	private final LuceneIndexValueFieldType<F> type;
+	private final LuceneIndexValueFieldType<F, ?> type;
 	private boolean multiValued = false;
 
 	private LuceneIndexFieldReference<F> reference;
 
 	LuceneIndexValueFieldBuilder(AbstractLuceneIndexCompositeNodeBuilder parent,
-			String relativeFieldName, TreeNodeInclusion inclusion, LuceneIndexValueFieldType<F> type) {
+			String relativeFieldName, TreeNodeInclusion inclusion, LuceneIndexValueFieldType<F, ?> type) {
 		this.parent = parent;
 		this.relativeFieldName = relativeFieldName;
 		this.absoluteFieldPath = FieldPaths.compose( parent.getAbsolutePath(), relativeFieldName );
@@ -75,7 +75,7 @@ class LuceneIndexValueFieldBuilder<F>
 		if ( reference == null ) {
 			throw log.incompleteFieldDefinition( eventContext() );
 		}
-		LuceneIndexValueField<F> fieldNode = new LuceneIndexValueField<>( parentNode, relativeFieldName, type,
+		LuceneIndexValueField<F, ?> fieldNode = new LuceneIndexValueField<>( parentNode, relativeFieldName, type,
 				inclusion, multiValued, false );
 
 		staticChildrenByNameForParent.put( relativeFieldName, fieldNode );

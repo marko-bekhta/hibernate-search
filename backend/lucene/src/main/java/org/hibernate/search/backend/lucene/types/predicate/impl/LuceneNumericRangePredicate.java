@@ -29,13 +29,16 @@ public class LuceneNumericRangePredicate extends AbstractLuceneLeafSingleFieldPr
 
 	public static class Factory<F, E extends Number>
 			extends
-			AbstractLuceneCodecAwareSearchQueryElementFactory<RangePredicateBuilder, F, AbstractLuceneNumericFieldCodec<F, E>> {
+			AbstractLuceneCodecAwareSearchQueryElementFactory<RangePredicateBuilder,
+					F,
+					E,
+					AbstractLuceneNumericFieldCodec<F, E>> {
 		public Factory(AbstractLuceneNumericFieldCodec<F, E> codec) {
 			super( codec );
 		}
 
 		@Override
-		public Builder<F, E> create(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<F> field) {
+		public Builder<F, E> create(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<F, E> field) {
 			return new Builder<>( codec, scope, field );
 		}
 	}
@@ -47,14 +50,14 @@ public class LuceneNumericRangePredicate extends AbstractLuceneLeafSingleFieldPr
 		private Range<E> range;
 
 		Builder(AbstractLuceneNumericFieldCodec<F, E> codec, LuceneSearchIndexScope<?> scope,
-				LuceneSearchIndexValueFieldContext<F> field) {
+				LuceneSearchIndexValueFieldContext<F, E> field) {
 			super( scope, field );
 			this.codec = codec;
 		}
 
 		@Override
 		public void within(Range<?> range, ValueModel lowerBoundModel, ValueModel upperBoundModel) {
-			this.range = convertAndEncode( codec, range, lowerBoundModel, upperBoundModel );
+			this.range = convertAndEncode(range, lowerBoundModel, upperBoundModel );
 		}
 
 		@Override

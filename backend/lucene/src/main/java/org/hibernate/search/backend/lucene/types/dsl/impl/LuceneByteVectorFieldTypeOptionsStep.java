@@ -28,7 +28,7 @@ class LuceneByteVectorFieldTypeOptionsStep
 	}
 
 	@Override
-	protected AbstractLuceneValueFieldSearchQueryElementFactory<KnnPredicateBuilder, byte[]> knnPredicateFactory() {
+	protected AbstractLuceneValueFieldSearchQueryElementFactory<KnnPredicateBuilder, byte[], byte[]> knnPredicateFactory() {
 		return new LuceneKnnPredicate.ByteFactory();
 	}
 

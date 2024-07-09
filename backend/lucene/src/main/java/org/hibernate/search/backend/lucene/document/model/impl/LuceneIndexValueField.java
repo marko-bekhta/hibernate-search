@@ -17,28 +17,29 @@ import org.hibernate.search.engine.search.common.spi.SearchIndexSchemaElementCon
 import org.hibernate.search.util.common.logging.impl.LoggerFactory;
 import org.hibernate.search.util.common.reporting.EventContext;
 
-public final class LuceneIndexValueField<F>
+public final class LuceneIndexValueField<F, E>
 		extends AbstractIndexValueField<
-				LuceneIndexValueField<F>,
+				LuceneIndexValueField<F, E>,
 				LuceneSearchIndexScope<?>,
-				LuceneIndexValueFieldType<F>,
+				LuceneIndexValueFieldType<F, E>,
 				LuceneIndexCompositeNode,
-				F>
-		implements LuceneIndexField, LuceneSearchIndexValueFieldContext<F> {
+				F,
+				E>
+		implements LuceneIndexField, LuceneSearchIndexValueFieldContext<F, E> {
 
 	private static final Log log = LoggerFactory.make( Log.class, MethodHandles.lookup() );
 
 	private final boolean dynamic;
 
 	public LuceneIndexValueField(LuceneIndexCompositeNode parent, String relativeFieldName,
-			LuceneIndexValueFieldType<F> type, TreeNodeInclusion inclusion, boolean multiValued,
+			LuceneIndexValueFieldType<F, E> type, TreeNodeInclusion inclusion, boolean multiValued,
 			boolean dynamic) {
 		super( parent, relativeFieldName, type, inclusion, multiValued );
 		this.dynamic = dynamic;
 	}
 
 	@Override
-	protected LuceneIndexValueField<F> self() {
+	protected LuceneIndexValueField<F, E> self() {
 		return this;
 	}
 
@@ -53,11 +54,11 @@ public final class LuceneIndexValueField<F>
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T> LuceneIndexValueField<? super T> withValueType(Class<T> expectedSubType, EventContext eventContext) {
+	public <T> LuceneIndexValueField<? super T, E> withValueType(Class<T> expectedSubType, EventContext eventContext) {
 		if ( !type.valueClass().isAssignableFrom( expectedSubType ) ) {
 			throw log.invalidFieldValueType( type.valueClass(), expectedSubType,
 					eventContext.append( EventContexts.fromIndexFieldAbsolutePath( absolutePath ) ) );
 		}
-		return (LuceneIndexValueField<? super T>) this;
+		return (LuceneIndexValueField<? super T, E>) this;
 	}
 }

@@ -37,7 +37,7 @@ public class LuceneTextPhrasePredicate extends AbstractLuceneLeafSingleFieldPred
 	public static class Factory<F>
 			extends AbstractLuceneValueFieldSearchQueryElementFactory<PhrasePredicateBuilder, F> {
 		@Override
-		public Builder<F> create(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<F> field) {
+		public Builder<F> create(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<F, E> field) {
 			return new Builder<>( scope, field );
 		}
 	}
@@ -51,7 +51,7 @@ public class LuceneTextPhrasePredicate extends AbstractLuceneLeafSingleFieldPred
 
 		private Analyzer overrideAnalyzer;
 
-		private Builder(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<F> field) {
+		private Builder(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<F, E> field) {
 			super( scope, field );
 			this.analysisDefinitionRegistry = scope.analysisDefinitionRegistry();
 		}

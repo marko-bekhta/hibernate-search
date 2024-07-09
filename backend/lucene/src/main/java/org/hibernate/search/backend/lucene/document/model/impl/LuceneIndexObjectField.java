@@ -42,7 +42,7 @@ public final class LuceneIndexObjectField
 	}
 
 	@Override
-	public LuceneIndexValueField<?> toValueField() {
+	public LuceneIndexValueField<?, ?> toValueField() {
 		return SearchIndexSchemaElementContextHelper.throwingToValueField( this );
 	}
 

@@ -9,7 +9,7 @@ import org.hibernate.search.engine.backend.document.IndexFieldReference;
 
 public class LuceneIndexFieldReference<F> implements IndexFieldReference<F> {
 
-	private LuceneIndexValueField<F> schemaNode;
+	private LuceneIndexValueField<F, ?> schemaNode;
 
 	@Override
 	public String toString() {
@@ -17,11 +17,11 @@ public class LuceneIndexFieldReference<F> implements IndexFieldReference<F> {
 				+ "[absolutePath=" + ( schemaNode == null ? null : schemaNode.absolutePath() ) + "]";
 	}
 
-	public void setSchemaNode(LuceneIndexValueField<F> schemaNode) {
+	public void setSchemaNode(LuceneIndexValueField<F, ?> schemaNode) {
 		this.schemaNode = schemaNode;
 	}
 
-	LuceneIndexValueField<F> getSchemaNode() {
+	LuceneIndexValueField<F, ?> getSchemaNode() {
 		return schemaNode;
 	}
 }

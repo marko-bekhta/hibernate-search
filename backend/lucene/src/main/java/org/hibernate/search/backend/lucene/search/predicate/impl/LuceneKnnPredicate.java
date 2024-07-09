@@ -58,7 +58,7 @@ public abstract class LuceneKnnPredicate<T> extends AbstractLuceneSingleFieldPre
 		private Float similarity;
 
 		@SuppressWarnings("unchecked")
-		protected Builder(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<F> field) {
+		protected Builder(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<F, ?> field) {
 			super( scope, field );
 
 			LuceneFieldCodec<F, ?> codec = field.type().codec();
@@ -110,18 +110,21 @@ public abstract class LuceneKnnPredicate<T> extends AbstractLuceneSingleFieldPre
 		}
 	}
 
-	public static class FloatFactory extends AbstractLuceneValueFieldSearchQueryElementFactory<KnnPredicateBuilder, float[]> {
+	public static class FloatFactory
+			extends AbstractLuceneValueFieldSearchQueryElementFactory<KnnPredicateBuilder, float[], float[]> {
 		@Override
-		public KnnPredicateBuilder create(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<float[]> field) {
+		public KnnPredicateBuilder create(LuceneSearchIndexScope<?> scope,
+				LuceneSearchIndexValueFieldContext<float[], float[]> field) {
 			return new LuceneFloatKnnPredicate.FloatBuilder( scope, field );
 		}
 	}
 
 	public static class ByteFactory
 			extends
-			AbstractLuceneValueFieldSearchQueryElementFactory<KnnPredicateBuilder, byte[]> {
+			AbstractLuceneValueFieldSearchQueryElementFactory<KnnPredicateBuilder, byte[], byte[]> {
 		@Override
-		public KnnPredicateBuilder create(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<byte[]> field) {
+		public KnnPredicateBuilder create(LuceneSearchIndexScope<?> scope,
+				LuceneSearchIndexValueFieldContext<byte[], byte[]> field) {
 			return new LuceneByteKnnPredicate.ByteBuilder( scope, field );
 		}
 	}
@@ -141,7 +144,7 @@ public abstract class LuceneKnnPredicate<T> extends AbstractLuceneSingleFieldPre
 		}
 
 		private static class ByteBuilder extends Builder<byte[]> {
-			protected ByteBuilder(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<byte[]> field) {
+			protected ByteBuilder(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<byte[], byte[]> field) {
 				super( scope, field );
 			}
 
@@ -165,7 +168,7 @@ public abstract class LuceneKnnPredicate<T> extends AbstractLuceneSingleFieldPre
 		}
 
 		private static class FloatBuilder extends Builder<float[]> {
-			protected FloatBuilder(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<float[]> field) {
+			protected FloatBuilder(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<float[], float[]> field) {
 				super( scope, field );
 			}
 

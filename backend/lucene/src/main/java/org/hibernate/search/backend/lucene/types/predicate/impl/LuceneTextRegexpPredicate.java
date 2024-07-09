@@ -22,23 +22,23 @@ import org.apache.lucene.util.automaton.RegExp;
 
 public class LuceneTextRegexpPredicate extends AbstractLuceneLeafSingleFieldPredicate {
 
-	private LuceneTextRegexpPredicate(Builder<?> builder) {
+	private LuceneTextRegexpPredicate(Builder<?, ?> builder) {
 		super( builder );
 	}
 
-	public static class Factory<F>
-			extends AbstractLuceneValueFieldSearchQueryElementFactory<RegexpPredicateBuilder, F> {
+	public static class Factory<F, E>
+			extends AbstractLuceneValueFieldSearchQueryElementFactory<RegexpPredicateBuilder, F, E> {
 		@Override
-		public Builder<F> create(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<F> field) {
+		public Builder<F, E> create(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<F, E> field) {
 			return new Builder<>( scope, field );
 		}
 	}
 
-	private static class Builder<F> extends AbstractBuilder<F> implements RegexpPredicateBuilder {
+	private static class Builder<F, E> extends AbstractBuilder<F, E> implements RegexpPredicateBuilder {
 		private String pattern;
 		private int flags = RegExp.NONE;
 
-		private Builder(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<F> field) {
+		private Builder(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<F, E> field) {
 			super( scope, field );
 		}
 

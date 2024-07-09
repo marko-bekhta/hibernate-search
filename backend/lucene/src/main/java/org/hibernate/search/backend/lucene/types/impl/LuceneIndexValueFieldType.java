@@ -9,33 +9,30 @@ import org.hibernate.search.backend.lucene.search.common.impl.LuceneSearchIndexV
 import org.hibernate.search.backend.lucene.search.common.impl.LuceneSearchIndexValueFieldTypeContext;
 import org.hibernate.search.backend.lucene.types.codec.impl.LuceneFieldCodec;
 import org.hibernate.search.engine.backend.types.IndexFieldType;
-import org.hibernate.search.engine.backend.types.converter.FromDocumentValueConverter;
-import org.hibernate.search.engine.backend.types.converter.ToDocumentValueConverter;
-import org.hibernate.search.engine.backend.types.converter.runtime.FromDocumentValueConvertContext;
-import org.hibernate.search.engine.backend.types.converter.runtime.ToDocumentValueConvertContext;
 import org.hibernate.search.engine.backend.types.converter.spi.DslConverter;
 import org.hibernate.search.engine.backend.types.converter.spi.ProjectionConverter;
 import org.hibernate.search.engine.backend.types.spi.AbstractIndexValueFieldType;
 
 import org.apache.lucene.analysis.Analyzer;
 
-public final class LuceneIndexValueFieldType<F>
+public final class LuceneIndexValueFieldType<F, E>
 		extends AbstractIndexValueFieldType<
 				LuceneSearchIndexScope<?>,
-				LuceneSearchIndexValueFieldContext<F>,
-				F>
-		implements IndexFieldType<F>, LuceneSearchIndexValueFieldTypeContext<F> {
+				LuceneSearchIndexValueFieldContext<F, E>,
+				F,
+				E>
+		implements IndexFieldType<F>, LuceneSearchIndexValueFieldTypeContext<F, E> {
 
-	private final LuceneFieldCodec<F, ?> codec;
+	private final LuceneFieldCodec<F, E> codec;
 	private final Analyzer indexingAnalyzerOrNormalizer;
 	private final Analyzer searchAnalyzerOrNormalizer;
 	private final boolean hasTermVectorsConfigured;
 	private final ProjectionConverter<F, ?> rawProjectionConverter;
-	private final DslConverter<?, F> rawDslConverter;
+	private final DslConverter<E, E, E> rawDslConverter;
 
-	private LuceneIndexValueFieldType(Builder<F> builder) {
+	private LuceneIndexValueFieldType(Builder<F, E> builder) {
 		super( builder );
-		this.codec = builder.codec;
+		this.codec = builder.codec();
 		this.indexingAnalyzerOrNormalizer = builder.indexingAnalyzerOrNormalizer;
 		this.searchAnalyzerOrNormalizer = builder.searchAnalyzerOrNormalizer;
 		this.hasTermVectorsConfigured = builder.hasTermVectorsConfigured;
@@ -44,15 +41,15 @@ public final class LuceneIndexValueFieldType<F>
 	}
 
 	private static <F, E> ProjectionConverter<F, E> rawProjectionConverter(LuceneFieldCodec<F, E> codec) {
-		return new ProjectionConverter<>( codec.encodedType(), new RawConverter<>( codec ) );
+		return new ProjectionConverter<>( codec.encodedType(), null );
 	}
 
-	private static <F, E> DslConverter<E, F> rawDslConverter(LuceneFieldCodec<F, E> codec) {
-		return new DslConverter<>( codec.encodedType(), new RawConverter<>( codec ) );
+	private static <E> DslConverter<E, E, E> rawDslConverter(LuceneFieldCodec<?, E> codec) {
+		return DslConverter.passThrough( codec.encodedType() );
 	}
 
 	@Override
-	public LuceneFieldCodec<F, ?> codec() {
+	public LuceneFieldCodec<F, E> codec() {
 		return codec;
 	}
 
@@ -71,7 +68,7 @@ public final class LuceneIndexValueFieldType<F>
 	}
 
 	@Override
-	public DslConverter<?, F> rawDslConverter() {
+	public DslConverter<E, E, E> rawDslConverter() {
 		return rawDslConverter;
 	}
 
@@ -80,13 +77,13 @@ public final class LuceneIndexValueFieldType<F>
 		return rawProjectionConverter;
 	}
 
-	public static class Builder<F>
+	public static class Builder<F, E>
 			extends AbstractIndexValueFieldType.Builder<
 					LuceneSearchIndexScope<?>,
-					LuceneSearchIndexValueFieldContext<F>,
-					F> {
+					LuceneSearchIndexValueFieldContext<F, E>,
+					F,
+					E> {
 
-		private LuceneFieldCodec<F, ?> codec;
 		private Analyzer indexingAnalyzerOrNormalizer;
 		private Analyzer searchAnalyzerOrNormalizer;
 		private boolean hasTermVectorsConfigured;
@@ -95,8 +92,8 @@ public final class LuceneIndexValueFieldType<F>
 			super( valueClass );
 		}
 
-		public void codec(LuceneFieldCodec<F, ?> codec) {
-			this.codec = codec;
+		LuceneFieldCodec<F, E> codec() {
+			return (LuceneFieldCodec<F, E>) codec;
 		}
 
 		public void indexingAnalyzerOrNormalizer(Analyzer analyzer) {
@@ -116,42 +113,8 @@ public final class LuceneIndexValueFieldType<F>
 		}
 
 		@Override
-		public LuceneIndexValueFieldType<F> build() {
+		public LuceneIndexValueFieldType<F, E> build() {
 			return new LuceneIndexValueFieldType<>( this );
-		}
-	}
-
-	private static class RawConverter<F, E> implements ToDocumentValueConverter<E, F>, FromDocumentValueConverter<F, E> {
-		private final LuceneFieldCodec<F, E> codec;
-
-		private RawConverter(LuceneFieldCodec<F, E> codec) {
-			this.codec = codec;
-		}
-
-		@Override
-		public E fromDocumentValue(F value, FromDocumentValueConvertContext context) {
-			return value == null ? null : codec.encode( value );
-		}
-
-		@Override
-		public F toDocumentValue(E value, ToDocumentValueConvertContext context) {
-			return value == null ? null : codec.decode( value );
-		}
-
-		@Override
-		public boolean isCompatibleWith(FromDocumentValueConverter<?, ?> other) {
-			if ( other instanceof RawConverter ) {
-				return codec.isCompatibleWith( ( (RawConverter<?, ?>) other ).codec );
-			}
-			return false;
-		}
-
-		@Override
-		public boolean isCompatibleWith(ToDocumentValueConverter<?, ?> other) {
-			if ( other instanceof RawConverter ) {
-				return codec.isCompatibleWith( ( (RawConverter<?, ?>) other ).codec );
-			}
-			return false;
 		}
 	}
 }

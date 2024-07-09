@@ -13,7 +13,7 @@ import org.hibernate.search.util.impl.integrationtest.common.stub.backend.types.
 abstract class AbstractStubIndexFieldTypeOptionsStep<S extends AbstractStubIndexFieldTypeOptionsStep<?, F>, F>
 		implements IndexFieldTypeOptionsStep<S, F> {
 
-	protected final StubIndexValueFieldType.Builder<F> builder;
+	protected final StubIndexValueFieldType.Builder<F, ?> builder;
 
 	AbstractStubIndexFieldTypeOptionsStep(Class<F> inputType) {
 		this.builder = new StubIndexValueFieldType.Builder<>( inputType );

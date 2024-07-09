@@ -18,7 +18,7 @@ public interface LuceneIndexNode
 	LuceneIndexObjectField toObjectField();
 
 	@Override
-	LuceneIndexValueField<?> toValueField();
+	LuceneIndexValueField<?, ?> toValueField();
 
 	boolean dynamic();
 

@@ -186,13 +186,14 @@ public class LuceneDistanceToFieldProjection<P> extends AbstractLuceneProjection
 			extends
 			AbstractLuceneCodecAwareSearchQueryElementFactory<DistanceToFieldProjectionBuilder,
 					GeoPoint,
-					LuceneFieldCodec<GeoPoint, ?>> {
-		public Factory(LuceneFieldCodec<GeoPoint, ?> codec) {
+					byte[],
+					LuceneFieldCodec<GeoPoint, byte[]>> {
+		public Factory(LuceneFieldCodec<GeoPoint, byte[]> codec) {
 			super( codec );
 		}
 
 		@Override
-		public Builder create(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<GeoPoint> field) {
+		public Builder create(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<GeoPoint, byte[]> field) {
 			// Fail early if the nested structure differs in the case of multi-index search.
 			field.nestedPathHierarchy();
 			return new Builder( codec, scope, field );
@@ -206,13 +207,13 @@ public class LuceneDistanceToFieldProjection<P> extends AbstractLuceneProjection
 
 		private final LuceneFieldCodec<GeoPoint, ?> codec;
 
-		private final LuceneSearchIndexValueFieldContext<GeoPoint> field;
+		private final LuceneSearchIndexValueFieldContext<GeoPoint, ?> field;
 
 		private GeoPoint center;
 		private DistanceUnit unit = DistanceUnit.METERS;
 
 		private Builder(LuceneFieldCodec<GeoPoint, ?> codec, LuceneSearchIndexScope<?> scope,
-				LuceneSearchIndexValueFieldContext<GeoPoint> field) {
+				LuceneSearchIndexValueFieldContext<GeoPoint, byte[]> field) {
 			super( scope );
 			this.codec = codec;
 			this.field = field;

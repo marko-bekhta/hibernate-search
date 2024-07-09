@@ -13,6 +13,6 @@ public interface StubSearchIndexNodeContext
 	StubSearchIndexCompositeNodeContext toComposite();
 
 	@Override
-	StubSearchIndexValueFieldContext<?> toValueField();
+	StubSearchIndexValueFieldContext<?, ?> toValueField();
 
 }

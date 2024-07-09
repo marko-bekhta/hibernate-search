@@ -39,8 +39,8 @@ public class StubIndexRootBuilder extends AbstractStubIndexCompositeNodeBuilder
 	private final String indexName;
 	private final String mappedTypeName;
 
-	private DslConverter<?, String> idDslConverter;
-	private DslConverter<String, String> idParser;
+	private DslConverter<?, String, String> idDslConverter;
+	private DslConverter<String, String, String> idParser;
 	private ProjectionConverter<String, ?> idProjectionConverter;
 
 	public StubIndexRootBuilder(StubBackendBehavior backendBehavior, String indexName, String mappedTypeName) {
@@ -67,12 +67,12 @@ public class StubIndexRootBuilder extends AbstractStubIndexCompositeNodeBuilder
 
 	@Override
 	public <I> void idDslConverter(Class<I> valueType, ToDocumentValueConverter<I, String> converter) {
-		this.idDslConverter = new DslConverter<>( valueType, converter );
+		this.idDslConverter = DslConverter.delegate( valueType, converter );
 	}
 
 	@Override
 	public void idParser(ToDocumentValueConverter<String, String> converter) {
-		this.idParser = new DslConverter<>( String.class, converter );
+		this.idParser = DslConverter.delegate( String.class, converter );
 	}
 
 	@Override

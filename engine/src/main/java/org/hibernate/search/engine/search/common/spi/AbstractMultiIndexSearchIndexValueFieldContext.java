@@ -14,10 +14,11 @@ import org.hibernate.search.engine.search.highlighter.spi.SearchHighlighterType;
 public abstract class AbstractMultiIndexSearchIndexValueFieldContext<
 		S extends SearchIndexValueFieldContext<SC>,
 		SC extends SearchIndexScope<?>,
-		FT extends SearchIndexValueFieldTypeContext<SC, S, F>,
-		F>
+		FT extends SearchIndexValueFieldTypeContext<SC, S, F, E>,
+		F,
+		E>
 		extends AbstractMultiIndexSearchIndexNodeContext<S, SC, FT>
-		implements SearchIndexValueFieldContext<SC>, SearchIndexValueFieldTypeContext<SC, S, F> {
+		implements SearchIndexValueFieldContext<SC>, SearchIndexValueFieldTypeContext<SC, S, F, E> {
 	public AbstractMultiIndexSearchIndexValueFieldContext(SC scope, String absolutePath,
 			List<? extends S> fieldForEachIndex) {
 		super( scope, absolutePath, fieldForEachIndex );
@@ -70,19 +71,19 @@ public abstract class AbstractMultiIndexSearchIndexValueFieldContext<
 	}
 
 	@Override
-	public final DslConverter<?, F> mappingDslConverter() {
+	public final DslConverter<?, F, E> mappingDslConverter() {
 		return fromTypeIfCompatible( SearchIndexValueFieldTypeContext::mappingDslConverter, DslConverter::isCompatibleWith,
 				"mappingDslConverter" );
 	}
 
 	@Override
-	public final DslConverter<F, F> indexDslConverter() {
+	public final DslConverter<F, F, E> indexDslConverter() {
 		return fromTypeIfCompatible( SearchIndexValueFieldTypeContext::indexDslConverter, DslConverter::isCompatibleWith,
 				"indexDslConverter" );
 	}
 
 	@Override
-	public DslConverter<?, F> rawDslConverter() {
+	public DslConverter<E, E, E> rawDslConverter() {
 		return fromTypeIfCompatible( SearchIndexValueFieldTypeContext::rawDslConverter, DslConverter::isCompatibleWith,
 				"rawDslConverter" );
 	}
@@ -106,14 +107,15 @@ public abstract class AbstractMultiIndexSearchIndexValueFieldContext<
 	}
 
 	@Override
-	public DslConverter<?, F> parserDslConverter() {
+	public DslConverter<?, F, E> parserDslConverter() {
 		return fromTypeIfCompatible( SearchIndexValueFieldTypeContext::parserDslConverter, DslConverter::isCompatibleWith,
 				"parserDslConverter" );
 	}
 
 	@Override
 	public ProjectionConverter<F, ?> formatterProjectionConverter() {
-		return fromTypeIfCompatible( SearchIndexValueFieldTypeContext::formatterProjectionConverter, ProjectionConverter::isCompatibleWith,
+		return fromTypeIfCompatible( SearchIndexValueFieldTypeContext::formatterProjectionConverter,
+				ProjectionConverter::isCompatibleWith,
 				"formatterProjectionConverter" );
 	}
 

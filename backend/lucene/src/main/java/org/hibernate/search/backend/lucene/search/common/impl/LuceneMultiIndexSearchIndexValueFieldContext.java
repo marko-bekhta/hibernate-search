@@ -12,31 +12,32 @@ import org.hibernate.search.engine.search.common.spi.SearchIndexSchemaElementCon
 
 import org.apache.lucene.analysis.Analyzer;
 
-public class LuceneMultiIndexSearchIndexValueFieldContext<F>
+public class LuceneMultiIndexSearchIndexValueFieldContext<F, E>
 		extends AbstractMultiIndexSearchIndexValueFieldContext<
-				LuceneSearchIndexValueFieldContext<F>,
+				LuceneSearchIndexValueFieldContext<F, E>,
 				LuceneSearchIndexScope<?>,
-				LuceneSearchIndexValueFieldTypeContext<F>,
-				F>
-		implements LuceneSearchIndexValueFieldContext<F>, LuceneSearchIndexValueFieldTypeContext<F> {
+				LuceneSearchIndexValueFieldTypeContext<F, E>,
+				F,
+				E>
+		implements LuceneSearchIndexValueFieldContext<F, E>, LuceneSearchIndexValueFieldTypeContext<F, E> {
 
 	public LuceneMultiIndexSearchIndexValueFieldContext(LuceneSearchIndexScope<?> scope, String absolutePath,
-			List<? extends LuceneSearchIndexValueFieldContext<F>> fieldForEachIndex) {
+			List<? extends LuceneSearchIndexValueFieldContext<F, E>> fieldForEachIndex) {
 		super( scope, absolutePath, fieldForEachIndex );
 	}
 
 	@Override
-	protected LuceneSearchIndexValueFieldContext<F> self() {
+	protected LuceneSearchIndexValueFieldContext<F, E> self() {
 		return this;
 	}
 
 	@Override
-	protected LuceneSearchIndexValueFieldTypeContext<F> selfAsNodeType() {
+	protected LuceneSearchIndexValueFieldTypeContext<F, E> selfAsNodeType() {
 		return this;
 	}
 
 	@Override
-	protected LuceneSearchIndexValueFieldTypeContext<F> typeOf(LuceneSearchIndexValueFieldContext<F> indexElement) {
+	protected LuceneSearchIndexValueFieldTypeContext<F, E> typeOf(LuceneSearchIndexValueFieldContext<F, E> indexElement) {
 		return indexElement.type();
 	}
 
@@ -63,7 +64,7 @@ public class LuceneMultiIndexSearchIndexValueFieldContext<F>
 	}
 
 	@Override
-	public LuceneFieldCodec<F, ?> codec() {
+	public LuceneFieldCodec<F, E> codec() {
 		return fromTypeIfCompatible( LuceneSearchIndexValueFieldTypeContext::codec, LuceneFieldCodec::isCompatibleWith,
 				"codec" );
 	}

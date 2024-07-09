@@ -30,31 +30,34 @@ public class LuceneNumericMatchPredicate extends AbstractLuceneLeafSingleFieldPr
 
 	public static class Factory<F, E extends Number>
 			extends
-			AbstractLuceneCodecAwareSearchQueryElementFactory<MatchPredicateBuilder, F, AbstractLuceneNumericFieldCodec<F, E>> {
+			AbstractLuceneCodecAwareSearchQueryElementFactory<MatchPredicateBuilder,
+					F,
+					E,
+					AbstractLuceneNumericFieldCodec<F, E>> {
 		public Factory(AbstractLuceneNumericFieldCodec<F, E> codec) {
 			super( codec );
 		}
 
 		@Override
-		public Builder<F, E> create(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<F> field) {
+		public Builder<F, E> create(LuceneSearchIndexScope<?> scope, LuceneSearchIndexValueFieldContext<F, E> field) {
 			return new Builder<>( codec, scope, field );
 		}
 	}
 
-	private static class Builder<F, E extends Number> extends AbstractBuilder<F> implements MatchPredicateBuilder {
+	private static class Builder<F, E extends Number> extends AbstractBuilder<F, E> implements MatchPredicateBuilder {
 		private final AbstractLuceneNumericFieldCodec<F, E> codec;
 
 		private E value;
 
 		private Builder(AbstractLuceneNumericFieldCodec<F, E> codec, LuceneSearchIndexScope<?> scope,
-				LuceneSearchIndexValueFieldContext<F> field) {
+				LuceneSearchIndexValueFieldContext<F, E> field) {
 			super( scope, field );
 			this.codec = codec;
 		}
 
 		@Override
 		public void value(Object value, ValueModel valueModel) {
-			this.value = convertAndEncode( codec, value, valueModel );
+			this.value = convertAndEncode( value, valueModel );
 		}
 
 		@Override

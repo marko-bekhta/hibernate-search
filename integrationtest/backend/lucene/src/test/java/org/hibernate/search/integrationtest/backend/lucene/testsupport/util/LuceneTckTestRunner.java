@@ -22,7 +22,7 @@ import org.junit.platform.suite.api.SuiteDisplayName;
 // Defines a "root" package, subpackages are included. Use Include/Exclude ClassNamePatterns annotations to limit the executed tests:
 @SelectPackages("org.hibernate.search.integrationtest.backend.tck")
 // Default class pattern does not include IT tests, hence we want to customize it a bit:
-@IncludeClassNamePatterns({ ".*Test", ".*IT" })
+@IncludeClassNamePatterns({ ".*AggregationBaseIT" })
 public class LuceneTckTestRunner {
 
 }

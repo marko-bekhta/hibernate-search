@@ -12,7 +12,7 @@ import org.hibernate.search.engine.backend.types.IndexFieldType;
 import org.hibernate.search.engine.search.projection.spi.ProjectionTypeKeys;
 
 class LuceneNativeIndexFieldTypeOptionsStep<F>
-		extends AbstractLuceneIndexFieldTypeOptionsStep<LuceneNativeIndexFieldTypeOptionsStep<F>, F> {
+		extends AbstractLuceneIndexFieldTypeOptionsStep<LuceneNativeIndexFieldTypeOptionsStep<F>, F, E> {
 
 	private final LuceneFieldContributor<F> fieldContributor;
 	private final LuceneFieldValueExtractor<F> fieldValueExtractor;
