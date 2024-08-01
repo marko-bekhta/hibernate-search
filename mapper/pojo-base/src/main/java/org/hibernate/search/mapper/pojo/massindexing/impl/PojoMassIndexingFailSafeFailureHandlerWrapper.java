@@ -5,11 +5,15 @@
 package org.hibernate.search.mapper.pojo.massindexing.impl;
 
 import java.lang.invoke.MethodHandles;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.hibernate.search.mapper.pojo.logging.impl.Log;
 import org.hibernate.search.mapper.pojo.massindexing.MassIndexingEntityFailureContext;
 import org.hibernate.search.mapper.pojo.massindexing.MassIndexingFailureContext;
 import org.hibernate.search.mapper.pojo.massindexing.MassIndexingFailureHandler;
+import org.hibernate.search.util.common.impl.Closer;
+import org.hibernate.search.util.common.impl.SuppressingCloser;
 import org.hibernate.search.util.common.logging.impl.LoggerFactory;
 
 public class PojoMassIndexingFailSafeFailureHandlerWrapper implements MassIndexingFailureHandler {
@@ -17,6 +21,8 @@ public class PojoMassIndexingFailSafeFailureHandlerWrapper implements MassIndexi
 	private static final Log log = LoggerFactory.make( Log.class, MethodHandles.lookup() );
 
 	private final MassIndexingFailureHandler delegate;
+
+	private final List<Runnable> callbacks = new ArrayList<>();
 
 	public PojoMassIndexingFailSafeFailureHandlerWrapper(MassIndexingFailureHandler delegate) {
 		this.delegate = delegate;
@@ -29,6 +35,7 @@ public class PojoMassIndexingFailSafeFailureHandlerWrapper implements MassIndexi
 		}
 		catch (Throwable t) {
 			log.failureInMassIndexingFailureHandler( t );
+			executeCallbacks();
 		}
 	}
 
@@ -39,6 +46,7 @@ public class PojoMassIndexingFailSafeFailureHandlerWrapper implements MassIndexi
 		}
 		catch (Throwable t) {
 			log.failureInMassIndexingFailureHandler( t );
+			executeCallbacks();
 		}
 	}
 
@@ -50,6 +58,16 @@ public class PojoMassIndexingFailSafeFailureHandlerWrapper implements MassIndexi
 		catch (Throwable t) {
 			log.failureInMassIndexingFailureHandler( t );
 			return MassIndexingFailureHandler.super.failureFloodingThreshold();
+		}
+	}
+
+	public void addCallback(Runnable callback) {
+		callbacks.add( callback );
+	}
+
+	private void executeCallbacks() {
+		try ( Closer<RuntimeException> closer = new Closer<>() ) {
+			closer.pushAll( Runnable::run, callbacks );
 		}
 	}
 }

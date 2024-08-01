@@ -64,7 +64,8 @@ public class PojoMassIndexingBatchCoordinator extends PojoMassIndexingFailureHan
 			PojoScopeDelegate<?, ?, ?> pojoScopeDelegate,
 			MassIndexingEnvironment environment,
 			int typesToIndexInParallel, int documentBuilderThreads, Boolean mergeSegmentsOnFinish,
-			boolean dropAndCreateSchemaOnStart, Boolean purgeAtStart, Boolean mergeSegmentsAfterPurge) {
+			boolean dropAndCreateSchemaOnStart, Boolean purgeAtStart, Boolean mergeSegmentsAfterPurge,
+			boolean failFast) {
 		super( notifier, environment );
 		this.mappingContext = mappingContext;
 		this.typeGroupsToIndex = typeGroupsToIndex;
@@ -83,6 +84,10 @@ public class PojoMassIndexingBatchCoordinator extends PojoMassIndexingFailureHan
 				mappingContext.threadPoolProvider(),
 				mappingContext.failureHandler()
 		);
+
+		if ( failFast ) {
+			getNotifier().addFailureHandlerCallback( this::cleanUpOnFailure );
+		}
 	}
 
 	@Override

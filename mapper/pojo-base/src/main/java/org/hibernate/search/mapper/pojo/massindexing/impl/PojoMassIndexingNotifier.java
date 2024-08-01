@@ -18,7 +18,6 @@ import org.hibernate.search.engine.common.EntityReference;
 import org.hibernate.search.mapper.pojo.logging.impl.Log;
 import org.hibernate.search.mapper.pojo.massindexing.MassIndexingEntityFailureContext;
 import org.hibernate.search.mapper.pojo.massindexing.MassIndexingFailureContext;
-import org.hibernate.search.mapper.pojo.massindexing.MassIndexingFailureHandler;
 import org.hibernate.search.mapper.pojo.massindexing.MassIndexingMonitor;
 import org.hibernate.search.mapper.pojo.massindexing.spi.PojoMassIndexingSessionContext;
 import org.hibernate.search.util.common.logging.impl.LoggerFactory;
@@ -31,7 +30,7 @@ public class PojoMassIndexingNotifier {
 
 	private static final Log log = LoggerFactory.make( Log.class, MethodHandles.lookup() );
 
-	private final MassIndexingFailureHandler failureHandler;
+	private final PojoMassIndexingFailSafeFailureHandlerWrapper failureHandler;
 	private final MassIndexingMonitor monitor;
 
 	private final AtomicReference<RecordedFailure> firstFailure =
@@ -41,7 +40,7 @@ public class PojoMassIndexingNotifier {
 	private final long failureFloodingThreshold;
 
 	public PojoMassIndexingNotifier(
-			MassIndexingFailureHandler failureHandler, MassIndexingMonitor monitor, Long failureFloodingThreshold) {
+			PojoMassIndexingFailSafeFailureHandlerWrapper failureHandler, MassIndexingMonitor monitor, Long failureFloodingThreshold) {
 		this.failureHandler = failureHandler;
 		this.monitor = monitor;
 		this.failureFloodingThreshold = Optional.ofNullable( failureFloodingThreshold )
@@ -190,6 +189,10 @@ public class PojoMassIndexingNotifier {
 					firstFailure.throwable.getMessage(), firstFailure.throwable
 			);
 		}
+	}
+
+	void addFailureHandlerCallback(Runnable callback) {
+		failureHandler.addCallback( callback );
 	}
 
 	private RecordedFailure recordFailure(Exception exception, boolean recordSuppressed) {

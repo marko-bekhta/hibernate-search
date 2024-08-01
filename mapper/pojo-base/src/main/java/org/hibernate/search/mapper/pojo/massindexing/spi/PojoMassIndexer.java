@@ -159,4 +159,7 @@ public interface PojoMassIndexer {
 	 */
 	@Incubating
 	PojoMassIndexer failureFloodingThreshold(long threshold);
+
+	@Incubating
+	PojoMassIndexer failFast(boolean failFast);
 }
