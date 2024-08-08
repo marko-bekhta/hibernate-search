@@ -30,6 +30,7 @@ import org.hibernate.search.jakarta.batch.core.massindexing.util.impl.MassIndexi
 import org.hibernate.search.jakarta.batch.core.massindexing.util.impl.PartitionBound;
 import org.hibernate.search.jakarta.batch.core.massindexing.util.impl.PersistenceUtil;
 import org.hibernate.search.jakarta.batch.core.massindexing.util.impl.SerializationUtil;
+import org.hibernate.search.mapper.orm.loading.HibernateOrmBatchReindexOnlyCondition;
 import org.hibernate.search.mapper.orm.loading.spi.ConditionalExpression;
 import org.hibernate.search.util.common.logging.impl.LoggerFactory;
 
@@ -135,15 +136,14 @@ public class HibernateSearchPartitionMapper implements PartitionMapper {
 			);
 			int checkpointInterval =
 					MassIndexingJobParameters.Defaults.checkpointInterval( checkpointIntervalRaw, rowsPerPartition );
-			ConditionalExpression reindexOnly =
+			HibernateOrmBatchReindexOnlyCondition reindexOnly =
 					SerializationUtil.parseReindexOnlyParameters( reindexOnlyHql, serializedReindexOnlyParameters );
 
 			List<EntityTypeDescriptor<?, ?>> entityTypeDescriptors = jobData.getEntityTypeDescriptors();
 			List<PartitionBound> partitionBounds = new ArrayList<>();
 
 			for ( EntityTypeDescriptor<?, ?> entityTypeDescriptor : entityTypeDescriptors ) {
-				partitionBounds.addAll( buildPartitionUnitsFrom( ss, entityTypeDescriptor,
-						maxResults, rowsPerPartition, reindexOnly ) );
+				partitionBounds.addAll( buildPartitionUnitsFrom( ss, entityTypeDescriptor, maxResults, rowsPerPartition, reindexOnly ) );
 			}
 
 			// Build partition plan

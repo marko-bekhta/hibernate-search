@@ -11,12 +11,13 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.invoke.MethodHandles;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
 
 import org.hibernate.CacheMode;
 import org.hibernate.search.jakarta.batch.core.logging.impl.Log;
-import org.hibernate.search.mapper.orm.loading.spi.ConditionalExpression;
+import org.hibernate.search.mapper.orm.loading.HibernateOrmBatchReindexOnlyCondition;
 import org.hibernate.search.util.common.SearchException;
 import org.hibernate.search.util.common.impl.StringHelper;
 import org.hibernate.search.util.common.logging.impl.LoggerFactory;
@@ -110,21 +111,39 @@ public final class SerializationUtil {
 		}
 	}
 
-	public static ConditionalExpression parseReindexOnlyParameters(String reindexOnlyHql,
+	public static HibernateOrmBatchReindexOnlyCondition parseReindexOnlyParameters(
+			String reindexOnlyHql,
 			String serializedReindexOnlyParameters)
 			throws IOException, ClassNotFoundException {
 		if ( reindexOnlyHql == null ) {
 			return null;
 		}
 		else {
-			ConditionalExpression reindexOnly = new ConditionalExpression( reindexOnlyHql );
 			@SuppressWarnings("unchecked")
-			Map<String, ?> params = (Map<String, ?>) SerializationUtil.deserialize( serializedReindexOnlyParameters );
-			if ( params != null ) {
-				params.forEach( reindexOnly::param );
-			}
-			return reindexOnly;
+			Map<String, Object> params = (Map<String, Object>) SerializationUtil.deserialize( serializedReindexOnlyParameters );
+			return new HqlReindexOnlyCondition( reindexOnlyHql, params );
 		}
 
+	}
+
+	private static class HqlReindexOnlyCondition implements HibernateOrmBatchReindexOnlyCondition {
+
+		private final String reindexOnlyHql;
+		private final Map<String, Object> params;
+
+		public HqlReindexOnlyCondition(String reindexOnlyHql, Map<String, Object> params) {
+			this.reindexOnlyHql = reindexOnlyHql;
+			this.params = Collections.unmodifiableMap( params );
+		}
+
+		@Override
+		public String conditionString() {
+			return reindexOnlyHql;
+		}
+
+		@Override
+		public Map<String, Object> params() {
+			return params;
+		}
 	}
 }

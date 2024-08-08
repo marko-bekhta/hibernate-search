@@ -8,7 +8,11 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.OptionalInt;
 
 import jakarta.batch.api.BatchProperty;
 import jakarta.batch.api.chunk.AbstractItemReader;
@@ -37,6 +41,9 @@ import org.hibernate.search.jakarta.batch.core.massindexing.util.impl.MassIndexi
 import org.hibernate.search.jakarta.batch.core.massindexing.util.impl.PartitionBound;
 import org.hibernate.search.jakarta.batch.core.massindexing.util.impl.PersistenceUtil;
 import org.hibernate.search.jakarta.batch.core.massindexing.util.impl.SerializationUtil;
+import org.hibernate.search.mapper.orm.loading.HibernateOrmBatchIdentifierLoader;
+import org.hibernate.search.mapper.orm.loading.HibernateOrmBatchIdentifierLoadingOptions;
+import org.hibernate.search.mapper.orm.loading.HibernateOrmBatchReindexOnlyCondition;
 import org.hibernate.search.mapper.orm.loading.spi.ConditionalExpression;
 import org.hibernate.search.mapper.orm.tenancy.spi.TenancyConfiguration;
 import org.hibernate.search.util.common.impl.Closer;
@@ -124,7 +131,7 @@ public class EntityIdReader extends AbstractItemReader {
 
 	private int idFetchSize;
 	private Integer maxResults;
-	private ConditionalExpression reindexOnly;
+	private HibernateOrmBatchReindexOnlyCondition reindexOnly;
 	private Object upperBound;
 	private Object lowerBound;
 
@@ -259,6 +266,7 @@ public class EntityIdReader extends AbstractItemReader {
 
 	private class ChunkState implements AutoCloseable {
 		private StatelessSession session;
+		private HibernateOrmBatchIdentifierLoader identifierLoader;
 		private ScrollableResults<?> scroll;
 
 		private CheckpointInfo lastCheckpointInfo;
@@ -274,8 +282,9 @@ public class EntityIdReader extends AbstractItemReader {
 		 * @return The next element for this chunk.
 		 */
 		public Object next() {
-			if ( scroll == null ) {
-				start();
+			if ( identifierLoader == null ) {
+				HibernateOrmBatchIdentifierLoadingOptions options = null;
+				identifierLoader = createIdentifierLoader( type, options );
 			}
 			if ( !scroll.next() ) {
 				return null;
@@ -284,6 +293,11 @@ public class EntityIdReader extends AbstractItemReader {
 			lastProcessedEntityId = id;
 			++processedEntityCount;
 			return id;
+		}
+
+		private <E> HibernateOrmBatchIdentifierLoader createIdentifierLoader(EntityTypeDescriptor<E, ?> type,
+				HibernateOrmBatchIdentifierLoadingOptions options) {
+			return type.batchLoadingStrategy().createIdentifierLoader( type, options );
 		}
 
 		/**
@@ -315,6 +329,10 @@ public class EntityIdReader extends AbstractItemReader {
 				if ( scroll != null ) {
 					closer.push( ScrollableResults::close, scroll );
 					scroll = null;
+				}
+				if ( identifierLoader != null ) {
+					closer.push( HibernateOrmBatchIdentifierLoader::close, identifierLoader );
+					identifierLoader = null;
 				}
 				if ( session != null ) {
 					closer.push( StatelessSession::close, session );
@@ -404,4 +422,59 @@ public class EntityIdReader extends AbstractItemReader {
 		}
 	}
 
+	private static class LoadingOptions implements HibernateOrmBatchIdentifierLoadingOptions {
+
+		private final HibernateOrmBatchReindexOnlyCondition reindexOnly;
+		private final Map<Class<?>, Object> contextData;
+		private final int fetchSize;
+		private final Integer maxResults;
+		private final Object upperBound;
+		private final Object lowerBound;
+
+
+		LoadingOptions(StatelessSession session,
+				int fetchSize, Integer maxResults, Object upperBound, Object lowerBound,
+				HibernateOrmBatchReindexOnlyCondition reindexOnly) {
+			this.fetchSize = fetchSize;
+			this.maxResults = maxResults;
+			this.upperBound = upperBound;
+			this.lowerBound = lowerBound;
+			this.reindexOnly = reindexOnly;
+
+			this.contextData = new HashMap<>();
+
+			this.contextData.put( StatelessSession.class, session );
+		}
+
+		@Override
+		public int fetchSize() {
+			return fetchSize;
+		}
+
+		@Override
+		public OptionalInt maxResults() {
+			return maxResults == null ? OptionalInt.empty() : OptionalInt.of( maxResults );
+		}
+
+		@Override
+		public Optional<HibernateOrmBatchReindexOnlyCondition> reindexOnlyCondition() {
+			return Optional.ofNullable( reindexOnly );
+		}
+
+		@Override
+		public Optional<Object> upperBound() {
+			return Optional.ofNullable( upperBound );
+		}
+
+		@Override
+		public Optional<Object> lowerBound() {
+			return Optional.ofNullable( lowerBound );
+		}
+
+		@SuppressWarnings("unchecked")
+		@Override
+		public <T> T context(Class<T> contextType) {
+			return (T) contextData.get( contextType );
+		}
+	}
 }

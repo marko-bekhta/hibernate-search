@@ -13,13 +13,15 @@ import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.metamodel.mapping.EmbeddableMappingType;
 import org.hibernate.metamodel.mapping.EntityIdentifierMapping;
 import org.hibernate.query.SelectionQuery;
+import org.hibernate.search.mapper.orm.loading.HibernateOrmBatchLoadingStrategy;
+import org.hibernate.search.mapper.orm.loading.HibernateOrmBatchLoadingTypeContext;
 import org.hibernate.search.mapper.orm.loading.spi.ConditionalExpression;
 import org.hibernate.search.mapper.orm.loading.spi.HibernateOrmEntityLoadingStrategy;
 import org.hibernate.search.mapper.orm.loading.spi.HibernateOrmLoadingTypeContext;
 import org.hibernate.search.mapper.orm.loading.spi.HibernateOrmQueryLoader;
 import org.hibernate.search.mapper.pojo.model.spi.PojoRawTypeIdentifier;
 
-public class EntityTypeDescriptor<E, I> {
+public class EntityTypeDescriptor<E, I> implements HibernateOrmBatchLoadingTypeContext<E> {
 
 	public static <E> EntityTypeDescriptor<E, ?> create(SessionFactoryImplementor sessionFactory,
 			HibernateOrmLoadingTypeContext<E> type) {
@@ -51,16 +53,22 @@ public class EntityTypeDescriptor<E, I> {
 		return delegate.typeIdentifier();
 	}
 
+	@Override
 	public Class<E> javaClass() {
 		return delegate.typeIdentifier().javaClass();
 	}
 
+	@Override
 	public String jpaEntityName() {
 		return delegate.jpaEntityName();
 	}
 
 	public IdOrder idOrder() {
 		return idOrder;
+	}
+
+	public HibernateOrmBatchLoadingStrategy<E, I> batchLoadingStrategy() {
+		return null;
 	}
 
 	public SelectionQuery<Long> createCountQuery(SharedSessionContractImplementor session,

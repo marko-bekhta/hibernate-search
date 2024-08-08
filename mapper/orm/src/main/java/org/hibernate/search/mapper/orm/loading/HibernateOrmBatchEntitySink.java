@@ -2,19 +2,20 @@
  * SPDX-License-Identifier: Apache-2.0
  * Copyright Red Hat Inc. and Hibernate Authors
  */
-package org.hibernate.search.mapper.pojo.standalone.loading;
+package org.hibernate.search.mapper.orm.loading;
 
 import java.util.List;
 
+import org.hibernate.search.mapper.pojo.loading.MassIdentifierLoader;
 import org.hibernate.search.util.common.annotation.Incubating;
 
 /**
- * A sink for use by a {@link MassEntityLoader}.
+ * A sink for use by a {@link HibernateOrmBatchEntityLoader}.
  *
  * @param <E> The type of loaded entities.
  */
 @Incubating
-public interface MassEntitySink<E> {
+public interface HibernateOrmBatchEntitySink<E> {
 
 	/**
 	 * Adds a batch of entities to the sink.
