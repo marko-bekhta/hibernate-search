@@ -1,0 +1,276 @@
+/*
+ * Hibernate Search, full-text search for your domain model
+ *
+ * License: GNU Lesser General Public License (LGPL), version 2.1 or later
+ * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ */
+
+@Library('hibernate-jenkins-pipeline-helpers@1.5') _
+
+// NOTE: Remember to update the matrix axes below when adding/removing entries here.
+// Also make sure to update the parameters in the parameters {} section of the pipeline.
+Map settings() {
+	switch (env.DEPENDENCY_UPDATE_NAME) {
+		case 'jandex3':
+			return [
+					onlyRunTestDependingOn: ['hibernate-search-mapper-pojo-base'],
+					// Need to rebuild this module in order to insert the Jandex 3 dependency in tests
+					additionalMavenArgs   : '-pl :hibernate-search-util-internal-test-common'
+			]
+		case 'orm5.6':
+			return [
+					updateProperties      : ['version.org.hibernate'],
+					onlyRunTestDependingOn: ['hibernate-search-mapper-orm', 'hibernate-search-mapper-orm-jakarta']
+			]
+		case 'orm6.2':
+			return [
+					updateProperties       : ['version.org.hibernate.orm'],
+					onlyRunTestDependingOn : ['hibernate-search-mapper-orm-orm6'],
+					// we need to recompile this module since it has incompatible return type and will result in a build error.
+					// Note: we *must* rebuild the `-orm6` artifact (not the regular one), since that's where the orm6 upgrade is applied:
+					additionalMavenArgs    : '-pl :hibernate-search-util-internal-integrationtest-mapper-orm-orm6',
+					skipSourceModifiedCheck: true
+			]
+		case 'orm6.3':
+			return [
+					updateProperties      : ['version.org.hibernate.orm'],
+					onlyRunTestDependingOn: ['hibernate-search-mapper-orm-orm6'],
+					// we need to recompile this module since it has incompatible return type and will result in a build error.
+					// Note: we *must* rebuild the `-orm6` artifact (not the regular one), since that's where the orm6 upgrade is applied:
+					additionalMavenArgs   : '-pl :hibernate-search-util-internal-integrationtest-mapper-orm-orm6'
+			]
+		case 'orm6-in-main-code':
+			return [
+					updateProperties: ['version.org.hibernate.orm']
+					// In this case we'll rebuild and test everything.
+			]
+		default:
+			return [:]
+	}
+}
+
+// Perform authenticated pulls of container images, to avoid failure due to download throttling on dockerhub.
+def pullContainerImages() {
+	String containerImageRefsString = ((String) sh(script: "./ci/list-container-images.sh -U -Pdist -Pdependency-update ${env[qualify('ADDITIONAL_MAVEN_ARGS')]}", returnStdout: true))
+	String[] containerImageRefs = containerImageRefsString ? containerImageRefsString.split('\\s+') : new String[0]
+	echo 'Container images to be used in tests: ' + Arrays.toString(containerImageRefs)
+	if (containerImageRefs.length == 0) {
+		return
+	}
+	docker.withRegistry('https://index.docker.io/v1/', 'hibernateci.hub.docker.com') {
+		// Cannot use a foreach loop because then Jenkins wants to serialize the iterator,
+		// and obviously the iterator is not serializable.
+		for (int i = 0; i < containerImageRefs.length; i++) {
+			containerImageRef = containerImageRefs[i]
+			docker.image(containerImageRef).pull()
+		}
+	}
+}
+
+def withMavenWorkspace(Closure body) {
+	withMaven(jdk: 'OpenJDK 17 Latest', maven: 'Apache Maven 3.8',
+			mavenLocalRepo: env.WORKSPACE_TMP + '/.m2repository',
+			options: [artifactsPublisher(disabled: true)]) {
+		body()
+	}
+}
+
+String normalize(String string) {
+	return string.replaceAll('[^\\w]', '_')
+}
+
+// env is shared between parallel executions,
+// so if we want a variable that is local to a given execution branch,
+// we have to qualify its name to avoid conflicts...
+String qualify(String radical) {
+	return '_' + normalize(env.DEPENDENCY_UPDATE_NAME) + '_' + radical
+}
+
+pipeline {
+	agent none
+	triggers {
+		// Run at least once per week, in case of snapshot updates.
+		cron '@weekly'
+	}
+	parameters {
+		// choice parameter doesn't have a default, but the first value should be treated as a default, if it wasn't specified manually.
+		// Make sure tp update axis and settings() when adding new choice parameter.
+		choice(name: 'UPDATE_JOB', choices: ['all', 'jandex3', 'orm5.6', 'orm6.2', 'orm6.3', 'orm6-in-main-code'], description: 'Select which update jobs to run. `All` will include all configured update jobs.')
+		string(name: 'ORM_REPOSITORY', defaultValue: '', description: 'Git URL to Hibernate ORM repository. If provided, Hibernate ORM will be built locally. Works only in pair with ORM_BRANCH. Provide an http repository URL rather than an ssh one.')
+		string(name: 'ORM_BRANCH', defaultValue: '', description: 'Hibernate ORM branch to build from. If provided, Hibernate ORM will be built locally. Works only in pair with ORM_REPOSITORY. Either a pull request ID or a branch name should be provided, but not both at the same time. Use branch if you want to build from a fork repository.')
+		string(name: 'ORM_PULL_REQUEST_ID', defaultValue: '', description: 'Hibernate ORM pull request id to build from. If provided, Hibernate ORM will be built locally. Works only in pair with ORM_REPOSITORY. Either a pull request ID or a branch name should be provided, but not both at the same time.')
+	}
+	options {
+		buildDiscarder logRotator(daysToKeepStr: '10', numToKeepStr: '3')
+		disableConcurrentBuilds(abortPrevious: true)
+		overrideIndexTriggers(false)
+	}
+	stages {
+		// This allows testing the original (unpatched) artifacts,
+		// while patching tests where necessary.
+		// Especially important when testing the compatibility
+		// of published artifacts with different versions of dependencies.
+		stage('Pre-build original code') {
+			parallel {
+				stage('Build Hibernate ORM') {
+					agent {
+						label 'Worker&&Containers'
+					}
+					post {
+						cleanup {
+							dir('hibernate-orm-local-copy') {
+								deleteDir()
+							}
+						}
+					}
+					when {
+						beforeAgent true
+						expression {
+							return params.ORM_REPOSITORY?.trim() || params.ORM_BRANCH?.trim() || params.ORM_PULL_REQUEST_ID?.trim()
+						}
+					}
+					steps {
+						script {
+							if (params.ORM_BRANCH?.trim() && params.ORM_PULL_REQUEST_ID?.trim()) {
+								error "Both ORM_BRANCH and ORM_PULL_REQUEST_ID are provided. Use only one of these parameters."
+							}
+							if (!params.ORM_REPOSITORY?.trim() || !(params.ORM_BRANCH?.trim() || params.ORM_PULL_REQUEST_ID?.trim())) {
+								error "Both ORM_REPOSITORY and either ORM_BRANCH or ORM_PULL_REQUEST_ID must be not blank if a local build of Hibernate ORM is required. Repository: [${params.ORM_REPOSITORY}], branch: [${params.ORM_BRANCH}, pull request: [${params.ORM_PULL_REQUEST_ID}]]."
+							}
+						}
+						script {
+							dir('hibernate-orm-local-copy') {
+								// We may get either an http or an ssh repository URLs.
+								// Since this job can work correctly only with an http URL we will try to adapt the ssh url if we spot one:
+								def repositoryUrl = params.ORM_REPOSITORY ==~ /^git@github\.com:.+$/ ? params.ORM_REPOSITORY.replace("git@github.com:", "https://github.com/") : params.ORM_REPOSITORY
+								if (params.ORM_BRANCH?.trim()) {
+									sh "git clone ${repositoryUrl} --depth 1 --branch ${params.ORM_BRANCH} --single-branch ."
+								} else {
+									sh "git clone ${repositoryUrl} --depth 1 --single-branch ."
+									sh "git fetch origin pull/${params.ORM_PULL_REQUEST_ID}/head:orm-branch-to-build"
+									sh "git switch orm-branch-to-build"
+								}
+
+								sh "./gradlew --no-build-cache --no-daemon publishPublishedArtifactsPublicationToMavenLocal -x test --info -Dmaven.repo.local=${env.WORKSPACE_TMP}/.m2repository"
+							}
+							dir(env.WORKSPACE_TMP + '/.m2repository') {
+								stash name: 'orm-local-build-result', includes: "org/hibernate/orm/**"
+							}
+						}
+					}
+				}
+				stage('Build Hibernate Search') {
+					agent {
+						label 'Worker&&Containers'
+					}
+					post {
+						cleanup {
+							sh 'ci/docker-cleanup.sh'
+						}
+					}
+					steps {
+						// The timeout cannot be in stage options, because that would
+						// include the time needed to provision a node.
+						timeout(time: 30, unit: 'MINUTES') {
+							withMavenWorkspace {
+								sh "mvn clean install -U -Pdist -DskipTests"
+								dir(env.WORKSPACE_TMP + '/.m2repository') {
+									stash name: 'original-build-result', includes: "org/hibernate/search/**"
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		stage('Update dependency and test') {
+			matrix {
+				axes {
+					axis {
+						name 'DEPENDENCY_UPDATE_NAME'
+						// NOTE: Remember to update the settings() method above when changing this.
+						// And also add a new choice parameter in the parameters {} section of the pipeline
+						values 'jandex3', 'orm5.6', 'orm6.2', 'orm6.3', 'orm6-in-main-code'
+					}
+				}
+				stages {
+					stage('Build') {
+						agent {
+							label 'Worker&&Containers'
+						}
+						when {
+							beforeAgent true
+							expression {
+								return params.UPDATE_JOB?.trim() == 'all' || params.UPDATE_JOB?.trim() == env.DEPENDENCY_UPDATE_NAME
+							}
+						}
+						stages {
+							stage('Init') {
+								steps {
+									sh 'ci/docker-cleanup.sh'
+									dir(env.WORKSPACE_TMP + '/.m2repository') {
+										unstash name: 'original-build-result'
+									}
+									dir(env.WORKSPACE_TMP + '/.m2repository') {
+										script{
+											try {
+												unstash name: 'orm-local-build-result'
+											} catch (e) {
+												echo 'Hibernate ORM was not built, ignoring unstash of snapshot ORM jars'
+											}
+										}
+									}
+									withMavenWorkspace {
+										script {
+											env[qualify('ADDITIONAL_MAVEN_ARGS')] = settings().additionalMavenArgs ?: ''
+											if (settings().onlyRunTestDependingOn) {
+												env[qualify('ADDITIONAL_MAVEN_ARGS')] += ' -pl ' + sh(script: "./ci/list-dependent-integration-tests.sh ${settings().onlyRunTestDependingOn.join(' ')}", returnStdout: true).trim()
+											}
+										}
+									}
+								}
+							}
+							stage('Update dependency') {
+								steps {
+									withMavenWorkspace {
+										sh "ci/dependency-update/perform-update.sh ${env.DEPENDENCY_UPDATE_NAME} '${settings().updateProperties?.join(",") ?: ''}'"
+									}
+									script {
+										if (!settings().skipSourceModifiedCheck && 0 != sh(script: "git diff origin/${BRANCH_NAME} | grep -q '.'", returnStatus: true)) {
+											error "This job does not seem to update any dependency; perhaps it is misconfigured? The source code has not been updated, neither by merging a WIP branch nor by updating version properties."
+										}
+									}
+								}
+							}
+							stage('Test') {
+								post {
+									cleanup {
+										sh 'ci/docker-cleanup.sh'
+									}
+								}
+								options {
+									timeout(time: 1, unit: 'HOURS')
+								}
+								steps {
+									withMavenWorkspace {
+										pullContainerImages()
+										sh """ \
+									mvn clean install -U -Pdependency-update -Pdist -Dsurefire.environment=${normalize(env.DEPENDENCY_UPDATE_NAME)} \
+									--fail-at-end \
+									${env[qualify('ADDITIONAL_MAVEN_ARGS')]} \
+								"""
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	post {
+		always {
+			notifyBuildResult maintainers: 'marko@hibernate.org'
+		}
+	}
+}
