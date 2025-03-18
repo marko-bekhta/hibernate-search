@@ -16,6 +16,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 
 import org.hibernate.Session;
+import org.hibernate.SharedSessionContract;
 import org.hibernate.binder.internal.TenantIdBinder;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.models.internal.ClassLoaderServiceLoading;
@@ -24,6 +25,7 @@ import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.boot.spi.BootstrapContext;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Property;
 import org.hibernate.metamodel.MappingMetamodel;
@@ -69,6 +71,15 @@ public final class HibernateOrmUtils {
 	public static SessionImplementor toSessionImplementor(EntityManager entityManager) {
 		try {
 			return entityManager.unwrap( SessionImplementor.class );
+		}
+		catch (IllegalStateException e) {
+			throw OrmMiscLog.INSTANCE.hibernateSessionAccessError( e.getMessage(), e );
+		}
+	}
+
+	public static SharedSessionContractImplementor toSessionImplementor(SharedSessionContract sessionContract) {
+		try {
+			return ( (SharedSessionContractImplementor) sessionContract );
 		}
 		catch (IllegalStateException e) {
 			throw OrmMiscLog.INSTANCE.hibernateSessionAccessError( e.getMessage(), e );

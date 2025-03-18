@@ -5,6 +5,7 @@
 package org.hibernate.search.mapper.orm.loading.impl;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.Set;
 
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -14,7 +15,6 @@ import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Root;
 
 import org.hibernate.MultiIdentifierLoadAccess;
-import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.query.Query;
 
@@ -65,7 +65,7 @@ class CriteriaTypeQueryFactory<E, I> extends ConditionalExpressionQueryFactory<E
 
 	@Override
 	@SuppressWarnings("rawtypes")
-	public Query<E> createQueryForLoadByUniqueProperty(SessionImplementor session, String parameterName) {
+	public Query<E> createQueryForLoadByUniqueProperty(SharedSessionContractImplementor session, String parameterName) {
 		CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
 		ParameterExpression<Collection> idsParameter = criteriaBuilder.parameter( Collection.class, parameterName );
 		CriteriaQuery<E> criteriaQuery = criteriaBuilder.createQuery( entityClass );
@@ -76,7 +76,9 @@ class CriteriaTypeQueryFactory<E, I> extends ConditionalExpressionQueryFactory<E
 	}
 
 	@Override
-	public MultiIdentifierLoadAccess<E> createMultiIdentifierLoadAccess(SessionImplementor session) {
-		return session.byMultipleIds( entityClass );
+	public Optional<MultiIdentifierLoadAccess<E>> createMultiIdentifierLoadAccess(SharedSessionContractImplementor session) {
+		return session.isStatelessSession()
+				? Optional.empty()
+				: Optional.of( session.asSessionImplementor().byMultipleIds( entityClass ) );
 	}
 }

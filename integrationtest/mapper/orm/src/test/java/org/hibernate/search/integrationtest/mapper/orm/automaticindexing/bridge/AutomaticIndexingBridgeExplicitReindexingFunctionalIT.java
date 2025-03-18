@@ -12,7 +12,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 
-import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.query.Query;
 import org.hibernate.search.engine.backend.document.DocumentElement;
@@ -246,7 +245,7 @@ class AutomaticIndexingBridgeExplicitReindexingFunctionalIT {
 
 		@Override
 		public void write(DocumentElement target, IndexedEntity bridgedElement, TypeBridgeWriteContext context) {
-			Session session = context.extension( HibernateOrmExtension.get() ).session();
+			var session = context.extension( HibernateOrmExtension.get() ).session();
 			/*
 			 * Note this approach is rather limited as it does not allow batching.
 			 * HSEARCH-1937 should address this problem.

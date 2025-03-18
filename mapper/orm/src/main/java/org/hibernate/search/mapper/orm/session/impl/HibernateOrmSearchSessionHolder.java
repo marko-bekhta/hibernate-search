@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import jakarta.transaction.Synchronization;
 
 import org.hibernate.Transaction;
-import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.search.mapper.pojo.work.spi.PojoIndexingPlan;
 
 public class HibernateOrmSearchSessionHolder implements Serializable {
@@ -27,9 +27,12 @@ public class HibernateOrmSearchSessionHolder implements Serializable {
 		return holderPerClosedSessionTransaction.size();
 	}
 
-	public static HibernateOrmSearchSessionHolder get(SessionImplementor session, boolean createIfMissing) {
+	public static HibernateOrmSearchSessionHolder get(SharedSessionContractImplementor session, boolean createIfMissing) {
 		HibernateOrmSearchSessionHolder holder =
-				(HibernateOrmSearchSessionHolder) session.getProperties().get( SESSION_PROPERTY_KEY );
+				// todo
+				(HibernateOrmSearchSessionHolder) ( session.isSessionImplementor()
+						? session.asSessionImplementor().getProperties().get( SESSION_PROPERTY_KEY )
+						: null );
 		if ( holder != null ) {
 			return holder;
 		}
@@ -53,8 +56,9 @@ public class HibernateOrmSearchSessionHolder implements Serializable {
 			transaction.registerSynchronization( new HolderPerClosedSessionTransactionCleanup( transaction ) );
 			holderPerClosedSessionTransaction.put( transaction, holder );
 		}
-		else {
-			session.setProperty( SESSION_PROPERTY_KEY, holder );
+		else if ( session.isSessionImplementor() ) {
+			// todo
+			session.asSessionImplementor().setProperty( SESSION_PROPERTY_KEY, holder );
 		}
 		return holder;
 	}

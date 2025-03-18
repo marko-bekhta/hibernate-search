@@ -11,7 +11,6 @@ import java.util.function.Function;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.FlushModeType;
 
-import org.hibernate.Session;
 import org.hibernate.graph.GraphSemantic;
 import org.hibernate.graph.RootGraph;
 import org.hibernate.query.Query;
@@ -37,7 +36,7 @@ import org.apache.lucene.search.Sort;
  * @author Hardy Ferentschik
  * @author Emmanuel Bernard
  * @deprecated Instead of using Hibernate Search 5 APIs, get a {@link SearchSession}
- * using {@link org.hibernate.search.mapper.orm.Search#session(Session)},
+ * using {@link org.hibernate.search.mapper.orm.Search#session(org.hibernate.SharedSessionContract)},
  * then create a {@link SearchQuery} with {@link SearchSession#search(Class)}.
  * If you really need an adapter to Hibernate ORM's {@link Query} type,
  * convert that {@link SearchQuery} using {@link org.hibernate.search.mapper.orm.Search#toOrmQuery(SearchQuery)},
@@ -51,7 +50,7 @@ public interface FullTextQuery extends org.hibernate.search.jpa.FullTextQuery, Q
 	/**
 	 * defines a result transformer used during projection, the Aliases provided are the projection aliases.
 	 * @deprecated Instead of using Hibernate Search 5 APIs, get a {@link SearchSession}
-	 * using {@link org.hibernate.search.mapper.orm.Search#session(Session)},
+	 * using {@link org.hibernate.search.mapper.orm.Search#session(org.hibernate.SharedSessionContract)},
 	 * create a search query with {@link SearchSession#search(Class)},
 	 * and define your projections using {@link SearchQuerySelectStep#select(Function)}.
 	 * See in particular the composite projection, which allows applying a function to another projection:

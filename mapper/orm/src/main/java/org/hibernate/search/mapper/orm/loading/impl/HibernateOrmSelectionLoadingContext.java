@@ -6,7 +6,7 @@ package org.hibernate.search.mapper.orm.loading.impl;
 
 import jakarta.persistence.EntityGraph;
 
-import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.graph.GraphSemantic;
 import org.hibernate.graph.RootGraph;
 import org.hibernate.search.mapper.orm.loading.spi.EntityGraphHint;
@@ -52,7 +52,7 @@ public final class HibernateOrmSelectionLoadingContext implements PojoSelectionL
 		return sessionContext;
 	}
 
-	public SessionImplementor sessionImplementor() {
+	public SharedSessionContractImplementor sessionImplementor() {
 		return sessionContext.session();
 	}
 

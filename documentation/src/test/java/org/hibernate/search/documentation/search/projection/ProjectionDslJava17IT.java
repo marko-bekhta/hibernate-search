@@ -15,7 +15,6 @@ import java.util.stream.Collectors;
 
 import jakarta.persistence.EntityManagerFactory;
 
-import org.hibernate.Session;
 import org.hibernate.search.documentation.testsupport.BackendConfigurations;
 import org.hibernate.search.documentation.testsupport.DocumentationSetupHelper;
 import org.hibernate.search.engine.backend.types.ObjectStructure;
@@ -283,7 +282,7 @@ class ProjectionDslJava17IT {
 					.where( f -> f.matchAll() )
 					.fetchHits( 20 ); // <3>
 			// end::composite-mapped-record[]
-			Session session = searchSession.toOrmSession();
+			var session = searchSession.toOrmSession();
 			assertThat( hits ).containsExactlyInAnyOrderElementsOf(
 					session.createQuery( "select b from Book b", Book.class ).list().stream()
 							.map( book -> new MyBookProjection(
@@ -312,7 +311,7 @@ class ProjectionDslJava17IT {
 					.where( f -> f.matchAll() )
 					.fetchHits( 20 ); // <4>
 			// end::object-mapped-record[]
-			Session session = searchSession.toOrmSession();
+			var session = searchSession.toOrmSession();
 			assertThat( hits ).containsExactlyInAnyOrderElementsOf(
 					session.createQuery( "select b from Book b", Book.class ).list().stream()
 							.map( book -> book.getAuthors().stream()

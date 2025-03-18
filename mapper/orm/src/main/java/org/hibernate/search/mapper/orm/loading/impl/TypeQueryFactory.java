@@ -6,10 +6,10 @@ package org.hibernate.search.mapper.orm.loading.impl;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.hibernate.MultiIdentifierLoadAccess;
-import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.metamodel.model.domain.EntityDomainType;
 import org.hibernate.query.Query;
@@ -49,9 +49,9 @@ public interface TypeQueryFactory<E, I> {
 			Set<? extends Class<? extends E>> includedTypesFilter,
 			List<ConditionalExpression> conditionalExpressions, String order);
 
-	Query<E> createQueryForLoadByUniqueProperty(SessionImplementor session, String parameterName);
+	Query<E> createQueryForLoadByUniqueProperty(SharedSessionContractImplementor session, String parameterName);
 
-	MultiIdentifierLoadAccess<E> createMultiIdentifierLoadAccess(SessionImplementor session);
+	Optional<MultiIdentifierLoadAccess<E>> createMultiIdentifierLoadAccess(SharedSessionContractImplementor session);
 
 	boolean uniquePropertyIsTheEntityId();
 

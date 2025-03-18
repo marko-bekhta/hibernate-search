@@ -8,7 +8,6 @@ import java.io.Serializable;
 
 import jakarta.persistence.EntityManager;
 
-import org.hibernate.Session;
 import org.hibernate.query.Query;
 import org.hibernate.search.MassIndexer;
 import org.hibernate.search.SearchFactory;
@@ -137,7 +136,7 @@ public interface FullTextEntityManager extends EntityManager {
 	 * @param types optionally restrict the operation to selected types
 	 * @return a new MassIndexer
 	 * @deprecated Instead of using Hibernate Search 5 APIs, get a {@link SearchSession}
-	 * using {@link org.hibernate.search.mapper.orm.Search#session(Session)},
+	 * using {@link org.hibernate.search.mapper.orm.Search#session(org.hibernate.SharedSessionContract)},
 	 * then create a mass indexer with {@link SearchSession#massIndexer(Class[])}.
 	 * Refer to the <a href="https://hibernate.org/search/documentation/migrate/6.0/">migration guide</a> for more information.
 	 */

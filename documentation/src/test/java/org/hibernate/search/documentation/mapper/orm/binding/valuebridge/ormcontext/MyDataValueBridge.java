@@ -4,8 +4,8 @@
  */
 package org.hibernate.search.documentation.mapper.orm.binding.valuebridge.ormcontext;
 
-import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.SharedSessionContract;
 import org.hibernate.search.mapper.orm.HibernateOrmExtension;
 import org.hibernate.search.mapper.pojo.bridge.ValueBridge;
 import org.hibernate.search.mapper.pojo.bridge.runtime.ValueBridgeFromIndexedValueContext;
@@ -32,7 +32,7 @@ public class MyDataValueBridge implements ValueBridge<MyData, String> {
 
 	@Override
 	public MyData fromIndexedValue(String value, ValueBridgeFromIndexedValueContext context) {
-		Session session = context.extension( HibernateOrmExtension.get() ) // <3>
+		SharedSessionContract session = context.extension( HibernateOrmExtension.get() ) // <3>
 				.session(); // <4>
 		// ... do something with the session ...
 		//end::include[]
@@ -41,7 +41,7 @@ public class MyDataValueBridge implements ValueBridge<MyData, String> {
 		 * so I'm just going to extract data from it.
 		 * This is silly, but at least it allows us to check the session was successfully retrieved.
 		 */
-		MyData dataFromSession = (MyData) session.getProperties().get( "test.data.projected" );
+		MyData dataFromSession = (MyData) session.getFactory().getProperties().get( "test.data.projected" );
 		return dataFromSession;
 		//tag::include[]
 	}

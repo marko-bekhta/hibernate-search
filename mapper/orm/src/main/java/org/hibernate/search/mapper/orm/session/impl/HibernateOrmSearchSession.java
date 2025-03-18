@@ -11,12 +11,12 @@ import java.util.Collection;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Synchronization;
 
-import org.hibernate.Session;
+import org.hibernate.SharedSessionContract;
 import org.hibernate.Transaction;
 import org.hibernate.action.spi.AfterTransactionCompletionProcess;
 import org.hibernate.action.spi.BeforeTransactionCompletionProcess;
 import org.hibernate.engine.spi.ActionQueue;
-import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.search.engine.backend.common.spi.EntityReferenceFactory;
 import org.hibernate.search.engine.search.query.dsl.SearchQuerySelectStep;
 import org.hibernate.search.mapper.orm.automaticindexing.session.impl.DelegatingAutomaticIndexingSynchronizationStrategy;
@@ -62,7 +62,7 @@ public class HibernateOrmSearchSession extends AbstractPojoSearchSession
 	 * @return The {@link HibernateOrmSearchSession} to use within the context of the given session.
 	 */
 	public static HibernateOrmSearchSession get(HibernateOrmSearchSessionMappingContext context,
-			SessionImplementor sessionImplementor) {
+			SharedSessionContractImplementor sessionImplementor) {
 		return get( context, sessionImplementor, true );
 	}
 
@@ -71,7 +71,7 @@ public class HibernateOrmSearchSession extends AbstractPojoSearchSession
 	 * @return The {@link HibernateOrmSearchSession} to use within the context of the given session.
 	 */
 	public static HibernateOrmSearchSession get(HibernateOrmSearchSessionMappingContext context,
-			SessionImplementor sessionImplementor, boolean createIfDoesNotExist) {
+			SharedSessionContractImplementor sessionImplementor, boolean createIfDoesNotExist) {
 		HibernateOrmSearchSessionHolder holder =
 				HibernateOrmSearchSessionHolder.get( sessionImplementor, createIfDoesNotExist );
 		if ( holder == null ) {
@@ -94,7 +94,7 @@ public class HibernateOrmSearchSession extends AbstractPojoSearchSession
 
 	private final HibernateOrmSearchSessionMappingContext mappingContext;
 	private final HibernateOrmSessionTypeContextProvider typeContextProvider;
-	private final SessionImplementor sessionImplementor;
+	private final SharedSessionContractImplementor sessionImplementor;
 	private final HibernateOrmRuntimeIntrospector runtimeIntrospector;
 	private final ConfiguredAutomaticIndexingStrategy automaticIndexingStrategy;
 	private ConfiguredSearchIndexingPlanFilter configuredIndexingPlanFilter;
@@ -195,11 +195,11 @@ public class HibernateOrmSearchSession extends AbstractPojoSearchSession
 
 	@Override
 	public EntityManager toEntityManager() {
-		return sessionImplementor;
+		return sessionImplementor.asSessionImplementor();
 	}
 
 	@Override
-	public Session toOrmSession() {
+	public SharedSessionContract toOrmSession() {
 		return sessionImplementor;
 	}
 
@@ -245,7 +245,7 @@ public class HibernateOrmSearchSession extends AbstractPojoSearchSession
 	}
 
 	@Override
-	public SessionImplementor session() {
+	public SharedSessionContractImplementor session() {
 		return sessionImplementor;
 	}
 
@@ -324,7 +324,7 @@ public class HibernateOrmSearchSession extends AbstractPojoSearchSession
 		return new HibernateOrmSelectionLoadingContext.Builder( mappingContext, this );
 	}
 
-	private void registerSynchronization(SessionImplementor sessionImplementor, Synchronization synchronization) {
+	private void registerSynchronization(SharedSessionContractImplementor sessionImplementor, Synchronization synchronization) {
 		//use {Before|After}TransactionCompletionProcess instead of registerSynchronization because it does not
 		//swallow transactions.
 		/*
@@ -337,7 +337,8 @@ public class HibernateOrmSearchSession extends AbstractPojoSearchSession
 		 * In a JTA env, the before transaction completion is called before the flush, so not all changes are yet
 		 * written. However, Synchronization-s do propagate exceptions, so they can be safely used.
 		 */
-		final ActionQueue actionQueue = sessionImplementor.getActionQueue();
+		// TODO: action queue add registerProcess to the session ?
+		final ActionQueue actionQueue = sessionImplementor.asSessionImplementor().getActionQueue();
 		SynchronizationAdapter adapter = new SynchronizationAdapter( synchronization );
 
 		boolean isLocal = isLocalTransaction( sessionImplementor );
@@ -355,14 +356,14 @@ public class HibernateOrmSearchSession extends AbstractPojoSearchSession
 		actionQueue.registerProcess( (AfterTransactionCompletionProcess) adapter );
 	}
 
-	private boolean isLocalTransaction(SessionImplementor sessionImplementor) {
+	private boolean isLocalTransaction(SharedSessionContractImplementor sessionImplementor) {
 		return !sessionImplementor
 				.getTransactionCoordinator()
 				.getTransactionCoordinatorBuilder()
 				.isJta();
 	}
 
-	private static void checkOpen(SessionImplementor session) {
+	private static void checkOpen(SharedSessionContractImplementor session) {
 		try {
 			session.checkOpen();
 		}
@@ -375,12 +376,12 @@ public class HibernateOrmSearchSession extends AbstractPojoSearchSession
 		private final HibernateOrmSearchSessionMappingContext mappingContext;
 		private final HibernateOrmSessionTypeContextProvider typeContextProvider;
 		private final ConfiguredAutomaticIndexingStrategy automaticIndexingStrategy;
-		private final SessionImplementor sessionImplementor;
+		private final SharedSessionContractImplementor sessionImplementor;
 
 		public Builder(HibernateOrmSearchSessionMappingContext mappingContext,
 				HibernateOrmSessionTypeContextProvider typeContextProvider,
 				ConfiguredAutomaticIndexingStrategy automaticIndexingStrategy,
-				SessionImplementor sessionImplementor) {
+				SharedSessionContractImplementor sessionImplementor) {
 			this.mappingContext = mappingContext;
 			this.typeContextProvider = typeContextProvider;
 			this.automaticIndexingStrategy = automaticIndexingStrategy;

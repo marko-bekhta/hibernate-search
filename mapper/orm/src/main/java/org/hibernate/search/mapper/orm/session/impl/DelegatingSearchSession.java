@@ -9,8 +9,8 @@ import java.util.function.Supplier;
 
 import jakarta.persistence.EntityManager;
 
-import org.hibernate.Session;
-import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.SharedSessionContract;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.search.engine.search.query.dsl.SearchQuerySelectStep;
 import org.hibernate.search.mapper.orm.common.impl.HibernateOrmUtils;
 import org.hibernate.search.mapper.orm.massindexing.MassIndexer;
@@ -26,16 +26,16 @@ import org.hibernate.search.mapper.pojo.work.SearchIndexingPlanFilter;
 /**
  * A lazily initializing {@link SearchSession}.
  * <p>
- * This implementation allows to call {@link org.hibernate.search.mapper.orm.Search#session(Session)}
+ * This implementation allows to call {@link org.hibernate.search.mapper.orm.Search#session(SharedSessionContract)}
  * before Hibernate Search is fully initialized, which can be useful in CDI/Spring environments.
  */
 public class DelegatingSearchSession implements SearchSession {
 
 	private final Supplier<? extends HibernateOrmSearchSessionMappingContext> mappingContextProvider;
-	private final Session session;
+	private final SharedSessionContract session;
 
 	public DelegatingSearchSession(Supplier<? extends HibernateOrmSearchSessionMappingContext> mappingContextProvider,
-			Session session) {
+			SharedSessionContract session) {
 		this.mappingContextProvider = mappingContextProvider;
 		this.session = session;
 	}
@@ -91,11 +91,11 @@ public class DelegatingSearchSession implements SearchSession {
 
 	@Override
 	public EntityManager toEntityManager() {
-		return session;
+		return HibernateOrmUtils.toSessionImplementor( session ).asSessionImplementor();
 	}
 
 	@Override
-	public Session toOrmSession() {
+	public SharedSessionContract toOrmSession() {
 		return session;
 	}
 
@@ -126,7 +126,7 @@ public class DelegatingSearchSession implements SearchSession {
 		// because the session may be a proxy that returns a different session based
 		// on the current thread (Spring, SessionFactory.getCurrentSession(), ...)
 		// See https://hibernate.atlassian.net/browse/HSEARCH-4108
-		SessionImplementor sessionImpl = HibernateOrmUtils.toSessionImplementor( session );
+		SharedSessionContractImplementor sessionImpl = HibernateOrmUtils.toSessionImplementor( session );
 		return HibernateOrmSearchSession.get( mappingContextProvider.get(), sessionImpl );
 	}
 }

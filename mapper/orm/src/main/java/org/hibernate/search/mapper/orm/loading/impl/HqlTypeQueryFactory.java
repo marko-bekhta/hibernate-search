@@ -4,10 +4,10 @@
  */
 package org.hibernate.search.mapper.orm.loading.impl;
 
+import java.util.Optional;
 import java.util.Set;
 
 import org.hibernate.MultiIdentifierLoadAccess;
-import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.query.Query;
 
@@ -43,7 +43,7 @@ class HqlTypeQueryFactory<E, I> extends ConditionalExpressionQueryFactory<E, I> 
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Query<E> createQueryForLoadByUniqueProperty(SessionImplementor session, String parameterName) {
+	public Query<E> createQueryForLoadByUniqueProperty(SharedSessionContractImplementor session, String parameterName) {
 		return session.createQuery(
 				"select e from " + ormEntityName
 						+ " e where " + uniquePropertyName + " in (:" + parameterName + ")",
@@ -52,8 +52,10 @@ class HqlTypeQueryFactory<E, I> extends ConditionalExpressionQueryFactory<E, I> 
 	}
 
 	@Override
-	public MultiIdentifierLoadAccess<E> createMultiIdentifierLoadAccess(SessionImplementor session) {
-		return session.byMultipleIds( ormEntityName );
+	public Optional<MultiIdentifierLoadAccess<E>> createMultiIdentifierLoadAccess(SharedSessionContractImplementor session) {
+		return session.isStatelessSession()
+				? Optional.empty()
+				: Optional.of( session.asSessionImplementor().byMultipleIds( ormEntityName ) );
 	}
 
 	private <T> Query<T> createQueryWithTypesFilter(SharedSessionContractImplementor session,

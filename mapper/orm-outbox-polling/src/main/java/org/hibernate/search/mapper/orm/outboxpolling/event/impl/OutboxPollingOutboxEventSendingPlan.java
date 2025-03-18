@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import org.hibernate.Session;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.resource.jdbc.spi.PhysicalConnectionHandlingMode;
 import org.hibernate.search.engine.backend.common.spi.EntityReferenceFactory;
 import org.hibernate.search.engine.backend.common.spi.MultiEntityOperationExecutionReport;
@@ -26,11 +27,11 @@ public final class OutboxPollingOutboxEventSendingPlan implements AutomaticIndex
 	private static final RangeCompatibleHashFunction HASH_FUNCTION = ShardAssignment.HASH_FUNCTION;
 
 	private final EntityReferenceFactory entityReferenceFactory;
-	private final Session session;
+	private final SharedSessionContractImplementor session;
 	private final List<OutboxEvent> events = new ArrayList<>();
 
 	public OutboxPollingOutboxEventSendingPlan(EntityReferenceFactory entityReferenceFactory,
-			Session session) {
+			SharedSessionContractImplementor session) {
 		this.entityReferenceFactory = entityReferenceFactory;
 		this.session = session;
 	}
@@ -63,23 +64,29 @@ public final class OutboxPollingOutboxEventSendingPlan implements AutomaticIndex
 		// See https://hibernate.atlassian.net/browse/HSEARCH-4198
 		// When JTA is enabled with Spring, the shouldReleaseBeforeCompletion strategy is used by default.
 		// Solution inspired by org.hibernate.envers.internal.synchronization.AuditProcess#doBeforeTransactionCompletion.
-		try ( Session temporarySession = session.sessionWithOptions()
-				.connection()
+		try ( Session temporarySession = session.getFactory()
+				.withOptions()
 				.autoClose( false )
 				.connectionHandlingMode(
 						PhysicalConnectionHandlingMode.DELAYED_ACQUISITION_AND_RELEASE_AFTER_TRANSACTION )
 				.openSession() ) {
-			return sendAndReportOnSession( temporarySession, entityReferenceFactory );
+			return sendAndReportOnSession( temporarySession.unwrap( SharedSessionContractImplementor.class ),
+					entityReferenceFactory );
 		}
 	}
 
 	private CompletableFuture<MultiEntityOperationExecutionReport> sendAndReportOnSession(
-			Session currentSession, EntityReferenceFactory entityReferenceFactory) {
+			SharedSessionContractImplementor currentSession, EntityReferenceFactory entityReferenceFactory) {
 		try {
 			MultiEntityOperationExecutionReport.Builder builder = MultiEntityOperationExecutionReport.builder();
 			for ( OutboxEvent event : events ) {
 				try {
-					currentSession.persist( event );
+					if ( currentSession.isSessionImplementor() ) {
+						currentSession.asSessionImplementor().persist( event );
+					}
+					else {
+						currentSession.asStatelessSession().insert( event );
+					}
 				}
 				catch (RuntimeException e) {
 					builder.throwable( e );

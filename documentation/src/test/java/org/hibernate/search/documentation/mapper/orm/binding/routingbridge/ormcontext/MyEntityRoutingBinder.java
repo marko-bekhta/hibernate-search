@@ -4,7 +4,7 @@
  */
 package org.hibernate.search.documentation.mapper.orm.binding.routingbridge.ormcontext;
 
-import org.hibernate.Session;
+import org.hibernate.SharedSessionContract;
 import org.hibernate.search.mapper.orm.HibernateOrmExtension;
 import org.hibernate.search.mapper.pojo.bridge.RoutingBridge;
 import org.hibernate.search.mapper.pojo.bridge.binding.RoutingBindingContext;
@@ -29,7 +29,7 @@ public class MyEntityRoutingBinder implements RoutingBinder {
 		@Override
 		public void route(DocumentRoutes routes, Object entityIdentifier, MyEntity indexedEntity,
 				RoutingBridgeRouteContext context) {
-			Session session = context.extension( HibernateOrmExtension.get() ) // <1>
+			SharedSessionContract session = context.extension( HibernateOrmExtension.get() ) // <1>
 					.session(); // <2>
 			// ... do something with the session ...
 			//end::include[]
@@ -38,7 +38,7 @@ public class MyEntityRoutingBinder implements RoutingBinder {
 			 * so I'm just going to extract data from it and index the entity or not depending on that data.
 			 * This is silly, but at least it allows us to check the session was successfully retrieved.
 			 */
-			MyData dataFromSession = (MyData) session.getProperties().get( "test.data.indexed" );
+			MyData dataFromSession = (MyData) session.getFactory().getProperties().get( "test.data.indexed" );
 			switch ( dataFromSession ) {
 				case INDEXED:
 					routes.addRoute();

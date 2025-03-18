@@ -18,7 +18,7 @@ import org.hibernate.HibernateException;
 import org.hibernate.LockMode;
 import org.hibernate.LockOptions;
 import org.hibernate.ScrollMode;
-import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.graph.GraphSemantic;
 import org.hibernate.graph.RootGraph;
 import org.hibernate.graph.spi.AppliedGraph;
@@ -58,7 +58,7 @@ public final class HibernateOrmSearchQueryAdapter<R> extends AbstractQuery<R> {
 
 	private final MutableEntityLoadingOptions loadingOptions;
 
-	HibernateOrmSearchQueryAdapter(SearchQueryImplementor<R> delegate, SessionImplementor sessionImplementor,
+	HibernateOrmSearchQueryAdapter(SearchQueryImplementor<R> delegate, SharedSessionContractImplementor sessionImplementor,
 			MutableEntityLoadingOptions loadingOptions) {
 		super( sessionImplementor );
 		this.delegate = delegate;

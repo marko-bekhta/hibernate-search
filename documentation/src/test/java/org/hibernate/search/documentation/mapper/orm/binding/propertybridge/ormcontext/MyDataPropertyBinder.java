@@ -4,7 +4,7 @@
  */
 package org.hibernate.search.documentation.mapper.orm.binding.propertybridge.ormcontext;
 
-import org.hibernate.Session;
+import org.hibernate.SharedSessionContract;
 import org.hibernate.search.engine.backend.document.DocumentElement;
 import org.hibernate.search.engine.backend.document.IndexFieldReference;
 import org.hibernate.search.mapper.orm.HibernateOrmExtension;
@@ -36,7 +36,7 @@ public class MyDataPropertyBinder implements PropertyBinder {
 
 		@Override
 		public void write(DocumentElement target, Object bridgedElement, PropertyBridgeWriteContext context) {
-			Session session = context.extension( HibernateOrmExtension.get() ) // <1>
+			SharedSessionContract session = context.extension( HibernateOrmExtension.get() ) // <1>
 					.session(); // <2>
 			// ... do something with the session ...
 			//end::include[]
@@ -45,7 +45,7 @@ public class MyDataPropertyBinder implements PropertyBinder {
 			 * so I'm just going to extract data from it.
 			 * This is silly, but at least it allows us to check the session was successfully retrieved.
 			 */
-			MyData dataFromSession = (MyData) session.getProperties().get( "test.data.indexed" );
+			MyData dataFromSession = (MyData) session.getFactory().getProperties().get( "test.data.indexed" );
 			target.addValue( field, dataFromSession.name() );
 			//tag::include[]
 		}

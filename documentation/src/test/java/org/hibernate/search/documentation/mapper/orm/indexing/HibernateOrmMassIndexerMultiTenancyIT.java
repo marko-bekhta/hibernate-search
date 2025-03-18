@@ -6,13 +6,14 @@ package org.hibernate.search.documentation.mapper.orm.indexing;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hibernate.search.util.common.impl.CollectionHelper.asSet;
+import static org.hibernate.search.util.impl.integrationtest.mapper.orm.OrmUtils.statelessWith;
 import static org.hibernate.search.util.impl.integrationtest.mapper.orm.OrmUtils.with;
 
 import java.time.LocalDate;
 import java.util.function.Function;
 
-import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.SharedSessionContract;
 import org.hibernate.search.documentation.testsupport.BackendConfigurations;
 import org.hibernate.search.documentation.testsupport.DocumentationSetupHelper;
 import org.hibernate.search.mapper.orm.Search;
@@ -86,6 +87,31 @@ class HibernateOrmMassIndexerMultiTenancyIT {
 	}
 
 	@Test
+	void explicitTenantStateless() throws InterruptedException {
+		// tag::explicitTenants[]
+		SearchMapping searchMapping = /* ... */ // <1>
+				// end::explicitTenants[]
+				Search.mapping( sessionFactory );
+		// tag::explicitTenants[]
+		searchMapping.scope( Object.class ) // <2>
+				.massIndexer( asSet( "tenant1", "tenant2" ) ) // <3>
+				// end::explicitTenants[]
+				.purgeAllOnStart( BackendConfigurations.simple().supportsExplicitPurge() )
+				// tag::explicitTenants[]
+				.startAndWait(); // <4>
+		// end::explicitTenants[]
+		statelessWith( sessionFactory, TENANT_1_ID ).runInTransaction( session -> {
+			assertBookAndAuthorCount( session, NUMBER_OF_BOOKS, NUMBER_OF_BOOKS );
+		} );
+		statelessWith( sessionFactory, TENANT_2_ID ).runInTransaction( session -> {
+			assertBookAndAuthorCount( session, NUMBER_OF_BOOKS, NUMBER_OF_BOOKS );
+		} );
+		statelessWith( sessionFactory, TENANT_3_ID ).runInTransaction( session -> {
+			assertBookAndAuthorCount( session, 0, 0 );
+		} );
+	}
+
+	@Test
 	void implicitTenants() throws InterruptedException {
 		// tag::implicitTenants[]
 		SearchMapping searchMapping = /* ... */ // <1>
@@ -110,7 +136,7 @@ class HibernateOrmMassIndexerMultiTenancyIT {
 		} );
 	}
 
-	void assertBookAndAuthorCount(Session session, int expectedBookCount, int expectedAuthorCount) {
+	void assertBookAndAuthorCount(SharedSessionContract session, int expectedBookCount, int expectedAuthorCount) {
 		setupHelper.assertions().searchAfterIndexChangesAndPotentialRefresh( () -> {
 			SearchSession searchSession = Search.session( session );
 			assertThat( searchSession.search( Book.class )

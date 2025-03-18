@@ -12,6 +12,8 @@ import jakarta.persistence.EntityTransaction;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.SharedSessionContract;
+import org.hibernate.StatelessSession;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 import org.hibernate.search.util.impl.test.function.ThrowingConsumer;
@@ -34,7 +36,17 @@ public final class OrmUtils {
 		return new NativePersistenceRunner( sessionFactory, tenantId );
 	}
 
-	public static <E extends Throwable> void runInTransaction(Session session, ThrowingConsumer<Transaction, E> action)
+	public static PersistenceRunner<StatelessSession, Transaction> statelessWith(SessionFactory sessionFactory) {
+		return statelessWith( sessionFactory, null );
+	}
+
+	public static PersistenceRunner<StatelessSession, Transaction> statelessWith(SessionFactory sessionFactory,
+			Object tenantId) {
+		return new NativeStatelessRunner( sessionFactory, tenantId );
+	}
+
+	public static <E extends Throwable> void runInTransaction(SharedSessionContract session,
+			ThrowingConsumer<Transaction, E> action)
 			throws E {
 		applyInTransaction( session, tx -> {
 			action.accept( tx );
@@ -42,7 +54,8 @@ public final class OrmUtils {
 		} );
 	}
 
-	public static <R, E extends Throwable> R applyInTransaction(Session session, ThrowingFunction<Transaction, R, E> action)
+	public static <R, E extends Throwable> R applyInTransaction(SharedSessionContract session,
+			ThrowingFunction<Transaction, R, E> action)
 			throws E {
 		Transaction tx = null;
 		try {

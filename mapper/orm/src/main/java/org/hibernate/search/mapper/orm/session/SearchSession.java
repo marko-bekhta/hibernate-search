@@ -11,6 +11,7 @@ import java.util.Collections;
 import jakarta.persistence.EntityManager;
 
 import org.hibernate.Session;
+import org.hibernate.SharedSessionContract;
 import org.hibernate.search.engine.search.query.dsl.SearchQuerySelectStep;
 import org.hibernate.search.mapper.orm.mapping.SearchMapping;
 import org.hibernate.search.mapper.orm.massindexing.MassIndexer;
@@ -202,7 +203,7 @@ public interface SearchSession extends SearchScopeProvider {
 	/**
 	 * @return The underlying {@link Session} used by this {@link SearchSession}.
 	 */
-	Session toOrmSession();
+	SharedSessionContract toOrmSession();
 
 	/**
 	 * Set the {@link org.hibernate.search.mapper.orm.automaticindexing.session.AutomaticIndexingSynchronizationStrategy} to use for this session.

@@ -5,6 +5,7 @@
 package org.hibernate.search.mapper.orm.loading.impl;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.hibernate.MultiIdentifierLoadAccess;
@@ -62,7 +63,7 @@ class HibernateOrmQueryLoaderImpl<E, I> implements HibernateOrmQueryLoader<E, I>
 	}
 
 	@Override
-	public MultiIdentifierLoadAccess<E> createMultiIdentifierLoadAccess(SessionImplementor session) {
+	public Optional<MultiIdentifierLoadAccess<E>> createMultiIdentifierLoadAccess(SessionImplementor session) {
 		return queryFactory.createMultiIdentifierLoadAccess( session );
 	}
 

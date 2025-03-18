@@ -7,7 +7,7 @@ package org.hibernate.search.mapper.orm.loading.impl;
 import org.hibernate.ObjectNotFoundException;
 import org.hibernate.cache.spi.access.EntityDataAccess;
 import org.hibernate.engine.spi.EntityKey;
-import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.metamodel.mapping.EntityMappingType;
 import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.search.mapper.orm.logging.impl.OrmMiscLog;
@@ -26,7 +26,7 @@ class PersistenceContextThenSecondLevelCacheLookupStrategy
 		implements EntityLoadingCacheLookupStrategyImplementor {
 
 	static EntityLoadingCacheLookupStrategyImplementor create(EntityMappingType entityMappingType,
-			SessionImplementor session) {
+			SharedSessionContractImplementor session) {
 		EntityLoadingCacheLookupStrategyImplementor persistenceContextLookupStrategy =
 				PersistenceContextLookupStrategy.create( session );
 		EntityPersister entityPersister = entityMappingType.getEntityPersister();
@@ -48,17 +48,19 @@ class PersistenceContextThenSecondLevelCacheLookupStrategy
 	private final EntityLoadingCacheLookupStrategyImplementor persistenceContextLookupStrategy;
 	private final EntityPersister persister;
 	private final EntityDataAccess cacheAccess;
-	private final SessionImplementor session;
+	private final SharedSessionContractImplementor session;
+	private final ByIdAction loadAction;
 
 	private PersistenceContextThenSecondLevelCacheLookupStrategy(
 			EntityLoadingCacheLookupStrategyImplementor persistenceContextLookupStrategy,
 			EntityPersister persister,
 			EntityDataAccess cacheAccess,
-			SessionImplementor session) {
+			SharedSessionContractImplementor session) {
 		this.persistenceContextLookupStrategy = persistenceContextLookupStrategy;
 		this.persister = persister;
 		this.cacheAccess = cacheAccess;
 		this.session = session;
+		this.loadAction = session.isSessionImplementor() ? ByIdAction.SESSION : ByIdAction.STATELESS_SESSION;
 	}
 
 	@Override
@@ -84,12 +86,21 @@ class PersistenceContextThenSecondLevelCacheLookupStrategy
 
 		try {
 			// This will load the object from the second level cache
-			return session.byId( persister.getEntityName() ).load( entityKey.getIdentifier() );
+			//todo: will stateless session even load from cache, if so change this:
+			return loadAction.byId( session, persister.getEntityName(), entityKey.getIdentifier() );
 		}
 		catch (ObjectNotFoundException ignored) {
 			// Unlikely but needed: an index might be out of sync, and the cache might be as well
 			// Ignore the exception and handle as a cache miss by returning null
 			return null;
 		}
+	}
+
+	private interface ByIdAction {
+
+		ByIdAction SESSION = (session, entityName, id) -> session.asSessionImplementor().byId( entityName ).load( id );
+		ByIdAction STATELESS_SESSION = (session, entityName, id) -> session.asStatelessSession().get( entityName, id );
+
+		Object byId(SharedSessionContractImplementor session, String entityName, Object id);
 	}
 }

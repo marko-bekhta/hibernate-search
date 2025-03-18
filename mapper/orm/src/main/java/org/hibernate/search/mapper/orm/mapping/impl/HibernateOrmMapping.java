@@ -16,6 +16,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.search.engine.backend.Backend;
 import org.hibernate.search.engine.backend.index.IndexManager;
 import org.hibernate.search.engine.backend.reporting.spi.BackendMappingHints;
@@ -442,7 +443,7 @@ public class HibernateOrmMapping extends AbstractPojoMappingImplementor<Hibernat
 
 	@Override
 	public HibernateOrmSearchSession.Builder createSessionBuilder(
-			SessionImplementor sessionImplementor) {
+			SharedSessionContractImplementor sessionImplementor) {
 		SessionFactory givenSessionFactory = sessionImplementor.getSessionFactory();
 
 		if ( !givenSessionFactory.equals( sessionFactory ) ) {

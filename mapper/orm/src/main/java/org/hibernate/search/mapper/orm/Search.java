@@ -10,6 +10,7 @@ import jakarta.persistence.TypedQuery;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.SharedSessionContract;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.query.Query;
 import org.hibernate.search.engine.search.query.SearchQuery;
@@ -64,6 +65,10 @@ public final class Search {
 	 * @throws org.hibernate.search.util.common.SearchException if the session NOT {@link Session#isOpen()}.
 	 */
 	public static SearchSession session(Session session) {
+		return createSearchSession( session );
+	}
+
+	public static SearchSession session(SharedSessionContract session) {
 		return createSearchSession( session );
 	}
 
@@ -123,9 +128,9 @@ public final class Search {
 		return mappingContextProvider.get();
 	}
 
-	private static SearchSession createSearchSession(Session session) {
+	private static SearchSession createSearchSession(SharedSessionContract session) {
 		HibernateSearchContextProviderService mappingContextProvider = HibernateSearchContextProviderService.get(
-				HibernateOrmUtils.toSessionFactoryImplementor( session.getSessionFactory() ) );
+				HibernateOrmUtils.toSessionFactoryImplementor( session.getFactory() ) );
 		return new DelegatingSearchSession( mappingContextProvider, session );
 	}
 

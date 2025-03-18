@@ -5,12 +5,13 @@
 package org.hibernate.search.mapper.orm.session.context;
 
 import org.hibernate.Session;
+import org.hibernate.SharedSessionContract;
 
 public interface HibernateOrmSessionContext {
 
 	/**
 	 * @return The Hibernate ORM {@link Session}.
 	 */
-	Session session();
+	SharedSessionContract session();
 
 }

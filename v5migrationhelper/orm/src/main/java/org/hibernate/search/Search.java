@@ -34,7 +34,7 @@ public final class Search {
 	 * @param session the hibernate ORM session
 	 * @return the new FullTextSession, based on the passed Session
 	 * @throws IllegalArgumentException if passed null
-	 * @deprecated Use {@link org.hibernate.search.mapper.orm.Search#session(Session)} instead.
+	 * @deprecated Use {@link org.hibernate.search.mapper.orm.Search#session(org.hibernate.SharedSessionContract)} instead.
 	 */
 	@Deprecated
 	public static FullTextSession getFullTextSession(Session session) {

@@ -189,7 +189,7 @@ class ProjectionDslIT {
 					.where( f -> f.matchAll() )
 					.fetchHits( 20 );
 			// end::entity[]
-			Session session = searchSession.toOrmSession();
+			Session session = (Session) searchSession.toOrmSession();
 			assertThat( hits ).containsExactlyInAnyOrder(
 					session.getReference( Book.class, BOOK1_ID ),
 					session.getReference( Book.class, BOOK2_ID ),
@@ -210,7 +210,7 @@ class ProjectionDslIT {
 					)
 					.where( f -> f.matchAll() )
 					.fetchHits( 20 );
-			Session session = searchSession.toOrmSession();
+			Session session = (Session) searchSession.toOrmSession();
 			assertThat( hits ).containsExactlyInAnyOrder(
 					session.getReference( Book.class, BOOK1_ID ),
 					session.getReference( Book.class, BOOK2_ID ),
@@ -229,7 +229,7 @@ class ProjectionDslIT {
 					.where( f -> f.matchAll() )
 					.fetchHits( 20 );
 			// end::field[]
-			Session session = searchSession.toOrmSession();
+			Session session = (Session) searchSession.toOrmSession();
 			assertThat( hits ).containsExactlyInAnyOrder(
 					session.getReference( Book.class, BOOK1_ID ).getGenre(),
 					session.getReference( Book.class, BOOK2_ID ).getGenre(),
@@ -245,7 +245,7 @@ class ProjectionDslIT {
 					.where( f -> f.matchAll() )
 					.fetchHits( 20 );
 			// end::field-multiValued[]
-			Session session = searchSession.toOrmSession();
+			Session session = (Session) searchSession.toOrmSession();
 			assertThat( hits ).containsExactlyInAnyOrder(
 					session.getReference( Book.class, BOOK1_ID ).getAuthors().stream()
 							.map( Author::getLastName )
@@ -269,7 +269,7 @@ class ProjectionDslIT {
 					.where( f -> f.matchAll() )
 					.fetchHits( 20 );
 			// end::field-noType[]
-			Session session = searchSession.toOrmSession();
+			Session session = (Session) searchSession.toOrmSession();
 			assertThat( hits ).containsExactlyInAnyOrder(
 					session.getReference( Book.class, BOOK1_ID ).getGenre(),
 					session.getReference( Book.class, BOOK2_ID ).getGenre(),
@@ -285,7 +285,7 @@ class ProjectionDslIT {
 					.where( f -> f.matchAll() )
 					.fetchHits( 20 );
 			// end::field-noProjectionConverter[]
-			Session session = searchSession.toOrmSession();
+			Session session = (Session) searchSession.toOrmSession();
 			assertThat( hits ).containsExactlyInAnyOrder(
 					session.getReference( Book.class, BOOK1_ID ).getGenre().name(),
 					session.getReference( Book.class, BOOK2_ID ).getGenre().name(),
@@ -376,7 +376,7 @@ class ProjectionDslIT {
 					.where( f -> f.matchAll() )
 					.fetchHits( 20 ); // <5>
 			// end::composite-customObject[]
-			Session session = searchSession.toOrmSession();
+			Session session = (Session) searchSession.toOrmSession();
 			assertThat( hits ).containsExactlyInAnyOrder(
 					new MyPair<>(
 							session.getReference( Book.class, BOOK1_ID ).getTitle(),
@@ -413,7 +413,7 @@ class ProjectionDslIT {
 					.fetchHits( 20 ); // <7>
 			// end::composite-customObject-asList[]
 			// @formatter:on
-			Session session = searchSession.toOrmSession();
+			Session session = (Session) searchSession.toOrmSession();
 			assertThat( hits ).containsExactlyInAnyOrder(
 					new MyTuple4<>(
 							session.getReference( Book.class, BOOK1_ID ).getTitle(),
@@ -452,7 +452,7 @@ class ProjectionDslIT {
 					.where( f -> f.matchAll() )
 					.fetchHits( 20 ); // <5>
 			// end::composite-list[]
-			Session session = searchSession.toOrmSession();
+			Session session = (Session) searchSession.toOrmSession();
 			assertThat( hits ).containsExactlyInAnyOrder(
 					Arrays.asList(
 							session.getReference( Book.class, BOOK1_ID ).getTitle(),
@@ -483,7 +483,7 @@ class ProjectionDslIT {
 					.where( f -> f.matchAll() )
 					.fetchHits( 20 ); // <5>
 			// end::composite-array[]
-			Session session = searchSession.toOrmSession();
+			Session session = (Session) searchSession.toOrmSession();
 			assertThat( hits ).containsExactlyInAnyOrder(
 					new Object[] {
 							session.getReference( Book.class, BOOK1_ID ).getTitle(),
@@ -519,7 +519,7 @@ class ProjectionDslIT {
 					.where( f -> f.matchAll() )
 					.fetchHits( 20 ); // <5>
 			// end::composite-customObject-singlestep[]
-			Session session = searchSession.toOrmSession();
+			Session session = (Session) searchSession.toOrmSession();
 			assertThat( hits ).containsExactlyInAnyOrder(
 					new MyPair<>(
 							session.getReference( Book.class, BOOK1_ID ).getTitle(),
@@ -550,7 +550,7 @@ class ProjectionDslIT {
 					.where( f -> f.matchAll() )
 					.fetchHits( 20 ); // <4>
 			// end::composite-list-singlestep[]
-			Session session = searchSession.toOrmSession();
+			Session session = (Session) searchSession.toOrmSession();
 			assertThat( hits ).containsExactlyInAnyOrder(
 					Arrays.asList(
 							session.getReference( Book.class, BOOK1_ID ).getTitle(),
@@ -585,7 +585,7 @@ class ProjectionDslIT {
 					.where( f -> f.matchAll() )
 					.fetchHits( 20 ); // <6>
 			// end::object-customObject[]
-			Session session = searchSession.toOrmSession();
+			Session session = (Session) searchSession.toOrmSession();
 			assertThat( hits ).usingRecursiveFieldByFieldElementComparator()
 					.containsExactlyInAnyOrder(
 							Collections.singletonList(
@@ -636,7 +636,7 @@ class ProjectionDslIT {
 					.fetchHits( 20 ); // <8>
 			// end::object-customObject-asList[]
 			// @formatter:on
-			Session session = searchSession.toOrmSession();
+			Session session = (Session) searchSession.toOrmSession();
 			assertThat( hits )
 					.usingRecursiveFieldByFieldElementComparator( RecursiveComparisonConfiguration.builder()
 							.withComparatorForType( TestComparators.APPROX_KM_COMPARATOR, Double.class )
@@ -698,7 +698,7 @@ class ProjectionDslIT {
 					.fetchHits( 20 ); // <8>
 			// end::object-customObject-asArray[]
 			// @formatter:on
-			Session session = searchSession.toOrmSession();
+			Session session = (Session) searchSession.toOrmSession();
 			assertThat( hits )
 					.usingRecursiveFieldByFieldElementComparator( RecursiveComparisonConfiguration.builder()
 							.withComparatorForType( TestComparators.APPROX_KM_COMPARATOR, Double.class )
@@ -750,7 +750,7 @@ class ProjectionDslIT {
 					.where( f -> f.matchAll() )
 					.fetchHits( 20 ); // <6>
 			// end::object-list[]
-			Session session = searchSession.toOrmSession();
+			Session session = (Session) searchSession.toOrmSession();
 			assertThat( hits ).containsExactlyInAnyOrder(
 					Collections.singletonList(
 							Arrays.asList(
@@ -790,7 +790,7 @@ class ProjectionDslIT {
 					.where( f -> f.matchAll() )
 					.fetchHits( 20 ); // <6>
 			// end::object-array[]
-			Session session = searchSession.toOrmSession();
+			Session session = (Session) searchSession.toOrmSession();
 			assertThat( hits ).usingElementComparator( (left, right) -> {
 				if ( left.size() != right.size() ) {
 					return 1;

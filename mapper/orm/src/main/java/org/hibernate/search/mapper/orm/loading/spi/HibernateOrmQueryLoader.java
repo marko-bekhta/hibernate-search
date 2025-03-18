@@ -4,6 +4,8 @@
  */
 package org.hibernate.search.mapper.orm.loading.spi;
 
+import java.util.Optional;
+
 import org.hibernate.MultiIdentifierLoadAccess;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
@@ -16,7 +18,7 @@ public interface HibernateOrmQueryLoader<E, I> {
 
 	Query<E> createLoadingQuery(SessionImplementor session, String idParameterName);
 
-	MultiIdentifierLoadAccess<E> createMultiIdentifierLoadAccess(SessionImplementor session);
+	Optional<MultiIdentifierLoadAccess<E>> createMultiIdentifierLoadAccess(SessionImplementor session);
 
 	boolean uniquePropertyIsTheEntityId();
 }
