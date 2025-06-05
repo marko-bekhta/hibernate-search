@@ -107,6 +107,14 @@
             <artifactId>hibernate-search-util-internal-integrationtest-jbatch-runtime</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <!-- The version is used to generate a link to the WildFly documentation -->
+        <!-- This simply makes sure dependabot will automatically bump the version -->
+        <dependency>
+            <groupId>org.wildfly.bom</groupId>
+            <artifactId>wildfly</artifactId>
+            <type>pom</type>
+        </dependency>
     </dependencies>
 
     <build>
