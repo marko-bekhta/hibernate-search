@@ -122,13 +122,13 @@
 
         <!-- >>> WildFly dependencies -->
         <!-- This is used to generate a link to the WildFly documentation -->
-        <version.org.wildfly>33.0.0.Final</version.org.wildfly>
+        <version.org.wildfly>36.0.1.Final</version.org.wildfly>
 
         <!-- Test dependencies -->
 
         <!-- >>> Common -->
         <version.log4j>2.24.3</version.log4j>
-        <version.junit-jupiter>5.12.2</version.junit-jupiter>
+        <version.junit-jupiter>5.13.0</version.junit-jupiter>
         <version.junit-platform-suite-engine>1.10.0</version.junit-platform-suite-engine>
         <version.org.osgi.core>6.0.0</version.org.osgi.core>
         <!-- Make sure to update Ryuk container version in `ryuk.Dockerfile` whenever updating testcontainers to align it with the lib. -->
