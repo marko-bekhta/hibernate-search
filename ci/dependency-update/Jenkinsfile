@@ -18,6 +18,7 @@ Map settings() {
 			]
 		case 'orm7.1':
 			return [
+					ormBuildTool: 'OpenJDK 21 Latest',
 					updateProperties: ['version.org.hibernate.orm'],
 					onlyRunTestDependingOn: ['hibernate-search-mapper-orm'],
 					// just rebuild all dependants since ORM7 upgrade will affect all mappers
@@ -185,6 +186,9 @@ pipeline {
 						expression {
 							return params.ORM_REPOSITORY?.trim() || params.ORM_BRANCH?.trim() || params.ORM_PULL_REQUEST_ID?.trim()
 						}
+					}
+					tools {
+						jdk settings().ormBuildTool == null ? 'OpenJDK 17 Latest' : settings().ormBuildTool == null
 					}
 					steps {
 						script {
