@@ -5,6 +5,7 @@
 package org.hibernate.search.backend.lucene.lowlevel.aggregation.collector.impl;
 
 import java.util.BitSet;
+import java.util.Locale;
 
 import com.carrotsearch.hppc.LongHashSet;
 
@@ -43,5 +44,10 @@ public class CountDistinct implements AggregationFunction<CountDistinct> {
 	@Override
 	public CountDistinct implementation() {
 		return this;
+	}
+
+	@Override
+	public String toString() {
+		return String.format( Locale.ROOT, "CountDistinctValues{counts=%s}", counts );
 	}
 }
