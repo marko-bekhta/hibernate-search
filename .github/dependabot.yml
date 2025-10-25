@@ -155,6 +155,10 @@ updates:
         patterns:
           # Include all:
           - "*"
+    ignore:
+      - dependency-name: "testcontainers/ryuk"
+        versions: ["b2762871bff62df9bfcec62609da821803a575e06d74aa7ce1654ded208cc7c5"]
+
   - package-ecosystem: "docker"
     registries:
       - dockerhub
