@@ -225,6 +225,9 @@ pipeline {
 						// The timeout cannot be in stage options, because that would
 						// include the time needed to provision a node.
 						timeout(time: 30, unit: 'MINUTES') {
+							script {
+								sh "docker version"
+							}
 							withMavenWorkspace {
 								sh "mvn clean install -U -Pdist -DskipTests"
 								dir(env.WORKSPACE_TMP + '/.m2repository') {
