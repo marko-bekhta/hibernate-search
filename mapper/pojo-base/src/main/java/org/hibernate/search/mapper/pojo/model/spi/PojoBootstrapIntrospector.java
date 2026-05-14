@@ -4,8 +4,8 @@
  */
 package org.hibernate.search.mapper.pojo.model.spi;
 
+import org.hibernate.accessor.HibernateAccessorFactory;
 import org.hibernate.search.util.common.annotation.Incubating;
-import org.hibernate.search.util.common.reflect.spi.ValueHandleFactory;
 
 /**
  * A Pojo introspector used at bootstrap.
@@ -26,18 +26,9 @@ public interface PojoBootstrapIntrospector {
 	PojoRawTypeModel<?> typeModel(String name);
 
 	/**
-	 * @return A {@link ValueHandleFactory} for reading annotation attributes.
+	 * @return A {@link HibernateAccessorFactory} for reading annotation attributes.
 	 */
-	ValueHandleFactory annotationValueHandleFactory();
-
-	/**
-	 * @return A {@link ValueHandleFactory} for reading annotation attributes.
-	 * @deprecated Use/implement {@link #annotationValueHandleFactory()} instead.
-	 */
-	@Deprecated(since = "6.2")
-	default org.hibernate.search.util.common.reflect.spi.ValueReadHandleFactory annotationValueReadHandleFactory() {
-		return (org.hibernate.search.util.common.reflect.spi.ValueReadHandleFactory) annotationValueHandleFactory();
-	}
+	HibernateAccessorFactory annotationValueHandleFactory();
 
 	@Incubating
 	static String noPrefix(String methodName) {
