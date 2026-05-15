@@ -13,6 +13,7 @@ import java.util.function.BiConsumer;
 import org.hibernate.accessor.HibernateAccessorFactory;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.spi.BootstrapContext;
+import org.hibernate.search.mapper.pojo.model.spi.AccessorFactoriesContext;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.engine.config.spi.ConfigurationService;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
@@ -32,7 +33,7 @@ public class HibernateOrmIntegrationBooterImpl implements HibernateOrmIntegratio
 
 
 	private final Metadata metadata;
-	private final HibernateAccessorFactory accessorFactory;
+	private final AccessorFactoriesContext accessorFactories;
 	private final HibernateSearchPreIntegrationService preIntegrationService;
 	private final Optional<EnvironmentSynchronizer> environmentSynchronizer;
 	private final ClassDetailsRegistry classDetailsRegistry;
@@ -41,9 +42,14 @@ public class HibernateOrmIntegrationBooterImpl implements HibernateOrmIntegratio
 	private HibernateOrmIntegrationBooterImpl(BuilderImpl builder) {
 		this.metadata = builder.metadata;
 		ServiceRegistry serviceRegistry = builder.bootstrapContext.getServiceRegistry();
-		this.accessorFactory = builder.accessorFactory != null
-				? builder.accessorFactory
-				: HibernateAccessorFactory.lambda( MethodHandles.publicLookup() );
+		this.accessorFactories = new AccessorFactoriesContext(
+				builder.accessorFactory != null
+						? builder.accessorFactory
+						: HibernateAccessorFactory.lambda( MethodHandles.publicLookup() ),
+				builder.annotationAccessorFactory != null
+						? builder.annotationAccessorFactory
+						: HibernateAccessorFactory.reflection()
+		);
 		this.preIntegrationService =
 				HibernateOrmUtils.getServiceOrFail( serviceRegistry, HibernateSearchPreIntegrationService.class );
 
@@ -84,7 +90,7 @@ public class HibernateOrmIntegrationBooterImpl implements HibernateOrmIntegratio
 			);
 		}
 
-		preIntegrationService.doBootFirstPhase( metadata, classDetailsRegistry, accessorFactory )
+		preIntegrationService.doBootFirstPhase( metadata, classDetailsRegistry, accessorFactories )
 				.set( propertyCollector );
 	}
 
@@ -168,7 +174,7 @@ public class HibernateOrmIntegrationBooterImpl implements HibernateOrmIntegratio
 
 	private HibernateSearchContextProviderService bootNow(SessionFactoryImplementor sessionFactoryImplementor) {
 		HibernateOrmIntegrationPartialBuildState partialBuildState =
-				preIntegrationService.doBootFirstPhase( metadata, classDetailsRegistry, accessorFactory );
+				preIntegrationService.doBootFirstPhase( metadata, classDetailsRegistry, accessorFactories );
 
 		try {
 			return partialBuildState.doBootSecondPhase( sessionFactoryImplementor,
@@ -186,6 +192,7 @@ public class HibernateOrmIntegrationBooterImpl implements HibernateOrmIntegratio
 		private final BootstrapContext bootstrapContext;
 
 		private HibernateAccessorFactory accessorFactory;
+		private HibernateAccessorFactory annotationAccessorFactory;
 
 		public BuilderImpl(Metadata metadata, BootstrapContext bootstrapContext) {
 			this.metadata = metadata;
@@ -195,6 +202,12 @@ public class HibernateOrmIntegrationBooterImpl implements HibernateOrmIntegratio
 		@Override
 		public Builder accessorFactory(HibernateAccessorFactory accessorFactory) {
 			this.accessorFactory = accessorFactory;
+			return this;
+		}
+
+		@Override
+		public Builder annotationAccessorFactory(HibernateAccessorFactory annotationAccessorFactory) {
+			this.annotationAccessorFactory = annotationAccessorFactory;
 			return this;
 		}
 

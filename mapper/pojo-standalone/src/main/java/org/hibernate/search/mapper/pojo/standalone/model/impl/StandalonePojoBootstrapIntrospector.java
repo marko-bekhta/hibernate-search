@@ -10,11 +10,11 @@ import java.lang.reflect.Member;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hibernate.accessor.HibernateAccessorFactory;
 import org.hibernate.accessor.HibernateAccessorInstantiator;
 import org.hibernate.accessor.HibernateAccessorValueReader;
 import org.hibernate.search.engine.environment.classpath.spi.ClassResolver;
 import org.hibernate.search.engine.environment.classpath.spi.ResourceResolver;
+import org.hibernate.search.mapper.pojo.model.spi.AccessorFactoriesContext;
 import org.hibernate.search.mapper.pojo.model.models.spi.AbstractPojoModelsBootstrapIntrospector;
 import org.hibernate.search.mapper.pojo.model.models.spi.PojoModelsGenericContextHelper;
 import org.hibernate.search.mapper.pojo.model.models.spi.PojoSimpleModelsRawTypeModel;
@@ -34,8 +34,8 @@ public class StandalonePojoBootstrapIntrospector extends AbstractPojoModelsBoots
 		implements PojoBootstrapIntrospector {
 
 	public static StandalonePojoBootstrapIntrospector create(ClassResolver classResolver, ResourceResolver resourceResolver,
-			IndexView indexView, HibernateAccessorFactory accessorFactory) {
-		return new StandalonePojoBootstrapIntrospector( classResolver, resourceResolver, indexView, accessorFactory );
+			IndexView indexView, AccessorFactoriesContext accessorFactories) {
+		return new StandalonePojoBootstrapIntrospector( classResolver, resourceResolver, indexView, accessorFactories );
 	}
 
 	private final PojoModelsGenericContextHelper genericContextHelper;
@@ -43,8 +43,8 @@ public class StandalonePojoBootstrapIntrospector extends AbstractPojoModelsBoots
 	private final Map<Class<?>, PojoRawTypeModel<?>> typeModelCache = new HashMap<>();
 
 	private StandalonePojoBootstrapIntrospector(ClassResolver classResolver, ResourceResolver resourceResolver,
-			IndexView indexView, HibernateAccessorFactory accessorFactory) {
-		super( classResolver, resourceResolver, indexView, accessorFactory );
+			IndexView indexView, AccessorFactoriesContext accessorFactories) {
+		super( classResolver, resourceResolver, indexView, accessorFactories );
 		this.genericContextHelper = new PojoModelsGenericContextHelper( this );
 	}
 

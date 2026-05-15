@@ -27,6 +27,8 @@ public interface StandalonePojoIntegrationBooter {
 
 		Builder accessorFactory(HibernateAccessorFactory accessorFactory);
 
+		Builder annotationAccessorFactory(HibernateAccessorFactory annotationAccessorFactory);
+
 		@Incubating
 		Builder introspectorCustomizer(Function<PojoBootstrapIntrospector, PojoBootstrapIntrospector> customize);
 

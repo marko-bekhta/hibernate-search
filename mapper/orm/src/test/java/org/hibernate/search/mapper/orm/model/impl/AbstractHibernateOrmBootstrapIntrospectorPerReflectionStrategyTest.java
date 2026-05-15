@@ -24,6 +24,7 @@ import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.dialect.H2Dialect;
 import org.hibernate.models.spi.ModelsConfiguration;
 import org.hibernate.models.spi.ModelsContext;
+import org.hibernate.search.mapper.pojo.model.spi.AccessorFactoriesContext;
 import org.hibernate.search.util.common.impl.Closer;
 import org.hibernate.accessor.HibernateAccessorFactory;
 
@@ -49,7 +50,7 @@ public abstract class AbstractHibernateOrmBootstrapIntrospectorPerReflectionStra
 	}
 
 	@SuppressWarnings("deprecation") // There's no other way to access the reflection manager
-	final HibernateOrmBootstrapIntrospector createIntrospector(HibernateAccessorFactory valueHandleFactory,
+	final HibernateOrmBootstrapIntrospector createIntrospector(HibernateAccessorFactory accessorFactory,
 			Class<?>... entityClasses) {
 		StandardServiceRegistryBuilder registryBuilder = new StandardServiceRegistryBuilder();
 		// Some properties that are not relevant to our test, but necessary to create the Metadata
@@ -70,7 +71,7 @@ public abstract class AbstractHibernateOrmBootstrapIntrospectorPerReflectionStra
 				HibernateOrmBasicTypeMetadataProvider.create( metadata );
 
 		return HibernateOrmBootstrapIntrospector.create( basicTypeMetadataProvider, context.getClassDetailsRegistry(),
-				valueHandleFactory
+				new AccessorFactoriesContext( accessorFactory, HibernateAccessorFactory.reflection() )
 		);
 	}
 

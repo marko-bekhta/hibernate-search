@@ -15,9 +15,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.AssertionFailure;
-import org.hibernate.accessor.HibernateAccessorFactory;
 import org.hibernate.accessor.HibernateAccessorInstantiator;
 import org.hibernate.accessor.HibernateAccessorValueReader;
+import org.hibernate.search.mapper.pojo.model.spi.AccessorFactoriesContext;
 import org.hibernate.bytecode.enhance.spi.EnhancerConstants;
 import org.hibernate.engine.spi.PersistentAttributeInterceptable;
 import org.hibernate.mapping.PersistentClass;
@@ -37,9 +37,9 @@ public class HibernateOrmBootstrapIntrospector extends AbstractPojoModelsBootstr
 	public static HibernateOrmBootstrapIntrospector create(
 			HibernateOrmBasicTypeMetadataProvider basicTypeMetadataProvider,
 			ClassDetailsRegistry classDetailsRegistry,
-			HibernateAccessorFactory accessorFactory) {
+			AccessorFactoriesContext accessorFactories) {
 		return new HibernateOrmBootstrapIntrospector(
-				basicTypeMetadataProvider, classDetailsRegistry, accessorFactory
+				basicTypeMetadataProvider, classDetailsRegistry, accessorFactories
 		);
 	}
 
@@ -61,8 +61,8 @@ public class HibernateOrmBootstrapIntrospector extends AbstractPojoModelsBootstr
 	private HibernateOrmBootstrapIntrospector(
 			HibernateOrmBasicTypeMetadataProvider basicTypeMetadataProvider,
 			ClassDetailsRegistry classDetailsRegistry,
-			HibernateAccessorFactory accessorFactory) {
-		super( classDetailsRegistry, accessorFactory );
+			AccessorFactoriesContext accessorFactories) {
+		super( classDetailsRegistry, accessorFactories );
 		this.basicTypeMetadataProvider = basicTypeMetadataProvider;
 		this.genericContextHelper = new PojoModelsGenericContextHelper( this );
 	}

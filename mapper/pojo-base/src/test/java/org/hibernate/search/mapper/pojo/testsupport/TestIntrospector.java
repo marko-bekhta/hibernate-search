@@ -18,6 +18,7 @@ import org.hibernate.search.mapper.pojo.model.spi.PojoRawTypeModel;
 import org.hibernate.search.mapper.pojo.model.spi.PojoTypeModel;
 import org.hibernate.search.util.common.AssertionFailure;
 import org.hibernate.accessor.HibernateAccessorFactory;
+import org.hibernate.search.mapper.pojo.model.spi.AccessorFactoriesContext;
 import org.hibernate.search.util.impl.test.reflect.TypeCapture;
 
 public class TestIntrospector extends AbstractPojoModelsBootstrapIntrospector {
@@ -29,7 +30,7 @@ public class TestIntrospector extends AbstractPojoModelsBootstrapIntrospector {
 
 	private TestIntrospector(HibernateAccessorFactory valueHandleFactory, AggregatedClassLoader aggregatedClassLoader) {
 		super( DefaultClassResolver.create( aggregatedClassLoader ), DefaultResourceResolver.create( aggregatedClassLoader ),
-				null, valueHandleFactory );
+				null, new AccessorFactoriesContext( valueHandleFactory, HibernateAccessorFactory.reflection() ) );
 	}
 
 	@Override

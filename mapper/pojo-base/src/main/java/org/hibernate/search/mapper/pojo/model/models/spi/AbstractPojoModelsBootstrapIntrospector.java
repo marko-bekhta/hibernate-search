@@ -38,6 +38,7 @@ import org.hibernate.search.engine.environment.classpath.spi.ClassLoadingExcepti
 import org.hibernate.search.engine.environment.classpath.spi.ClassResolver;
 import org.hibernate.search.engine.environment.classpath.spi.DefaultClassResolver;
 import org.hibernate.search.engine.environment.classpath.spi.ResourceResolver;
+import org.hibernate.search.mapper.pojo.model.spi.AccessorFactoriesContext;
 import org.hibernate.search.mapper.pojo.model.spi.PojoBootstrapIntrospector;
 import org.hibernate.search.util.common.AssertionFailure;
 import org.hibernate.search.util.common.impl.StreamHelper;
@@ -55,16 +56,16 @@ public abstract class AbstractPojoModelsBootstrapIntrospector implements PojoBoo
 
 	protected AbstractPojoModelsBootstrapIntrospector(ClassResolver classResolver, ResourceResolver resourceResolver,
 			IndexView indexView,
-			HibernateAccessorFactory valueHandleFactory) {
-		this( simpleClassDetailsRegistry( classResolver, resourceResolver, indexView ), valueHandleFactory );
+			AccessorFactoriesContext accessorFactories) {
+		this( simpleClassDetailsRegistry( classResolver, resourceResolver, indexView ), accessorFactories );
 	}
 
 	protected AbstractPojoModelsBootstrapIntrospector(ClassDetailsRegistry classDetailsRegistry,
-			HibernateAccessorFactory valueHandleFactory) {
+			AccessorFactoriesContext accessorFactories) {
 		this.classDetailsRegistry = classDetailsRegistry;
 		this.typeOrdering = new PojoModelsClassOrdering( classDetailsRegistry );
-		this.valueHandleFactory = valueHandleFactory;
-		this.annotationValueHandleFactory = HibernateAccessorFactory.reflection();
+		this.valueHandleFactory = accessorFactories.accessorFactory();
+		this.annotationValueHandleFactory = accessorFactories.annotationAccessorFactory();
 	}
 
 	private static ClassDetailsRegistry simpleClassDetailsRegistry(ClassResolver classResolver,

@@ -20,6 +20,8 @@ public interface HibernateOrmIntegrationBooter {
 	interface Builder {
 		Builder accessorFactory(HibernateAccessorFactory accessorFactory);
 
+		Builder annotationAccessorFactory(HibernateAccessorFactory annotationAccessorFactory);
+
 		HibernateOrmIntegrationBooter build();
 	}
 
