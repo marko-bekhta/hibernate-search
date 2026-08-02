@@ -4,6 +4,8 @@
  */
 package org.hibernate.search.backend.elasticsearch.types.predicate.impl;
 
+import java.util.List;
+
 import org.hibernate.search.backend.elasticsearch.search.common.impl.AbstractElasticsearchCodecAwareSearchQueryElementFactory;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexScope;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexValueFieldContext;
@@ -37,6 +39,7 @@ public class ElasticsearchFieldValueFactorFunction {
 		private final ElasticsearchFieldCodec<F> codec;
 		private final ElasticsearchSearchIndexScope<?> scope;
 		private final ElasticsearchSearchIndexValueFieldContext<F> field;
+		private final List<String> nestedPathHierarchy;
 
 		private String modifier;
 		private Float factor;
@@ -47,6 +50,12 @@ public class ElasticsearchFieldValueFactorFunction {
 			this.codec = codec;
 			this.scope = scope;
 			this.field = field;
+			this.nestedPathHierarchy = field.nestedPathHierarchy();
+		}
+
+		@Override
+		public List<String> nestedPathHierarchy() {
+			return nestedPathHierarchy;
 		}
 
 		@Override
@@ -110,7 +119,7 @@ public class ElasticsearchFieldValueFactorFunction {
 					ElasticsearchFieldCodec::encode );
 		}
 
-		String fieldPath() {
+		public String fieldPath() {
 			return field.absolutePath();
 		}
 

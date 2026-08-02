@@ -5,7 +5,9 @@
 package org.hibernate.search.backend.elasticsearch.search.predicate.impl;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexScope;
 import org.hibernate.search.backend.elasticsearch.types.predicate.impl.ElasticsearchFieldValueFactorFunction;
@@ -22,6 +24,7 @@ class ElasticsearchFunctionScorePredicate extends AbstractElasticsearchPredicate
 	private final List<FunctionEntry> functions;
 	private final String scoreMode;
 	private final String boostMode;
+	private final List<String> nestedPathHierarchy;
 
 	private ElasticsearchFunctionScorePredicate(Builder builder) {
 		super( builder );
@@ -29,6 +32,7 @@ class ElasticsearchFunctionScorePredicate extends AbstractElasticsearchPredicate
 		this.functions = builder.functions;
 		this.scoreMode = builder.scoreMode;
 		this.boostMode = builder.boostMode;
+		this.nestedPathHierarchy = builder.resolvedNestedPathHierarchy;
 	}
 
 	@Override
@@ -64,7 +68,23 @@ class ElasticsearchFunctionScorePredicate extends AbstractElasticsearchPredicate
 		}
 
 		outerObject.add( "function_score", innerObject );
-		return outerObject;
+
+		JsonObject result = outerObject;
+
+		if ( !nestedPathHierarchy.isEmpty() ) {
+			for ( int i = nestedPathHierarchy.size() - 1; i >= 0; i-- ) {
+				String path = nestedPathHierarchy.get( i );
+				if ( path.equals( context.getNestedPath() ) ) {
+					break;
+				}
+				JsonObject nestedOuter = new JsonObject();
+				JsonObject nestedInner = new JsonObject();
+				ElasticsearchNestedPredicate.wrap( indexNames(), path, nestedOuter, nestedInner, result );
+				result = nestedOuter;
+			}
+		}
+
+		return result;
 	}
 
 	static class Builder extends AbstractBuilder implements FunctionScorePredicateBuilder {
@@ -74,6 +94,7 @@ class ElasticsearchFunctionScorePredicate extends AbstractElasticsearchPredicate
 		private final List<FunctionEntry> functions = new ArrayList<>();
 		private String scoreMode;
 		private String boostMode;
+		private List<String> resolvedNestedPathHierarchy = Collections.emptyList();
 
 		Builder(ElasticsearchSearchIndexScope<?> scope) {
 			super( scope );
@@ -88,14 +109,34 @@ class ElasticsearchFunctionScorePredicate extends AbstractElasticsearchPredicate
 		@Override
 		public void addFieldValueFactorFunction(FieldValueFactorFunctionBuilder functionBuilder,
 				float weight, SearchPredicate filter) {
-			ElasticsearchFieldValueFactorFunction.Builder fvfBuilder =
-					(ElasticsearchFieldValueFactorFunction.Builder) functionBuilder;
+			ElasticsearchFieldValueFactorFunction.Builder<?> fvfBuilder =
+					(ElasticsearchFieldValueFactorFunction.Builder<?>) functionBuilder;
+			validateNestedPathHierarchy( fvfBuilder.nestedPathHierarchy(), fvfBuilder.fieldPath() );
 			functions.add( new FieldValueFactorEntry( fvfBuilder, weight, toEsPredicate( filter ) ) );
 		}
 
 		@Override
 		public void addWeightFunction(float weight, SearchPredicate filter) {
 			functions.add( new WeightEntry( weight, toEsPredicate( filter ) ) );
+		}
+
+		private void validateNestedPathHierarchy(List<String> fieldNestedPathHierarchy, String fieldPath) {
+			if ( resolvedNestedPathHierarchy.isEmpty() && fieldNestedPathHierarchy.isEmpty() ) {
+				return;
+			}
+			if ( resolvedNestedPathHierarchy.isEmpty() ) {
+				resolvedNestedPathHierarchy = fieldNestedPathHierarchy;
+				return;
+			}
+			if ( !Objects.equals( resolvedNestedPathHierarchy, fieldNestedPathHierarchy ) ) {
+				throw new IllegalArgumentException(
+						"Cannot use function score predicate with functions targeting fields"
+								+ " at different nested paths: previously resolved nested path hierarchy "
+								+ resolvedNestedPathHierarchy + ", but field '" + fieldPath
+								+ "' has nested path hierarchy " + fieldNestedPathHierarchy
+								+ ". Split into separate functionScore predicates, each inside its own"
+								+ " nested() predicate, combined via bool()." );
+			}
 		}
 
 		@Override
@@ -193,9 +234,9 @@ class ElasticsearchFunctionScorePredicate extends AbstractElasticsearchPredicate
 	}
 
 	private static class FieldValueFactorEntry extends FunctionEntry {
-		private final ElasticsearchFieldValueFactorFunction.Builder fvfBuilder;
+		private final ElasticsearchFieldValueFactorFunction.Builder<?> fvfBuilder;
 
-		FieldValueFactorEntry(ElasticsearchFieldValueFactorFunction.Builder fvfBuilder,
+		FieldValueFactorEntry(ElasticsearchFieldValueFactorFunction.Builder<?> fvfBuilder,
 				float weight, ElasticsearchSearchPredicate filter) {
 			super( weight, filter );
 			this.fvfBuilder = fvfBuilder;
@@ -214,9 +255,6 @@ class ElasticsearchFunctionScorePredicate extends AbstractElasticsearchPredicate
 
 		@Override
 		void contributeFunction(JsonObject entry) {
-			// Standalone weight function: weight IS the function.
-			// The weight is already set by FunctionEntry.toJson() via the weight field.
-			// For standalone weight, we always emit the weight property even if 1.0f.
 			entry.addProperty( "weight", weight );
 		}
 	}
