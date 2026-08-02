@@ -462,23 +462,16 @@ to `TraitKind`, `MetamodelClassWriter`, or `TypedFieldReferenceDetails`.
 
 ### Nested objects
 
-Nesting is handled transparently — the user writes `fieldValueFactor("children.popularity")`
-and the system automatically wraps in the appropriate nested join, same as predicates,
-sorts, and aggregations. No explicit `.nested()` call needed.
+Verified against ES 8.17: `field_value_factor` cannot see nested fields from the root
+document context. The entire `function_score` query must be a child of a `nested` query
+for the field to be visible. A `nested` **filter** on a function does NOT change the
+field resolution context — only a `nested` **query** wrapping the `function_score` works.
 
-The mechanism relies on the field's `nestedPathHierarchy`, computed at schema time:
-- **Predicates** use `AbstractLuceneNestablePredicate` → `ToParentBlockJoinQuery`
-- **Sorts** use `NestedDocsProvider` + `MultiValueMode`
-- **Score functions** follow the same pattern via `NestedDocsProvider`
+#### Automatic nesting (same nested path)
 
-#### Concrete example
-
-```
-Root document (queryScore = 10)
-  └── nested "children":
-        child A: popularity = 10
-        child B: popularity = 20
-```
+When all functions in a `functionScore` predicate target fields at the **same nested path**
+(or root level), the system automatically wraps the query in the appropriate nested join.
+The user just writes:
 
 ```java
 f.functionScore(f.matchAll())
@@ -486,12 +479,52 @@ f.functionScore(f.matchAll())
     .boostMode().multiply();
 ```
 
-Multiple nested children produce multiple values. Like multi-valued fields (decision #23),
-`fieldValueFactor` uses the **first value** — so `popularity = 10` from child A.
-Result: `queryScore × modifier(factor × 10)`.
+The system detects `children.popularity` is inside nested object `children` and:
+- **ES backend**: wraps the `function_score` inside a `nested` query for path `children`
+- **Lucene backend**: uses `NestedDocsProvider` + `ToParentBlockJoinQuery`
 
-A future enhancement could add an explicit `.multiValueMode()` option (like sorts have)
-to allow MIN/MAX/AVG/SUM across nested children.
+Multiple nested children produce multiple values. Like multi-valued fields (decision #23),
+`fieldValueFactor` uses the **first value**.
+
+#### Different nested paths → error
+
+When functions target fields at **different nested paths**, automatic wrapping is impossible
+— there is no single `nested` query that can resolve both. The system throws a validation
+error with guidance:
+
+```java
+// This throws an error:
+f.functionScore(f.matchAll())
+    .fieldValueFactor("authors.rating")     // nested path: authors
+    .fieldValueFactor("chapters.pages")     // nested path: chapters  ← different!
+```
+
+The error message guides the user to split into separate `functionScore` predicates,
+each inside its own `nested()`, combined via `bool`:
+
+```java
+f.bool()
+    .should(f.nested("authors").add(
+        f.functionScore(f.matchAll())
+            .fieldValueFactor("authors.rating")
+            .boostMode().replace()))
+    .should(f.nested("chapters").add(
+        f.functionScore(f.matchAll())
+            .fieldValueFactor("chapters.pages")
+            .boostMode().replace()));
+```
+
+#### Mixing nested and root-level functions
+
+A `functionScore` with both nested and root-level functions also triggers the error —
+the nested function needs wrapping but the root function doesn't:
+
+```java
+// This also throws an error:
+f.functionScore(f.matchAll())
+    .fieldValueFactor("rootPopularity")     // root level
+    .fieldValueFactor("authors.rating")     // nested path: authors
+```
 
 #### Lucene implementation
 
@@ -625,7 +658,7 @@ discrepancies quickly.
 | 16 | Single step, no ordering enforcement (bool pattern) | Functions and options mixable in any order. Avoids dual self-typing complexity |
 | 17 | Single self-typing `<SR, S>` on ClausesStep | ES extension just extends and adds methods. Config steps carry 3 type params |
 | 18 | Lambda support for inner predicate and filters | Consistent with `bool().must()` |
-| 19 | Nesting awareness | Via `AbstractLuceneNestablePredicate` |
+| 19 | Nesting: same path = auto-wrap, different paths = error | All functions must target the same nested path (or root). Auto-wraps in `nested` query. Different paths throw with guidance to split via `bool` + `nested()`. Verified against ES 8.17 |
 | 20 | `float` for `factor` and `weight` | Consistent with `boost(float)` on `PredicateScoreStep` |
 | 21 | `scoreMode().first()` preserves insertion order | Ordered evaluation with short-circuit |
 | 22 | Sub-step pattern (without `.end()`) | Matches `sort.missing().first()` pattern |

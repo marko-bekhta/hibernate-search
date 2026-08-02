@@ -1,8 +1,15 @@
 package org.hibernate.search.engine.search.predicate.spi;
 
+import java.util.List;
+
 import org.hibernate.search.engine.search.common.ValueModel;
 
+// TODO: when adding the next function type (e.g. DecayFunctionBuilder), extract a common
+//  ScoreFunctionBuilder interface with nestedPathHierarchy() so the predicate builder's
+//  nesting validation works uniformly across all function types.
 public interface FieldValueFactorFunctionBuilder {
+
+	List<String> nestedPathHierarchy();
 
 	void modifierNone();
 
