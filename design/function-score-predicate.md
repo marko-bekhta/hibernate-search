@@ -33,7 +33,9 @@ weightedScore_i = rawFunctionScore_i × weight_i    (default weight_i = 1)
 Available function types in the common API:
 - **`fieldValueFactor`** — reads a numeric field value, applies modifier and factor:
   `modifier(factor × fieldValue)`. Supports `.missing(value)` fallback.
-- **`weight`** (standalone) — produces a constant score equal to the weight value.
+- **`weight(N)`** (standalone) — produces base score 1.0 with per-function weight = N
+  (verified against ES 8.17). For sum/multiply this is equivalent to score=N, but for
+  weighted avg the distinction matters: `weight(2) + weight(3)` avg = 1.0, not 2.5.
 
 ES extension adds: `scriptScore`, `randomScore`, `decay` (gauss/exp/linear).
 
@@ -82,54 +84,57 @@ min:       min(queryScore, combinedFunctionScore)
 
 ### Score validity / edge cases
 
-| Scenario | Behavior |
+| Scenario | Behavior (verified against ES 8.17) |
 |----------|----------|
 | Function skipped (filter doesn't match) | Excluded from scoreMode combination |
-| No functions match any filter | **UNRESOLVED — must verify against ES.** See below |
+| No functions match any filter | `combinedFunctionScore = 1.0` (regardless of scoreMode) |
 | Field missing + `.missing(v)` set | Substitute v, apply modifier(factor × v) normally |
-| Field missing + no `.missing()` | **UNRESOLVED — must verify against ES.** See below |
+| Field missing + no `.missing()` | **Error** — query fails with "Missing value for field" |
 | Inner query score = 0 | boostMode applies normally (multiply → 0, sum → functionScore, replace → functionScore) |
+| Standalone `.weight(N)` | Base function score = 1.0, per-function weight = N (not score=N, weight=1) |
 
-#### OPEN: No functions match any filter
+#### RESOLVED: No functions match any filter
 
-When all functions have filters and none match a document, what is `combinedFunctionScore`?
+**Verified against ES 8.17:** when all functions have filters and none match a document,
+`combinedFunctionScore = 1.0` regardless of scoreMode. This is the identity for multiply
+and the actual value for replace/sum/avg:
+- `boostMode().multiply()`: `queryScore × 1.0 = queryScore` (document passes through)
+- `boostMode().sum()`: `queryScore + 1.0`
+- `boostMode().replace()`: `1.0`
 
-One option is the mathematical identity (1.0 for multiply, 0.0 for sum). But consider:
+Both backends must produce `combinedFunctionScore = 1.0` when no functions match.
 
-```java
-f.functionScore(query)
-    .fieldValueFactor("popularity").filter(featured)
-    .boostMode().multiply();
+#### RESOLVED: Field missing + no `.missing()` set
+
+**Verified against ES 8.17:** ES throws a hard error: *"Missing value for field [popularity]"*.
+It does NOT produce 0 or preserve the score — it fails the entire search.
+
+Contract: when `fieldValueFactor` targets a field that is missing from a document and
+no `.missing()` is set, the query must fail with a clear error. On the Lucene backend,
+this means the `DoubleValuesSource` must detect the missing value and throw (not return
+0 or fall through to Lucene's default behavior).
+
+This resolves the contradiction between the semantic model and Lucene's `boostByValue()` —
+neither "function produces 0" nor "preserve original score" is correct. The correct
+behavior is to **throw an error**.
+
+#### RESOLVED: Standalone weight semantics
+
+**Verified against ES 8.17:** `{"weight": N}` is modeled as a function producing base
+score 1.0 with per-function weight = N. This is critical for weighted avg:
+
+```
+weight(2) + weight(3), score_mode=avg:
+  weighted scores: 1.0×2=2, 1.0×3=3
+  avg = (2 + 3) / (2 + 3) = 5/5 = 1.0   ← NOT (2+3)/2 = 2.5
+
+field_value_factor(pop=10, w=3) + weight(100), score_mode=avg:
+  weighted scores: 10×3=30, 1×100=100
+  avg = (30 + 100) / (3 + 100) = 130/103 ≈ 1.262
 ```
 
-For a non-featured document, does `combinedFunctionScore = 1` (so `queryScore × 1 =
-queryScore`, document passes through unaffected)? Or does the document get a different
-treatment?
-
-**This must be verified against Elasticsearch before implementation.** The answer defines
-the contract both backends must honor.
-
-#### OPEN: Field missing + no `.missing()` set
-
-There is a contradiction between the semantic model and Lucene's primitives:
-
-- Semantic model (tentative): function produces 0
-- Lucene `boostByValue()`: preserves original score when source has no value
-
-For `boostMode().multiply()` with `queryScore = 10`:
-- Semantic "function produces 0": `10 × 0 = 0`
-- Lucene `boostByValue` "no value = preserve": `10`
-
-These are not equivalent. Since the design requires both backends to produce identical
-results, this must be resolved as a **hard design decision** before implementation:
-
-1. **Match ES behavior** (verify what ES actually does) and implement custom Lucene
-   logic to reproduce it — even if it means NOT using `boostByValue()` directly.
-2. **Or** define our own semantics and implement accordingly on both backends.
-
-Either way, the Lucene implementation may need a custom `DoubleValuesSource` that
-explicitly handles the "no value" case to match the chosen contract, rather than
-relying on `FunctionScoreQuery`'s built-in missing-value behavior.
+Both backends must model standalone `.weight(N)` as base score 1.0 with per-function
+weight N, not as function score N with weight 1.
 
 ### Field value factor modifiers
 
@@ -380,10 +385,14 @@ Custom components needed:
    - `new FunctionScoreQuery(query, source)` → score = **0** if source has no value
    - `boostByValue(query, source)` → **original score preserved** if source has no value
 
-   **Neither of these may match ES behavior** — see the open item in §2 (Score validity).
-   The Lucene implementation will likely need a custom `DoubleValuesSource` that explicitly
-   handles the "no value" case to match the contract we define, rather than relying on
-   `FunctionScoreQuery`'s built-in missing-value behavior.
+   **Verified ES behavior:** missing field + no `missing` param = **hard error**.
+   Neither Lucene behavior matches — the Lucene implementation must detect the missing
+   value in the custom `DoubleValuesSource` and throw an exception, rather than relying
+   on `FunctionScoreQuery`'s built-in missing-value handling.
+
+   For the "no functions match" case: `combinedFunctionScore = 1.0`. The composite
+   `DoubleValuesSource` must return 1.0 when no functions' filters match, regardless
+   of scoreMode.
 
 5. **Nesting awareness** — if `fieldValueFactor` targets a field inside a nested object,
    the `DoubleValuesSource` must be nested-aware (nested docs are separate Lucene documents).
@@ -574,23 +583,18 @@ discrepancies quickly.
 | 2 | 3 | 3 | 4 | sum | 2×3 + 3×4 = 18 |
 | 2 | 3 | 3 | 4 | multiply | (2×3) × (3×4) = 72 |
 
-**Edge cases:**
+**Edge cases (verified against ES 8.17):**
 
 | scenario | scoreMode | boostMode | expected |
 |----------|-----------|-----------|----------|
 | field missing + `.missing(5)` | multiply | multiply | queryScore × modifier(factor × 5) |
-| field missing + no `.missing()` | multiply | multiply | queryScore × 0 = 0 (verify vs ES) |
+| field missing + no `.missing()` | any | any | **ERROR** — query fails |
 | filter doesn't match (1 of 2 fns) | sum | multiply | queryScore × matchingFunctionScore |
-| no functions match any filter | sum | multiply | queryScore × 0 = 0 (verify vs ES) |
+| no functions match any filter | any | multiply | queryScore × 1.0 = queryScore |
+| no functions match any filter | any | replace | 1.0 |
+| no functions match any filter | any | sum | queryScore + 1.0 |
 | inner query score = 0 | multiply | sum | 0 + functionScore |
-
-**ES behavior verification (must resolve before implementation):**
-
-| scenario | verify |
-|----------|--------|
-| All functions filtered out (no match) | What does ES return? Identity? queryScore unchanged? 0? |
-| Field missing + no `.missing()` | Does ES produce 0? Error? Skip the function? |
-| Field missing + no `.missing()` + boostMode=multiply | Is the result queryScore × 0 = 0, or queryScore preserved? |
+| standalone weight(N) | avg | replace | 1.0 (base=1.0, weight=N, avg=N/N=1.0) |
 
 **Missing-value test matrix** — all combinations of:
 - function matches / doesn't match (filter)
@@ -628,7 +632,7 @@ discrepancies quickly.
 | 23 | Multi-valued fields: use first value | Follows ES behavior. Future `decay` can add `multi_value_mode` |
 | 24 | All numeric types including BigDecimal/BigInteger | `FIELD_VALUE_FACTOR` registered on all numeric field types |
 | 25 | Explicit scoring semantic model | Full pipeline with weighted avg formula. Both backends must match |
-| 26 | Missing-value / no-match semantics: verify against ES first | Two open items (no functions match, field missing without `.missing()`) must be verified against ES before implementation. Lucene's built-in behavior may not match — custom handling likely needed |
+| 26 | Missing-value / no-match semantics (verified ES 8.17) | No functions match → `combinedFunctionScore = 1.0`. Field missing + no `.missing()` → **error**. Standalone `weight(N)` = base score 1.0, per-fn weight N. Lucene must use custom handling, not built-in `FunctionScoreQuery` behavior |
 
 ### Discarded alternatives
 
