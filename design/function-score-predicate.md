@@ -1,12 +1,115 @@
 # Function Score Predicate — Design Document
 
-## Overview
+## 1. Problem / Motivation
 
-Add a `functionScore()` predicate to Hibernate Search that allows modifying document relevance
-scores using scoring functions. This bridges Elasticsearch's `function_score` query and
-Lucene's `FunctionScoreQuery`.
+Hibernate Search currently has no way to modify document relevance scores using external
+factors like popularity, recency, or business rules. Users who want to blend relevance
+with numeric field values (e.g. "boost popular products") must drop to backend-specific
+APIs (`fromJson()` / `fromLuceneQuery()`), losing portability.
 
-## API Design
+The `functionScore()` predicate bridges Elasticsearch's `function_score` query and Lucene's
+`FunctionScoreQuery`, providing a portable API for the most common scoring use cases while
+leaving backend-specific functions (script, decay, random) to the ES extension.
+
+## 2. Semantic Model
+
+Backend-agnostic scoring contract. Both backends must produce identical results.
+
+### Inner query
+
+The `functionScore` predicate wraps an inner query (defaults to `matchAll`). The inner
+query determines which documents match and produces their base relevance score (`queryScore`).
+
+### Functions
+
+Each function produces a raw score for matched documents. Functions can have:
+- An optional **per-function weight** (default = 1) — multiplies the raw output
+- An optional **filter** — the function only applies to documents matching the filter
+
+```
+weightedScore_i = rawFunctionScore_i × weight_i    (default weight_i = 1)
+```
+
+Available function types in the common API:
+- **`fieldValueFactor`** — reads a numeric field value, applies modifier and factor:
+  `modifier(factor × fieldValue)`. Supports `.missing(value)` fallback.
+- **`weight`** (standalone) — produces a constant score equal to the weight value.
+
+ES extension adds: `scriptScore`, `randomScore`, `decay` (gauss/exp/linear).
+
+### Score modes (combining multiple functions)
+
+Applied to the weighted scores of all functions whose filter matches:
+
+```
+multiply:  Π(weightedScore_i)
+sum:       Σ(weightedScore_i)
+avg:       Σ(weightedScore_i) / Σ(weight_i)          ← WEIGHTED average, NOT / N
+first:     weightedScore of first function whose filter matches
+max:       max(weightedScore_i)
+min:       min(weightedScore_i)
+```
+
+Default: `multiply`.
+
+Note: `avg` uses **weighted average** — the denominator is the sum of weights, not the
+count of functions.
+
+### Boost modes (merging function score with query score)
+
+```
+multiply:  queryScore × combinedFunctionScore         (default)
+replace:   combinedFunctionScore
+sum:       queryScore + combinedFunctionScore
+avg:       (queryScore + combinedFunctionScore) / 2
+max:       max(queryScore, combinedFunctionScore)
+min:       min(queryScore, combinedFunctionScore)
+```
+
+### Complete scoring pipeline
+
+```
+1. Evaluate inner query → queryScore
+2. For each function i whose filter matches:
+     weightedScore_i = rawFunctionScore_i × weight_i
+3. Combine via scoreMode:
+     combinedFunctionScore = scoreMode(weightedScore_1, weightedScore_2, ...)
+4. Merge with query via boostMode:
+     finalScore = boostMode(queryScore, combinedFunctionScore)
+5. Apply predicate-level boost/constantScore (if set):
+     finalScore = finalScore × predicateBoost
+```
+
+### Score validity / edge cases
+
+| Scenario | Behavior |
+|----------|----------|
+| Function skipped (filter doesn't match) | Excluded from scoreMode combination |
+| No functions match any filter | combinedFunctionScore = identity (1.0 for multiply, 0.0 for sum) |
+| Field missing + `.missing(v)` set | Substitute v, apply modifier(factor × v) normally |
+| Field missing + no `.missing()` | Function produces 0 (verify against ES behavior) |
+| Inner query score = 0 | boostMode applies normally (multiply → 0, sum → functionScore, replace → functionScore) |
+
+### Field value factor modifiers
+
+Transform the field value before it becomes the function's raw score:
+
+```
+none:        value                (default)
+log:         log₁₀(value)
+log1p:       log₁₀(1 + value)
+log2p:       log₁₀(2 + value)
+ln:          ln(value)
+ln1p:        ln(1 + value)
+ln2p:        ln(2 + value)
+square:      value²
+sqrt:        √value
+reciprocal:  1 / value
+```
+
+Full formula: `rawFunctionScore = modifier(factor × fieldValue)`
+
+## 3. Common API
 
 ### Entry point
 
@@ -22,12 +125,17 @@ f.functionScore(f.match().field("title").matching("robot"))
 f.functionScore()
     .fieldValueFactor("popularity")
     .boostMode().multiply();
+
+// Lambda form (consistent with bool().must())
+f.functionScore(pf -> pf.match().field("title").matching("robot"))
+    .fieldValueFactor("popularity")
+    .boostMode().multiply();
 ```
 
-### DSL Flow — Bool-style clause pattern
+### Fluent DSL — bool-style clause pattern
 
 Functions are added as clause methods on `FunctionScoreClausesStep`, following the same
-flow pattern as `bool().must().should()`. Each function method returns a config step that
+flow as `bool().must().should()`. Each function method returns a config step that
 **extends the clauses step**, so you can break out to add another function or set options
 at any point (once required params are satisfied).
 
@@ -51,230 +159,54 @@ FunctionScoreClausesStep<SR, S extends ClausesStep<SR,S>>
   └── .constantScore() → S
 ```
 
-**Single self-typing**: follows bool's pattern — everything on one step, all methods
-return `S` (the self type). Functions and options can be mixed in any order, same as
-`bool().must()` and `.minimumShouldMatch()`. No separate `OptionsStep`.
+Single self-typing follows bool's pattern — everything on one step, all methods return
+`S`. Functions and options can be mixed in any order. No separate `OptionsStep`.
 
-**ES extension** is straightforward:
+At least one function must be added — building with no functions is a build-time error.
 
-```
-ElasticsearchFunctionScoreClausesStep<SR>
-    extends FunctionScoreClausesStep<SR, ElasticsearchFunctionScoreClausesStep<SR>>
-  └── .decay(), .scriptScore(), .randomScore(), .maxBoost(float), .minScore(float)
-```
-
-No dual self-typing needed. Config steps carry 3 type params (`<SR, S, T>`).
-
-**Inner predicate**: `functionScore()` accepts both `PredicateFinalStep` and lambda
-`Function<SearchPredicateFactory, PredicateFinalStep>`, consistent with `bool().must()`.
-Same for `.filter()` on individual functions.
-
-If a function has required parameters beyond its method argument, the returned step does
+Functions with required parameters beyond their method argument return a step that does
 NOT extend the clauses step until those params are provided (compile-time enforcement).
 
-**Nested interaction**: `functionScore` needs nesting awareness. If `fieldValueFactor`
-targets a field inside a nested object, or the inner predicate uses `nested()`, the Lucene
-implementation must handle nested document structure (via `AbstractLuceneNestablePredicate`
-or equivalent).
+### DSL methods over enums
 
-At least one function must be added — building a `functionScore` with no functions is a
-build-time error.
-
-**Multi-valued fields**: for `fieldValueFactor`, follow ES behavior — use the first value.
-For `decay` (future), ES explicitly supports `multi_value_mode` (min/max/avg/sum).
-
-### Field references
-
-All field-accepting methods have overloads for both string paths and type-safe field references:
+Score modes, boost modes, and modifiers are DSL methods (sub-step pattern without
+`.end()`, matching `sort.missing().first()`), not enums. This allows promoting features
+from backend extensions to the common API incrementally — adding a method is non-breaking.
 
 ```java
-// String path
-.fieldValueFactor("popularity")
-    .missing(1)                                 // Object, ValueModel.MAPPING default
-
-// Type-safe field reference
-.fieldValueFactor(MyEntity_.popularity)
-    .missing(Ranking.OK)                        // T, type-safe via field reference
-    .missing(2.0, ValueModel.INDEX)             // raw index value
+.boostMode().multiply()    .scoreMode().multiply()    .modifier().none()
+.boostMode().replace()     .scoreMode().sum()          .modifier().log()
+.boostMode().sum()         .scoreMode().avg()          .modifier().log1p()
+.boostMode().avg()         .scoreMode().first()        .modifier().log2p()
+.boostMode().max()         .scoreMode().max()          .modifier().ln()
+.boostMode().min()         .scoreMode().min()          .modifier().ln1p()
+                                                       .modifier().ln2p()
+                                                       .modifier().square()
+                                                       .modifier().sqrt()
+                                                       .modifier().reciprocal()
 ```
 
-Adding the `ScoreFunctions` trait category affects the field reference / metamodel system:
+### Weight: dual role
 
-1. **New reference interfaces** under `engine/.../reference/scorefunction/`:
-   - `ScoreFunctionFieldReference<SR> extends FieldReference<SR>` (base marker)
-   - `FieldValueFactorFieldReference<SR, T>` (per function type, TYPED_INPUT — `T` carries
-     the domain type for type-safe `.missing(T)` with ValueModel conversion)
-   - `DecayFieldReference<SR>` (future)
+`.weight()` mirrors ES's overloading of the `weight` JSON key:
 
-2. **`TraitReferenceMapping`** — new entries mapping trait strings to reference interfaces:
-   ```
-   "score-function:field-value-factor" → FieldValueFactorFieldReference, label "SF0", TYPED_INPUT
-   ```
-
-3. **Generated metamodel classes** gain new label segments — e.g. a numeric field's reference
-   class goes from `TypedFieldReferenceP0P2P6R1` to `TypedFieldReferenceP0P2P6R1SF0`.
-
-No changes needed to `TraitKind`, `MetamodelClassWriter`, or `TypedFieldReferenceDetails` —
-these are generic enough to handle new traits automatically.
-
-### Field type validation — ScoreFunction type keys
-
-Score functions are a new category of query element, at the same level as predicates, sorts,
-projections, and aggregations. They get their own trait namespace and type key registry:
-
-```
-IndexFieldTraits
-  ├── Predicates        → PredicateTypeKeys        (MATCH, RANGE, PHRASE, ...)
-  ├── Sorts             → SortTypeKeys             (FIELD, DISTANCE, ...)
-  ├── Projections       → ProjectionTypeKeys        (FIELD, DISTANCE, ...)
-  ├── Aggregations      → AggregationTypeKeys       (RANGE, TERMS, ...)
-  └── ScoreFunctions    → ScoreFunctionTypeKeys     (FIELD_VALUE_FACTOR, DECAY, ...)
-```
-
-Each key is parameterized with its builder type and registered only on compatible field types:
-
-| Key | Builder type | Registered on |
-|-----|-------------|---------------|
-| `FIELD_VALUE_FACTOR` | `FieldValueFactorFunctionBuilder` | all numeric types (integer, long, float, double, BigDecimal, BigInteger) |
-| `DECAY` (future) | `DecayFunctionBuilder` | numeric, date, geo_point |
-
-The `functionScore` predicate itself is global (on `SearchPredicateBuilderFactory`), but
-individual functions validate their target fields through these keys via the standard
-`scope.fieldQueryElement(fieldPath, ScoreFunctionTypeKeys.FIELD_VALUE_FACTOR)` call.
-Incompatible fields fail early with the standard error:
-*"Cannot use 'score-function:field-value-factor' on field 'title': not available for fields of this type."*
-
-### Methods over enums
-
-Score modes, boost modes, and modifiers are expressed as DSL methods, not enums.
-This allows promoting features from backend extensions to the common API incrementally —
-adding a method is non-breaking.
-
-### Scoring semantic model
-
-This defines how scores are computed. Both backends must produce the same results.
-
-#### Per-function weight
-
-Every function has an optional per-function weight (default = 1). The weight multiplies
-the function's raw output:
-
-```
-weightedScore_i = rawFunctionScore_i × weight_i    (default weight_i = 1)
-```
-
-The `.weight(float)` method on config steps sets this multiplier. The standalone
-`.weight(42)` on the clauses step is a function that produces score = 42 (with implicit
-per-function weight = 1). This mirrors ES, where the `weight` JSON key serves dual
-purpose — per-function multiplier when combined with another function, standalone
-function when alone.
-
-#### Score modes (how multiple functions combine)
-
-Applied to the weighted scores of all matching functions:
-
-```
-multiply:  Π(weightedScore_i)
-sum:       Σ(weightedScore_i)
-avg:       Σ(weightedScore_i) / Σ(weight_i)          ← WEIGHTED average, NOT / N
-first:     weightedScore of first function whose filter matches
-max:       max(weightedScore_i)
-min:       min(weightedScore_i)
-```
-
-Note: `avg` uses **weighted average** — the denominator is the sum of weights, not the
-count of functions. Functions with higher weights contribute more to the average AND
-pull the denominator, matching ES behavior.
-
-#### Boost modes (how combined function score merges with query score)
-
-```
-multiply:  queryScore × combinedFunctionScore         (default)
-replace:   combinedFunctionScore
-sum:       queryScore + combinedFunctionScore
-avg:       (queryScore + combinedFunctionScore) / 2
-max:       max(queryScore, combinedFunctionScore)
-min:       min(queryScore, combinedFunctionScore)
-```
-
-#### Complete scoring pipeline
-
-```
-1. Evaluate inner query → queryScore
-2. For each function i with matching filter:
-     weightedScore_i = rawFunctionScore_i × weight_i
-3. Combine via scoreMode:
-     combinedFunctionScore = scoreMode(weightedScore_1, weightedScore_2, ...)
-4. Merge with query via boostMode:
-     finalScore = boostMode(queryScore, combinedFunctionScore)
-5. Apply predicate-level boost/constantScore (if set):
-     finalScore = finalScore × predicateBoost
-
-Edge cases:
-  - Function skipped (filter doesn't match): excluded from scoreMode combination
-  - No functions match: combinedFunctionScore = identity (1.0 for multiply, 0.0 for sum)
-  - Field missing + no .missing(): function produces 0 (verify against ES behavior)
-  - Field missing + .missing(v): substitute v, apply modifier(factor × v) normally
-```
-
-See the scoring semantic model above for the precise formulas.
-
-```java
-.boostMode().multiply()    // default
-.boostMode().replace()
-.boostMode().sum()
-.boostMode().avg()
-.boostMode().max()
-.boostMode().min()
-
-.scoreMode().multiply()    // default
-.scoreMode().sum()
-.scoreMode().avg()         // weighted average — Σ(score_i * w_i) / Σ(w_i)
-.scoreMode().first()
-.scoreMode().max()
-.scoreMode().min()
-```
-
-#### Field value factor modifiers
-
-```java
-.modifier().none()         // no transformation (default)
-.modifier().log()          // log(value)
-.modifier().log1p()        // log(1 + value)
-.modifier().log2p()        // log(2 + value)
-.modifier().ln()           // ln(value)
-.modifier().ln1p()         // ln(1 + value)
-.modifier().ln2p()         // ln(2 + value)
-.modifier().square()       // value^2
-.modifier().sqrt()         // sqrt(value)
-.modifier().reciprocal()   // 1/value
-```
+- **On config steps** (e.g. after `.fieldValueFactor()`): per-function multiplier.
+  Maps to `{"field_value_factor": {...}, "weight": 3}`.
+- **On clauses step**: standalone weight function producing a constant score.
+  Maps to `{"weight": 42}`.
 
 ### Defaults
 
-Both `scoreMode` and `boostMode` default to `multiply` (matching Elasticsearch/OpenSearch).
-
-If the user doesn't call `.scoreMode()` / `.boostMode()`, the DSL doesn't call the
-corresponding builder method. On the **ES backend**, the builder fields stay null — null
-fields are not serialized to JSON, so ES applies its own `multiply` default. On the
-**Lucene backend**, the builder initializes these fields to `multiply` internally as
-the fallback default.
+Both `scoreMode` and `boostMode` default to `multiply` (matching ES/OpenSearch). If the
+user doesn't call these methods, the DSL doesn't call the corresponding builder method.
+ES backend: null fields not serialized (ES applies its own default). Lucene backend:
+builder initializes to `multiply` internally.
 
 ### Predicate-level boost and constantScore
 
-`FunctionScoreClausesStep` extends `PredicateScoreStep`, providing standard predicate-level
-score modification:
-
-```java
-f.functionScore(f.match().field("title").matching("robot"))
-    .fieldValueFactor("popularity").modifier().log1p()
-    .boostMode().multiply()
-    .boost(2.0f)           // standard predicate boost, applied on top
-    .constantScore();      // force constant score
-```
-
-This is separate from `boostMode` — `boost()`/`constantScore()` wrap the entire predicate
-result, just like on any other predicate.
+`FunctionScoreClausesStep` extends `PredicateScoreStep` — standard predicate-level score
+modification, separate from `boostMode`. Applied on top of the entire `functionScore`
+result, same as any other predicate.
 
 ### Complete usage examples
 
@@ -315,7 +247,7 @@ f.functionScore(f.match().field("title").matching("robot"))
         .modifier().log1p()
     .boostMode().multiply();
 
-// Weight without filter (constant multiplier for all docs)
+// Standalone weight (constant multiplier for all docs)
 f.functionScore(f.match().field("title").matching("robot"))
     .weight(2.5f)
     .boostMode().multiply();
@@ -333,143 +265,9 @@ f.functionScore(f.match().field("title").matching("robot"))
     .boostMode().multiply();
 ```
 
-### Elasticsearch extension
+## 4. Backend Behavior
 
-Additional functions available only through the ES extension:
-
-```java
-f.extension(ElasticsearchExtension.get())
-    .functionScore(f.match().field("title").matching("robot"))
-    .fieldValueFactor("popularity").modifier().log1p()
-    .decay("date").gauss()
-        .origin("now").scale("10d").offset("2d").decay(0.5)
-    .scriptScore("_score * doc['boost'].value")
-    .randomScore().seed(42).field("_seq_no")
-    .scoreMode().sum()
-    .boostMode().multiply()
-    .maxBoost(42)
-    .minScore(5);
-```
-
-## Decisions
-
-| # | Decision | Rationale |
-|---|----------|-----------|
-| 1 | Global predicate, not field-scoped | `functionScore` wraps another predicate, like `bool`. Goes through `SearchPredicateBuilderFactory`, not `PredicateTypeKeys` |
-| 2 | Bool-style clause flow | Functions are clause methods on a clauses step. Config steps extend clauses step for optional params, don't extend for required params. Consistent with existing DSL patterns |
-| 3 | Methods over enums for modes/modifiers | Allows incremental promotion of features from ES extension to common API without breaking changes |
-| 4 | Field references with overloads (TYPED_INPUT) | Both `String` field paths and type-safe field references. TYPED_INPUT because `.missing()` needs ValueModel conversion (e.g. enum via bridge → numeric) |
-| 5 | All 6 boost modes in common API | Once custom Lucene `DoubleValuesSource` for `sum` exists, `avg`/`max`/`min` are trivial additions |
-| 6 | All 6 score modes in common API | Same rationale — composite `DoubleValuesSource` handles all modes with a switch |
-| 7 | New `ScoreFunctions` category in `IndexFieldTraits` | Score functions are their own concern (like predicates, sorts, projections, aggregations). Own trait namespace (`score-function:*`), own `ScoreFunctionTypeKeys` registry. Individual keys registered per field type for validation |
-| 8 | Inner predicate defaults to matchAll | Optional argument to `functionScore()` |
-| 9 | At least one function required | Building `functionScore` with no functions is a build-time error — pointless without functions |
-| 10 | `.filter()` on all function types | Every function (fieldValueFactor, weight) supports an optional per-function filter, matching ES behavior |
-| 11 | `weight` dual role: standalone function + per-function multiplier | `.weight(42)` on ClausesStep = standalone function (ES: `{"weight": 42}`). `.weight(3)` on config steps = per-function multiplier (ES: `{"field_value_factor": {...}, "weight": 3}`). Mirrors ES's overloading of the `weight` key |
-| 12 | Defaults: scoreMode=multiply, boostMode=multiply | Match ES/OpenSearch defaults. ES backend: omit from JSON. Lucene backend: set internally |
-| 13 | `boost()`/`constantScore()` via PredicateScoreStep | Standard predicate-level score modification, separate from boostMode. Applied on top of entire functionScore result |
-| 14 | `.missing()` with ValueModel overloads | `.missing(value)` defaults to ValueModel.MAPPING; `.missing(value, ValueModel)` for explicit control. Needed for enum-via-bridge scenarios |
-| 15 | OpenSearch fully compatible | `function_score` JSON is identical between ES and OpenSearch. Single implementation, no dialect handling needed |
-| 16 | Single step, no ordering enforcement (bool pattern) | Everything on one `FunctionScoreClausesStep<SR, S>`. Functions and options mixable in any order, like bool. Avoids dual self-typing complexity |
-| 17 | Single self-typing on ClausesStep | `ClausesStep<SR, S>` — one self-type. ES extension just extends and adds methods. Config steps carry 3 type params (`<SR, S, T>`) |
-| 18 | Lambda support for inner predicate and filters | Consistent with `bool().must()` — accept both `PredicateFinalStep` and `Function<SearchPredicateFactory, PredicateFinalStep>` |
-| 19 | Nesting awareness | `functionScore` handles nested object fields, same as other predicates via `AbstractLuceneNestablePredicate` |
-| 20 | `float` for `factor` and `weight` | Consistent with `boost(float)` on `PredicateScoreStep`. Lucene also uses `float` for boost values |
-| 21 | `scoreMode().first()` preserves insertion order | Lucene composite `DoubleValuesSource` evaluates functions in order, short-circuits on first filter match |
-| 22 | Sub-step pattern (without `.end()`) for modifier/scoreMode/boostMode | Matches existing `missing().first()` pattern on sorts. Single mutually-exclusive choice, each option returns to parent. Keeps parent step interface clean, groups related options. No `.end()` needed |
-| 23 | Multi-valued fields: use first value | Follows ES `field_value_factor` behavior. Future `decay` can add explicit `multi_value_mode` |
-| 24 | All numeric types supported including BigDecimal/BigInteger | `FIELD_VALUE_FACTOR` registered on all numeric field types |
-| 25 | Explicit scoring semantic model | Full pipeline documented: per-function weight (default 1), scoreMode with weighted avg formula, boostMode, predicate-level boost. Both backends must produce identical results |
-
-## Discarded Alternatives
-
-| Alternative | Why discarded |
-|-------------|---------------|
-| Enums for score/boost modes | Less extensible; harder to promote features from ES extension to common API |
-| `.add(fn -> ...)` lambda pattern for functions | Bool-style clause methods are more natural and consistent with existing DSL |
-| Single-function-only common API | Multi-function with `scoreMode` is achievable on Lucene via composite `DoubleValuesSource`; no reason to limit |
-| `script_score` in common API | Inherently ES-specific (Painless scripts). Left to ES extension |
-| `functionScore` as field-scoped predicate | It wraps a query, not a field. The individual functions reference fields |
-| Score function keys in `PredicateTypeKeys` | Score functions are not predicates — they're a distinct concern. Own category keeps the type key system clean and extensible |
-| UNTYPED field references for fieldValueFactor | `.missing()` needs ValueModel conversion for bridged types (e.g. enum → numeric). TYPED_INPUT required |
-| Flat methods for modifier (`.modifierLog1p()`) | Sub-step pattern groups 10 options behind one entry point, keeps `ConfigStep` clean. Consistent with `missing().first()` on sorts |
-| Separate `.constant(value)` function type | No clean ES mapping for `.constant(10).weight(2)` — ES overloads `weight` as both function and multiplier. Keeping `.weight()` as standalone function mirrors ES directly |
-| Functions-before-options ordering (dual self-typing) | Required `ClausesStep<SR, S, O>` with 4-param generics on config steps, separate `OptionsStep`, complex ES extension wiring. Bool pattern (single step) is much simpler for negligible benefit |
-
-## Backend Implementation
-
-### Lucene
-
-Custom components needed:
-
-1. **Composite `DoubleValuesSource`** — wraps N `DoubleValuesSource` instances, combines
-   per `scoreMode`. Each source can have an optional filter (Lucene `Query`) and weight.
-   Must preserve insertion order for `scoreMode().first()` (ordered evaluation with
-   short-circuit on first matching filter).
-
-2. **Boost mode handling** — Lucene's `FunctionScoreQuery` natively supports `multiply`
-   (`boostByValue`) and `replace` (constructor). For `sum`/`avg`/`max`/`min`, use
-   `FunctionScoreQuery` in **replace** mode with a `DoubleValuesSource` that internally
-   reads the inner query score via `DoubleValuesSource.SCORES` and computes the final
-   combined value itself (e.g. for `sum`: `SCORES + functionValue`, for `avg`:
-   `(SCORES + functionValue) / 2`). The source must return `needsScores() = true` to
-   access `SCORES`. The "replace" is technical — the replacement value already
-   incorporates the original score.
-
-3. **`fieldValueFactor`** — **cannot** use `DoubleValuesSource.fromDoubleField()` directly.
-   All Lucene numeric doc values are stored as raw longs with type-specific encoding:
-   - Integer: raw long is the int value widened to long
-   - Long: raw long is the value directly
-   - Float: raw long is `NumericUtils.floatToSortableInt()` widened to long
-   - Double: raw long is `NumericUtils.doubleToSortableLong()`
-
-   Must use type-aware decoding via `LuceneNumericDomain.sortedDocValueToDouble(long)`.
-   Prefer the aggregation pattern (`codec::sortedDocValueToDouble` as a `Function<Long, Double>`)
-   over extending `DoubleMultiValuesToSingleValuesSource` with new factory methods — it
-   already handles all four numeric types in one method, no branching needed.
-   **Revisit exact approach before starting implementation.**
-
-   The `FieldValueFactorFunctionBuilder` Lucene implementation gets the codec/domain from
-   the field type (available through `ScoreFunctionTypeKeys.FIELD_VALUE_FACTOR` resolution)
-   and uses it to create the correctly-typed source.
-
-   The `missing` value goes through the convert-and-encode pipeline (ValueModel) before
-   being used as the `DoubleValues.withDefault()` fallback. `modifier` and `factor` are
-   applied as a wrapping `DoubleValuesSource`: `modifier(factor * fieldValue)`.
-
-4. **Missing-value semantics** — critical for correctness. Lucene's `FunctionScoreQuery`
-   has different behavior depending on construction:
-   - `new FunctionScoreQuery(query, source)` → score = **0** if source has no value
-   - `boostByValue(query, source)` → **original score preserved** if source has no value
-
-   This distinction is observable with missing fields and filters. The design must define
-   explicit behavior for each edge case:
-
-   | Scenario | Behavior |
-   |----------|----------|
-   | Field missing + `.missing()` set | Use missing value as substitute (apply modifier + factor) |
-   | Field missing + no `.missing()` | Match ES: function produces 0 (or error — verify ES behavior) |
-   | Per-function filter doesn't match | Function is **skipped** — does not participate in scoreMode combination |
-   | No functions match any filter | scoreMode result = identity value (1.0 for multiply, 0.0 for sum/avg/max/min) |
-   | Inner query score = 0 | boostMode applies normally (multiply by 0 = 0, sum adds function score, replace ignores it) |
-
-   **Required test matrix** — all combinations of:
-   - function matches / doesn't match (filter)
-   - field exists / missing (with and without `.missing()`)
-   - inner query score = 0 vs non-zero
-   - boostMode: multiply, sum, replace (at minimum)
-   - scoreMode: multiply, sum, avg (at minimum)
-
-   The Lucene implementation must choose the right `FunctionScoreQuery` construction to
-   match ES semantics for each boostMode. `boostByValue` for multiply (preserves score on
-   missing), constructor for replace, custom source wrapping `SCORES` for sum/avg/max/min.
-
-5. **Nesting awareness** — if `fieldValueFactor` targets a field inside a nested object,
-   the `DoubleValuesSource` must be nested-aware (nested docs are separate Lucene documents).
-   Follow the pattern from `DoubleMultiValuesToSingleValuesSource` which already accepts a
-   `NestedDocsProvider`.
-
-### Elasticsearch / OpenSearch
+### 4.1 Elasticsearch / OpenSearch
 
 The `function_score` query JSON is identical between Elasticsearch and OpenSearch — same
 structure, same functions, same parameters. A single implementation works for both
@@ -502,14 +300,157 @@ Direct mapping to `function_score` query JSON:
 ```
 
 ES mapping for `.weight()`:
-- `.fieldValueFactor("popularity").weight(3)` → `{"field_value_factor": {...}, "weight": 3}` —
-  per-function multiplier alongside another function
-- `.weight(42)` → `{"weight": 42}` — standalone weight function (ES treats `weight` as
-  the function when no other function is present)
+- `.fieldValueFactor("popularity").weight(3)` → `{"field_value_factor": {...}, "weight": 3}`
+- `.weight(42)` → `{"weight": 42}` (ES treats `weight` as the function when alone)
 
-`score_mode` and `boost_mode` are omitted from JSON when using the default (`multiply`).
+`score_mode` and `boost_mode` omitted from JSON when using the default (`multiply`).
 
-## Testing
+### 4.2 Lucene
+
+Custom components needed:
+
+1. **Composite `DoubleValuesSource`** — wraps N `DoubleValuesSource` instances, combines
+   per `scoreMode`. Each source can have an optional filter (Lucene `Query`) and weight.
+   Must preserve insertion order for `scoreMode().first()` (ordered evaluation with
+   short-circuit on first matching filter).
+
+2. **Boost mode handling** — Lucene's `FunctionScoreQuery` natively supports `multiply`
+   (`boostByValue`) and `replace` (constructor). For `sum`/`avg`/`max`/`min`, use
+   `FunctionScoreQuery` in **replace** mode with a `DoubleValuesSource` that internally
+   reads the inner query score via `DoubleValuesSource.SCORES` and computes the final
+   combined value itself (e.g. for `sum`: `SCORES + functionValue`). The source must
+   return `needsScores() = true`. The "replace" is technical — the replacement value
+   already incorporates the original score.
+
+3. **`fieldValueFactor`** — **cannot** use `DoubleValuesSource.fromDoubleField()` directly.
+   All Lucene numeric doc values are stored as raw longs with type-specific encoding
+   (Integer: widened to long; Float: `NumericUtils.floatToSortableInt()`; Double:
+   `NumericUtils.doubleToSortableLong()`). Must use type-aware decoding via
+   `LuceneNumericDomain.sortedDocValueToDouble(long)`. Prefer the aggregation pattern
+   (`codec::sortedDocValueToDouble` as `Function<Long, Double>`) — handles all numeric
+   types in one method. **Revisit exact approach before starting implementation.**
+
+   The `missing` value goes through the convert-and-encode pipeline (ValueModel) before
+   use as fallback. `modifier` and `factor` applied as wrapping source:
+   `modifier(factor × fieldValue)`.
+
+4. **Missing-value semantics** — critical for correctness. Lucene's `FunctionScoreQuery`
+   behaves differently depending on construction:
+   - `new FunctionScoreQuery(query, source)` → score = **0** if source has no value
+   - `boostByValue(query, source)` → **original score preserved** if source has no value
+
+   The Lucene implementation must choose the right construction to match ES semantics for
+   each boostMode. `boostByValue` for multiply (preserves score on missing), constructor
+   for replace, custom source wrapping `SCORES` for sum/avg/max/min.
+
+5. **Nesting awareness** — if `fieldValueFactor` targets a field inside a nested object,
+   the `DoubleValuesSource` must be nested-aware (nested docs are separate Lucene documents).
+   Follow the pattern from `DoubleMultiValuesToSingleValuesSource` which accepts a
+   `NestedDocsProvider`.
+
+## 5. Field / Type Integration
+
+### Type-safe field references
+
+All field-accepting methods have overloads for both string paths and type-safe field
+references:
+
+```java
+// String path
+.fieldValueFactor("popularity")
+    .missing(1)                                 // Object, ValueModel.MAPPING default
+
+// Type-safe field reference
+.fieldValueFactor(MyEntity_.popularity)
+    .missing(Ranking.OK)                        // T, type-safe via field reference
+    .missing(2.0, ValueModel.INDEX)             // raw index value
+```
+
+### ValueModel on `.missing()`
+
+`.missing(value)` defaults to `ValueModel.MAPPING` — the value goes through the
+convert-and-encode pipeline (e.g. enum → numeric via bridge). `.missing(value, ValueModel)`
+allows explicit control for `INDEX`, `STRING`, or `RAW` modes.
+
+### Field type validation — ScoreFunction type keys
+
+Score functions are a new category of query element, at the same level as predicates,
+sorts, projections, and aggregations:
+
+```
+IndexFieldTraits
+  ├── Predicates        → PredicateTypeKeys
+  ├── Sorts             → SortTypeKeys
+  ├── Projections       → ProjectionTypeKeys
+  ├── Aggregations      → AggregationTypeKeys
+  └── ScoreFunctions    → ScoreFunctionTypeKeys     (FIELD_VALUE_FACTOR, DECAY, ...)
+```
+
+| Key | Registered on |
+|-----|---------------|
+| `FIELD_VALUE_FACTOR` | all numeric types (integer, long, float, double, BigDecimal, BigInteger) |
+| `DECAY` (future) | numeric, date, geo_point |
+
+The `functionScore` predicate itself is global (on `SearchPredicateBuilderFactory`), but
+individual functions validate their target fields through these keys via the standard
+`scope.fieldQueryElement(fieldPath, ScoreFunctionTypeKeys.FIELD_VALUE_FACTOR)` call.
+Incompatible fields fail early with the standard error.
+
+### Metamodel / field reference interfaces
+
+New reference interfaces under `engine/.../reference/scorefunction/`:
+- `ScoreFunctionFieldReference<SR> extends FieldReference<SR>` (base marker)
+- `FieldValueFactorFieldReference<SR, T>` (TYPED_INPUT — `T` carries domain type for
+  type-safe `.missing(T)` with ValueModel conversion)
+
+New entry in `TraitReferenceMapping` maps the trait string to the reference interface.
+Generated metamodel classes gain new label segments for numeric fields. No changes needed
+to `TraitKind`, `MetamodelClassWriter`, or `TypedFieldReferenceDetails`.
+
+## 6. Nested / Multi-valued Semantics
+
+### Nested objects
+
+`functionScore` needs nesting awareness. If `fieldValueFactor` targets a field inside a
+nested object, or the inner predicate uses `nested()`, the Lucene implementation must
+handle nested document structure (via `AbstractLuceneNestablePredicate` or equivalent).
+
+### Multi-valued fields
+
+For `fieldValueFactor`, follow ES behavior — use the first value. For `decay` (future),
+ES explicitly supports `multi_value_mode` (min/max/avg/sum).
+
+## 7. Extension API
+
+### Elasticsearch extension
+
+Additional functions available only through the ES extension:
+
+```java
+f.extension(ElasticsearchExtension.get())
+    .functionScore(f.match().field("title").matching("robot"))
+    .fieldValueFactor("popularity").modifier().log1p()
+    .decay("date").gauss()
+        .origin("now").scale("10d").offset("2d").decay(0.5)
+    .scriptScore("_score * doc['boost'].value")
+    .randomScore().seed(42).field("_seq_no")
+    .scoreMode().sum()
+    .boostMode().multiply()
+    .maxBoost(42)
+    .minScore(5);
+```
+
+The ES extension is straightforward — single self-typing:
+
+```
+ElasticsearchFunctionScoreClausesStep<SR>
+    extends FunctionScoreClausesStep<SR, ElasticsearchFunctionScoreClausesStep<SR>>
+  └── .decay(), .scriptScore(), .randomScore(), .maxBoost(float), .minScore(float)
+```
+
+Config steps for ES-only functions carry 3 type params (`<SR, S, T>`).
+
+## 8. Testing
 
 Follow existing predicate testing patterns:
 
@@ -563,6 +504,58 @@ discrepancies quickly.
 |----------|-----------|-----------|----------|
 | field missing + `.missing(5)` | multiply | multiply | queryScore × modifier(factor × 5) |
 | field missing + no `.missing()` | multiply | multiply | queryScore × 0 = 0 (verify vs ES) |
-| filter doesn't match (1 of 2 functions) | sum | multiply | queryScore × matchingFunctionScore |
+| filter doesn't match (1 of 2 fns) | sum | multiply | queryScore × matchingFunctionScore |
 | no functions match any filter | sum | multiply | queryScore × 0 = 0 (verify vs ES) |
 | inner query score = 0 | multiply | sum | 0 + functionScore |
+
+**Missing-value test matrix** — all combinations of:
+- function matches / doesn't match (filter)
+- field exists / missing (with and without `.missing()`)
+- inner query score = 0 vs non-zero
+- boostMode: multiply, sum, replace (at minimum)
+- scoreMode: multiply, sum, avg (at minimum)
+
+## 9. Decisions
+
+| # | Decision | Rationale |
+|---|----------|-----------|
+| 1 | Global predicate, not field-scoped | `functionScore` wraps another predicate, like `bool`. Goes through `SearchPredicateBuilderFactory`, not `PredicateTypeKeys` |
+| 2 | Bool-style clause flow | Functions are clause methods on a clauses step. Config steps extend clauses step for optional params, don't extend for required params |
+| 3 | Methods over enums for modes/modifiers | Allows incremental promotion of features from ES extension to common API without breaking changes |
+| 4 | Field references with overloads (TYPED_INPUT) | `.missing()` needs ValueModel conversion (e.g. enum via bridge → numeric) |
+| 5 | All 6 boost modes in common API | Once custom Lucene `DoubleValuesSource` for `sum` exists, `avg`/`max`/`min` are trivial additions |
+| 6 | All 6 score modes in common API | Same rationale — composite `DoubleValuesSource` handles all modes with a switch |
+| 7 | New `ScoreFunctions` category in `IndexFieldTraits` | Score functions are their own concern. Own trait namespace (`score-function:*`), own `ScoreFunctionTypeKeys` registry |
+| 8 | Inner predicate defaults to matchAll | Optional argument to `functionScore()` |
+| 9 | At least one function required | Build-time error without functions — pointless otherwise |
+| 10 | `.filter()` on all function types | Every function supports optional per-function filter, matching ES |
+| 11 | `weight` dual role | `.weight()` on ClausesStep = standalone function. `.weight()` on config steps = per-function multiplier. Mirrors ES's overloading of the `weight` key |
+| 12 | Defaults: scoreMode=multiply, boostMode=multiply | Match ES/OpenSearch defaults |
+| 13 | `boost()`/`constantScore()` via PredicateScoreStep | Standard predicate-level score modification, separate from boostMode |
+| 14 | `.missing()` with ValueModel overloads | Needed for enum-via-bridge scenarios |
+| 15 | OpenSearch fully compatible | Identical JSON, single implementation |
+| 16 | Single step, no ordering enforcement (bool pattern) | Functions and options mixable in any order. Avoids dual self-typing complexity |
+| 17 | Single self-typing `<SR, S>` on ClausesStep | ES extension just extends and adds methods. Config steps carry 3 type params |
+| 18 | Lambda support for inner predicate and filters | Consistent with `bool().must()` |
+| 19 | Nesting awareness | Via `AbstractLuceneNestablePredicate` |
+| 20 | `float` for `factor` and `weight` | Consistent with `boost(float)` on `PredicateScoreStep` |
+| 21 | `scoreMode().first()` preserves insertion order | Ordered evaluation with short-circuit |
+| 22 | Sub-step pattern (without `.end()`) | Matches `sort.missing().first()` pattern |
+| 23 | Multi-valued fields: use first value | Follows ES behavior. Future `decay` can add `multi_value_mode` |
+| 24 | All numeric types including BigDecimal/BigInteger | `FIELD_VALUE_FACTOR` registered on all numeric field types |
+| 25 | Explicit scoring semantic model | Full pipeline with weighted avg formula. Both backends must match |
+
+### Discarded alternatives
+
+| Alternative | Why discarded |
+|-------------|---------------|
+| Enums for score/boost modes | Less extensible; harder to promote from ES extension to common API |
+| `.add(fn -> ...)` lambda pattern | Bool-style clause methods more natural |
+| Single-function-only common API | Multi-function achievable on Lucene; no reason to limit |
+| `script_score` in common API | Inherently ES-specific |
+| `functionScore` as field-scoped predicate | Wraps a query, not a field |
+| Score function keys in `PredicateTypeKeys` | Score functions are a distinct concern |
+| UNTYPED field references | `.missing()` needs ValueModel conversion |
+| Flat methods (`.modifierLog1p()`) | Sub-step groups options, keeps `ConfigStep` clean |
+| `.constant(value)` function type | No clean ES mapping; `weight` mirrors ES directly |
+| Functions-before-options ordering | Required dual self-typing (`<SR, S, O>`), 4-param generics. Bool pattern simpler |
