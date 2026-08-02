@@ -85,10 +85,51 @@ min:       min(queryScore, combinedFunctionScore)
 | Scenario | Behavior |
 |----------|----------|
 | Function skipped (filter doesn't match) | Excluded from scoreMode combination |
-| No functions match any filter | combinedFunctionScore = identity (1.0 for multiply, 0.0 for sum) |
+| No functions match any filter | **UNRESOLVED — must verify against ES.** See below |
 | Field missing + `.missing(v)` set | Substitute v, apply modifier(factor × v) normally |
-| Field missing + no `.missing()` | Function produces 0 (verify against ES behavior) |
+| Field missing + no `.missing()` | **UNRESOLVED — must verify against ES.** See below |
 | Inner query score = 0 | boostMode applies normally (multiply → 0, sum → functionScore, replace → functionScore) |
+
+#### OPEN: No functions match any filter
+
+When all functions have filters and none match a document, what is `combinedFunctionScore`?
+
+One option is the mathematical identity (1.0 for multiply, 0.0 for sum). But consider:
+
+```java
+f.functionScore(query)
+    .fieldValueFactor("popularity").filter(featured)
+    .boostMode().multiply();
+```
+
+For a non-featured document, does `combinedFunctionScore = 1` (so `queryScore × 1 =
+queryScore`, document passes through unaffected)? Or does the document get a different
+treatment?
+
+**This must be verified against Elasticsearch before implementation.** The answer defines
+the contract both backends must honor.
+
+#### OPEN: Field missing + no `.missing()` set
+
+There is a contradiction between the semantic model and Lucene's primitives:
+
+- Semantic model (tentative): function produces 0
+- Lucene `boostByValue()`: preserves original score when source has no value
+
+For `boostMode().multiply()` with `queryScore = 10`:
+- Semantic "function produces 0": `10 × 0 = 0`
+- Lucene `boostByValue` "no value = preserve": `10`
+
+These are not equivalent. Since the design requires both backends to produce identical
+results, this must be resolved as a **hard design decision** before implementation:
+
+1. **Match ES behavior** (verify what ES actually does) and implement custom Lucene
+   logic to reproduce it — even if it means NOT using `boostByValue()` directly.
+2. **Or** define our own semantics and implement accordingly on both backends.
+
+Either way, the Lucene implementation may need a custom `DoubleValuesSource` that
+explicitly handles the "no value" case to match the chosen contract, rather than
+relying on `FunctionScoreQuery`'s built-in missing-value behavior.
 
 ### Field value factor modifiers
 
@@ -339,9 +380,10 @@ Custom components needed:
    - `new FunctionScoreQuery(query, source)` → score = **0** if source has no value
    - `boostByValue(query, source)` → **original score preserved** if source has no value
 
-   The Lucene implementation must choose the right construction to match ES semantics for
-   each boostMode. `boostByValue` for multiply (preserves score on missing), constructor
-   for replace, custom source wrapping `SCORES` for sum/avg/max/min.
+   **Neither of these may match ES behavior** — see the open item in §2 (Score validity).
+   The Lucene implementation will likely need a custom `DoubleValuesSource` that explicitly
+   handles the "no value" case to match the contract we define, rather than relying on
+   `FunctionScoreQuery`'s built-in missing-value behavior.
 
 5. **Nesting awareness** — if `fieldValueFactor` targets a field inside a nested object,
    the `DoubleValuesSource` must be nested-aware (nested docs are separate Lucene documents).
@@ -411,14 +453,48 @@ to `TraitKind`, `MetamodelClassWriter`, or `TypedFieldReferenceDetails`.
 
 ### Nested objects
 
-`functionScore` needs nesting awareness. If `fieldValueFactor` targets a field inside a
-nested object, or the inner predicate uses `nested()`, the Lucene implementation must
-handle nested document structure (via `AbstractLuceneNestablePredicate` or equivalent).
+Nesting is handled transparently — the user writes `fieldValueFactor("children.popularity")`
+and the system automatically wraps in the appropriate nested join, same as predicates,
+sorts, and aggregations. No explicit `.nested()` call needed.
+
+The mechanism relies on the field's `nestedPathHierarchy`, computed at schema time:
+- **Predicates** use `AbstractLuceneNestablePredicate` → `ToParentBlockJoinQuery`
+- **Sorts** use `NestedDocsProvider` + `MultiValueMode`
+- **Score functions** follow the same pattern via `NestedDocsProvider`
+
+#### Concrete example
+
+```
+Root document (queryScore = 10)
+  └── nested "children":
+        child A: popularity = 10
+        child B: popularity = 20
+```
+
+```java
+f.functionScore(f.matchAll())
+    .fieldValueFactor("children.popularity")
+    .boostMode().multiply();
+```
+
+Multiple nested children produce multiple values. Like multi-valued fields (decision #23),
+`fieldValueFactor` uses the **first value** — so `popularity = 10` from child A.
+Result: `queryScore × modifier(factor × 10)`.
+
+A future enhancement could add an explicit `.multiValueMode()` option (like sorts have)
+to allow MIN/MAX/AVG/SUM across nested children.
+
+#### Lucene implementation
+
+The `FieldValueFactorFunctionBuilder` Lucene implementation captures
+`field.nestedDocumentPath()` at construction (same as sorts and aggregations). The
+`DoubleValuesSource` uses a `NestedDocsProvider` to iterate child documents for each
+parent, applying the "first value" policy.
 
 ### Multi-valued fields
 
-For `fieldValueFactor`, follow ES behavior — use the first value. For `decay` (future),
-ES explicitly supports `multi_value_mode` (min/max/avg/sum).
+Same policy as nested: `fieldValueFactor` uses the first value, following ES behavior.
+For `decay` (future), ES explicitly supports `multi_value_mode` (min/max/avg/sum).
 
 ## 7. Extension API
 
@@ -508,6 +584,14 @@ discrepancies quickly.
 | no functions match any filter | sum | multiply | queryScore × 0 = 0 (verify vs ES) |
 | inner query score = 0 | multiply | sum | 0 + functionScore |
 
+**ES behavior verification (must resolve before implementation):**
+
+| scenario | verify |
+|----------|--------|
+| All functions filtered out (no match) | What does ES return? Identity? queryScore unchanged? 0? |
+| Field missing + no `.missing()` | Does ES produce 0? Error? Skip the function? |
+| Field missing + no `.missing()` + boostMode=multiply | Is the result queryScore × 0 = 0, or queryScore preserved? |
+
 **Missing-value test matrix** — all combinations of:
 - function matches / doesn't match (filter)
 - field exists / missing (with and without `.missing()`)
@@ -544,6 +628,7 @@ discrepancies quickly.
 | 23 | Multi-valued fields: use first value | Follows ES behavior. Future `decay` can add `multi_value_mode` |
 | 24 | All numeric types including BigDecimal/BigInteger | `FIELD_VALUE_FACTOR` registered on all numeric field types |
 | 25 | Explicit scoring semantic model | Full pipeline with weighted avg formula. Both backends must match |
+| 26 | Missing-value / no-match semantics: verify against ES first | Two open items (no functions match, field missing without `.missing()`) must be verified against ES before implementation. Lucene's built-in behavior may not match — custom handling likely needed |
 
 ### Discarded alternatives
 
