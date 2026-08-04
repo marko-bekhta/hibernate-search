@@ -3,6 +3,7 @@ package org.hibernate.search.backend.elasticsearch.types.dsl.impl;
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.mapping.impl.PropertyMapping;
 import org.hibernate.search.backend.elasticsearch.types.dsl.ElasticsearchStandardIndexFieldTypeOptionsStep;
 import org.hibernate.search.engine.backend.types.Aggregable;
+import org.hibernate.search.engine.backend.types.Scorable;
 import org.hibernate.search.engine.backend.types.Projectable;
 import org.hibernate.search.engine.backend.types.Searchable;
 import org.hibernate.search.engine.backend.types.Sortable;
@@ -64,6 +65,18 @@ abstract class AbstractElasticsearchStandardIndexFieldTypeOptionsStep<
 				return true;
 			default:
 				throw new AssertionFailure( "Unexpected value for Aggregable: " + aggregable );
+		}
+	}
+
+	protected static boolean resolveDefault(Scorable scorable) {
+		switch ( scorable ) {
+			case DEFAULT:
+			case NO:
+				return false;
+			case YES:
+				return true;
+			default:
+				throw new AssertionFailure( "Unexpected value for Scorable: " + scorable );
 		}
 	}
 }

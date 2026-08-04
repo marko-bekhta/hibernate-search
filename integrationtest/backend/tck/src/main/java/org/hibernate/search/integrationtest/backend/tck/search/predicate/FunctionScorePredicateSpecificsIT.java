@@ -1,0 +1,289 @@
+/*
+ * SPDX-License-Identifier: Apache-2.0
+ * Copyright Red Hat Inc. and Hibernate Authors
+ */
+package org.hibernate.search.integrationtest.backend.tck.search.predicate;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.within;
+import static org.hibernate.search.util.impl.integrationtest.common.assertion.SearchResultAssert.assertThatQuery;
+
+import java.util.List;
+
+import org.hibernate.search.engine.backend.document.IndexFieldReference;
+import org.hibernate.search.engine.backend.document.model.dsl.IndexSchemaElement;
+import org.hibernate.search.engine.backend.types.Scorable;
+import org.hibernate.search.engine.backend.types.Searchable;
+import org.hibernate.search.engine.search.projection.dsl.SearchProjectionFactory;
+import org.hibernate.search.integrationtest.backend.tck.testsupport.util.extension.SearchSetupHelper;
+import org.hibernate.search.util.impl.integrationtest.mapper.stub.SimpleMappedIndex;
+
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+
+//CHECKSTYLE:OFF HideUtilityClassConstructor ignore the rule since it is a class with nested test classes.
+// cannot make a private constructor.
+class FunctionScorePredicateSpecificsIT {
+	//CHECKSTYLE:ON
+
+	@RegisterExtension
+	public static final SearchSetupHelper setupHelper = SearchSetupHelper.create();
+
+	private static final SimpleMappedIndex<IndexBinding> index = SimpleMappedIndex.of( IndexBinding::new );
+
+	@BeforeAll
+	static void setup() {
+		setupHelper.start().withIndex( index ).setup();
+
+		index.bulkIndexer()
+				.add( "1", document -> {
+					document.addValue( index.binding().popularity, 10 );
+					document.addValue( index.binding().rating, 5 );
+					document.addValue( index.binding().featured, true );
+				} )
+				.add( "2", document -> {
+					document.addValue( index.binding().popularity, 20 );
+					document.addValue( index.binding().rating, 3 );
+					document.addValue( index.binding().featured, false );
+				} )
+				.add( "3", document -> {
+					document.addValue( index.binding().popularity, 5 );
+					document.addValue( index.binding().rating, 8 );
+					document.addValue( index.binding().featured, true );
+				} )
+				.join();
+	}
+
+	@Nested
+	class SingleFieldValueFactor {
+
+		@Test
+		void simple_boostModeMultiply() {
+			List<Float> scores = index.createScope().query()
+					.select( SearchProjectionFactory::score )
+					.where( f -> f.functionScore( f.matchAll() )
+							.fieldValueFactor( "popularity" )
+							.boostMode().multiply() )
+					.fetchAllHits();
+
+			// matchAll gives score=1.0 for all docs, multiply by popularity
+			// doc1: 1.0 * 10 = 10, doc2: 1.0 * 20 = 20, doc3: 1.0 * 5 = 5
+			assertThat( scores ).hasSize( 3 );
+			assertThat( scores ).anySatisfy( s -> assertThat( s ).isCloseTo( 20f, within( 0.1f ) ) );
+			assertThat( scores ).anySatisfy( s -> assertThat( s ).isCloseTo( 10f, within( 0.1f ) ) );
+			assertThat( scores ).anySatisfy( s -> assertThat( s ).isCloseTo( 5f, within( 0.1f ) ) );
+		}
+
+		@Test
+		void boostModeReplace() {
+			List<Float> scores = index.createScope().query()
+					.select( SearchProjectionFactory::score )
+					.where( f -> f.functionScore( f.matchAll() )
+							.fieldValueFactor( "popularity" )
+							.boostMode().replace() )
+					.fetchAllHits();
+
+			// replace: score = popularity
+			assertThat( scores ).hasSize( 3 );
+			assertThat( scores ).anySatisfy( s -> assertThat( s ).isCloseTo( 20f, within( 0.1f ) ) );
+			assertThat( scores ).anySatisfy( s -> assertThat( s ).isCloseTo( 10f, within( 0.1f ) ) );
+			assertThat( scores ).anySatisfy( s -> assertThat( s ).isCloseTo( 5f, within( 0.1f ) ) );
+		}
+
+		@Test
+		void boostModeSum() {
+			List<Float> scores = index.createScope().query()
+					.select( SearchProjectionFactory::score )
+					.where( f -> f.functionScore( f.matchAll() )
+							.fieldValueFactor( "popularity" )
+							.boostMode().sum() )
+					.fetchAllHits();
+
+			// sum: 1.0 + popularity
+			assertThat( scores ).hasSize( 3 );
+			assertThat( scores ).anySatisfy( s -> assertThat( s ).isCloseTo( 21f, within( 0.1f ) ) );
+			assertThat( scores ).anySatisfy( s -> assertThat( s ).isCloseTo( 11f, within( 0.1f ) ) );
+			assertThat( scores ).anySatisfy( s -> assertThat( s ).isCloseTo( 6f, within( 0.1f ) ) );
+		}
+
+		@Test
+		void modifierLog1p() {
+			List<Float> scores = index.createScope().query()
+					.select( SearchProjectionFactory::score )
+					.where( f -> f.functionScore( f.matchAll() )
+							.fieldValueFactor( "popularity" )
+									.modifier().log1p()
+							.boostMode().replace() )
+					.fetchAllHits();
+
+			// replace: score = log10(1 + popularity)
+			// doc1: log10(11) ≈ 1.041, doc2: log10(21) ≈ 1.322, doc3: log10(6) ≈ 0.778
+			assertThat( scores ).hasSize( 3 );
+			assertThat( scores ).anySatisfy( s -> assertThat( s ).isCloseTo( (float) Math.log10( 21 ), within( 0.01f ) ) );
+			assertThat( scores ).anySatisfy( s -> assertThat( s ).isCloseTo( (float) Math.log10( 11 ), within( 0.01f ) ) );
+			assertThat( scores ).anySatisfy( s -> assertThat( s ).isCloseTo( (float) Math.log10( 6 ), within( 0.01f ) ) );
+		}
+
+		@Test
+		void withFactor() {
+			List<Float> scores = index.createScope().query()
+					.select( SearchProjectionFactory::score )
+					.where( f -> f.functionScore( f.matchAll() )
+							.fieldValueFactor( "popularity" )
+									.factor( 2 )
+							.boostMode().replace() )
+					.fetchAllHits();
+
+			// replace: score = 2 * popularity
+			assertThat( scores ).hasSize( 3 );
+			assertThat( scores ).anySatisfy( s -> assertThat( s ).isCloseTo( 40f, within( 0.1f ) ) );
+			assertThat( scores ).anySatisfy( s -> assertThat( s ).isCloseTo( 20f, within( 0.1f ) ) );
+			assertThat( scores ).anySatisfy( s -> assertThat( s ).isCloseTo( 10f, within( 0.1f ) ) );
+		}
+	}
+
+	@Nested
+	class MultipleFunctions {
+
+		@Test
+		void scoreModeSum() {
+			List<Float> scores = index.createScope().query()
+					.select( SearchProjectionFactory::score )
+					.where( f -> f.functionScore( f.matchAll() )
+							.fieldValueFactor( "popularity" )
+							.fieldValueFactor( "rating" )
+							.scoreMode().sum()
+							.boostMode().replace() )
+					.fetchAllHits();
+
+			// sum of popularity + rating: doc1: 10+5=15, doc2: 20+3=23, doc3: 5+8=13
+			assertThat( scores ).hasSize( 3 );
+			assertThat( scores ).anySatisfy( s -> assertThat( s ).isCloseTo( 23f, within( 0.1f ) ) );
+			assertThat( scores ).anySatisfy( s -> assertThat( s ).isCloseTo( 15f, within( 0.1f ) ) );
+			assertThat( scores ).anySatisfy( s -> assertThat( s ).isCloseTo( 13f, within( 0.1f ) ) );
+		}
+
+		@Test
+		void scoreModeMultiply() {
+			List<Float> scores = index.createScope().query()
+					.select( SearchProjectionFactory::score )
+					.where( f -> f.functionScore( f.matchAll() )
+							.fieldValueFactor( "popularity" )
+							.fieldValueFactor( "rating" )
+							.scoreMode().multiply()
+							.boostMode().replace() )
+					.fetchAllHits();
+
+			// multiply: doc1: 10*5=50, doc2: 20*3=60, doc3: 5*8=40
+			assertThat( scores ).hasSize( 3 );
+			assertThat( scores ).anySatisfy( s -> assertThat( s ).isCloseTo( 60f, within( 0.1f ) ) );
+			assertThat( scores ).anySatisfy( s -> assertThat( s ).isCloseTo( 50f, within( 0.1f ) ) );
+			assertThat( scores ).anySatisfy( s -> assertThat( s ).isCloseTo( 40f, within( 0.1f ) ) );
+		}
+
+		@Test
+		void scoreModeAvg() {
+			List<Float> scores = index.createScope().query()
+					.select( SearchProjectionFactory::score )
+					.where( f -> f.functionScore( f.matchAll() )
+							.fieldValueFactor( "popularity" )
+							.fieldValueFactor( "rating" )
+							.scoreMode().avg()
+							.boostMode().replace() )
+					.fetchAllHits();
+
+			// avg (unweighted, both weight=1): doc1: (10+5)/2=7.5, doc2: (20+3)/2=11.5, doc3: (5+8)/2=6.5
+			assertThat( scores ).hasSize( 3 );
+			assertThat( scores ).anySatisfy( s -> assertThat( s ).isCloseTo( 11.5f, within( 0.1f ) ) );
+			assertThat( scores ).anySatisfy( s -> assertThat( s ).isCloseTo( 7.5f, within( 0.1f ) ) );
+			assertThat( scores ).anySatisfy( s -> assertThat( s ).isCloseTo( 6.5f, within( 0.1f ) ) );
+		}
+
+		@Test
+		void weightedAvg() {
+			List<Float> scores = index.createScope().query()
+					.select( SearchProjectionFactory::score )
+					.where( f -> f.functionScore( f.matchAll() )
+							.fieldValueFactor( "popularity" ).functionWeight( 3 )
+							.fieldValueFactor( "rating" ).functionWeight( 4 )
+							.scoreMode().avg()
+							.boostMode().replace() )
+					.fetchAllHits();
+
+			// weighted avg: doc1: (10*3 + 5*4)/(3+4) = 50/7 ≈ 7.14
+			// doc2: (20*3 + 3*4)/(3+4) = 72/7 ≈ 10.29
+			// doc3: (5*3 + 8*4)/(3+4) = 47/7 ≈ 6.71
+			assertThat( scores ).hasSize( 3 );
+			assertThat( scores ).anySatisfy( s -> assertThat( s ).isCloseTo( 72f / 7f, within( 0.1f ) ) );
+			assertThat( scores ).anySatisfy( s -> assertThat( s ).isCloseTo( 50f / 7f, within( 0.1f ) ) );
+			assertThat( scores ).anySatisfy( s -> assertThat( s ).isCloseTo( 47f / 7f, within( 0.1f ) ) );
+		}
+	}
+
+	@Nested
+	class WeightFunction {
+
+		@Test
+		void simpleWeight() {
+			List<Float> scores = index.createScope().query()
+					.select( SearchProjectionFactory::score )
+					.where( f -> f.functionScore( f.matchAll() )
+							.weight( 5 )
+							.boostMode().replace() )
+					.fetchAllHits();
+
+			// standalone weight(5) = base score 1.0 * weight 5 = 5
+			assertThat( scores ).hasSize( 3 );
+			assertThat( scores ).allSatisfy( s -> assertThat( s ).isCloseTo( 5f, within( 0.1f ) ) );
+		}
+
+		@Test
+		void weightWithFilter() {
+			List<Float> scores = index.createScope().query()
+					.select( SearchProjectionFactory::score )
+					.where( f -> f.functionScore( f.matchAll() )
+							.weight( 10 ).filter( pf -> pf.match().field( "featured" ).matching( true ) )
+							.boostMode().replace() )
+					.fetchAllHits();
+
+			// featured docs (1,3): weight=10, non-featured (2): no function matches → score=1.0
+			assertThat( scores ).hasSize( 3 );
+			assertThat( scores.stream().filter( s -> s > 5 ).count() ).isEqualTo( 2 );
+			assertThat( scores.stream().filter( s -> s < 5 ).count() ).isEqualTo( 1 );
+		}
+	}
+
+	@Nested
+	class DefaultsAndEdgeCases {
+
+		@Test
+		void defaultsToMatchAll() {
+			List<Float> scores = index.createScope().query()
+					.select( SearchProjectionFactory::score )
+					.where( f -> f.functionScore()
+							.fieldValueFactor( "popularity" )
+							.boostMode().replace() )
+					.fetchAllHits();
+
+			// No inner predicate = matchAll, replace = popularity
+			assertThat( scores ).hasSize( 3 );
+			assertThat( scores ).anySatisfy( s -> assertThat( s ).isCloseTo( 20f, within( 0.1f ) ) );
+		}
+	}
+
+	private static class IndexBinding {
+		final IndexFieldReference<Integer> popularity;
+		final IndexFieldReference<Integer> rating;
+		final IndexFieldReference<Boolean> featured;
+
+		IndexBinding(IndexSchemaElement root) {
+			popularity = root.field( "popularity", f -> f.asInteger().scorable( Scorable.YES ) ).toReference();
+			rating = root.field( "rating", f -> f.asInteger().scorable( Scorable.YES ) ).toReference();
+			featured = root.field( "featured", f -> f.asBoolean().searchable( Searchable.YES ) ).toReference();
+		}
+	}
+
+}
