@@ -17,6 +17,7 @@ import org.hibernate.search.backend.lucene.types.codec.impl.Storage;
 import org.hibernate.search.backend.lucene.types.impl.LuceneIndexValueFieldType;
 import org.hibernate.search.backend.lucene.types.predicate.impl.LuceneCommonQueryStringPredicateBuilderFieldState;
 import org.hibernate.search.backend.lucene.types.predicate.impl.LuceneExistsPredicate;
+import org.hibernate.search.backend.lucene.types.predicate.impl.LuceneFieldValueFactorFunction;
 import org.hibernate.search.backend.lucene.types.predicate.impl.LuceneNumericMatchPredicate;
 import org.hibernate.search.backend.lucene.types.predicate.impl.LuceneNumericRangePredicate;
 import org.hibernate.search.backend.lucene.types.predicate.impl.LuceneNumericTermsPredicate;
@@ -26,6 +27,7 @@ import org.hibernate.search.engine.backend.types.converter.spi.DefaultStringConv
 import org.hibernate.search.engine.search.aggregation.spi.AggregationTypeKeys;
 import org.hibernate.search.engine.search.aggregation.spi.FieldMetricAggregationBuilder;
 import org.hibernate.search.engine.search.predicate.spi.PredicateTypeKeys;
+import org.hibernate.search.engine.search.predicate.spi.ScoreFunctionTypeKeys;
 import org.hibernate.search.engine.search.projection.spi.ProjectionTypeKeys;
 import org.hibernate.search.engine.search.sort.spi.SortTypeKeys;
 
@@ -73,6 +75,9 @@ abstract class AbstractLuceneNumericIndexFieldTypeOptionsStep<S extends Abstract
 			builder.queryElementFactory( LucenePredicateTypeKeys.QUERY_STRING,
 					new LuceneCommonQueryStringPredicateBuilderFieldState.Factory<>( codec ) );
 		}
+
+		builder.queryElementFactory( ScoreFunctionTypeKeys.FIELD_VALUE_FACTOR,
+				new LuceneFieldValueFactorFunction.Factory<>( codec ) );
 
 		if ( resolvedSortable ) {
 			builder.sortable( true );
