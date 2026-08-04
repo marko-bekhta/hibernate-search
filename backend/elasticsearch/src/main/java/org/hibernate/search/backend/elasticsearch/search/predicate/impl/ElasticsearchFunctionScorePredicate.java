@@ -25,7 +25,7 @@ class ElasticsearchFunctionScorePredicate extends AbstractElasticsearchPredicate
 	private ElasticsearchFunctionScorePredicate(Builder builder) {
 		super( builder );
 		this.innerPredicate = builder.innerPredicate;
-		this.functions = builder.functions;
+		this.functions = List.copyOf( builder.functions );
 		this.scoreMode = builder.scoreMode;
 		this.boostMode = builder.boostMode;
 		this.nestedPathHierarchy = builder.resolvedNestedPathHierarchy;
