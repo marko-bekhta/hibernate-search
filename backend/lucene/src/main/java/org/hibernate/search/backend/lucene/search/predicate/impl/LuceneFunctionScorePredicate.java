@@ -2,6 +2,7 @@ package org.hibernate.search.backend.lucene.search.predicate.impl;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -14,7 +15,10 @@ import org.hibernate.search.engine.search.predicate.spi.FieldValueFactorFunction
 import org.hibernate.search.engine.search.predicate.spi.FunctionScorePredicateBuilder;
 
 import org.apache.lucene.index.LeafReaderContext;
-import org.apache.lucene.index.NumericDocValues;
+import org.apache.lucene.index.SortedNumericDocValues;
+import org.apache.lucene.search.DocIdSetIterator;
+import org.apache.lucene.search.Scorer;
+import org.apache.lucene.search.Weight;
 import org.apache.lucene.queries.function.FunctionScoreQuery;
 import org.apache.lucene.search.DoubleValues;
 import org.apache.lucene.search.DoubleValuesSource;
@@ -66,16 +70,15 @@ public class LuceneFunctionScorePredicate extends AbstractLuceneSearchPredicate 
 	}
 
 	private DoubleValuesSource buildCombinedSource(PredicateRequestContext context) {
-		if ( functions.size() == 1 ) {
-			return functions.get( 0 ).toSource( context );
-		}
 		List<DoubleValuesSource> sources = new ArrayList<>();
 		List<Float> weights = new ArrayList<>();
+		List<Query> filters = new ArrayList<>();
 		for ( FunctionEntry entry : functions ) {
 			sources.add( entry.toSource( context ) );
 			weights.add( entry.weight );
+			filters.add( entry.filter != null ? entry.filter.toQuery( context ) : null );
 		}
-		return new CompositeScoreFunctionSource( sources, weights, scoreMode );
+		return new CompositeScoreFunctionSource( sources, weights, filters, scoreMode );
 	}
 
 	// -- Enums for internal use --
@@ -441,7 +444,7 @@ public class LuceneFunctionScorePredicate extends AbstractLuceneSearchPredicate 
 
 		@Override
 		public DoubleValues getValues(LeafReaderContext ctx, DoubleValues scores) throws IOException {
-			NumericDocValues docValues = ctx.reader().getNumericDocValues( fieldPath );
+			SortedNumericDocValues docValues = ctx.reader().getSortedNumericDocValues( fieldPath );
 			return new DoubleValues() {
 				private boolean hasValue;
 
@@ -449,7 +452,7 @@ public class LuceneFunctionScorePredicate extends AbstractLuceneSearchPredicate 
 				public double doubleValue() throws IOException {
 					double fieldValue;
 					if ( hasValue ) {
-						fieldValue = docValueDecoder.applyAsDouble( docValues.longValue() );
+						fieldValue = docValueDecoder.applyAsDouble( docValues.nextValue() );
 					}
 					else {
 						fieldValue = missing;
@@ -519,35 +522,75 @@ public class LuceneFunctionScorePredicate extends AbstractLuceneSearchPredicate 
 	private static class CompositeScoreFunctionSource extends DoubleValuesSource {
 		private final List<DoubleValuesSource> sources;
 		private final List<Float> weights;
+		private final List<Query> filters;
 		private final ScoreMode scoreMode;
 
 		CompositeScoreFunctionSource(List<DoubleValuesSource> sources, List<Float> weights,
-				ScoreMode scoreMode) {
+				List<Query> filters, ScoreMode scoreMode) {
 			this.sources = sources;
 			this.weights = weights;
+			this.filters = filters;
 			this.scoreMode = scoreMode;
 		}
 
 		@Override
 		public DoubleValues getValues(LeafReaderContext ctx, DoubleValues scores) throws IOException {
-			List<DoubleValues> values = new ArrayList<>();
-			for ( DoubleValuesSource source : sources ) {
-				values.add( source.getValues( ctx, scores ) );
+			List<DoubleValues> allValues = new ArrayList<>();
+			List<BitSet> filterBitSets = new ArrayList<>();
+			for ( int i = 0; i < sources.size(); i++ ) {
+				allValues.add( sources.get( i ).getValues( ctx, scores ) );
+				Query filter = filters.get( i );
+				if ( filter != null ) {
+					Weight filterWeight = filter.createWeight(
+							new IndexSearcher( ctx.reader() ), org.apache.lucene.search.ScoreMode.COMPLETE_NO_SCORES, 1.0f );
+					Scorer scorer = filterWeight.scorer( ctx );
+					filterBitSets.add( scorerToBitSet( scorer, ctx.reader().maxDoc() ) );
+				}
+				else {
+					filterBitSets.add( null );
+				}
 			}
 			return new DoubleValues() {
+				private int currentDoc;
+
 				@Override
 				public double doubleValue() throws IOException {
-					return scoreMode.combine( values, weights );
+					List<DoubleValues> matchingValues = new ArrayList<>();
+					List<Float> matchingWeights = new ArrayList<>();
+					for ( int i = 0; i < allValues.size(); i++ ) {
+						BitSet bits = filterBitSets.get( i );
+						if ( bits == null || bits.get( currentDoc ) ) {
+							matchingValues.add( allValues.get( i ) );
+							matchingWeights.add( weights.get( i ) );
+						}
+					}
+					if ( matchingValues.isEmpty() ) {
+						return 1.0;
+					}
+					return scoreMode.combine( matchingValues, matchingWeights );
 				}
 
 				@Override
 				public boolean advanceExact(int doc) throws IOException {
-					for ( DoubleValues v : values ) {
+					currentDoc = doc;
+					for ( DoubleValues v : allValues ) {
 						v.advanceExact( doc );
 					}
 					return true;
 				}
 			};
+		}
+
+		private static BitSet scorerToBitSet(Scorer scorer, int maxDoc) throws IOException {
+			BitSet bitSet = new BitSet( maxDoc );
+			if ( scorer != null ) {
+				DocIdSetIterator iterator = scorer.iterator();
+				int doc;
+				while ( ( doc = iterator.nextDoc() ) != DocIdSetIterator.NO_MORE_DOCS ) {
+					bitSet.set( doc );
+				}
+			}
+			return bitSet;
 		}
 
 		@Override
@@ -561,12 +604,12 @@ public class LuceneFunctionScorePredicate extends AbstractLuceneSearchPredicate 
 			for ( DoubleValuesSource source : sources ) {
 				rewritten.add( source.rewrite( reader ) );
 			}
-			return new CompositeScoreFunctionSource( rewritten, weights, scoreMode );
+			return new CompositeScoreFunctionSource( rewritten, weights, filters, scoreMode );
 		}
 
 		@Override
 		public int hashCode() {
-			return Objects.hash( sources, weights, scoreMode );
+			return Objects.hash( sources, weights, filters, scoreMode );
 		}
 
 		@Override
@@ -580,6 +623,7 @@ public class LuceneFunctionScorePredicate extends AbstractLuceneSearchPredicate 
 			CompositeScoreFunctionSource other = (CompositeScoreFunctionSource) obj;
 			return Objects.equals( sources, other.sources )
 					&& Objects.equals( weights, other.weights )
+					&& Objects.equals( filters, other.filters )
 					&& scoreMode == other.scoreMode;
 		}
 

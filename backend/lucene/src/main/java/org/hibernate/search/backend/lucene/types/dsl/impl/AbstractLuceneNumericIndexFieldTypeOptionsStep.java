@@ -53,9 +53,11 @@ abstract class AbstractLuceneNumericIndexFieldTypeOptionsStep<S extends Abstract
 		boolean resolvedSortable = resolveDefault( sortable );
 		boolean resolvedProjectable = resolveDefault( projectable );
 		boolean resolvedAggregable = resolveDefault( aggregable );
+		boolean resolvedScorable = resolveDefault( scorable );
 
 		Indexing indexing = resolvedSearchable ? Indexing.ENABLED : Indexing.DISABLED;
-		DocValues docValues = resolvedSortable || resolvedAggregable ? DocValues.ENABLED : DocValues.DISABLED;
+		DocValues docValues = resolvedSortable || resolvedAggregable || resolvedScorable
+				? DocValues.ENABLED : DocValues.DISABLED;
 		Storage storage = resolvedProjectable ? Storage.ENABLED : Storage.DISABLED;
 
 		AbstractLuceneNumericFieldCodec<F, ?> codec = createCodec( indexing, docValues, storage, indexNullAsValue );
@@ -76,8 +78,10 @@ abstract class AbstractLuceneNumericIndexFieldTypeOptionsStep<S extends Abstract
 					new LuceneCommonQueryStringPredicateBuilderFieldState.Factory<>( codec ) );
 		}
 
-		builder.queryElementFactory( ScoreFunctionTypeKeys.FIELD_VALUE_FACTOR,
-				new LuceneFieldValueFactorFunction.Factory<>( codec ) );
+		if ( resolvedScorable ) {
+			builder.queryElementFactory( ScoreFunctionTypeKeys.FIELD_VALUE_FACTOR,
+					new LuceneFieldValueFactorFunction.Factory<>( codec ) );
+		}
 
 		if ( resolvedSortable ) {
 			builder.sortable( true );

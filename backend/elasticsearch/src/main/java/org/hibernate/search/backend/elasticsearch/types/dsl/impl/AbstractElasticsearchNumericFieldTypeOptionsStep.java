@@ -49,8 +49,10 @@ abstract class AbstractElasticsearchNumericFieldTypeOptionsStep<
 					new ElasticsearchCommonQueryStringPredicateBuilderFieldState.Factory<>( codec ) );
 		}
 
-		builder.queryElementFactory( ScoreFunctionTypeKeys.FIELD_VALUE_FACTOR,
-				new ElasticsearchFieldValueFactorFunction.Factory<>( codec ) );
+		if ( resolvedScorable ) {
+			builder.queryElementFactory( ScoreFunctionTypeKeys.FIELD_VALUE_FACTOR,
+					new ElasticsearchFieldValueFactorFunction.Factory<>( codec ) );
+		}
 
 		if ( resolvedSortable ) {
 			builder.sortable( true );

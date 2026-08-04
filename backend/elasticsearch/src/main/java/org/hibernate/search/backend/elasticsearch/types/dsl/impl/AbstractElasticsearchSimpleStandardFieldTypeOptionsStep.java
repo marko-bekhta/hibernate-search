@@ -4,6 +4,7 @@ import org.hibernate.search.backend.elasticsearch.lowlevel.index.mapping.impl.Pr
 import org.hibernate.search.engine.backend.types.Aggregable;
 import org.hibernate.search.engine.backend.types.IndexFieldType;
 import org.hibernate.search.engine.backend.types.Projectable;
+import org.hibernate.search.engine.backend.types.Scorable;
 import org.hibernate.search.engine.backend.types.Searchable;
 import org.hibernate.search.engine.backend.types.Sortable;
 import org.hibernate.search.engine.backend.types.converter.spi.DefaultStringConverters;
@@ -24,6 +25,9 @@ abstract class AbstractElasticsearchSimpleStandardFieldTypeOptionsStep<
 
 	private Aggregable aggregable = Aggregable.DEFAULT;
 	protected boolean resolvedAggregable;
+
+	private Scorable scorable = Scorable.DEFAULT;
+	protected boolean resolvedScorable;
 
 	private F indexNullAs;
 
@@ -67,6 +71,12 @@ abstract class AbstractElasticsearchSimpleStandardFieldTypeOptionsStep<
 	}
 
 	@Override
+	public S scorable(Scorable scorable) {
+		this.scorable = scorable;
+		return thisAsS();
+	}
+
+	@Override
 	public final IndexFieldType<F> toIndexFieldType() {
 		PropertyMapping mapping = builder.mapping();
 
@@ -74,9 +84,10 @@ abstract class AbstractElasticsearchSimpleStandardFieldTypeOptionsStep<
 		resolvedProjectable = resolveDefault( projectable );
 		resolvedSearchable = resolveDefault( searchable );
 		resolvedAggregable = resolveDefault( aggregable );
+		resolvedScorable = resolveDefault( scorable );
 
 		mapping.setIndex( resolvedSearchable );
-		mapping.setDocValues( resolvedSortable || resolvedAggregable );
+		mapping.setDocValues( resolvedSortable || resolvedAggregable || resolvedScorable );
 
 		complete();
 
