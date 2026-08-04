@@ -1,8 +1,6 @@
 package org.hibernate.search.engine.search.predicate.dsl;
 
-import java.util.function.Function;
-
-import org.hibernate.search.engine.search.predicate.SearchPredicate;
+import org.hibernate.search.engine.search.reference.scorefunction.FieldValueFactorFieldReference;
 
 /**
  * The step in a "function score" predicate definition where score functions can be added.
@@ -23,6 +21,16 @@ public interface FunctionScoreClausesStep<SR, S extends FunctionScoreClausesStep
 	 * @return The next step, where the function can be configured.
 	 */
 	FunctionScoreFieldValueFactorStep<SR, S> fieldValueFactor(String fieldPath);
+
+	/**
+	 * Add a field value factor function that reads a numeric field value to influence the score.
+	 *
+	 * @param fieldReference The type-safe reference to the numeric field.
+	 * @return The next step, where the function can be configured.
+	 * @param <T> The field value type.
+	 */
+	<T> FunctionScoreFieldValueFactorStep<SR, S> fieldValueFactor(
+			FieldValueFactorFieldReference<? super SR, T> fieldReference);
 
 	/**
 	 * Add a standalone weight function that produces a constant score.

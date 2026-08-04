@@ -18,6 +18,7 @@ import org.hibernate.search.engine.search.predicate.dsl.spi.SearchPredicateDslCo
 import org.hibernate.search.engine.search.predicate.spi.FieldValueFactorFunctionBuilder;
 import org.hibernate.search.engine.search.predicate.spi.FunctionScorePredicateBuilder;
 import org.hibernate.search.engine.search.predicate.spi.ScoreFunctionTypeKeys;
+import org.hibernate.search.engine.search.reference.scorefunction.FieldValueFactorFieldReference;
 
 public final class FunctionScoreClausesStepImpl<SR>
 		extends AbstractPredicateFinalStep
@@ -65,6 +66,12 @@ public final class FunctionScoreClausesStepImpl<SR>
 		currentFunctionFilter = null;
 		currentIsWeightFunction = false;
 		return this;
+	}
+
+	@Override
+	public <T> FunctionScoreFieldValueFactorStep<SR, FunctionScoreClausesStepImpl<SR>> fieldValueFactor(
+			FieldValueFactorFieldReference<? super SR, T> fieldReference) {
+		return fieldValueFactor( fieldReference.absolutePath() );
 	}
 
 	@Override
