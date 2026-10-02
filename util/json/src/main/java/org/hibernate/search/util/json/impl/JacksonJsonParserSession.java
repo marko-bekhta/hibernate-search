@@ -116,7 +116,7 @@ final class JacksonJsonParserSession implements JsonParserSession {
 									- parser.currentTokenLocation().getByteOffset() == 1 ) {
 						number = "-0";
 					}
-					builder.add( JsonPrimitive.number( number ) );
+					builder.add( new JsonPrimitive( JsonNumber.fromParser( number ) ) );
 					break;
 				case VALUE_TRUE:
 					builder.add( new JsonPrimitive( true ) );

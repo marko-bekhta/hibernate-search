@@ -1,0 +1,43 @@
+['--cores', '999999']: rejected before benchmark launch, exit=2
+['--cores', '2-0']: rejected before benchmark launch, exit=2
+['--forks', '0']: rejected before benchmark launch, exit=2
+stale JAR: rejected before benchmark launch, exit=2; source timestamp restored
+before: raw results nonempty, exact source patch hash verified
+profile-before: raw results nonempty, exact source patch hash verified
+smoke-optimized: raw results nonempty, exact source patch hash verified
+primary-fresh: raw results nonempty, exact source patch hash verified
+primary-reused: raw results nonempty, exact source patch hash verified
+allocation: raw results nonempty, exact source patch hash verified
+accessors: raw results nonempty, exact source patch hash verified
+parsers: raw results nonempty, exact source patch hash verified
+accessor-profile-before: raw results nonempty, exact source patch hash verified
+parser-profile-before: raw results nonempty, exact source patch hash verified
+accessors-final: raw results nonempty, exact source patch hash verified
+parsers-final: raw results nonempty, exact source patch hash verified
+parser-stack-final: raw results nonempty, exact source patch hash verified
+read-allocation-final: raw results nonempty, exact source patch hash verified
+accessor-allocation-final: raw results nonempty, exact source patch hash verified
+final-writers: raw results nonempty, exact source patch hash verified
+scalar-interleaved-search-1: raw results nonempty, exact source patch hash verified
+scalar-interleaved-gson-1: raw results nonempty, exact source patch hash verified
+scalar-interleaved-search-2: raw results nonempty, exact source patch hash verified
+scalar-interleaved-gson-2: raw results nonempty, exact source patch hash verified
+scalar-interleaved-search-3: raw results nonempty, exact source patch hash verified
+scalar-interleaved-gson-3: raw results nonempty, exact source patch hash verified
+factories-final: raw results nonempty, exact source patch hash verified
+factories-cold: raw results nonempty, exact source patch hash verified
+smoke-new-harnesses: raw results nonempty, exact source patch hash verified
+sink-sensitivity: raw results nonempty, exact source patch hash verified
+utf8-ingress: raw results nonempty, exact source patch hash verified
+primary-opaque: raw results nonempty, exact source patch hash verified
+numeric-parsers: raw results nonempty, exact source patch hash verified
+utf8-allocation: raw results nonempty, exact source patch hash verified
+numeric-string-allocation: raw results nonempty, exact source patch hash verified
+unicode-stack: raw results nonempty, exact source patch hash verified
+numeric-utf8-stack: raw results nonempty, exact source patch hash verified
+unicode-interleaved-cursor-1: raw results nonempty, exact source patch hash verified
+unicode-interleaved-gson-1: raw results nonempty, exact source patch hash verified
+unicode-interleaved-cursor-2: raw results nonempty, exact source patch hash verified
+unicode-interleaved-gson-2: raw results nonempty, exact source patch hash verified
+unicode-interleaved-cursor-3: raw results nonempty, exact source patch hash verified
+unicode-interleaved-gson-3: raw results nonempty, exact source patch hash verified

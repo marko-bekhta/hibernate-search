@@ -99,3 +99,168 @@ For best results disable features such as power management, dynamic CPU scaling,
 and run it on a dedicated box which has no other significant services running.
 
 In particular the "run it from your IDE" approach is just meant for development of new tests.
+
+## Server-independent JSON comparisons
+
+`JsonComparisonBenchmark` compares complete NDJSON output from the legacy Gson
+HTTP provider, direct Jackson Core 3, synchronous cursor drain, incremental cursor
+and a benchmark-only worker bridge. No Elasticsearch server is needed. The
+Jackson comparison accesses the JSON module's internal implementation on the JMH
+classpath; it does not add a public library API or a Jackson production dependency
+to the backend.
+
+```shell
+./mvnw clean install -pl integrationtest/performance/backend/elasticsearch -am \
+  -DskipTests -DskipITs -Dno-build-cache
+integrationtest/performance/backend/scripts/run-json-benchmarks.sh \
+  --skip-build --out /tmp/json-primary --cores 0,2
+```
+
+The runner requires Linux, Bash 4+, `jq`, `taskset`, Java, GNU core utilities and
+the Maven wrapper. The Bash results summarizer also requires `jq`. Omit
+`--cores` to select two allowed online physical cores with the same reported
+core-type/maximum-frequency class and exclude SMT siblings. Inspect its recorded
+topology on machines where these hints are unavailable; maximum frequency alone
+does not prove a hybrid-core class. An explicit selection must be within process
+affinity. Choose at least two physical cores for the worker scenario. Affinity is
+inherited by JMH forks and checked in benchmark and worker threads. Pinning is
+not an exclusive CPU reservation. The runner does not change governors, turbo,
+perf permissions, scheduler settings or any other host controls.
+
+Defaults: one JMH thread, three independent forks, five one-second warmup and
+five one-second measurement iterations, 1 GiB fixed heap, G1,
+`ActiveProcessorCount` equal to selected logical CPUs. Every comparison uses
+these same resources, including two CPUs for worker runs. Fixture construction,
+tree conversion and exact full-byte validation run in trial setup. Primary writer
+sinks use `Blackhole.consume(byte[])` on every emitted array, plus byte counts
+and boundary bytes. `JsonSinkSensitivityBenchmark` repeats the same complete
+writes with either sampled-only or opaque observation.
+Boundary sampling alone does not prove that every interior store survives JIT
+optimization. Compare relative writer results with both observation modes; rerun
+affected gate comparisons with consistent opaque consumption if they change
+materially. Opaque consumption adds no per-byte checksum, and chunk counts remain
+implementation-specific.
+No random generation or logging occurs in measured methods. `--quick` is a
+one-fork smoke check and cannot establish the gate.
+
+Summarize one or more recorded runs as CSV, including independent fork means,
+fork variability and allocation scores when present:
+
+```shell
+integrationtest/performance/backend/scripts/summarize-json-results.sh \
+  /tmp/json-primary/jmh.json /tmp/json-allocation/jmh.json > /tmp/json-results.csv
+```
+
+Fixtures (`--fixtures`): `small`, `mapping`, `unicode`, `nested`, `scalar-1m`,
+`scalar-8m`, `bulk-10000`. The additional `numbers-10000` fixture measures
+numeric construction/storage (an object containing an array of integers 0–9999).
+Shared builders retain both trees outside timing.
+Every body part has a final newline. `--lifecycle fresh` includes provider/body
+construction and probing for every writer; Jackson and worker use the same
+cursor probe as the candidate body. Legacy Gson probes a complete first part
+and retains that encoding; the candidate probes at most 8 KiB and discards it.
+`--lifecycle reused` excludes those costs for every writer and measures complete
+serialization of an already constructed source. Reused incremental cursors also
+reuse the caller's 8 KiB destination; synchronous adapters allocate their own.
+The worker is a reusable single-thread executor with two circulating 8 KiB arrays
+and bounded queues. Each invocation waits for full delivery and task completion;
+worker creation belongs to trial setup. It is an experiment, not a production
+scheduling proposal.
+
+```shell
+# Raw serialization lifecycle, then independent allocation profiling:
+integrationtest/performance/backend/scripts/run-json-benchmarks.sh --skip-build \
+  --out /tmp/json-reused --lifecycle reused
+integrationtest/performance/backend/scripts/run-json-benchmarks.sh --skip-build \
+  --out /tmp/json-allocation --profiler gc
+# Strict/explicit singleton-array accessors; no body fixture parameters:
+integrationtest/performance/backend/scripts/run-json-benchmarks.sh --skip-build \
+  --out /tmp/json-accessors --fixtures '' \
+  --pattern 'JsonComparisonBenchmark.*Accessor$'
+# Same materialized string input for both parsers:
+integrationtest/performance/backend/scripts/run-json-benchmarks.sh --skip-build \
+  --out /tmp/json-parsers --fixtures small,unicode,scalar-1m \
+  --pattern 'JsonComparisonBenchmark.(gsonParser|searchParser)$'
+# Full UTF-8 ingress: decoder/reader versus bounded async feed and end-of-input:
+integrationtest/performance/backend/scripts/run-json-benchmarks.sh --skip-build \
+  --out /tmp/json-utf8 --fixtures small,unicode,scalar-1m \
+  --pattern 'JsonUtf8IngressBenchmark.*Parser$'
+# Opaque sink sensitivity, sampled and opaque modes in the same campaign:
+integrationtest/performance/backend/scripts/run-json-benchmarks.sh --skip-build \
+  --out /tmp/json-sink-sensitivity --fixtures small,unicode,scalar-1m,bulk-10000 \
+  --pattern 'JsonSinkSensitivityBenchmark.(gson|synchronousCursor|incrementalCursor)$'
+# Numeric-rich parsing: conversion/storage costs moved into construction:
+integrationtest/performance/backend/scripts/run-json-benchmarks.sh --skip-build \
+  --out /tmp/json-numbers --fixtures numbers-10000 \
+  --pattern '(JsonComparisonBenchmark|JsonUtf8IngressBenchmark).(gsonParser|searchParser)$'
+# Portable stack sampling fallback; diagnostic timing is separate:
+integrationtest/performance/backend/scripts/run-json-benchmarks.sh --skip-build \
+  --out /tmp/json-stack --fixtures scalar-1m \
+  --pattern 'JsonComparisonBenchmark.synchronousCursor$' --profiler stack
+# Existing async-profiler installation, without automatic downloads/sysctl:
+integrationtest/performance/backend/scripts/run-json-benchmarks.sh --skip-build \
+  --out /tmp/json-cpu --profiler \
+  "async:libPath=${ASYNC_PROFILER_HOME}/lib/libasyncProfiler.so;event=cpu;output=jfr;dir=/tmp/json-jfr"
+```
+
+The runner saves exact commands, Java/GC/heap settings, source/JAR SHA-256,
+revision and dirty patch, topology/frequencies/governor/turbo, allowed affinity,
+cgroup quotas/memory/cpuset and before/after load/CPU pressure. It refuses an
+existing output directory. Retain raw JSON with per-fork samples. Run profiling
+separately from primary timing and record unavailable controls. Do not run builds
+or tests alongside timing. A repeatable regression above 5% triggers investigation;
+it is not statistical proof and is never a hard assertion in a correctness test.
+
+Independent byte/retention/backpressure/cancellation checks and a controlled
+100 microsecond pause per worker chunk (actual waits depend on the scheduler):
+
+```shell
+taskset -c 0,2 java -Djson.benchmark.cores=0,2 \
+  -cp integrationtest/performance/backend/elasticsearch/target/benchmarks.jar \
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSlowConsumerHarness
+java -cp integrationtest/performance/backend/elasticsearch/target/benchmarks.jar \
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonBufferRetentionProbe
+```
+
+The harness verifies complete bytes at capacities 1/2/5/8192 and cursor
+cancellation release independently of throughput. Encoded cursor state is at
+most six bytes; the worker owns two 8 KiB arrays, including queued/in-flight
+storage. Source trees, generators, destination buffers and diagnostic capture
+are accounted separately. The slow harness deliberately captures a full body
+for correctness; production and JMH output do not. Lone-surrogate output policy
+is tested separately: Gson replaces with `?`, whereas new output uses `\\uXXXX`.
+No byte-equivalence claim covers that intentional policy difference.
+
+`--skip-build` rejects a JAR older than JSON/backend/benchmark Java sources.
+The recorded patch includes untracked benchmark source files as well as tracked
+changes. Factory-only benchmarks use affinity-only setup so they do not initialize
+factories before measuring. Cold single-shot factory context (three samples are
+not a dependable startup confidence interval):
+
+```shell
+integrationtest/performance/backend/scripts/run-json-benchmarks.sh --skip-build \
+  --out /tmp/json-factories-cold --cores 0,2 --cold --fixtures '' \
+  --pattern '(JsonBaselineBenchmark.initializeProvider|JsonComparisonBenchmark.initializeParser)$'
+```
+
+Parser selectors compare the retained String convenience API with the same
+already materialized input, not transport ingress. The optimized convenience
+path uses Core's character parser and the same tree builder. It validates raw
+UTF-16, counts UTF-8 when a byte limit is configured, retains decoded UTF-8 name
+limits and rejects broken escaped name surrogates. It creates no secondary
+whole-body String or byte array. Network parsing still consumes bounded byte
+slices. Do not infer network throughput or large-token event-loop latency from
+these String API numbers. Numeric nodes retain exact lexemes and cache an
+in-range integral value; decimal/overflow narrowing still uses BigDecimal.
+Caching adds fixed tree storage, which is separate from retained encoded output.
+
+`JsonUtf8IngressBenchmark` starts with the same caller-owned UTF-8 bytes for both
+parsers. It includes creation, decoding/feed, complete consumption, root tree
+construction and close in each invocation. Gson uses an `InputStreamReader`;
+Search feeds a `ByteBuffer` repeatedly until all bytes are accepted, then calls
+`endOfInput`. Both returned trees are observed by JMH and checked for complete
+content in setup. It measures synchronous completion of the async SPI, without
+a transport, network fragmentation or an event-loop latency guarantee. Parser
+benchmarks use only the first fixture part, as the parser accepts a single JSON
+root; output benchmarks drain the complete NDJSON body. The output lifecycle
+parameter does not alter these parser operations.

@@ -15,6 +15,17 @@ import org.hibernate.search.util.json.spi.JsonWriteCursor;
 /** Iterative traversal retaining only source references and at most one encoded character/escape. */
 public final class Utf8JsonWriteCursor implements JsonWriteCursor {
 	private static final String HEX = "0123456789abcdef";
+	private static final boolean[] SAFE_ASCII = safeAscii();
+
+	private static boolean[] safeAscii() {
+		boolean[] result = new boolean[128];
+		java.util.Arrays.fill( result, 0x20, 128, true );
+		for ( char character : new char[] { '"', '\\', '<', '>', '&', '=', '\'' } ) {
+			result[character] = false;
+		}
+		return result;
+	}
+
 	private ArrayDeque<Frame> frames = new ArrayDeque<>();
 	private JsonElement nextValue;
 	private String scalar;
@@ -44,6 +55,14 @@ public final class Utf8JsonWriteCursor implements JsonWriteCursor {
 		while ( destination.hasRemaining() && !complete ) {
 			if ( pendingOffset == pendingLength ) {
 				pendingOffset = pendingLength = 0;
+				if ( writeAsciiRun( destination ) ) {
+					if ( scalar == null && nextValue == null && frames.isEmpty() ) {
+						complete = true;
+						pending = null;
+						frames = null;
+					}
+					continue;
+				}
 				prepare();
 			}
 			int count = Math.min( destination.remaining(), pendingLength - pendingOffset );
@@ -56,6 +75,51 @@ public final class Utf8JsonWriteCursor implements JsonWriteCursor {
 			}
 		}
 		return destination.position() - start;
+	}
+
+	/** Copy only the caller's available region; no encoded token or body is materialized. */
+	private boolean writeAsciiRun(ByteBuffer destination) {
+		if ( scalar == null || scalarStage != 1 || scalarOffset == scalar.length() ) {
+			return false;
+		}
+		int end = scalarOffset + Math.min( destination.remaining(), scalar.length() - scalarOffset );
+		int offset = scalarOffset;
+		if ( destination.hasArray() ) {
+			byte[] array = destination.array();
+			int position = destination.arrayOffset() + destination.position();
+			while ( offset < end ) {
+				char character = scalar.charAt( offset );
+				if ( quoted && ( character >= 128 || !SAFE_ASCII[character] ) ) {
+					break;
+				}
+				array[position++] = (byte) character;
+				offset++;
+			}
+			destination.position( destination.position() + offset - scalarOffset );
+		}
+		else {
+			while ( offset < end ) {
+				char character = scalar.charAt( offset );
+				if ( quoted && ( character >= 128 || !SAFE_ASCII[character] ) ) {
+					break;
+				}
+				destination.put( (byte) character );
+				offset++;
+			}
+		}
+		if ( offset == scalarOffset ) {
+			return false;
+		}
+		scalarOffset = offset;
+		if ( offset == scalar.length() ) {
+			if ( quoted ) {
+				scalarStage = 2;
+			}
+			else {
+				scalar = null;
+			}
+		}
+		return true;
 	}
 
 	private void prepare() {

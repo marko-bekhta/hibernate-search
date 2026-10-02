@@ -18,7 +18,11 @@ public final class JsonBodyOutput {
 	public static void writeTo(JsonBody source, OutputStream destination) throws IOException {
 		Objects.requireNonNull( destination );
 		try ( JsonWriteCursor cursor = source.openCursor() ) {
-			ByteBuffer buffer = ByteBuffer.allocate( JsonBodies.DEFAULT_BUFFER_SIZE );
+			long length = source.contentLength();
+			int capacity = length >= 0
+					? (int) Math.min( Math.max( length, 1 ), JsonBodies.DEFAULT_BUFFER_SIZE )
+					: JsonBodies.DEFAULT_BUFFER_SIZE;
+			ByteBuffer buffer = ByteBuffer.allocate( capacity );
 			while ( !cursor.isComplete() ) {
 				cursor.write( buffer );
 				destination.write( buffer.array(), 0, buffer.position() );
@@ -29,7 +33,7 @@ public final class JsonBodyOutput {
 
 	public static long probeLength(JsonBody source, int maximumBytes) {
 		try ( JsonWriteCursor cursor = source.openCursor() ) {
-			ByteBuffer buffer = ByteBuffer.allocate( Math.min( maximumBytes, JsonBodies.DEFAULT_BUFFER_SIZE ) );
+			ByteBuffer buffer = ByteBuffer.allocate( Math.min( maximumBytes, 1024 ) );
 			long written = 0;
 			while ( written < maximumBytes && !cursor.isComplete() ) {
 				buffer.clear();

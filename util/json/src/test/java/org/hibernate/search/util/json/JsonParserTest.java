@@ -101,6 +101,7 @@ class JsonParserTest {
 			"{\"\\uD800\":1}",
 			"{\"\\uDC00\":1}" })
 	void rejectsEmptyMalformedTruncatedAndTrailingInput(String json) {
+		assertThatThrownBy( () -> parsing.parse( json ) ).isInstanceOf( JsonParseException.class );
 		JsonParserSession parser = parsing.createParser();
 		assertThatThrownBy( () -> {
 			consume( parser, ByteBuffer.wrap( json.getBytes( StandardCharsets.UTF_8 ) ) );
@@ -109,6 +110,27 @@ class JsonParserTest {
 		assertThatThrownBy( parser::endOfInput ).isInstanceOf( IllegalStateException.class );
 		assertThatThrownBy( () -> parser.feed( ByteBuffer.allocate( 0 ) ) ).isInstanceOf( IllegalStateException.class );
 		parser.close();
+	}
+
+	@Test
+	void stringInputPreservesUtf8LimitsAndUnicodePolicy() {
+		String json = "{\"😀\":0}";
+		int bytes = json.getBytes( StandardCharsets.UTF_8 ).length;
+		assertThat( new JsonParsing( JsonParsingOptions.DEFAULT.withMaxInputBytes( bytes ) ).parse( json ) )
+				.isEqualTo( parsing.parse( json ) );
+		assertThatThrownBy( () -> new JsonParsing( JsonParsingOptions.DEFAULT.withMaxInputBytes( bytes - 1 ) ).parse( json ) )
+				.isInstanceOf( JsonParseException.class ).hasMessageContaining( "byte limit" );
+		JsonParsing names = new JsonParsing( new JsonParsingOptions( 20, 100, 3, 100, 8192, 0 ) );
+		assertThatThrownBy( () -> names.parse( json ) ).isInstanceOf( JsonParseException.class );
+		assertThatThrownBy( () -> {
+			try ( JsonParserSession parser = names.createParser() ) {
+				consume( parser, ByteBuffer.wrap( json.getBytes( StandardCharsets.UTF_8 ) ) );
+				parser.endOfInput();
+			}
+		} ).isInstanceOf( JsonParseException.class );
+		for ( String broken : new String[] { "\"\ud800\"", "{\"\udc00\":0}" } ) {
+			assertThatThrownBy( () -> parsing.parse( broken ) ).isInstanceOf( JsonParseException.class );
+		}
 	}
 
 	@Test

@@ -213,22 +213,24 @@ Completed checkpoint: [Task 3 report](elasticsearch-async-json-task3.md), with b
 
 ### Task 4 — Performance gate
 
-- [ ] Keep reusable JMH benchmarks, fixture builders, bounded-worker comparison code, buffer-retention probes and slow-consumer harnesses committed under `integrationtest/performance/backend/elasticsearch`, extending the existing `JsonBaselineBenchmark` and `JsonBufferRetentionProbe` infrastructure. Do not leave reusable benchmark code only in temporary directories or checkpoint documents.
-- [ ] Document benchmark selectors, fixture parameters, build/run commands, environment requirements and profiling commands in `integrationtest/performance/backend/README.md`. Keep server-independent JSON benchmarks runnable without Elasticsearch.
-- [ ] Commit representative raw JMH JSON, measurement environment and comparison reports alongside the Task 4 checkpoint. Keep machine-specific build outputs/profiler recordings out of source control. Retain legacy comparisons in benchmark code while useful; do not retain obsolete production implementations solely to keep benchmarks compiling.
-- [ ] Add a reproducible runner informed by the [Hibernate Validator benchmark script at pinned revision 79761614611bd6878bca0cbef2771e7e46bb765f](https://raw.githubusercontent.com/hibernate/hibernate-validator/79761614611bd6878bca0cbef2771e7e46bb765f/performance/scripts/run-benchmarks.sh): validated arguments, CPU affinity, explicit JVM/JMH settings, environment capture, raw results, and optional profiling. Respect the process/cgroup allowed CPU set, inspect physical-core/SMT and hybrid-core topology, and verify inherited affinity inside benchmark forks. Pin baseline and candidate to the same selected resources; pinning is not exclusive CPU reservation.
-- [ ] Rerun legacy baselines under the same pinned conditions as candidates rather than comparing directly with earlier unpinned numbers. Record JVM/GC/heap/active-processor settings, governor/turbo state when readable, CPU topology, affinity, cgroup limits, load and exact code/artifact identity. Do not change host-wide CPU, scheduler or perf settings automatically. Record unavailable controls and environmental interference honestly.
-- [ ] Verify byte/content equivalence and complete consumption before timing each comparison. Keep fixture construction outside measurements; align framing, payloads, body/probe lifecycle and sink work, and prevent dead-code elimination. Measure complete worker-bridge operations, not enqueue-only time. Separate diagnostic profiling from primary timing and label quick smoke runs as non-gating. Keep bounded-output and slow-consumer correctness assertions independent of noisy timing thresholds.
-- [ ] Compare the existing writer, Jackson synchronous generation, synchronous cursor drain, incremental cursor, and a benchmark-only bounded worker bridge.
-- [ ] Test small requests, mappings, large bulks, individual large scalars, Unicode, and nested documents.
-- [ ] Measure throughput, allocation, queued bytes, slow-consumer latency, CPU, and worker occupancy.
-- [ ] Benchmark accessor chains separately, including explicit coercion.
-- [ ] Use at least three JMH forks and retain raw results.
-- [ ] Investigate repeatable throughput regressions above 5% in representative uncongested workloads before broad migration.
-- [ ] Treat that threshold as an investigation trigger, not statistical proof.
+- [x] Keep reusable JMH benchmarks, fixture builders, bounded-worker comparison code, buffer-retention probes and slow-consumer harnesses committed under `integrationtest/performance/backend/elasticsearch`, extending the existing `JsonBaselineBenchmark` and `JsonBufferRetentionProbe` infrastructure. Do not leave reusable benchmark code only in temporary directories or checkpoint documents.
+- [x] Document benchmark selectors, fixture parameters, build/run commands, environment requirements and profiling commands in `integrationtest/performance/backend/README.md`. Keep server-independent JSON benchmarks runnable without Elasticsearch.
+- [x] Commit representative raw JMH JSON, measurement environment and comparison reports alongside the Task 4 checkpoint. Keep machine-specific build outputs/profiler recordings out of source control. Retain legacy comparisons in benchmark code while useful; do not retain obsolete production implementations solely to keep benchmarks compiling.
+- [x] Add a reproducible runner informed by the [Hibernate Validator benchmark script at pinned revision 79761614611bd6878bca0cbef2771e7e46bb765f](https://raw.githubusercontent.com/hibernate/hibernate-validator/79761614611bd6878bca0cbef2771e7e46bb765f/performance/scripts/run-benchmarks.sh): validated arguments, CPU affinity, explicit JVM/JMH settings, environment capture, raw results, and optional profiling. Respect the process/cgroup allowed CPU set, inspect physical-core/SMT and hybrid-core topology, and verify inherited affinity inside benchmark forks. Pin baseline and candidate to the same selected resources; pinning is not exclusive CPU reservation.
+- [x] Rerun legacy baselines under the same pinned conditions as candidates rather than comparing directly with earlier unpinned numbers. Record JVM/GC/heap/active-processor settings, governor/turbo state when readable, CPU topology, affinity, cgroup limits, load and exact code/artifact identity. Do not change host-wide CPU, scheduler or perf settings automatically. Record unavailable controls and environmental interference honestly.
+- [x] Verify byte/content equivalence and complete consumption before timing each comparison. Keep fixture construction outside measurements; align framing, payloads, body/probe lifecycle and sink work, and prevent dead-code elimination. Measure complete worker-bridge operations, not enqueue-only time. Separate diagnostic profiling from primary timing and label quick smoke runs as non-gating. Keep bounded-output and slow-consumer correctness assertions independent of noisy timing thresholds.
+- [x] Compare the existing writer, Jackson synchronous generation, synchronous cursor drain, incremental cursor, and a benchmark-only bounded worker bridge.
+- [x] Test small requests, mappings, large bulks, individual large scalars, Unicode, and nested documents.
+- [x] Measure throughput, allocation, queued bytes, slow-consumer latency, CPU, and worker occupancy.
+- [x] Benchmark accessor chains separately, including explicit coercion.
+- [x] Use at least three JMH forks and retain raw results.
+- [x] Investigate repeatable throughput regressions above 5% in representative uncongested workloads before broad migration.
+- [x] Treat that threshold as an investigation trigger, not statistical proof.
 - [ ] Resolve regressions without restoring whole-body buffering or mandatory thread hops.
 
 **Exit:** comparison is recorded and material regressions are resolved.
+
+Checkpoint: [Task 4 report](elasticsearch-async-json-task4.md). **Exit remains incomplete:** large-String and numeric-rich parser regressions and Unicode output variability are unresolved. Benchmark infrastructure, bounded optimizations and raw evidence are committed for follow-up; Task 5/6 have not started.
 
 ### Task 5 — Reflection-free codecs and backend migration
 

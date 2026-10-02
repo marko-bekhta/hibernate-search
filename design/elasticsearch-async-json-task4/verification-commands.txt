@@ -1,0 +1,5 @@
+./mvnw clean install -pl util/json,integrationtest/performance/backend/elasticsearch -am -Dtest=JsonModelTest,JsonParserTest,JsonAccessorTest,JsonOutputTest,JsonApiTest,ElasticsearchJsonBodyTest -Dsurefire.failIfNoSpecifiedTests=false -DskipITs -Dno-build-cache
+./mvnw test -pl util/json -Dtest=JsonModelTest,JsonParserTest,JsonAccessorTest,JsonOutputTest,JsonApiBoundaryTest,JsonOutputRetentionTest,JsonParserCleanupTest -Dno-build-cache
+./mvnw clean install -pl integrationtest/performance/backend/elasticsearch -am -DskipTests -DskipITs -Dno-build-cache
+taskset -c 0,2 java -Djson.benchmark.cores=0,2 -cp integrationtest/performance/backend/elasticsearch/target/benchmarks.jar org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSlowConsumerHarness
+taskset -c 0,2 java -cp integrationtest/performance/backend/elasticsearch/target/benchmarks.jar org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonBufferRetentionProbe

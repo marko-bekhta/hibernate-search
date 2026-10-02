@@ -2,13 +2,11 @@ package org.hibernate.search.util.json;
 
 import java.math.BigInteger;
 import java.util.Objects;
-import java.util.regex.Pattern;
 
 import org.hibernate.search.util.json.impl.JsonNumber;
 
 /** An immutable string, boolean or number. Numeric equality is exact and ignores decimal scale. */
 public final class JsonPrimitive extends JsonElement {
-	private static final Pattern JSON_NUMBER = Pattern.compile( "-?(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?(?:[eE][+-]?[0-9]+)?" );
 	private final Object value;
 
 	public JsonPrimitive(String value) {
@@ -24,15 +22,19 @@ public final class JsonPrimitive extends JsonElement {
 	}
 
 	public JsonPrimitive(Number value) {
-		this.value = new JsonNumber( Objects.requireNonNull( value ).toString() );
-		if ( !JSON_NUMBER.matcher( this.value.toString() ).matches() ) {
-			throw new IllegalArgumentException( "Not a finite JSON number: " + value );
+		Objects.requireNonNull( value );
+		if ( value instanceof JsonNumber number && number.isValidated() ) {
+			// Immutable parser numbers already contain a validated snapshot; no regex or second wrapper.
+			this.value = number;
+		}
+		else {
+			this.value = JsonNumber.jsonNumber( value.toString() );
 		}
 	}
 
 	/** Create a number preserving its original JSON lexeme. */
 	public static JsonPrimitive number(String lexeme) {
-		return new JsonPrimitive( new JsonNumber( lexeme ) );
+		return new JsonPrimitive( JsonNumber.jsonNumber( lexeme ) );
 	}
 
 	public boolean isString() {

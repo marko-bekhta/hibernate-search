@@ -29,6 +29,47 @@ class JsonModelTest {
 	}
 
 	@Test
+	void integralFastPathMatchesDecimalNarrowing() {
+		for ( String number : new String[] {
+				"0",
+				"-0",
+				"42",
+				"-42",
+				"2147483647",
+				"2147483648",
+				"-2147483649",
+				"9223372036854775807",
+				"-9223372036854775808",
+				"9223372036854775808",
+				"-9223372036854775809",
+				"18446744073709551617",
+				"-18446744073709551617",
+				"9999999999999999999999999999999999999",
+				"1.9",
+				"-1.9",
+				"1e20",
+				"1e-20",
+				"1.23000e+03" } ) {
+			BigDecimal reference = new BigDecimal( number );
+			JsonPrimitive primitive = JsonPrimitive.number( number );
+			assertThat( primitive.getAsLong() ).isEqualTo( reference.longValue() );
+			assertThat( primitive.getAsInt() ).isEqualTo( reference.intValue() );
+			assertThat( primitive.getAsShort() ).isEqualTo( reference.shortValue() );
+			assertThat( primitive.getAsByte() ).isEqualTo( reference.byteValue() );
+			assertThat( primitive.getAsString() ).isEqualTo( number );
+		}
+		for ( String text : new String[] { "+42", "00042", "+1.9", "+1e+3" } ) {
+			Number actual = new JsonPrimitive( text ).getAsNumber();
+			assertThat( actual.longValue() ).isEqualTo( new BigDecimal( text ).longValue() );
+			assertThat( actual.intValue() ).isEqualTo( new BigDecimal( text ).intValue() );
+		}
+		for ( String text : new String[] { "", "-", "+", " 42", "NaN", "--42" } ) {
+			Number actual = new JsonPrimitive( text ).getAsNumber();
+			assertThatThrownBy( actual::longValue ).isInstanceOf( NumberFormatException.class );
+		}
+	}
+
+	@Test
 	void numbersPreserveLexemesAndNarrowing() {
 		for ( String number : new String[] { "-0", "1.2300e+04", "1.0E-04", "9007199254740993", "0.000", "-1e+0003" } ) {
 			JsonElement value = parsing.parse( number );
