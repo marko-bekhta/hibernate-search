@@ -1,0 +1,236 @@
+package org.hibernate.search.util.json;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.ReadOnlyBufferException;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.CompletableFuture;
+
+import org.hibernate.search.util.json.impl.JacksonJsonBodyWriter;
+import org.hibernate.search.util.json.spi.JsonBodies;
+import org.hibernate.search.util.json.spi.JsonBody;
+import org.hibernate.search.util.json.spi.JsonWriteCursor;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+
+class JsonOutputTest {
+	@ParameterizedTest
+	@ValueSource(ints = { 1, 2, 5, 8192 })
+	void fragmentedOutputAndBufferBoundaries(int capacity) throws IOException {
+		JsonObject tree = fixture();
+		JsonBody body = JsonBodies.of( tree );
+		byte[] expected = jackson( tree );
+		assertThat( synchronous( body ) ).isEqualTo( expected );
+		for ( int kind = 0; kind < 3; kind++ ) {
+			ByteBuffer storage = kind == 1
+					? ByteBuffer.allocateDirect( capacity + 7 )
+					: ByteBuffer.allocate( capacity + 7 );
+			for ( int i = 0; i < storage.capacity(); i++ ) {
+				storage.put( i, (byte) 0x7f );
+			}
+			ByteBuffer destination = storage;
+			if ( kind == 2 ) {
+				storage.position( 2 ).limit( capacity + 5 );
+				destination = storage.slice();
+			}
+			ByteArrayOutputStream actual = new ByteArrayOutputStream();
+			try ( JsonWriteCursor cursor = body.openCursor() ) {
+				assertThat( cursor.write( ByteBuffer.allocate( 0 ) ) ).isZero();
+				assertThat( cursor.isComplete() ).isFalse();
+				while ( !cursor.isComplete() ) {
+					destination.position( 1 ).limit( capacity + 1 );
+					int count = cursor.write( destination );
+					assertThat( count ).isBetween( 1, capacity );
+					assertThat( destination.position() ).isEqualTo( count + 1 );
+					assertThat( destination.limit() ).isEqualTo( capacity + 1 );
+					destination.flip().position( 1 );
+					while ( destination.hasRemaining() ) {
+						actual.write( destination.get() );
+					}
+				}
+				assertThat( cursor.write( ByteBuffer.allocate( 1 ) ) ).isZero();
+				assertThat( cursor.write( ByteBuffer.allocate( 0 ) ) ).isZero();
+			}
+			assertThat( actual.toByteArray() ).isEqualTo( expected );
+			assertThat( storage.get( kind == 2 ? 2 : 0 ) ).isEqualTo( (byte) 0x7f );
+			storage.clear();
+			assertThat( storage.get( capacity + 6 ) ).isEqualTo( (byte) 0x7f );
+		}
+	}
+
+	@Test
+	void allCharacterEscapesAndSupplementaryPairsAgreeWithJackson() throws IOException {
+		StringBuilder value = new StringBuilder();
+		for ( int c = 0; c <= 0xffff; c++ ) {
+			value.append( (char) c );
+		}
+		value.append( "😀\ud800x\udfff\ud800\ud800\udfff" );
+		JsonObject tree = new JsonObject();
+		tree.addProperty( value.toString(), value.toString() );
+		assertThat( synchronous( JsonBodies.of( tree ) ) ).isEqualTo( jackson( tree ) );
+		JsonPrimitive exact = new JsonPrimitive( "<>&='\u2028\u2029é中😀\ud800x\udfff" );
+		assertThat( new String( synchronous( JsonBodies.of( exact ) ), StandardCharsets.UTF_8 ) )
+				.isEqualTo( "\"\\u003c\\u003e\\u0026\\u003d\\u0027\\u2028\\u2029é中😀\\ud800x\\udfff\"" );
+	}
+
+	@Test
+	void stableBoundedContentLengthAndExactLimit() throws IOException {
+		for ( int length : new int[] { 1, 8191, 8192, 8193, 1_000_000 } ) {
+			JsonPrimitive tree = JsonPrimitive.number( "1" + "0".repeat( length - 1 ) );
+			JsonBody body = JsonBodies.of( tree );
+			assertThat( body.contentLength() ).isEqualTo( length <= 8192 ? length : -1 );
+			body.writeTo( OutputStream.nullOutputStream() );
+			assertThat( body.contentLength() ).isEqualTo( length <= 8192 ? length : -1 );
+		}
+		JsonBody body = JsonBodies.of( new JsonPrimitive( "abc" ) );
+		assertThat( JsonBodies.withContentLengthProbe( body, 0 ).contentLength() ).isEqualTo( -1 );
+		assertThat( JsonBodies.withContentLengthProbe( body, 4 ).contentLength() ).isEqualTo( -1 );
+		assertThat( JsonBodies.withContentLengthProbe( body, 5 ).contentLength() ).isEqualTo( 5 );
+		assertThatThrownBy( () -> JsonBodies.withContentLengthProbe( body, -1 ) )
+				.isInstanceOf( IllegalArgumentException.class );
+	}
+
+	@Test
+	void independentConcurrentCursorsAndRetryAfterPartialOutput() throws Exception {
+		JsonBody body = JsonBodies.of( fixture() );
+		byte[] expected = synchronous( body );
+		try ( JsonWriteCursor partial = body.openCursor() ) {
+			partial.write( ByteBuffer.allocate( 7 ) );
+			assertThat( partial.isComplete() ).isFalse();
+			CompletableFuture<byte[]> first = CompletableFuture.supplyAsync( () -> drain( body, 1 ) );
+			CompletableFuture<byte[]> second = CompletableFuture.supplyAsync( () -> drain( body, 5 ) );
+			assertThat( first.get() ).isEqualTo( expected );
+			assertThat( second.get() ).isEqualTo( expected );
+			partial.cancel();
+			assertThatThrownBy( () -> partial.write( ByteBuffer.allocate( 1 ) ) ).isInstanceOf( IllegalStateException.class );
+		}
+		assertThat( drain( body, 2 ) ).isEqualTo( expected );
+	}
+
+	@Test
+	void readOnlyRejectionDoesNotConsumeAndOutputStorageIsCallerOwned() {
+		JsonBody body = JsonBodies.of( fixture() );
+		try ( JsonWriteCursor cursor = body.openCursor() ) {
+			assertThatThrownBy( () -> cursor.write( ByteBuffer.allocate( 5 ).asReadOnlyBuffer() ) )
+					.isInstanceOf( ReadOnlyBufferException.class );
+			ByteBuffer first = ByteBuffer.allocate( 5 );
+			cursor.write( first );
+			byte[] retained = first.array().clone();
+			while ( !cursor.isComplete() ) {
+				cursor.write( ByteBuffer.allocate( 2 ) );
+			}
+			assertThat( first.array() ).isEqualTo( retained );
+			assertThat( retained ).isEqualTo( java.util.Arrays.copyOf( drain( body, 5 ), 5 ) );
+		}
+	}
+
+	@Test
+	void signingStreamsReplayAndCloseIndependently() throws IOException {
+		JsonBody body = JsonBodies.of( fixture() );
+		byte[] expected = synchronous( body );
+		try ( InputStream first = body.openStream(); InputStream second = body.openStream() ) {
+			assertThat( first.read() ).isEqualTo( expected[0] & 0xff );
+			assertThat( first.read( new byte[1], 0, 0 ) ).isZero();
+			assertThat( second.readAllBytes() ).isEqualTo( expected );
+			assertThat( first.readAllBytes() ).isEqualTo( java.util.Arrays.copyOfRange( expected, 1, expected.length ) );
+			assertThat( first.read() ).isEqualTo( -1 );
+		}
+		InputStream cancelled = body.openStream();
+		cancelled.close();
+		cancelled.close();
+		assertThatThrownBy( cancelled::read ).isInstanceOf( IOException.class );
+		assertThat( synchronous( body ) ).isEqualTo( expected );
+	}
+
+	@Test
+	void synchronousAdaptersDoNotCloseOrFlushDestinationAndPropagateFailure() throws IOException {
+		OutputStream output = new OutputStream() {
+			@Override
+			public void write(int value) {
+			}
+
+			@Override
+			public void flush() throws IOException {
+				throw new IOException( "flush" );
+			}
+
+			@Override
+			public void close() throws IOException {
+				throw new IOException( "close" );
+			}
+		};
+		JsonBodies.of( fixture() ).writeTo( output );
+		JacksonJsonBodyWriter.write( fixture(), output );
+		OutputStream failure = new OutputStream() {
+			@Override
+			public void write(int value) throws IOException {
+				throw new IOException( "sink failure" );
+			}
+		};
+		assertThatThrownBy( () -> JsonBodies.of( fixture() ).writeTo( failure ) )
+				.isInstanceOf( IOException.class ).hasMessage( "sink failure" );
+	}
+
+	@Test
+	void exactScalarLexemesAndEmptyContainers() throws IOException {
+		for ( String lexeme : new String[] { "-0", "0.000", "1.2300e+04", "1.0E-04", "9007199254740993", "-1e+0003" } ) {
+			assertThat( new String( drain( JsonBodies.of( JsonPrimitive.number( lexeme ) ), 1 ), StandardCharsets.UTF_8 ) )
+					.isEqualTo( lexeme );
+		}
+		JsonArray tree = new JsonArray();
+		tree.add( new JsonObject() );
+		tree.add( new JsonArray() );
+		tree.add( "" );
+		tree.add( true );
+		tree.add( false );
+		tree.add( (JsonElement) null );
+		assertThat( new String( synchronous( JsonBodies.of( tree ) ), StandardCharsets.UTF_8 ) )
+				.isEqualTo( "[{},[],\"\",true,false,null]" );
+	}
+
+	static JsonObject fixture() {
+		JsonObject tree = new JsonObject();
+		tree.addProperty( "nameé😀\"\\\n", "a<>&='é中😀\b\f\n\r\t\u0000\u2028\u2029\ud800x\udfff" );
+		JsonArray values = new JsonArray();
+		values.add( (JsonElement) null );
+		values.add( true );
+		values.add( JsonPrimitive.number( "-0.12300e+004" ) );
+		values.add( new JsonArray() );
+		values.add( new JsonObject() );
+		tree.add( "values", values );
+		return tree;
+	}
+
+	static byte[] synchronous(JsonBody body) throws IOException {
+		ByteArrayOutputStream output = new ByteArrayOutputStream();
+		body.writeTo( output );
+		return output.toByteArray();
+	}
+
+	static byte[] jackson(JsonElement tree) {
+		ByteArrayOutputStream output = new ByteArrayOutputStream();
+		JacksonJsonBodyWriter.write( tree, output );
+		return output.toByteArray();
+	}
+
+	static byte[] drain(JsonBody body, int capacity) {
+		ByteArrayOutputStream output = new ByteArrayOutputStream();
+		try ( JsonWriteCursor cursor = body.openCursor() ) {
+			ByteBuffer buffer = ByteBuffer.allocate( capacity );
+			while ( !cursor.isComplete() ) {
+				cursor.write( buffer );
+				output.write( buffer.array(), 0, buffer.position() );
+				buffer.clear();
+			}
+		}
+		return output.toByteArray();
+	}
+}

@@ -18,6 +18,12 @@ class JsonApiBoundaryTest {
 				String name = classes.relativize( file ).toString().replace( '/', '.' ).replace( ".class", "" );
 				Class<?> type = Class.forName( name );
 				assertNeutral( type.toGenericString() );
+				for ( var supertype : type.getGenericInterfaces() ) {
+					assertNeutral( supertype.getTypeName() );
+				}
+				if ( type.getGenericSuperclass() != null ) {
+					assertNeutral( type.getGenericSuperclass().getTypeName() );
+				}
 				for ( var member : type.getDeclaredMethods() ) {
 					if ( Modifier.isPublic( member.getModifiers() ) || Modifier.isProtected( member.getModifiers() ) ) {
 						assertNeutral( member.toGenericString() );

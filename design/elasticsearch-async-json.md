@@ -196,18 +196,20 @@ Completed checkpoint: [Task 2 report](elasticsearch-async-json-task2.md), with t
 
 ### Task 3 — Output implementation
 
-- [ ] Implement iterative UTF-8 serialization with traversal frames and scalar/escape offsets.
-- [ ] Suspend within strings, names, and numbers.
-- [ ] Handle zero-capacity destinations without spinning.
-- [ ] Use 8 KiB adapter buffers initially; test much smaller capacities.
-- [ ] Add synchronous output by draining the same cursor.
-- [ ] Add an internal Jackson synchronous generator implementation for comparison.
-- [ ] Use cursor-backed writing as the initial production default, including signing reads, to ensure identical bytes.
-- [ ] Keep Elasticsearch body-part framing and trailing newlines in the backend.
-- [ ] Allow a bounded small-body probe; never serialize the whole body merely to calculate content length.
-- [ ] Give each retry, subscription, and signing read independent cursor state.
+- [x] Implement iterative UTF-8 serialization with traversal frames and scalar/escape offsets.
+- [x] Suspend within strings, names, and numbers.
+- [x] Handle zero-capacity destinations without spinning.
+- [x] Use 8 KiB adapter buffers initially; test much smaller capacities.
+- [x] Add synchronous output by draining the same cursor.
+- [x] Add an internal Jackson synchronous generator implementation for comparison.
+- [x] Use cursor-backed writing as the new output SPI default, including independent signing streams; live transport application remains Task 6.
+- [x] Keep Elasticsearch body-part framing and trailing newlines in a separately tested backend helper; live entities remain on Gson.
+- [x] Allow a bounded small-body probe; never serialize a large body fully merely to calculate content length.
+- [x] Give replay and signing reads independent cursor state; transport retry/subscription lifecycle integration remains Task 6.
 
 **Exit:** synchronous and incremental bytes agree; retained encoded output does not grow with body size.
+
+Completed checkpoint: [Task 3 report](elasticsearch-async-json-task3.md), with bounded-retention assertions, byte comparisons, clean verification and explicit transport deferrals. Performance claims and throughput gating remain Task 4.
 
 ### Task 4 — Performance gate
 

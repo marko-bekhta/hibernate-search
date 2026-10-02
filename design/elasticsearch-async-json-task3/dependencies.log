@@ -1,0 +1,62 @@
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by org.fusesource.jansi.internal.JansiLoader in an unnamed module (file:/home/agentuser/.m2/wrapper/dists/apache-maven-3.9.16-bin/4200fbc6/apache-maven-3.9.16/lib/jansi-2.4.3.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+[INFO] Scanning for projects...
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Build Order:
+[INFO]
+[INFO] Hibernate Search Utils - JSON                                      [jar]
+[INFO] Hibernate Search Backend - Elasticsearch                           [jar]
+[INFO]
+[INFO] ----------< org.hibernate.search:hibernate-search-util-json >-----------
+[INFO] Building Hibernate Search Utils - JSON 9.0.0-SNAPSHOT              [1/2]
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO]
+[INFO] --- dependency:3.11.0:tree (default-cli) @ hibernate-search-util-json ---
+[INFO] org.hibernate.search:hibernate-search-util-json:jar:9.0.0-SNAPSHOT
+[INFO] +- org.hibernate.search:hibernate-search-util-common:jar:9.0.0-SNAPSHOT:compile
+[INFO] |  +- org.jboss.logging:jboss-logging:jar:3.6.3.Final:compile
+[INFO] |  +- org.hibernate.accessor:hibernate-accessor:jar:0.1.0.Alpha5:compile
+[INFO] |  \- io.smallrye:jandex:jar:3.6.0:compile
+[INFO] \- tools.jackson.core:jackson-core:jar:3.2.2:compile
+[INFO]
+[INFO] ----< org.hibernate.search:hibernate-search-backend-elasticsearch >-----
+[INFO] Building Hibernate Search Backend - Elasticsearch 9.0.0-SNAPSHOT   [2/2]
+[INFO]   from /home/agentuser/hibernate-search/backend/elasticsearch/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO]
+[INFO] --- dependency:3.11.0:tree (default-cli) @ hibernate-search-backend-elasticsearch ---
+[INFO] org.hibernate.search:hibernate-search-backend-elasticsearch:jar:9.0.0-SNAPSHOT
+[INFO] +- org.hibernate.search:hibernate-search-util-json:jar:9.0.0-SNAPSHOT:compile
+[INFO] |  +- org.hibernate.search:hibernate-search-util-common:jar:9.0.0-SNAPSHOT:compile
+[INFO] |  |  \- org.hibernate.accessor:hibernate-accessor:jar:0.1.0.Alpha5:compile
+[INFO] |  \- tools.jackson.core:jackson-core:jar:3.2.2:compile
+[INFO] +- org.hibernate.search:hibernate-search-engine:jar:9.0.0-SNAPSHOT:compile
+[INFO] +- org.hibernate.search:hibernate-search-backend-elasticsearch-client-rest4:jar:9.0.0-SNAPSHOT:compile
+[INFO] |  +- org.elasticsearch.client:elasticsearch-rest-client:jar:9.5.4:compile
+[INFO] |  |  +- commons-codec:commons-codec:jar:1.22.1:compile
+[INFO] |  |  \- commons-logging:commons-logging:jar:1.4.0:compile
+[INFO] |  +- org.elasticsearch.client:elasticsearch-rest-client-sniffer:jar:9.5.4:compile
+[INFO] |  +- org.apache.httpcomponents:httpclient:jar:4.5.14:compile
+[INFO] |  +- org.apache.httpcomponents:httpcore:jar:4.4.16:compile
+[INFO] |  +- org.apache.httpcomponents:httpcore-nio:jar:4.4.16:compile
+[INFO] |  \- org.apache.httpcomponents:httpasyncclient:jar:4.1.5:compile
+[INFO] +- org.jboss.logging:jboss-logging:jar:3.6.3.Final:compile
+[INFO] +- com.google.code.gson:gson:jar:2.14.0:compile
+[INFO] |  \- com.google.errorprone:error_prone_annotations:jar:2.48.0:compile
+[INFO] \- com.fasterxml.jackson.core:jackson-core:jar:2.22.1:compile
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary for Hibernate Search Utils - JSON 9.0.0-SNAPSHOT:
+[INFO]
+[INFO] Hibernate Search Utils - JSON ...................... SUCCESS [  0.447 s]
+[INFO] Hibernate Search Backend - Elasticsearch ........... SUCCESS [  0.043 s]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.198 s
+[INFO] Finished at: 2026-10-02T16:23:16Z
+[INFO] ------------------------------------------------------------------------
+[INFO] 2 goals, 2 executed
