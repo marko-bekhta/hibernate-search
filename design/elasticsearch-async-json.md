@@ -11,7 +11,7 @@ The design decisions are complete. Performance and transport feasibility checks 
 - Support the existing JDK, Elasticsearch REST 4, Elasticsearch REST 5, and OpenSearch transports.
 - Prepare reusable contracts for Vert.x; do not implement a Vert.x transport.
 - Keep the module independent of Elasticsearch so another backend, including Solr, can reuse it.
-- Use Jackson Core only; introduce neither Databind nor reflective object mapping.
+- Use managed Jackson Core 3.2.2 only in the JSON module; introduce neither Databind nor reflective object mapping. Retain independent Jackson 2 requirements of pinned clients.
 - Preserve materialized JSON trees for random access. Eliminate redundant serialized-body buffering.
 - Support synchronous and resumable output without mandatory worker scheduling.
 - Retain deprecated Gson input bridges and a public deprecated converter; migrate JSON return types and native field values.
@@ -41,7 +41,7 @@ Create `util/json`, artifact `org.hibernate.search:hibernate-search-util-json`.
 - Follow public-module conventions for publication, BOM, distribution, JPMS, licensing, and documentation.
 - Use `org.hibernate.search.util.json` for model APIs and `.spi` for accessors, streaming, and codecs.
 - Keep concrete implementations in `.impl`.
-- Depend on the existing managed Jackson Core version.
+- Depend on managed `tools.jackson.core:jackson-core:3.2.2`; manage the Jackson 3 BOM separately from the Jackson 2 BOM needed by other modules.
 - Expose neither Jackson nor Gson types in this module's API/SPI.
 - Keep HTTP handling, Elasticsearch framing, and Gson conversion outside the module.
 
@@ -120,7 +120,7 @@ Factories are shareable; parser/cursor instances are single-consumer state machi
 
 Input ownership must be documented: callers cannot reuse or release input until consumed. No unbounded internal queue is permitted.
 
-Jackson's feeder must receive input only when requested; drain tokens until `NOT_AVAILABLE`, then signal end-of-input and validate completion. [Feeder contract](https://www.javadoc.io/static/com.fasterxml.jackson.core/jackson-core/2.21.5/com/fasterxml/jackson/core/async/NonBlockingInputFeeder.html)
+Jackson's feeder must receive input only when requested; drain tokens until `NOT_AVAILABLE`, then signal end-of-input and validate completion. [Feeder contract](https://github.com/FasterXML/jackson-core/blob/jackson-core-3.2.2/src/main/java/tools/jackson/core/async/NonBlockingInputFeeder.java)
 
 ### Execution and memory limits
 
@@ -192,7 +192,7 @@ Completed checkpoint: [Task 1 report](elasticsearch-async-json-task1.md), includ
 
 **Exit:** fragmented and contiguous input produce equivalent trees, with no accumulated raw response.
 
-Completed checkpoint: [Task 2 report](elasticsearch-async-json-task2.md). Transport application of limits and charsets remains unchecked below.
+Completed checkpoint: [Task 2 report](elasticsearch-async-json-task2.md), with the [Jackson 3 follow-up and future Jackson 2 option](elasticsearch-async-json-jackson3.md). Jackson 2 fallback is not implemented; pursue it only on demonstrated need. Transport application of limits and charsets remains unchecked below.
 
 ### Task 3 — Output implementation
 

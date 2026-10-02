@@ -1,0 +1,19 @@
+org.hibernate.search.util.json@9.0.0-SNAPSHOT jar:file:///home/agentuser/hibernate-search/util/json/target/hibernate-search-util-json-9.0.0-SNAPSHOT.jar!/module-info.class
+exports org.hibernate.search.util.json
+exports org.hibernate.search.util.json.spi
+requires java.base mandated
+requires org.hibernate.search.util.common transitive
+requires tools.jackson.core
+qualified exports org.hibernate.search.util.json.impl to org.hibernate.search.engine
+
+SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+REST4/Core 2.22.1 and OpenSearch/Core 3.2.2 sniffers parse nodes concurrently: PASS
+Public model/SPI named-module compilation and runtime smoke: PASS
+Implementation import rejected for external named module: PASS
+/tmp/json-task2-jpms-3b62dde8/src/smoke/Main.java:1: error: package org.hibernate.search.util.json.impl is not visible
+package smoke; import org.hibernate.search.util.json.impl.JacksonJsonParserFactory; public class Main { JacksonJsonParserFactory implementation; }
+                                                    ^
+  (package org.hibernate.search.util.json.impl is declared in module org.hibernate.search.util.json, which does not export it to module smoke)
+1 error

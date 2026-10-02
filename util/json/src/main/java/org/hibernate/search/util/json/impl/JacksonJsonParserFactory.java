@@ -1,6 +1,5 @@
 package org.hibernate.search.util.json.impl;
 
-import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
@@ -9,11 +8,12 @@ import org.hibernate.search.util.json.spi.JsonParseException;
 import org.hibernate.search.util.json.spi.JsonParserSession;
 import org.hibernate.search.util.json.spi.JsonParsingOptions;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.StreamReadConstraints;
+import tools.jackson.core.ObjectReadContext;
+import tools.jackson.core.StreamReadConstraints;
+import tools.jackson.core.json.JsonFactory;
 
 public final class JacksonJsonParserFactory {
-	private final JsonFactory factory;
+	private final ResumableJsonFactory factory;
 	private final JsonParsingOptions options;
 
 	public JacksonJsonParserFactory(JsonParsingOptions options) {
@@ -26,9 +26,10 @@ public final class JacksonJsonParserFactory {
 
 	public JsonParserSession createParser() {
 		try {
-			return new JacksonJsonParserSession( factory.createNonBlockingByteBufferParser(), options );
+			return new JacksonJsonParserSession( factory.createResumableByteBufferParser( ObjectReadContext.empty() ),
+					options );
 		}
-		catch (IOException e) {
+		catch (RuntimeException e) {
 			throw new JsonParseException( "Cannot create JSON parser", e );
 		}
 	}

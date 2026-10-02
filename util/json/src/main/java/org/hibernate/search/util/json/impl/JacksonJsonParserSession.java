@@ -1,6 +1,5 @@
 package org.hibernate.search.util.json.impl;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Objects;
 
@@ -11,9 +10,9 @@ import org.hibernate.search.util.json.spi.JsonParseException;
 import org.hibernate.search.util.json.spi.JsonParserSession;
 import org.hibernate.search.util.json.spi.JsonParsingOptions;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.core.async.ByteBufferFeeder;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.JsonToken;
+import tools.jackson.core.async.ByteBufferFeeder;
 
 final class JacksonJsonParserSession implements JsonParserSession {
 	private static final ByteBuffer EMPTY = ByteBuffer.allocate( 0 ).asReadOnlyBuffer();
@@ -26,7 +25,7 @@ final class JacksonJsonParserSession implements JsonParserSession {
 
 	JacksonJsonParserSession(JsonParser parser, JsonParsingOptions options) {
 		this.parser = parser;
-		feeder = (ByteBufferFeeder) parser.getNonBlockingInputFeeder();
+		feeder = (ByteBufferFeeder) parser.nonBlockingInputFeeder();
 		this.options = options;
 	}
 
@@ -56,7 +55,7 @@ final class JacksonJsonParserSession implements JsonParserSession {
 			// Drop Jackson's reference to caller storage before returning ownership.
 			feeder.feedInput( EMPTY );
 		}
-		catch (IOException | RuntimeException e) {
+		catch (RuntimeException e) {
 			fail( e );
 		}
 	}
@@ -72,13 +71,13 @@ final class JacksonJsonParserSession implements JsonParserSession {
 			close();
 			return result;
 		}
-		catch (IOException | RuntimeException e) {
+		catch (RuntimeException e) {
 			fail( e );
 			return null;
 		}
 	}
 
-	private void drain(boolean ended) throws IOException {
+	private void drain(boolean ended) {
 		while ( true ) {
 			JsonToken token = parser.nextToken();
 			if ( token == JsonToken.NOT_AVAILABLE ) {
@@ -101,15 +100,15 @@ final class JacksonJsonParserSession implements JsonParserSession {
 				case END_ARRAY:
 					builder.endContainer();
 					break;
-				case FIELD_NAME:
+				case PROPERTY_NAME:
 					builder.name( parser.currentName() );
 					break;
 				case VALUE_STRING:
-					builder.add( new JsonPrimitive( parser.getText() ) );
+					builder.add( new JsonPrimitive( parser.getString() ) );
 					break;
 				case VALUE_NUMBER_INT:
 				case VALUE_NUMBER_FLOAT:
-					String number = parser.getText();
+					String number = parser.getString();
 					// Jackson normalizes integer -0 to 0. Async token offsets start after the first byte;
 					// the remaining span is one for -0, and zero for 0 (also at EOF).
 					if ( "0".equals( number )
@@ -163,7 +162,7 @@ final class JacksonJsonParserSession implements JsonParserSession {
 			try {
 				current.close();
 			}
-			catch (IOException e) {
+			catch (RuntimeException e) {
 				throw new JsonParseException( "Cannot close JSON parser", e );
 			}
 		}

@@ -1,6 +1,5 @@
 package org.hibernate.search.util.json.impl;
 
-import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayDeque;
 import java.util.Iterator;
@@ -9,17 +8,16 @@ import java.util.Map;
 import org.hibernate.search.util.json.JsonElement;
 import org.hibernate.search.util.json.JsonPrimitive;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.SerializableString;
-import com.fasterxml.jackson.core.StreamWriteConstraints;
-import com.fasterxml.jackson.core.io.CharacterEscapes;
-import com.fasterxml.jackson.core.io.SerializedString;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.core.ObjectWriteContext;
+import tools.jackson.core.SerializableString;
+import tools.jackson.core.StreamWriteConstraints;
+import tools.jackson.core.io.CharacterEscapes;
+import tools.jackson.core.io.SerializedString;
+import tools.jackson.core.json.JsonFactory;
 
 /** Diagnostic rendering only. Request streaming is implemented separately. */
 public final class JsonDiagnosticRenderer {
-	private static final JsonFactory FACTORY = JsonFactory.builder()
-			.streamWriteConstraints( StreamWriteConstraints.builder().maxNestingDepth( Integer.MAX_VALUE ).build() ).build();
 	private static final CharacterEscapes SURROGATE_ESCAPES = new CharacterEscapes() {
 		private final int[] ascii = standardAsciiEscapesForJSON();
 
@@ -36,13 +34,16 @@ public final class JsonDiagnosticRenderer {
 		}
 	};
 
+	private static final JsonFactory FACTORY = JsonFactory.builder()
+			.streamWriteConstraints( StreamWriteConstraints.builder().maxNestingDepth( Integer.MAX_VALUE ).build() )
+			.characterEscapes( SURROGATE_ESCAPES ).build();
+
 	private JsonDiagnosticRenderer() {
 	}
 
 	public static String render(JsonElement root) {
 		StringWriter writer = new StringWriter();
-		try ( JsonGenerator generator = FACTORY.createGenerator( writer ) ) {
-			generator.setCharacterEscapes( SURROGATE_ESCAPES );
+		try ( JsonGenerator generator = FACTORY.createGenerator( ObjectWriteContext.empty(), writer ) ) {
 			ArrayDeque<Iterator<?>> frames = new ArrayDeque<>();
 			JsonElement value = root;
 			while ( true ) {
@@ -71,7 +72,7 @@ public final class JsonDiagnosticRenderer {
 				}
 				while ( !frames.isEmpty() && !frames.peek().hasNext() ) {
 					frames.pop();
-					if ( generator.getOutputContext().inArray() ) {
+					if ( generator.streamWriteContext().inArray() ) {
 						generator.writeEndArray();
 					}
 					else {
@@ -84,7 +85,7 @@ public final class JsonDiagnosticRenderer {
 				Object next = frames.peek().next();
 				if ( next instanceof Map.Entry ) {
 					Map.Entry<?, ?> member = (Map.Entry<?, ?>) next;
-					generator.writeFieldName( (String) member.getKey() );
+					generator.writeName( (String) member.getKey() );
 					value = (JsonElement) member.getValue();
 				}
 				else {
@@ -92,7 +93,7 @@ public final class JsonDiagnosticRenderer {
 				}
 			}
 		}
-		catch (IOException e) {
+		catch (RuntimeException e) {
 			throw new IllegalStateException( "Cannot render JSON", e );
 		}
 		return writer.toString();

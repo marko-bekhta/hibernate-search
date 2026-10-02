@@ -42,14 +42,15 @@ class JsonApiBoundaryTest {
 		try ( var files = Files.walk( Path.of( "src/main/java" ) ) ) {
 			for ( Path file : files.filter( path -> path.toString().endsWith( ".java" ) ).toList() ) {
 				assertThat( Files.readString( file ) ).as( file.toString() )
-						.doesNotContain( "com.google.gson", "com.fasterxml.jackson.databind", "java.lang.reflect",
+						.doesNotContain( "com.google.gson", "com.fasterxml.jackson.databind", "tools.jackson.databind",
+								"java.lang.reflect",
 								"getDeclaredField", "getDeclaredMethod" );
 			}
 		}
 	}
 
 	private static void assertNeutral(String signature) {
-		assertThat( signature ).doesNotContain( "com.google.gson", "com.fasterxml.jackson",
+		assertThat( signature ).doesNotContain( "com.google.gson", "com.fasterxml.jackson", "tools.jackson",
 				"org.hibernate.search.util.json.impl" );
 	}
 }
