@@ -213,6 +213,9 @@ Completed checkpoint: [Task 3 report](elasticsearch-async-json-task3.md), with b
 
 ### Task 4 — Performance gate
 
+- [ ] Keep reusable JMH benchmarks, fixture builders, bounded-worker comparison code, buffer-retention probes and slow-consumer harnesses committed under `integrationtest/performance/backend/elasticsearch`, extending the existing `JsonBaselineBenchmark` and `JsonBufferRetentionProbe` infrastructure. Do not leave reusable benchmark code only in temporary directories or checkpoint documents.
+- [ ] Document benchmark selectors, fixture parameters, build/run commands, environment requirements and profiling commands in `integrationtest/performance/backend/README.md`. Keep server-independent JSON benchmarks runnable without Elasticsearch.
+- [ ] Commit representative raw JMH JSON, measurement environment and comparison reports alongside the Task 4 checkpoint. Keep machine-specific build outputs/profiler recordings out of source control. Retain legacy comparisons in benchmark code while useful; do not retain obsolete production implementations solely to keep benchmarks compiling.
 - [ ] Compare the existing writer, Jackson synchronous generation, synchronous cursor drain, incremental cursor, and a benchmark-only bounded worker bridge.
 - [ ] Test small requests, mappings, large bulks, individual large scalars, Unicode, and nested documents.
 - [ ] Measure throughput, allocation, queued bytes, slow-consumer latency, CPU, and worker occupancy.
