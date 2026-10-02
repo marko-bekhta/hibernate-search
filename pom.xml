@@ -167,6 +167,7 @@
         <module>util/internal/test/orm</module>
         <module>build/parents/public</module>
         <module>util/common</module>
+        <module>util/json</module>
         <module>engine</module>
         <module>backend/lucene</module>
         <module>backend/elasticsearch</module>

@@ -180,17 +180,19 @@ Completed checkpoint: [Task 1 report](elasticsearch-async-json-task1.md), includ
 
 ### Task 2 — Model, accessor SPI, and parser
 
-- [ ] Add module publication and dependency wiring.
-- [ ] Implement the Search model and port accessor behavior with explicit coercion.
-- [ ] Implement a stack-based token-to-tree builder independent of accessors.
-- [ ] Add async parsing and synchronous string conveniences.
-- [ ] Validate malformed/truncated input, trailing content, number precision, and duplicate-property semantics.
-- [ ] Configure parser constraints centrally and document intentional differences from existing behavior.
-- [ ] Keep absent-body interpretation at the transport boundary.
-- [ ] Preserve existing REST response-size protection with byte counting; do not accidentally introduce a new JDK response cap.
-- [ ] Preserve explicit HTTP charset handling through bounded incremental transcoding where required.
+- [x] Add module publication and dependency wiring.
+- [x] Implement the Search model and port accessor behavior with explicit coercion.
+- [x] Implement a stack-based token-to-tree builder independent of accessors.
+- [x] Add async parsing and synchronous string conveniences.
+- [x] Validate malformed/truncated input, trailing content, number precision, and duplicate-property semantics.
+- [x] Configure parser constraints centrally and document intentional differences from existing behavior.
+- [x] Keep absent-body interpretation at the transport boundary.
+- [x] Provide configurable original-input byte counting, with no default response cap; applying REST-specific limits remains Task 6.
+- [x] Provide bounded incremental charset transcoding; selecting explicit HTTP charsets at transport boundaries remains Task 6.
 
 **Exit:** fragmented and contiguous input produce equivalent trees, with no accumulated raw response.
+
+Completed checkpoint: [Task 2 report](elasticsearch-async-json-task2.md). Transport application of limits and charsets remains unchecked below.
 
 ### Task 3 — Output implementation
 
@@ -257,6 +259,8 @@ Completed checkpoint: [Task 1 report](elasticsearch-async-json-task1.md), includ
 
 **Cross-cutting behavior**
 
+- [ ] Apply original-input byte counting to preserve REST response-size limits without adding a JDK response cap.
+- [ ] Preserve explicit HTTP charset selection using the bounded incremental transcoding from Task 2.
 - [ ] Preserve expected errors, retryable responses, non-JSON proxy responses, and connection reuse.
 - [ ] Delay reporting body parse failures where necessary to preserve status-based retries.
 - [ ] Provide lazy entity replay where required by REST diagnostics.
