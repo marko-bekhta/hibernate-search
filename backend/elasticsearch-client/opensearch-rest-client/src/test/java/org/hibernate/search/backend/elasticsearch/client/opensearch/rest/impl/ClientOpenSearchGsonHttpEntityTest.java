@@ -99,6 +99,11 @@ class ClientOpenSearchGsonHttpEntityTest {
 						.limit( 1 ).collect( Collectors.toList() )
 		) );
 
+
+		JsonObject largeScalar = new JsonObject();
+		largeScalar.addProperty( "text", "x".repeat( 1024 * 1024 ) );
+		params.add( Arguments.of( "1 object with a 1 MiB string", Collections.singletonList( largeScalar ) ) );
+
 		params.add( Arguments.of(
 				"Reproducer for HSEARCH-4239",
 				// Yes these objects are weird, but then this is a weird edge-case.
