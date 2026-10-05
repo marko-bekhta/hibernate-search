@@ -233,15 +233,16 @@ Completed checkpoint: [Task 3 report](elasticsearch-async-json-task3.md), with b
 Checkpoint: [Task 4 report](elasticsearch-async-json-task4.md), with the
 [follow-up report](elasticsearch-async-json-task4-followup.md). **Exit remains incomplete:**
 measured Unicode output recovered through direct bounded encoding, and combining
-numeric validation/accumulation improved construction. Large owned-String and
-numeric-rich UTF-8 parser regressions remain, together with scalar UTF-8 throughput
-variability. Upstream token baselines, corrected benchmark lifecycles and raw
-before/after evidence support the remaining architectural decisions. Task 5/6
-have not started. The focused [owned-String UTF-8 experiment](elasticsearch-async-json-string-utf8.md)
-measures a bounded standard encoder and array-backed staging. Staging improves
-the large ASCII case but materially regresses small and Unicode-rich Strings;
-the current character convenience path is retained. This does not
-close the owned-String architectural tradeoff or the other remaining gate items.
+numeric validation/accumulation improved construction. Numeric-rich UTF-8 parsing
+and scalar UTF-8 throughput variability remain open gate items. The user accepts
+retaining the current character String convenience path despite its measured
+large-scalar cost. The focused [owned-String UTF-8 experiment](elasticsearch-async-json-string-utf8.md)
+remains committed as benchmark evidence: staging improves large ASCII but
+materially regresses small and Unicode-rich Strings, so no production switch or
+size dispatch was adopted. The [parsing reference](elasticsearch-json-parsing-reference.md)
+collects the current decision, use cases and curated results while keeping input
+forms, workloads and campaigns distinct. This acceptance does not approve all
+remaining performance regressions or complete Task 4. Tasks 5/6 have not started.
 
 ### Task 5 — Reflection-free codecs and backend migration
 

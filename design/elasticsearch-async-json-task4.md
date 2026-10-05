@@ -1,5 +1,10 @@
 # Task 4 checkpoint: reproducible JSON comparisons
 
+Current parsing choices and curated measurements: [parsing reference](elasticsearch-json-parsing-reference.md).
+The user accepts retaining the character String parser after the bounded UTF-8
+experiment; numeric UTF-8 and scalar UTF-8 variability remain open. This checkpoint
+records its original campaign and does not mark Task 4 complete.
+
 Current follow-up: [bounded encoding and parser tradeoffs](elasticsearch-async-json-task4-followup.md).
 The original tables below describe checkpoint `ee3b0a5644`; the follow-up resolves
 measured Unicode output, improves numeric construction, fixes inherited parser

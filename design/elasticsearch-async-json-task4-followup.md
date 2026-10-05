@@ -1,12 +1,18 @@
 # Task 4 follow-up: bounded encoding and parser tradeoffs
 
+Current decision and use cases: [parsing reference](elasticsearch-json-parsing-reference.md).
+The user subsequently accepted retaining the character String path after the
+[bounded UTF-8 experiment](elasticsearch-async-json-string-utf8.md). The measured
+cost remains documented; numeric UTF-8 and scalar UTF-8 variability remain open.
+This follow-up retains its original results and interpretation below.
+
 This continues the [Task 4 checkpoint](elasticsearch-async-json-task4.md) at
 `ee3b0a5644`. It retains Jackson Core 3.2.2, Search-owned trees, strict validation,
 immutable numbers and bounded caller/adapter storage. Production transports still
 use Gson; Tasks 5 and 6 have not started.
 
-**The measured Unicode output regression is resolved. Task 4's complete exit
-condition remains open:** numeric-rich UTF-8 parsing remains slower than Gson,
+**At this follow-up checkpoint, the measured Unicode output regression is resolved
+and Task 4's complete exit condition remains open:** numeric-rich UTF-8 parsing remains slower than Gson,
 the large owned-String convenience path still needs an architectural decision,
 and scalar UTF-8 throughput varies materially between corrected runs.
 A construction optimization and an explicitly rejected alternative are measured

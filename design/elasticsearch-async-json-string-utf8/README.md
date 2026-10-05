@@ -26,3 +26,7 @@ measurement values and source patches are unchanged.
 No binary benchmark artifact or profiler recording is committed. The source
 patches plus base revision reconstruct each measured artifact's source; environment
 files retain its SHA-256 identity. No production parser change was adopted.
+
+The [parsing reference](../elasticsearch-json-parsing-reference.md) combines this
+evidence with previous parsing campaigns and records the user's decision to keep
+the character String path. The benchmarks and raw results remain available.

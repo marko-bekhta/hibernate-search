@@ -117,3 +117,8 @@ fixed array-backed staging optimization. All same-work competitors begin with
 String and build complete trees; encoding-only diagnostics are separate.
 Production retains the character path after measured small/Unicode regressions.
 Task 4 remains open, and Tasks 5/6 have not started.
+
+The [parsing reference](../elasticsearch-json-parsing-reference.md) curates these
+campaigns alongside the String-input experiment, with practical API snippets and
+the accepted character-path decision. It keeps UTF-8/tree/token/read workloads
+separate and preserves both corrected scalar UTF-8 outcomes.

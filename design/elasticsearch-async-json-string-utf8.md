@@ -1,5 +1,11 @@
 # Task 4 experiment: owned String through bounded UTF-8
 
+**Decision update:** the user accepts retaining the pre-experiment character
+String parser. The [parsing reference](elasticsearch-json-parsing-reference.md)
+combines this experiment with earlier results and practical SPI examples.
+Benchmark alternatives and evidence remain committed; this decision does not
+close the numeric UTF-8 or scalar UTF-8 variability gates.
+
 This focused experiment continues the [Task 4 follow-up](elasticsearch-async-json-task4-followup.md)
 at `d84fa56c1b`. Jackson Core remains 3.2.2, the tree is Search-owned, and existing
 production transports remain on Gson. Tasks 5 and 6 have not started.
@@ -196,5 +202,5 @@ integrationtest/performance/backend/scripts/run-json-benchmarks.sh --skip-build 
 Use `JsonStringUtf8Benchmark.diagnostic.*` for encoding-only diagnostics and a
 separate `--profiler gc` campaign for allocation. Keep them outside the primary
 comparison. There is no production replacement or automatic dispatch in this
-commit. Task 4 remains open for the convenience-path architectural tradeoff,
-numeric UTF-8 regression and byte-input scalar variability.
+commit. The user accepts retaining the character String path; Task 4 remains
+open for numeric UTF-8 regression and byte-input scalar variability.
