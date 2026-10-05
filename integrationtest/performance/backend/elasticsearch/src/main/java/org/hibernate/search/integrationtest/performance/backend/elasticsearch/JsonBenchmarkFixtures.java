@@ -57,6 +57,17 @@ public class JsonBenchmarkFixtures {
 				}
 				body.add( "values", numbers );
 				break;
+			case "numbers-mixed-10000":
+				String[] mixed = { "-0", "-42", "0.125", "1.00", "6.022e23", "-7E-9", "9223372036854775808", "1e2147483648" };
+				StringBuilder numericDocument = new StringBuilder( "{\"values\":[" );
+				for ( int i = 0; i < 10_000; i++ ) {
+					if ( i != 0 ) {
+						numericDocument.append( ',' );
+					}
+					numericDocument.append( mixed[i % mixed.length] );
+				}
+				body = gson.fromJson( numericDocument.append( "]}" ).toString(), JsonObject.class );
+				break;
 			case "bulk-10000":
 				for ( int i = 0; i < 10_000; i++ ) {
 					JsonObject metadata = new JsonObject();

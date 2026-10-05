@@ -117,7 +117,7 @@ integrationtest/performance/backend/scripts/run-json-benchmarks.sh \
 ```
 
 The runner requires Linux, Bash 4+, `jq`, `taskset`, Java, GNU core utilities and
-the Maven wrapper. The Bash results summarizer also requires `jq`. Omit
+the Maven wrapper. The Bash result and JFR summarizers also require `jq`. Omit
 `--cores` to select two allowed online physical cores with the same reported
 core-type/maximum-frequency class and exclude SMT siblings. Inspect its recorded
 topology on machines where these hints are unavailable; maximum frequency alone
@@ -367,3 +367,59 @@ Four-byte encoder output is the minimum capacity that can hold a supplementary
 code point; tests also cap async feeds at one byte. The helpers are experiments;
 no automatic size dispatch is implied by these scores. See the
 [owned-String experiment report](../../../design/elasticsearch-async-json-string-utf8.md).
+
+`JsonNumericUtf8DiagnosticBenchmark` isolates upstream numeric token completion
+through public Core async ByteBuffer, async byte-array, and synchronous UTF-8
+parsers. `fixture=integers` uses exactly the 10,000-integer root above; `mixed`
+uses negative/decimal/exponent/overflow values. The diagnostic mixed fixture
+omits `-0` because Core normalizes it; the complete-tree `numbers-mixed-10000`
+fixture includes `-0` and independently checks lexical output. Diagnostic
+`work=tokens` consumes all numeric Strings, `numbers` additionally constructs and
+observes validated cached numbers, and `tree` constructs the known fixture shape
+with Search primitives. Setup verifies all lexemes and tree values through each
+input path, and constructs validated numbers in number mode. These paths omit
+Search canonical validation, ownership handoff, escaped-name workaround and the
+general single-root builder; their deltas are not exact CPU-cost fractions or
+strictness-equivalent parser comparisons. Synchronous bytes are diagnostic only.
+`treeFromOwnedLexemes` excludes token/String production and builds a new tree
+from already owned immutable Strings; use `work=tree` to avoid duplicate rows.
+
+The ingress benchmark now accepts `bufferKind=heap,direct,readonly` (default
+`heap`). Direct/read-only input storage is prepared outside timing; each operation
+starts with a new view and includes feeds, EOF/tree completion and close. Gson
+still reads the identical original bytes. Its `numbers-mixed-10000` root is 82,512
+bytes, cycling `-0`, `-42`, `0.125`, `1.00`, `6.022e23`, `-7E-9`, an overflowing
+integer and a huge exponent. It is a construction guard, not a production mix.
+
+```shell
+# Complete-tree primary; every setup verifies full bytes/lexemes before timing:
+integrationtest/performance/backend/scripts/run-json-benchmarks.sh --skip-build \
+  --out /tmp/json-numeric-heap --cores 0,2 --warmup 8 \
+  --fixtures numbers-10000,numbers-mixed-10000 \
+  --pattern 'JsonUtf8IngressBenchmark.*Parser$' --param feedSize=8192 --param bufferKind=heap
+# Same upstream scalar-completion work through different feeders, diagnostic:
+integrationtest/performance/backend/scripts/run-json-benchmarks.sh --skip-build \
+  --out /tmp/json-numeric-tokens --cores 0,2 --warmup 8 --fixtures '' \
+  --param fixture=integers --param work=tokens \
+  --pattern 'JsonNumericUtf8DiagnosticBenchmark.(async.*|synchronousUtf8)$'
+# Separate allocation decomposition, not primary timing:
+integrationtest/performance/backend/scripts/run-json-benchmarks.sh --skip-build \
+  --out /tmp/json-numeric-allocation --cores 0,2 --forks 1 --warmup 5 --iterations 3 \
+  --fixtures '' --param fixture=integers --param work=tokens,numbers,tree \
+  --pattern 'JsonNumericUtf8DiagnosticBenchmark.async.*' --profiler gc
+# Separate JFR profile; leave binary recordings outside the repository:
+integrationtest/performance/backend/scripts/run-json-benchmarks.sh --skip-build \
+  --out /tmp/json-numeric-jfr --cores 0,2 --forks 1 --warmup 8 \
+  --fixtures numbers-10000 --pattern 'JsonUtf8IngressBenchmark.searchParser$' \
+  --profiler 'jfr:dir=/tmp/json-numeric-recordings;configName=profile;stackDepth=64'
+jfr print --json --events jdk.ExecutionSample,jdk.NativeMethodSample --stack-depth 64 \
+  /path/to/profile.jfr > /tmp/json-numeric-samples.json
+integrationtest/performance/backend/scripts/summarize-json-jfr.sh \
+  /tmp/json-numeric-samples.json > /tmp/json-numeric-stacks.txt
+```
+
+The summarizer retains top/inclusive counts, total/selected/empty/truncated sample
+counts and complete unique stacks; it does not infer exact CPU fractions.
+The [numeric UTF-8 report](../../../design/elasticsearch-async-json-numeric-utf8.md)
+records the retained heap-access optimization, rejected probes, matched controls,
+allocation and the still-open numeric regression.

@@ -4,7 +4,10 @@ Current decision and use cases: [parsing reference](elasticsearch-json-parsing-r
 The user subsequently accepted retaining the character String path after the
 [bounded UTF-8 experiment](elasticsearch-async-json-string-utf8.md). The measured
 cost remains documented; numeric UTF-8 and scalar UTF-8 variability remain open.
-This follow-up retains its original results and interpretation below.
+The later [numeric UTF-8 investigation](elasticsearch-async-json-numeric-utf8.md)
+retains heap-array byte access, improving the matched integer case 12.5%; the latest
+complete-tree result remains 13.2% behind Gson. This follow-up retains its original
+results and interpretation below.
 
 This continues the [Task 4 checkpoint](elasticsearch-async-json-task4.md) at
 `ee3b0a5644`. It retains Jackson Core 3.2.2, Search-owned trees, strict validation,

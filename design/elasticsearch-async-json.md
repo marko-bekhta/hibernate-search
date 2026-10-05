@@ -233,8 +233,12 @@ Completed checkpoint: [Task 3 report](elasticsearch-async-json-task3.md), with b
 Checkpoint: [Task 4 report](elasticsearch-async-json-task4.md), with the
 [follow-up report](elasticsearch-async-json-task4-followup.md). **Exit remains incomplete:**
 measured Unicode output recovered through direct bounded encoding, and combining
-numeric validation/accumulation improved construction. Numeric-rich UTF-8 parsing
-and scalar UTF-8 throughput variability remain open gate items. The user accepts
+numeric validation/accumulation improved construction. The focused
+[numeric UTF-8 follow-up](elasticsearch-async-json-numeric-utf8.md) retains heap-array
+byte access in the existing async parser: matched integer throughput improves
+12.5%, but still trails Gson by 13.2%. Mixed numeric construction stays near Gson;
+strict validation, immutable numeric caches and the String route remain intact.
+Numeric-rich UTF-8 parsing and scalar UTF-8 throughput variability remain open gate items. The user accepts
 retaining the current character String convenience path despite its measured
 large-scalar cost. The focused [owned-String UTF-8 experiment](elasticsearch-async-json-string-utf8.md)
 remains committed as benchmark evidence: staging improves large ASCII but

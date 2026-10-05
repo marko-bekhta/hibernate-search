@@ -23,6 +23,7 @@ class JsonParserCleanupTest {
 				.isEqualTo( parsing.parse( "{\"a\":[1]}" ) );
 		assertThat( cancelled ).extracting( "parser" ).extracting( "_inputBuffer" )
 				.satisfies( value -> assertThat( ( (ByteBuffer) value ).capacity() ).isZero() );
+		assertThat( cancelled ).extracting( "parser" ).extracting( "inputArray" ).isNull();
 		cancelled.close();
 		assertUtf8Clean( cancelled );
 		JsonParserSession failed = parsing.createParser();
@@ -33,6 +34,32 @@ class JsonParserCleanupTest {
 		completed.feed( ByteBuffer.wrap( "{\"a\":[1]}".getBytes( StandardCharsets.UTF_8 ) ) );
 		assertThat( completed.endOfInput().getAsJsonObject().getAsJsonArray( "a" ) ).hasSize( 1 );
 		assertUtf8Clean( completed );
+	}
+
+	@Test
+	void mixedBufferKindsReturnCallerOwnershipAfterEveryFeed() {
+		JsonParsing parsing = new JsonParsing();
+		String json = "{\"\\uD83D\\uDE00\":[-0,9223372036854775808,1.00,-7E-9,1e2147483648],\"text\":\"aaaaaaaaaaaaaaaaé漢😀\"}";
+		byte[] bytes = json.getBytes( StandardCharsets.UTF_8 );
+		try ( JsonParserSession parser = parsing.createParser() ) {
+			for ( int offset = 0, kind = 0; offset < bytes.length; kind++ ) {
+				int count = Math.min( 3, bytes.length - offset );
+				ByteBuffer storage = kind % 3 == 1 ? ByteBuffer.allocateDirect( count + 4 ) : ByteBuffer.allocate( count + 4 );
+				storage.position( 2 );
+				storage.put( bytes, offset, count ).flip().position( 2 );
+				ByteBuffer offered = kind % 3 == 2 ? storage.asReadOnlyBuffer() : storage.slice();
+				parser.feed( offered );
+				assertThat( offered.hasRemaining() ).isFalse();
+				assertThat( parser ).extracting( "parser" ).extracting( "inputArray" ).isNull();
+				assertThat( parser ).extracting( "parser" ).extracting( "_inputBuffer" )
+						.satisfies( value -> assertThat( ( (ByteBuffer) value ).capacity() ).isZero() );
+				for ( int i = 2; i < storage.limit(); i++ ) {
+					storage.put( i, (byte) '!' );
+				}
+				offset += count;
+			}
+			assertThat( parser.endOfInput().toString() ).isEqualTo( parsing.parse( json ).toString() );
+		}
 	}
 
 	@Test

@@ -34,6 +34,9 @@ public class JsonUtf8IngressBenchmark {
 		byte[] input;
 		@Param({ "8192" })
 		public int feedSize;
+		@Param({ "heap" })
+		public String bufferKind;
+		ByteBuffer prepared;
 
 		// The inherited @Setup invokes this override; annotating it too schedules it twice.
 		@Override
@@ -43,6 +46,12 @@ public class JsonUtf8IngressBenchmark {
 				throw new IllegalArgumentException( "Feed size must be positive" );
 			}
 			input = json.getBytes( StandardCharsets.UTF_8 );
+			prepared = switch ( bufferKind ) {
+				case "heap" -> null;
+				case "readonly" -> ByteBuffer.wrap( input ).asReadOnlyBuffer();
+				case "direct" -> ByteBuffer.allocateDirect( input.length ).put( input ).flip();
+				default -> throw new IllegalArgumentException( bufferKind );
+			};
 			try {
 				JsonElement search = parseSearch( this );
 				var gsonResult = parseGson( this );
@@ -70,7 +79,7 @@ public class JsonUtf8IngressBenchmark {
 
 	private static JsonElement parseSearch(Bodies state) {
 		try ( var session = state.parsing.createParser() ) {
-			ByteBuffer input = ByteBuffer.wrap( state.input );
+			ByteBuffer input = state.prepared == null ? ByteBuffer.wrap( state.input ) : state.prepared.duplicate();
 			while ( input.position() < state.input.length ) {
 				input.limit( Math.min( input.position() + state.feedSize, state.input.length ) );
 				session.feed( input );

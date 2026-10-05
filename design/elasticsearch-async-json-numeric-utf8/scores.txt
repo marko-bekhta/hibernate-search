@@ -1,0 +1,59 @@
+allocation: gsonParser {'bufferKind': 'heap', 'feedSize': '8192', 'fixture': 'numbers-10000', 'lifecycle': 'fresh'}: 4602.151 +/- 17.420 ops/s; forks=4602.151; allocation=985665.760 B/op
+allocation: gsonParser {'bufferKind': 'heap', 'feedSize': '8192', 'fixture': 'numbers-mixed-10000', 'lifecycle': 'fresh'}: 3025.595 +/- 146.710 ops/s; forks=3025.595; allocation=1019474.675 B/op
+allocation: searchParser {'bufferKind': 'heap', 'feedSize': '8192', 'fixture': 'numbers-10000', 'lifecycle': 'fresh'}: 4020.386 +/- 95.824 ops/s; forks=4020.386; allocation=1130610.016 B/op
+allocation: searchParser {'bufferKind': 'heap', 'feedSize': '8192', 'fixture': 'numbers-mixed-10000', 'lifecycle': 'fresh'}: 3131.545 +/- 180.115 ops/s; forks=3131.545; allocation=1100890.598 B/op
+ascii-probe: searchParser {'feedSize': '8192', 'fixture': 'numbers-10000', 'lifecycle': 'fresh'}: 4186.326 +/- 68.391 ops/s; forks=4186.326
+ascii-probe: searchParser {'feedSize': '8192', 'fixture': 'unicode', 'lifecycle': 'fresh'}: 145178.579 +/- 2778.796 ops/s; forks=145178.579
+baseline: gsonParser {'feedSize': '8192', 'fixture': 'numbers-10000', 'lifecycle': 'fresh'}: 4655.422 +/- 18.960 ops/s; forks=4649.182,4668.768,4648.315
+baseline: searchParser {'feedSize': '8192', 'fixture': 'numbers-10000', 'lifecycle': 'fresh'}: 3594.948 +/- 51.249 ops/s; forks=3576.310,3653.226,3555.308
+combined-fallback: searchParser {'bufferKind': 'direct', 'feedSize': '8192', 'fixture': 'numbers-10000', 'lifecycle': 'fresh'}: 3654.395 +/- 40.548 ops/s; forks=3607.188,3668.088,3687.908
+combined-fallback: searchParser {'bufferKind': 'readonly', 'feedSize': '8192', 'fixture': 'numbers-10000', 'lifecycle': 'fresh'}: 3633.956 +/- 61.563 ops/s; forks=3638.260,3563.947,3699.660
+combined-primary: gsonParser {'bufferKind': 'heap', 'feedSize': '8192', 'fixture': 'numbers-10000', 'lifecycle': 'fresh'}: 4671.637 +/- 34.849 ops/s; forks=4697.047,4682.595,4635.270
+combined-primary: gsonParser {'bufferKind': 'heap', 'feedSize': '8192', 'fixture': 'numbers-mixed-10000', 'lifecycle': 'fresh'}: 3127.994 +/- 32.820 ops/s; forks=3161.773,3092.511,3129.697
+combined-primary: gsonParser {'bufferKind': 'heap', 'feedSize': '8192', 'fixture': 'unicode', 'lifecycle': 'fresh'}: 102775.337 +/- 1586.668 ops/s; forks=102901.394,103979.026,101445.591
+combined-primary: searchParser {'bufferKind': 'heap', 'feedSize': '8192', 'fixture': 'numbers-10000', 'lifecycle': 'fresh'}: 3992.919 +/- 71.765 ops/s; forks=3909.636,4066.190,4002.931
+combined-primary: searchParser {'bufferKind': 'heap', 'feedSize': '8192', 'fixture': 'numbers-mixed-10000', 'lifecycle': 'fresh'}: 3148.283 +/- 39.005 ops/s; forks=3139.838,3111.997,3193.015
+combined-primary: searchParser {'bufferKind': 'heap', 'feedSize': '8192', 'fixture': 'unicode', 'lifecycle': 'fresh'}: 149320.023 +/- 11154.289 ops/s; forks=142655.967,163535.609,141768.494
+combined-probe: searchParser {'feedSize': '8192', 'fixture': 'numbers-10000', 'lifecycle': 'fresh'}: 4189.985 +/- 37.131 ops/s; forks=4189.985
+decomposition-allocation: asyncByteArray {'fixture': 'integers', 'work': 'tokens'}: 6765.053 +/- 398.349 ops/s; forks=6765.053; allocation=480673.042 B/op
+decomposition-allocation: asyncByteArray {'fixture': 'integers', 'work': 'numbers'}: 4832.141 +/- 153.559 ops/s; forks=4832.141; allocation=800673.455 B/op
+decomposition-allocation: asyncByteArray {'fixture': 'integers', 'work': 'tree'}: 4694.182 +/- 188.685 ops/s; forks=4694.182; allocation=1129857.495 B/op
+decomposition-allocation: asyncByteBuffer {'fixture': 'integers', 'work': 'tokens'}: 5785.606 +/- 364.089 ops/s; forks=5785.606; allocation=481401.216 B/op
+decomposition-allocation: asyncByteBuffer {'fixture': 'integers', 'work': 'numbers'}: 4405.663 +/- 241.511 ops/s; forks=4405.663; allocation=801065.600 B/op
+decomposition-allocation: asyncByteBuffer {'fixture': 'integers', 'work': 'tree'}: 4252.796 +/- 173.211 ops/s; forks=4252.796; allocation=1130249.652 B/op
+fallback-before: searchParser {'bufferKind': 'direct', 'feedSize': '8192', 'fixture': 'numbers-10000', 'lifecycle': 'fresh'}: 3919.679 +/- 199.445 ops/s; forks=3960.211,4117.036,3681.789
+fallback-before: searchParser {'bufferKind': 'readonly', 'feedSize': '8192', 'fixture': 'numbers-10000', 'lifecycle': 'fresh'}: 3565.269 +/- 36.925 ops/s; forks=3590.086,3586.344,3519.378
+feeder-diagnostic: asyncByteArray {'fixture': 'integers', 'work': 'tokens'}: 6808.609 +/- 121.421 ops/s; forks=6808.609
+feeder-diagnostic: asyncByteArray {'fixture': 'integers', 'work': 'numbers'}: 4880.627 +/- 308.980 ops/s; forks=4880.627
+feeder-diagnostic: asyncByteArray {'fixture': 'integers', 'work': 'tree'}: 4724.406 +/- 323.928 ops/s; forks=4724.406
+feeder-diagnostic: asyncByteBuffer {'fixture': 'integers', 'work': 'tokens'}: 5980.396 +/- 345.291 ops/s; forks=5980.396
+feeder-diagnostic: asyncByteBuffer {'fixture': 'integers', 'work': 'numbers'}: 4283.439 +/- 149.555 ops/s; forks=4283.439
+feeder-diagnostic: asyncByteBuffer {'fixture': 'integers', 'work': 'tree'}: 4246.866 +/- 208.863 ops/s; forks=4246.866
+feeder-diagnostic: synchronousUtf8 {'fixture': 'integers', 'work': 'tokens'}: 7130.893 +/- 241.356 ops/s; forks=7130.893
+feeder-diagnostic: synchronousUtf8 {'fixture': 'integers', 'work': 'numbers'}: 4969.322 +/- 330.277 ops/s; forks=4969.322
+feeder-diagnostic: synchronousUtf8 {'fixture': 'integers', 'work': 'tree'}: 4940.238 +/- 101.361 ops/s; forks=4940.238
+fragment-smoke: gsonParser {'bufferKind': 'heap', 'feedSize': '1', 'fixture': 'numbers-mixed-10000', 'lifecycle': 'fresh'}: 355.314 +/- nan ops/s; forks=355.314
+fragment-smoke: gsonParser {'bufferKind': 'heap', 'feedSize': '3', 'fixture': 'numbers-mixed-10000', 'lifecycle': 'fresh'}: 832.119 +/- nan ops/s; forks=832.119
+fragment-smoke: gsonParser {'bufferKind': 'heap', 'feedSize': '7', 'fixture': 'numbers-mixed-10000', 'lifecycle': 'fresh'}: 1484.031 +/- nan ops/s; forks=1484.031
+fragment-smoke: searchParser {'bufferKind': 'heap', 'feedSize': '1', 'fixture': 'numbers-mixed-10000', 'lifecycle': 'fresh'}: 600.295 +/- nan ops/s; forks=600.295
+fragment-smoke: searchParser {'bufferKind': 'heap', 'feedSize': '3', 'fixture': 'numbers-mixed-10000', 'lifecycle': 'fresh'}: 1201.175 +/- nan ops/s; forks=1201.175
+fragment-smoke: searchParser {'bufferKind': 'heap', 'feedSize': '7', 'fixture': 'numbers-mixed-10000', 'lifecycle': 'fresh'}: 1668.612 +/- nan ops/s; forks=1668.612
+heap-access-direct: searchParser {'bufferKind': 'direct', 'feedSize': '8192', 'fixture': 'numbers-10000', 'lifecycle': 'fresh'}: 3739.471 +/- 198.965 ops/s; forks=3620.009,3606.513,3991.889
+heap-access-jfr: searchParser {'feedSize': '8192', 'fixture': 'numbers-10000', 'lifecycle': 'fresh'}: 3881.895 +/- 75.418 ops/s; forks=3881.895
+heap-access-primary: gsonParser {'bufferKind': 'heap', 'feedSize': '8192', 'fixture': 'numbers-10000', 'lifecycle': 'fresh'}: 4696.405 +/- 16.847 ops/s; forks=4703.500,4688.090,4697.624
+heap-access-primary: gsonParser {'bufferKind': 'heap', 'feedSize': '8192', 'fixture': 'numbers-mixed-10000', 'lifecycle': 'fresh'}: 3176.183 +/- 88.149 ops/s; forks=3064.471,3222.310,3241.769
+heap-access-primary: searchParser {'bufferKind': 'heap', 'feedSize': '8192', 'fixture': 'numbers-10000', 'lifecycle': 'fresh'}: 4076.875 +/- 110.125 ops/s; forks=3942.013,4176.621,4111.992
+heap-access-primary: searchParser {'bufferKind': 'heap', 'feedSize': '8192', 'fixture': 'numbers-mixed-10000', 'lifecycle': 'fresh'}: 3123.371 +/- 19.822 ops/s; forks=3131.173,3133.425,3105.515
+heap-access-probe: searchParser {'feedSize': '8192', 'fixture': 'numbers-10000', 'lifecycle': 'fresh'}: 3935.628 +/- 50.043 ops/s; forks=3935.628
+matched-baseline: searchParser {'bufferKind': 'heap', 'feedSize': '8192', 'fixture': 'numbers-10000', 'lifecycle': 'fresh'}: 3624.492 +/- 38.583 ops/s; forks=3613.212,3592.270,3667.995
+matched-baseline: searchParser {'bufferKind': 'direct', 'feedSize': '8192', 'fixture': 'numbers-10000', 'lifecycle': 'fresh'}: 3843.961 +/- 155.758 ops/s; forks=3969.733,3647.987,3914.163
+owned-lexemes-allocation: treeFromOwnedLexemes {'fixture': 'integers', 'work': 'tree'}: 13000.741 +/- 1975.244 ops/s; forks=13000.741; allocation=649184.544 B/op
+owned-lexemes-allocation: treeFromOwnedLexemes {'fixture': 'mixed', 'work': 'tree'}: 9494.945 +/- 382.118 ops/s; forks=9494.945; allocation=649184.739 B/op
+typed-frame-primary: searchParser {'bufferKind': 'heap', 'feedSize': '8192', 'fixture': 'numbers-10000', 'lifecycle': 'fresh'}: 3670.300 +/- 34.347 ops/s; forks=3643.136,3655.841,3711.922
+typed-frame-primary: searchParser {'bufferKind': 'direct', 'feedSize': '8192', 'fixture': 'numbers-10000', 'lifecycle': 'fresh'}: 3817.249 +/- 337.386 ops/s; forks=4029.501,3488.059,3934.186
+typed-frame-primary: searchParser {'bufferKind': 'readonly', 'feedSize': '8192', 'fixture': 'numbers-10000', 'lifecycle': 'fresh'}: 3597.101 +/- 33.299 ops/s; forks=3568.529,3635.857,3586.916
+unicode-control: gsonParser {'bufferKind': 'heap', 'feedSize': '8192', 'fixture': 'unicode', 'lifecycle': 'fresh'}: 108621.023 +/- 5982.363 ops/s; forks=116069.535,106375.056,103418.477
+unicode-control: searchParser {'bufferKind': 'heap', 'feedSize': '8192', 'fixture': 'unicode', 'lifecycle': 'fresh'}: 155808.620 +/- 9137.831 ops/s; forks=162259.961,144172.487,160993.411
+upstream-tokens: asyncByteArray {'fixture': 'integers', 'work': 'tokens'}: 6701.601 +/- 59.301 ops/s; forks=6771.062,6681.517,6652.225
+upstream-tokens: asyncByteBuffer {'fixture': 'integers', 'work': 'tokens'}: 5873.447 +/- 139.318 ops/s; forks=6010.333,5708.814,5901.195
+upstream-tokens: synchronousUtf8 {'fixture': 'integers', 'work': 'tokens'}: 7136.737 +/- 64.799 ops/s; forks=7130.121,7082.225,7197.863

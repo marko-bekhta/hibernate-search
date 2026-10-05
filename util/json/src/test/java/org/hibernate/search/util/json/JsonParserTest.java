@@ -23,6 +23,7 @@ class JsonParserTest {
 	@ParameterizedTest
 	@ValueSource(strings = {
 			"null",
+			"{\"long-ascii-property\":\"aaaaaaaaaaaaaaaaéaaaaaaaaaaaaaaaa😀\"}",
 			"\"\\uD800\"",
 			"{\"\\uD83D\\uDE00\":1}",
 			"true",
@@ -151,6 +152,38 @@ class JsonParserTest {
 						parser.endOfInput();
 					}
 				} ).isInstanceOf( JsonParseException.class );
+			}
+		}
+	}
+
+	@Test
+	void longAsciiRunsDoNotMaskNonCanonicalUtf8() {
+		for ( byte[] invalid : new byte[][] {
+				{ (byte) 0xc0, (byte) 0xaf },
+				{ (byte) 0xed, (byte) 0xa0, (byte) 0x80 },
+				{ (byte) 0xf4, (byte) 0x90, (byte) 0x80, (byte) 0x80 },
+				{ (byte) 0xe0, (byte) 0x80, (byte) 0xaf },
+				{ (byte) 0xc3, 'a' },
+				{ (byte) 0x80 } } ) {
+			for ( int alignment = 0; alignment < 16; alignment++ ) {
+				byte[] prefix = ( "\"" + "a".repeat( 16 + alignment ) ).getBytes( StandardCharsets.UTF_8 );
+				byte[] bytes = new byte[prefix.length + invalid.length + 1];
+				System.arraycopy( prefix, 0, bytes, 0, prefix.length );
+				System.arraycopy( invalid, 0, bytes, prefix.length, invalid.length );
+				bytes[bytes.length - 1] = '"';
+				for ( int kind = 0; kind < 4; kind++ ) {
+					int bufferKind = kind;
+					for ( int split = prefix.length - 1; split < bytes.length; split++ ) {
+						int boundary = split;
+						assertThatThrownBy( () -> {
+							try ( JsonParserSession parser = parsing.createParser() ) {
+								consume( parser, buffer( bytes, 0, boundary, bufferKind ) );
+								consume( parser, buffer( bytes, boundary, bytes.length - boundary, bufferKind ) );
+								parser.endOfInput();
+							}
+						} ).isInstanceOf( JsonParseException.class );
+					}
+				}
 			}
 		}
 	}

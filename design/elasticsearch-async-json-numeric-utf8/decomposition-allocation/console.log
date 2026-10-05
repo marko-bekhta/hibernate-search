@@ -1,0 +1,477 @@
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# JMH version: 1.37
+# VM version: JDK 25.0.4.1, OpenJDK 64-Bit Server VM, 25.0.4.1+1
+# VM invoker: /usr/lib/jvm/java-25-openjdk/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseG1GC -XX:ActiveProcessorCount=2 -Djson.benchmark.cores=0,2
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 3 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonNumericUtf8DiagnosticBenchmark.asyncByteArray
+# Parameters: (fixture = integers, work = tokens)
+
+# Run progress: 0.00% complete, ETA 00:00:48
+# Fork: 1 of 1
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonNumericUtf8DiagnosticBenchmark.asyncByteArray-jmh-worker-1
+5537.293 ops/s
+# Warmup Iteration   2: 6676.935 ops/s
+# Warmup Iteration   3: 6683.201 ops/s
+# Warmup Iteration   4: 6692.247 ops/s
+# Warmup Iteration   5: 6764.823 ops/s
+Iteration   1: 6789.151 ops/s
+                 gc.alloc.rate:      3110.709 MB/sec
+                 gc.alloc.rate.norm: 480673.039 B/op
+                 gc.count:           5.000 counts
+                 gc.time:            2.000 ms
+
+Iteration   2: 6759.422 ops/s
+                 gc.alloc.rate:      3097.450 MB/sec
+                 gc.alloc.rate.norm: 480673.043 B/op
+                 gc.count:           5.000 counts
+                 gc.time:            1.000 ms
+
+Iteration   3: 6746.585 ops/s
+                 gc.alloc.rate:      3090.361 MB/sec
+                 gc.alloc.rate.norm: 480673.045 B/op
+                 gc.count:           5.000 counts
+                 gc.time:            2.000 ms
+
+
+
+Result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonNumericUtf8DiagnosticBenchmark.asyncByteArray":
+  6765.053 ±(99.9%) 398.349 ops/s [Average]
+  (min, avg, max) = (6746.585, 6765.053, 6789.151), stdev = 21.835
+  CI (99.9%): [6366.704, 7163.401] (assumes normal distribution)
+
+Secondary result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonNumericUtf8DiagnosticBenchmark.asyncByteArray:gc.alloc.rate":
+  3099.506 ±(99.9%) 188.429 MB/sec [Average]
+  (min, avg, max) = (3090.361, 3099.506, 3110.709), stdev = 10.328
+  CI (99.9%): [2911.077, 3287.936] (assumes normal distribution)
+
+Secondary result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonNumericUtf8DiagnosticBenchmark.asyncByteArray:gc.alloc.rate.norm":
+  480673.042 ±(99.9%) 0.053 B/op [Average]
+  (min, avg, max) = (480673.039, 480673.042, 480673.045), stdev = 0.003
+  CI (99.9%): [480672.989, 480673.095] (assumes normal distribution)
+
+Secondary result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonNumericUtf8DiagnosticBenchmark.asyncByteArray:gc.count":
+  15.000 ±(99.9%) 0.001 counts [Sum]
+  (min, avg, max) = (5.000, 5.000, 5.000), stdev = 0.001
+  CI (99.9%): [15.000, 15.000] (assumes normal distribution)
+
+Secondary result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonNumericUtf8DiagnosticBenchmark.asyncByteArray:gc.time":
+  5.000 ±(99.9%) 0.001 ms [Sum]
+  (min, avg, max) = (1.000, 1.667, 2.000), stdev = 0.577
+  CI (99.9%): [5.000, 5.000] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 25.0.4.1, OpenJDK 64-Bit Server VM, 25.0.4.1+1
+# VM invoker: /usr/lib/jvm/java-25-openjdk/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseG1GC -XX:ActiveProcessorCount=2 -Djson.benchmark.cores=0,2
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 3 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonNumericUtf8DiagnosticBenchmark.asyncByteArray
+# Parameters: (fixture = integers, work = numbers)
+
+# Run progress: 16.67% complete, ETA 00:00:41
+# Fork: 1 of 1
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonNumericUtf8DiagnosticBenchmark.asyncByteArray-jmh-worker-1
+3994.467 ops/s
+# Warmup Iteration   2: 4822.462 ops/s
+# Warmup Iteration   3: 4827.358 ops/s
+# Warmup Iteration   4: 4804.408 ops/s
+# Warmup Iteration   5: 4824.937 ops/s
+Iteration   1: 4831.438 ops/s
+                 gc.alloc.rate:      3688.284 MB/sec
+                 gc.alloc.rate.norm: 800673.459 B/op
+                 gc.count:           7.000 counts
+                 gc.time:            2.000 ms
+
+Iteration   2: 4824.097 ops/s
+                 gc.alloc.rate:      3683.092 MB/sec
+                 gc.alloc.rate.norm: 800673.462 B/op
+                 gc.count:           6.000 counts
+                 gc.time:            2.000 ms
+
+Iteration   3: 4840.887 ops/s
+                 gc.alloc.rate:      3694.167 MB/sec
+                 gc.alloc.rate.norm: 800673.442 B/op
+                 gc.count:           6.000 counts
+                 gc.time:            2.000 ms
+
+
+
+Result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonNumericUtf8DiagnosticBenchmark.asyncByteArray":
+  4832.141 ±(99.9%) 153.559 ops/s [Average]
+  (min, avg, max) = (4824.097, 4832.141, 4840.887), stdev = 8.417
+  CI (99.9%): [4678.582, 4985.700] (assumes normal distribution)
+
+Secondary result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonNumericUtf8DiagnosticBenchmark.asyncByteArray:gc.alloc.rate":
+  3688.514 ±(99.9%) 101.092 MB/sec [Average]
+  (min, avg, max) = (3683.092, 3688.514, 3694.167), stdev = 5.541
+  CI (99.9%): [3587.422, 3789.606] (assumes normal distribution)
+
+Secondary result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonNumericUtf8DiagnosticBenchmark.asyncByteArray:gc.alloc.rate.norm":
+  800673.455 ±(99.9%) 0.201 B/op [Average]
+  (min, avg, max) = (800673.442, 800673.455, 800673.462), stdev = 0.011
+  CI (99.9%): [800673.253, 800673.656] (assumes normal distribution)
+
+Secondary result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonNumericUtf8DiagnosticBenchmark.asyncByteArray:gc.count":
+  19.000 ±(99.9%) 0.001 counts [Sum]
+  (min, avg, max) = (6.000, 6.333, 7.000), stdev = 0.577
+  CI (99.9%): [19.000, 19.000] (assumes normal distribution)
+
+Secondary result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonNumericUtf8DiagnosticBenchmark.asyncByteArray:gc.time":
+  6.000 ±(99.9%) 0.001 ms [Sum]
+  (min, avg, max) = (2.000, 2.000, 2.000), stdev = 0.001
+  CI (99.9%): [6.000, 6.000] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 25.0.4.1, OpenJDK 64-Bit Server VM, 25.0.4.1+1
+# VM invoker: /usr/lib/jvm/java-25-openjdk/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseG1GC -XX:ActiveProcessorCount=2 -Djson.benchmark.cores=0,2
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 3 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonNumericUtf8DiagnosticBenchmark.asyncByteArray
+# Parameters: (fixture = integers, work = tree)
+
+# Run progress: 33.33% complete, ETA 00:00:32
+# Fork: 1 of 1
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonNumericUtf8DiagnosticBenchmark.asyncByteArray-jmh-worker-1
+3839.787 ops/s
+# Warmup Iteration   2: 4620.110 ops/s
+# Warmup Iteration   3: 4682.081 ops/s
+# Warmup Iteration   4: 4686.027 ops/s
+# Warmup Iteration   5: 4698.246 ops/s
+Iteration   1: 4705.843 ops/s
+                 gc.alloc.rate:      5069.650 MB/sec
+                 gc.alloc.rate.norm: 1129857.490 B/op
+                 gc.count:           8.000 counts
+                 gc.time:            4.000 ms
+
+Iteration   2: 4690.584 ops/s
+                 gc.alloc.rate:      5053.021 MB/sec
+                 gc.alloc.rate.norm: 1129857.497 B/op
+                 gc.count:           9.000 counts
+                 gc.time:            5.000 ms
+
+Iteration   3: 4686.120 ops/s
+                 gc.alloc.rate:      5046.457 MB/sec
+                 gc.alloc.rate.norm: 1129857.499 B/op
+                 gc.count:           8.000 counts
+                 gc.time:            4.000 ms
+
+
+
+Result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonNumericUtf8DiagnosticBenchmark.asyncByteArray":
+  4694.182 ±(99.9%) 188.685 ops/s [Average]
+  (min, avg, max) = (4686.120, 4694.182, 4705.843), stdev = 10.342
+  CI (99.9%): [4505.497, 4882.867] (assumes normal distribution)
+
+Secondary result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonNumericUtf8DiagnosticBenchmark.asyncByteArray:gc.alloc.rate":
+  5056.376 ±(99.9%) 218.099 MB/sec [Average]
+  (min, avg, max) = (5046.457, 5056.376, 5069.650), stdev = 11.955
+  CI (99.9%): [4838.277, 5274.475] (assumes normal distribution)
+
+Secondary result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonNumericUtf8DiagnosticBenchmark.asyncByteArray:gc.alloc.rate.norm":
+  1129857.495 ±(99.9%) 0.083 B/op [Average]
+  (min, avg, max) = (1129857.490, 1129857.495, 1129857.499), stdev = 0.005
+  CI (99.9%): [1129857.412, 1129857.579] (assumes normal distribution)
+
+Secondary result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonNumericUtf8DiagnosticBenchmark.asyncByteArray:gc.count":
+  25.000 ±(99.9%) 0.001 counts [Sum]
+  (min, avg, max) = (8.000, 8.333, 9.000), stdev = 0.577
+  CI (99.9%): [25.000, 25.000] (assumes normal distribution)
+
+Secondary result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonNumericUtf8DiagnosticBenchmark.asyncByteArray:gc.time":
+  13.000 ±(99.9%) 0.001 ms [Sum]
+  (min, avg, max) = (4.000, 4.333, 5.000), stdev = 0.577
+  CI (99.9%): [13.000, 13.000] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 25.0.4.1, OpenJDK 64-Bit Server VM, 25.0.4.1+1
+# VM invoker: /usr/lib/jvm/java-25-openjdk/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseG1GC -XX:ActiveProcessorCount=2 -Djson.benchmark.cores=0,2
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 3 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonNumericUtf8DiagnosticBenchmark.asyncByteBuffer
+# Parameters: (fixture = integers, work = tokens)
+
+# Run progress: 50.00% complete, ETA 00:00:24
+# Fork: 1 of 1
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonNumericUtf8DiagnosticBenchmark.asyncByteBuffer-jmh-worker-1
+4780.186 ops/s
+# Warmup Iteration   2: 5760.477 ops/s
+# Warmup Iteration   3: 5751.358 ops/s
+# Warmup Iteration   4: 5773.736 ops/s
+# Warmup Iteration   5: 5760.201 ops/s
+Iteration   1: 5796.146 ops/s
+                 gc.alloc.rate:      2660.368 MB/sec
+                 gc.alloc.rate.norm: 481401.211 B/op
+                 gc.count:           5.000 counts
+                 gc.time:            2.000 ms
+
+Iteration   2: 5762.589 ops/s
+                 gc.alloc.rate:      2644.833 MB/sec
+                 gc.alloc.rate.norm: 481401.224 B/op
+                 gc.count:           4.000 counts
+                 gc.time:            5.000 ms
+
+Iteration   3: 5798.084 ops/s
+                 gc.alloc.rate:      2660.365 MB/sec
+                 gc.alloc.rate.norm: 481401.214 B/op
+                 gc.count:           4.000 counts
+                 gc.time:            2.000 ms
+
+
+
+Result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonNumericUtf8DiagnosticBenchmark.asyncByteBuffer":
+  5785.606 ±(99.9%) 364.089 ops/s [Average]
+  (min, avg, max) = (5762.589, 5785.606, 5798.084), stdev = 19.957
+  CI (99.9%): [5421.517, 6149.696] (assumes normal distribution)
+
+Secondary result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonNumericUtf8DiagnosticBenchmark.asyncByteBuffer:gc.alloc.rate":
+  2655.189 ±(99.9%) 163.612 MB/sec [Average]
+  (min, avg, max) = (2644.833, 2655.189, 2660.368), stdev = 8.968
+  CI (99.9%): [2491.576, 2818.801] (assumes normal distribution)
+
+Secondary result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonNumericUtf8DiagnosticBenchmark.asyncByteBuffer:gc.alloc.rate.norm":
+  481401.216 ±(99.9%) 0.125 B/op [Average]
+  (min, avg, max) = (481401.211, 481401.216, 481401.224), stdev = 0.007
+  CI (99.9%): [481401.092, 481401.341] (assumes normal distribution)
+
+Secondary result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonNumericUtf8DiagnosticBenchmark.asyncByteBuffer:gc.count":
+  13.000 ±(99.9%) 0.001 counts [Sum]
+  (min, avg, max) = (4.000, 4.333, 5.000), stdev = 0.577
+  CI (99.9%): [13.000, 13.000] (assumes normal distribution)
+
+Secondary result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonNumericUtf8DiagnosticBenchmark.asyncByteBuffer:gc.time":
+  9.000 ±(99.9%) 0.001 ms [Sum]
+  (min, avg, max) = (2.000, 3.000, 5.000), stdev = 1.732
+  CI (99.9%): [9.000, 9.000] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 25.0.4.1, OpenJDK 64-Bit Server VM, 25.0.4.1+1
+# VM invoker: /usr/lib/jvm/java-25-openjdk/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseG1GC -XX:ActiveProcessorCount=2 -Djson.benchmark.cores=0,2
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 3 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonNumericUtf8DiagnosticBenchmark.asyncByteBuffer
+# Parameters: (fixture = integers, work = numbers)
+
+# Run progress: 66.67% complete, ETA 00:00:16
+# Fork: 1 of 1
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonNumericUtf8DiagnosticBenchmark.asyncByteBuffer-jmh-worker-1
+3619.446 ops/s
+# Warmup Iteration   2: 4373.806 ops/s
+# Warmup Iteration   3: 4378.697 ops/s
+# Warmup Iteration   4: 4404.120 ops/s
+# Warmup Iteration   5: 4407.364 ops/s
+Iteration   1: 4413.417 ops/s
+                 gc.alloc.rate:      3366.796 MB/sec
+                 gc.alloc.rate.norm: 801065.598 B/op
+                 gc.count:           5.000 counts
+                 gc.time:            1.000 ms
+
+Iteration   2: 4390.378 ops/s
+                 gc.alloc.rate:      3353.632 MB/sec
+                 gc.alloc.rate.norm: 801065.607 B/op
+                 gc.count:           6.000 counts
+                 gc.time:            2.000 ms
+
+Iteration   3: 4413.194 ops/s
+                 gc.alloc.rate:      3369.930 MB/sec
+                 gc.alloc.rate.norm: 801065.597 B/op
+                 gc.count:           5.000 counts
+                 gc.time:            2.000 ms
+
+
+
+Result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonNumericUtf8DiagnosticBenchmark.asyncByteBuffer":
+  4405.663 ±(99.9%) 241.511 ops/s [Average]
+  (min, avg, max) = (4390.378, 4405.663, 4413.417), stdev = 13.238
+  CI (99.9%): [4164.152, 4647.174] (assumes normal distribution)
+
+Secondary result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonNumericUtf8DiagnosticBenchmark.asyncByteBuffer:gc.alloc.rate":
+  3363.453 ±(99.9%) 157.780 MB/sec [Average]
+  (min, avg, max) = (3353.632, 3363.453, 3369.930), stdev = 8.648
+  CI (99.9%): [3205.672, 3521.233] (assumes normal distribution)
+
+Secondary result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonNumericUtf8DiagnosticBenchmark.asyncByteBuffer:gc.alloc.rate.norm":
+  801065.600 ±(99.9%) 0.096 B/op [Average]
+  (min, avg, max) = (801065.597, 801065.600, 801065.607), stdev = 0.005
+  CI (99.9%): [801065.504, 801065.696] (assumes normal distribution)
+
+Secondary result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonNumericUtf8DiagnosticBenchmark.asyncByteBuffer:gc.count":
+  16.000 ±(99.9%) 0.001 counts [Sum]
+  (min, avg, max) = (5.000, 5.333, 6.000), stdev = 0.577
+  CI (99.9%): [16.000, 16.000] (assumes normal distribution)
+
+Secondary result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonNumericUtf8DiagnosticBenchmark.asyncByteBuffer:gc.time":
+  5.000 ±(99.9%) 0.001 ms [Sum]
+  (min, avg, max) = (1.000, 1.667, 2.000), stdev = 0.577
+  CI (99.9%): [5.000, 5.000] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 25.0.4.1, OpenJDK 64-Bit Server VM, 25.0.4.1+1
+# VM invoker: /usr/lib/jvm/java-25-openjdk/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseG1GC -XX:ActiveProcessorCount=2 -Djson.benchmark.cores=0,2
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 3 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonNumericUtf8DiagnosticBenchmark.asyncByteBuffer
+# Parameters: (fixture = integers, work = tree)
+
+# Run progress: 83.33% complete, ETA 00:00:08
+# Fork: 1 of 1
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonNumericUtf8DiagnosticBenchmark.asyncByteBuffer-jmh-worker-1
+3565.437 ops/s
+# Warmup Iteration   2: 4202.741 ops/s
+# Warmup Iteration   3: 4253.042 ops/s
+# Warmup Iteration   4: 4260.283 ops/s
+# Warmup Iteration   5: 4246.878 ops/s
+Iteration   1: 4242.544 ops/s
+                 gc.alloc.rate:      4571.856 MB/sec
+                 gc.alloc.rate.norm: 1130249.663 B/op
+                 gc.count:           7.000 counts
+                 gc.time:            3.000 ms
+
+Iteration   2: 4254.561 ops/s
+                 gc.alloc.rate:      4582.175 MB/sec
+                 gc.alloc.rate.norm: 1130249.656 B/op
+                 gc.count:           8.000 counts
+                 gc.time:            4.000 ms
+
+Iteration   3: 4261.285 ops/s
+                 gc.alloc.rate:      4590.893 MB/sec
+                 gc.alloc.rate.norm: 1130249.637 B/op
+                 gc.count:           7.000 counts
+                 gc.time:            4.000 ms
+
+
+
+Result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonNumericUtf8DiagnosticBenchmark.asyncByteBuffer":
+  4252.796 ±(99.9%) 173.211 ops/s [Average]
+  (min, avg, max) = (4242.544, 4252.796, 4261.285), stdev = 9.494
+  CI (99.9%): [4079.586, 4426.007] (assumes normal distribution)
+
+Secondary result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonNumericUtf8DiagnosticBenchmark.asyncByteBuffer:gc.alloc.rate":
+  4581.642 ±(99.9%) 173.858 MB/sec [Average]
+  (min, avg, max) = (4571.856, 4581.642, 4590.893), stdev = 9.530
+  CI (99.9%): [4407.784, 4755.499] (assumes normal distribution)
+
+Secondary result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonNumericUtf8DiagnosticBenchmark.asyncByteBuffer:gc.alloc.rate.norm":
+  1130249.652 ±(99.9%) 0.246 B/op [Average]
+  (min, avg, max) = (1130249.637, 1130249.652, 1130249.663), stdev = 0.014
+  CI (99.9%): [1130249.406, 1130249.898] (assumes normal distribution)
+
+Secondary result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonNumericUtf8DiagnosticBenchmark.asyncByteBuffer:gc.count":
+  22.000 ±(99.9%) 0.001 counts [Sum]
+  (min, avg, max) = (7.000, 7.333, 8.000), stdev = 0.577
+  CI (99.9%): [22.000, 22.000] (assumes normal distribution)
+
+Secondary result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonNumericUtf8DiagnosticBenchmark.asyncByteBuffer:gc.time":
+  11.000 ±(99.9%) 0.001 ms [Sum]
+  (min, avg, max) = (3.000, 3.667, 4.000), stdev = 0.577
+  CI (99.9%): [11.000, 11.000] (assumes normal distribution)
+
+
+# Run complete. Total time: 00:00:49
+
+REMEMBER: The numbers below are just data. To gain reusable insights, you need to follow up on
+why the numbers are the way they are. Use profilers (see -prof, -lprof), design factorial
+experiments, perform baseline and negative tests that provide experimental control, make sure
+the benchmarking environment is safe on JVM/OS/HW level, ask for reviews from the domain experts.
+Do not assume the numbers tell you what you want them to tell.
+
+NOTE: Current JVM experimentally supports Compiler Blackholes, and they are in use. Please exercise
+extra caution when trusting the results, look into the generated code to check the benchmark still
+works, and factor in a small probability of new VM bugs. Additionally, while comparisons between
+different JVMs are already problematic, the performance difference caused by different Blackhole
+modes can be very significant. Please make sure you use the consistent Blackhole mode for comparisons.
+
+Benchmark                                                              (fixture)   (work)   Mode  Cnt        Score     Error   Units
+JsonNumericUtf8DiagnosticBenchmark.asyncByteArray                       integers   tokens  thrpt    3     6765.053 ± 398.349   ops/s
+JsonNumericUtf8DiagnosticBenchmark.asyncByteArray:gc.alloc.rate         integers   tokens  thrpt    3     3099.506 ± 188.429  MB/sec
+JsonNumericUtf8DiagnosticBenchmark.asyncByteArray:gc.alloc.rate.norm    integers   tokens  thrpt    3   480673.042 ±   0.053    B/op
+JsonNumericUtf8DiagnosticBenchmark.asyncByteArray:gc.count              integers   tokens  thrpt    3       15.000            counts
+JsonNumericUtf8DiagnosticBenchmark.asyncByteArray:gc.time               integers   tokens  thrpt    3        5.000                ms
+JsonNumericUtf8DiagnosticBenchmark.asyncByteArray                       integers  numbers  thrpt    3     4832.141 ± 153.559   ops/s
+JsonNumericUtf8DiagnosticBenchmark.asyncByteArray:gc.alloc.rate         integers  numbers  thrpt    3     3688.514 ± 101.092  MB/sec
+JsonNumericUtf8DiagnosticBenchmark.asyncByteArray:gc.alloc.rate.norm    integers  numbers  thrpt    3   800673.455 ±   0.201    B/op
+JsonNumericUtf8DiagnosticBenchmark.asyncByteArray:gc.count              integers  numbers  thrpt    3       19.000            counts
+JsonNumericUtf8DiagnosticBenchmark.asyncByteArray:gc.time               integers  numbers  thrpt    3        6.000                ms
+JsonNumericUtf8DiagnosticBenchmark.asyncByteArray                       integers     tree  thrpt    3     4694.182 ± 188.685   ops/s
+JsonNumericUtf8DiagnosticBenchmark.asyncByteArray:gc.alloc.rate         integers     tree  thrpt    3     5056.376 ± 218.099  MB/sec
+JsonNumericUtf8DiagnosticBenchmark.asyncByteArray:gc.alloc.rate.norm    integers     tree  thrpt    3  1129857.495 ±   0.083    B/op
+JsonNumericUtf8DiagnosticBenchmark.asyncByteArray:gc.count              integers     tree  thrpt    3       25.000            counts
+JsonNumericUtf8DiagnosticBenchmark.asyncByteArray:gc.time               integers     tree  thrpt    3       13.000                ms
+JsonNumericUtf8DiagnosticBenchmark.asyncByteBuffer                      integers   tokens  thrpt    3     5785.606 ± 364.089   ops/s
+JsonNumericUtf8DiagnosticBenchmark.asyncByteBuffer:gc.alloc.rate        integers   tokens  thrpt    3     2655.189 ± 163.612  MB/sec
+JsonNumericUtf8DiagnosticBenchmark.asyncByteBuffer:gc.alloc.rate.norm   integers   tokens  thrpt    3   481401.216 ±   0.125    B/op
+JsonNumericUtf8DiagnosticBenchmark.asyncByteBuffer:gc.count             integers   tokens  thrpt    3       13.000            counts
+JsonNumericUtf8DiagnosticBenchmark.asyncByteBuffer:gc.time              integers   tokens  thrpt    3        9.000                ms
+JsonNumericUtf8DiagnosticBenchmark.asyncByteBuffer                      integers  numbers  thrpt    3     4405.663 ± 241.511   ops/s
+JsonNumericUtf8DiagnosticBenchmark.asyncByteBuffer:gc.alloc.rate        integers  numbers  thrpt    3     3363.453 ± 157.780  MB/sec
+JsonNumericUtf8DiagnosticBenchmark.asyncByteBuffer:gc.alloc.rate.norm   integers  numbers  thrpt    3   801065.600 ±   0.096    B/op
+JsonNumericUtf8DiagnosticBenchmark.asyncByteBuffer:gc.count             integers  numbers  thrpt    3       16.000            counts
+JsonNumericUtf8DiagnosticBenchmark.asyncByteBuffer:gc.time              integers  numbers  thrpt    3        5.000                ms
+JsonNumericUtf8DiagnosticBenchmark.asyncByteBuffer                      integers     tree  thrpt    3     4252.796 ± 173.211   ops/s
+JsonNumericUtf8DiagnosticBenchmark.asyncByteBuffer:gc.alloc.rate        integers     tree  thrpt    3     4581.642 ± 173.858  MB/sec
+JsonNumericUtf8DiagnosticBenchmark.asyncByteBuffer:gc.alloc.rate.norm   integers     tree  thrpt    3  1130249.652 ±   0.246    B/op
+JsonNumericUtf8DiagnosticBenchmark.asyncByteBuffer:gc.count             integers     tree  thrpt    3       22.000            counts
+JsonNumericUtf8DiagnosticBenchmark.asyncByteBuffer:gc.time              integers     tree  thrpt    3       11.000                ms
+
+Benchmark result is saved to /tmp/json-numeric-utf8-decomposition-allocation/jmh.json

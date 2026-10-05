@@ -1,5 +1,7 @@
 package org.hibernate.search.util.json.impl;
 
+import java.nio.ByteBuffer;
+
 import tools.jackson.core.JsonToken;
 import tools.jackson.core.ObjectReadContext;
 import tools.jackson.core.io.IOContext;
@@ -25,9 +27,38 @@ final class ResumableJsonFactory extends JsonFactory {
 	}
 
 	private static final class ResumableParser extends NonBlockingByteBufferJsonParser {
+		private byte[] inputArray;
+		private int inputArrayOffset;
+
 		private ResumableParser(ObjectReadContext readContext, IOContext context, int features, int formatFeatures,
 				ByteQuadsCanonicalizer symbols) {
 			super( readContext, context, features, formatFeatures, symbols );
+		}
+
+		@Override
+		public void feedInput(ByteBuffer input) {
+			super.feedInput( input );
+			// Heap slices need only their array offset; direct/read-only storage stays on Core's path.
+			// Feeding the empty ownership-handoff buffer also clears this caller-array reference.
+			inputArray = input.hasArray() ? input.array() : null;
+			inputArrayOffset = input.hasArray() ? input.arrayOffset() : 0;
+		}
+
+		@Override
+		protected byte getByteFromBuffer(int offset) {
+			return inputArray == null ? super.getByteFromBuffer( offset ) : inputArray[inputArrayOffset + offset];
+		}
+
+		@Override
+		protected byte getNextSignedByteFromBuffer() {
+			return inputArray == null ? super.getNextSignedByteFromBuffer() : inputArray[inputArrayOffset + _inputPtr++];
+		}
+
+		@Override
+		protected int getNextUnsignedByteFromBuffer() {
+			return inputArray == null
+					? super.getNextUnsignedByteFromBuffer()
+					: inputArray[inputArrayOffset + _inputPtr++] & 0xff;
 		}
 
 		@Override

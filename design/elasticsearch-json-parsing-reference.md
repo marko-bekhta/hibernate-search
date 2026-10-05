@@ -8,9 +8,11 @@ transports still use Gson. Tasks 5 and 6 have not started.
 
 This guide brings together the [Task 4 checkpoint](elasticsearch-async-json-task4.md),
 [corrected follow-up](elasticsearch-async-json-task4-followup.md) and
-[owned-String experiment](elasticsearch-async-json-string-utf8.md). Acceptance of
-the String-path tradeoff does **not** close Task 4: numeric-rich UTF-8 parsing is
-still about 22% behind Gson, and scalar UTF-8 results still vary materially.
+[owned-String experiment](elasticsearch-async-json-string-utf8.md), and
+[numeric UTF-8 follow-up](elasticsearch-async-json-numeric-utf8.md). Acceptance of
+the String-path tradeoff does **not** close Task 4: the latest heap-integer UTF-8
+campaign remains 13.2% behind Gson after a supported improvement, and scalar
+UTF-8 results still vary materially.
 
 ## Choose according to the input you already have
 
@@ -117,6 +119,7 @@ benchmarks. In particular, the two Unicode workloads are substantially different
 | Earlier `unicode` | **3,851 UTF-8 bytes / 2,571 UTF-16 units** | One value repeating `é漢😀`, newline, quote and backslash 256 times; JSON escapes included |
 | `scalar-1m` | 1,048,587 bytes / UTF-16 units | One 1 MiB ASCII value |
 | `numbers-10000` | 48,902 bytes / UTF-16 units | One array of integers 0–9999 in `values` |
+| `numbers-mixed-10000` | 82,512 bytes / UTF-16 units | One 10,000-value array cycling negative/decimal/exponent/overflow lexemes, including `-0` and a huge exponent |
 | Experiment `unicode-1m` | **1,500,011 UTF-8 bytes / 1,000,011 UTF-16 units** | The Unicode/escape pattern repeated 100,000 times in one value |
 | Experiment `fields-1m` | 1,140,891 bytes / UTF-16 units | 18,000 short property names and 48-character String values |
 
@@ -174,9 +177,33 @@ The historical ingress state had a duplicated annotated setup; that small-input
 row is context, not a corrected gate result. The follow-up states invoke setup
 once. Corrected scalar runs A/B use **identical source and artifact**, yet Search
 moves from **+2.0% to -9.0%** versus Gson. The slower run has tightly clustered
-Search forks; this variability remains unresolved. Numeric UTF-8 is **21.6%
-behind Gson**, with the regression present in every final Search fork. None of
+Search forks; this variability remains unresolved. In that corrected follow-up,
+numeric UTF-8 was **21.6% behind Gson**, with the regression present in every
+final Search fork. The later numeric campaign below measures the retained change. None of
 these in-memory measurements establishes network or event-loop latency.
+
+### Current numeric UTF-8 heap follow-up
+
+The existing Core ByteBuffer parser now reads accessible heap slices through their
+array and offset, preserving canonical validation, bounded feeds, handoff clearing,
+strict numeric lexemes/cache and the escaped-name workaround. Direct/read-only
+storage retains Core's getters; the character String route is unchanged.
+The [focused report](elasticsearch-async-json-numeric-utf8.md) documents rejected
+builder/validator experiments, direct fork variability, allocation and exact scope.
+
+| Complete UTF-8 tree, 8192-byte heap feeds | Gson ops/s | Search ops/s | Campaign |
+| --- | ---: | ---: | --- |
+| `numbers-10000` | 4,696 ±17 | 4,077 ±110 | [Retained heap-access primary](elasticsearch-async-json-numeric-utf8/heap-access-primary/jmh.json) |
+| `numbers-mixed-10000` | 3,176 ±88 | 3,123 ±20 | [Same primary](elasticsearch-async-json-numeric-utf8/heap-access-primary/jmh.json) |
+| Earlier `unicode`, 3,851 bytes | 108,621 ±5,982 | 155,809 ±9,138 | [Separate final guard](elasticsearch-async-json-numeric-utf8/unicode-control/jmh.json) |
+
+Matched original-code integer Search was 3,624 ±39 with the final ingress harness,
+so heap access improves it 12.5%; the retained result still loses 13.2% to Gson.
+Mixed intervals overlap. Separate GC allocation is 1,130,610 versus 985,666 B/op
+for integer Search/Gson; node storage is unchanged. Minimal token/number/tree
+allocation diagnostics are not identical-work competitors or CPU-cost fractions.
+This follow-up does not resolve scalar UTF-8 variability or complete Task 4.
+Historical rows above retain their original campaign identities.
 
 ### Complete-tree String-to-UTF-8 experiment
 
@@ -258,4 +285,5 @@ benchmark alternatives as evidence. The accepted String-path choice does not
 approve all performance regressions: numeric UTF-8 and scalar UTF-8 variability
 remain open in the [masterplan](elasticsearch-async-json.md). Existing transports
 remain Gson, and this reference adds no codec migration, transport integration,
-worker policy or new implementation. No benchmarks were rerun for this document.
+worker policy or codec implementation. The new numeric rows come from the linked
+focused campaigns; the historical parsing/read/encoding rows were not rerun.
