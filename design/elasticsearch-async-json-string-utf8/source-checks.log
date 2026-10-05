@@ -1,0 +1,22 @@
+integrationtest/performance/backend/elasticsearch/target/generated-sources/apt/org/hibernate/search/integrationtest/performance/backend/elasticsearch/jmh_generated/JsonStringUtf8Benchmark_searchStagedEncodedString_jmhTest.java:353:            val.setup();
+integrationtest/performance/backend/elasticsearch/target/generated-sources/apt/org/hibernate/search/integrationtest/performance/backend/elasticsearch/jmh_generated/JsonStringUtf8Benchmark_searchEncodedString_jmhTest.java:353:            val.setup();
+integrationtest/performance/backend/elasticsearch/target/generated-sources/apt/org/hibernate/search/integrationtest/performance/backend/elasticsearch/jmh_generated/JsonStringUtf8Benchmark_diagnosticStagedEncodingOnly_jmhTest.java:353:            val.setup();
+integrationtest/performance/backend/elasticsearch/target/generated-sources/apt/org/hibernate/search/integrationtest/performance/backend/elasticsearch/jmh_generated/JsonStringUtf8Benchmark_searchCharacterString_jmhTest.java:353:            val.setup();
+integrationtest/performance/backend/elasticsearch/target/generated-sources/apt/org/hibernate/search/integrationtest/performance/backend/elasticsearch/jmh_generated/JsonStringUtf8Benchmark_diagnosticEncodingOnly_jmhTest.java:353:            val.setup();
+integrationtest/performance/backend/elasticsearch/target/generated-sources/apt/org/hibernate/search/integrationtest/performance/backend/elasticsearch/jmh_generated/JsonStringUtf8Benchmark_gsonString_jmhTest.java:353:            val.setup();
+45:		CharsetEncoder encoder = StandardCharsets.UTF_8.newEncoder()
+47:		CharBuffer chars = CharBuffer.allocate( charCapacity );
+48:		ByteBuffer bytes = ByteBuffer.allocate( byteCapacity );
+53:			json.getChars( offset, offset + length, chars.array(), chars.position() );
+91:		CharsetEncoder encoder = StandardCharsets.UTF_8.newEncoder()
+93:		CharBuffer chars = CharBuffer.wrap( json );
+94:		ByteBuffer bytes = ByteBuffer.allocate( byteCapacity );
+
+Evidence identity verification:
+Primary: 16 expected rows; runner gating=true.
+Allocation diagnostic: 24 expected rows; runner gating=false.
+Primary/allocation artifact SHA-256: 35ae0cade58b31f1590c360c40e544c6f06791647d430aa454cf73107605d240
+All three JsonStringUtf8*.java live source hashes match both recorded environments.
+git apply --reverse --check design/elasticsearch-async-json-string-utf8/primary/source.patch: passed.
+Report/evidence-index local links: passed.
+git diff --check: passed.

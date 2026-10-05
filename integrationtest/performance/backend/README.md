@@ -322,3 +322,48 @@ UTF-8 baseline omits Search's separate canonical UTF-8 validator, ownership
 handoff clearing, tree construction and the escaped-name workaround (fixture
 names are ASCII). It is a diagnostic baseline, not a replacement SPI or a
 strictness-equivalent end-to-end tree parser.
+
+`JsonStringUtf8Benchmark` compares complete parsing of an already materialized
+String through Gson, the current Search character parser, standard bounded
+UTF-8 encoding with a String-backed CharBuffer plus the Search async parser, and
+one experiment with fixed array-backed character staging. Encoder/session/buffer
+construction, all encoding/feeds/EOF/close and tree construction are timed;
+fixtures and factories are shared outside timing. Every complete tree is observed
+opaquely, and trial setup independently checks every fixture member and decoded
+value plus numeric lexeme/escaping invariants. Gson comparisons cover valid input;
+they do not imply matching acceptance policies.
+
+Its focused fixtures are `scalar-1m` (one large ASCII token), `unicode-1m` (large
+Unicode and escaped value), `small` (typical query) and `fields-1m` (a similarly
+large document containing 18,000 short fields). These fixture names belong to
+this benchmark; do not pass them to unrelated benchmark classes.
+The wrapped helper retains a fixed 8192-byte output scratch; staging adds a fixed
+4096-char scratch. Neither creates a complete encoded input body. The original
+String, token Strings and tree remain materialized. Production parsing remains
+synchronous; the async parser here does not impose an executor.
+
+```shell
+java -cp integrationtest/performance/backend/elasticsearch/target/benchmarks.jar \
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonStringUtf8Verification
+integrationtest/performance/backend/scripts/run-json-benchmarks.sh --skip-build \
+  --out /tmp/json-string-primary --cores 0,2 --forks 3 --warmup 8 --iterations 5 \
+  --fixtures scalar-1m,unicode-1m,small,fields-1m \
+  --pattern 'JsonStringUtf8Benchmark.(gsonString|search.*String)$'
+# Separate encoding-only diagnostics; not complete-tree competitors:
+integrationtest/performance/backend/scripts/run-json-benchmarks.sh --skip-build \
+  --out /tmp/json-string-encoding --cores 0,2 --warmup 8 \
+  --fixtures scalar-1m,unicode-1m --pattern 'JsonStringUtf8Benchmark.diagnostic.*'
+# Separate GC allocation profile, explicitly diagnostic:
+integrationtest/performance/backend/scripts/run-json-benchmarks.sh --skip-build \
+  --out /tmp/json-string-allocation --cores 0,2 --forks 1 --warmup 5 --iterations 3 \
+  --fixtures scalar-1m,unicode-1m,small,fields-1m \
+  --pattern 'JsonStringUtf8Benchmark.*' --profiler gc
+```
+
+The standalone verification checks fixed/tiny buffer boundaries, supplementary
+pairs, malformed raw UTF-16, split JSON escapes, exact byte/token/name/depth
+limits, EOF/trailing input, complete tree/lexeme equality and session cleanup.
+Four-byte encoder output is the minimum capacity that can hold a supplementary
+code point; tests also cap async feeds at one byte. The helpers are experiments;
+no automatic size dispatch is implied by these scores. See the
+[owned-String experiment report](../../../design/elasticsearch-async-json-string-utf8.md).

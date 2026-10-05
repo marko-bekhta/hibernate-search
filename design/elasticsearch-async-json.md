@@ -237,7 +237,11 @@ numeric validation/accumulation improved construction. Large owned-String and
 numeric-rich UTF-8 parser regressions remain, together with scalar UTF-8 throughput
 variability. Upstream token baselines, corrected benchmark lifecycles and raw
 before/after evidence support the remaining architectural decisions. Task 5/6
-have not started.
+have not started. The focused [owned-String UTF-8 experiment](elasticsearch-async-json-string-utf8.md)
+measures a bounded standard encoder and array-backed staging. Staging improves
+the large ASCII case but materially regresses small and Unicode-rich Strings;
+the current character convenience path is retained. This does not
+close the owned-String architectural tradeoff or the other remaining gate items.
 
 ### Task 5 — Reflection-free codecs and backend migration
 

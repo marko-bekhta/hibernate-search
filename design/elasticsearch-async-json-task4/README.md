@@ -107,3 +107,13 @@ metadata alone does not certify every harness condition.
 [Final complete-byte correctness](followup-final-correctness.log) ·
 [Runner argument rejection](followup-runner-checks.txt) ·
 [Verification commands](followup-verification-commands.txt).
+
+## Owned-String UTF-8 experiment
+
+The focused [String-input report](../elasticsearch-async-json-string-utf8.md) and
+[separate evidence index](../elasticsearch-async-json-string-utf8/README.md) compare
+Gson, the current character path, bounded String-backed UTF-8 encoding and one
+fixed array-backed staging optimization. All same-work competitors begin with
+String and build complete trees; encoding-only diagnostics are separate.
+Production retains the character path after measured small/Unicode regressions.
+Task 4 remains open, and Tasks 5/6 have not started.
