@@ -64,3 +64,46 @@ rebuild is not promised. Production source hashes identify unchanged algorithms
 across benchmark-only additions. The artifact hash changes when the benchmark
 JAR is rebuilt; never substitute a stale JAR for a new candidate. A stale smoke
 run was rejected/discarded during development and is excluded from this index.
+
+## Follow-up evidence
+
+[Follow-up report](../elasticsearch-async-json-task4-followup.md) distinguishes
+experimental parser runs with duplicated inherited setup from corrected final
+controls. Writer states are unaffected. Raw evidence is retained; runner gating
+metadata alone does not certify every harness condition.
+
+| Run | Purpose | Evidence |
+| --- | --- | --- |
+| followup-ascii-control | Opaque small/large ASCII output controls. | [raw](followup-ascii-control/jmh.json) · [command](followup-ascii-control/command.txt) · [environment](followup-ascii-control/environment.json) · [source](followup-ascii-control/source.patch) · [console](followup-ascii-control/console.log) |
+| followup-fragment-boundary-smoke | Corrected tiny-feed complete-content smoke; non-gating. | [raw](followup-fragment-boundary-smoke/jmh.json) · [command](followup-fragment-boundary-smoke/command.txt) · [environment](followup-fragment-boundary-smoke/environment.json) · [source](followup-fragment-boundary-smoke/source.patch) · [console](followup-fragment-boundary-smoke/console.log) |
+| followup-fragments | Matched 64/1024/8192-byte fragments; historical duplicated setup. | [raw](followup-fragments/jmh.json) · [command](followup-fragments/command.txt) · [environment](followup-fragments/environment.json) · [source](followup-fragments/source.patch) · [console](followup-fragments/console.log) |
+| followup-numeric-before | Original eager cache, no/selected/repeated reads; historical duplicated setup. | [raw](followup-numeric-before/jmh.json) · [command](followup-numeric-before/command.txt) · [environment](followup-numeric-before/environment.json) · [source](followup-numeric-before/source.patch) · [console](followup-numeric-before/console.log) |
+| followup-numeric-combined | Combined grammar/accumulation; historical duplicated setup. | [raw](followup-numeric-combined/jmh.json) · [command](followup-numeric-combined/command.txt) · [environment](followup-numeric-combined/environment.json) · [source](followup-numeric-combined/source.patch) · [console](followup-numeric-combined/console.log) |
+| followup-numeric-final | Corrected single-setup final numeric gate controls. | [raw](followup-numeric-final/jmh.json) · [command](followup-numeric-final/command.txt) · [environment](followup-numeric-final/environment.json) · [source](followup-numeric-final/source.patch) · [console](followup-numeric-final/console.log) |
+| followup-numeric-final-allocation | Separate final eager cache allocation diagnostic. | [raw](followup-numeric-final-allocation/jmh.json) · [command](followup-numeric-final-allocation/command.txt) · [environment](followup-numeric-final-allocation/environment.json) · [source](followup-numeric-final-allocation/source.patch) · [console](followup-numeric-final-allocation/console.log) |
+| followup-numeric-final-stack | Separate final numeric UTF-8 stack diagnostic. | [raw](followup-numeric-final-stack/jmh.json) · [command](followup-numeric-final-stack/command.txt) · [environment](followup-numeric-final-stack/environment.json) · [source](followup-numeric-final-stack/source.patch) · [console](followup-numeric-final-stack/console.log) |
+| followup-numeric-on-demand | Immutable conversion-on-demand experiment; historical duplicated setup. | [raw](followup-numeric-on-demand/jmh.json) · [command](followup-numeric-on-demand/command.txt) · [environment](followup-numeric-on-demand/environment.json) · [source](followup-numeric-on-demand/source.patch) · [console](followup-numeric-on-demand/console.log) |
+| followup-numeric-on-demand-allocation | Separate on-demand allocation diagnostic. | [raw](followup-numeric-on-demand-allocation/jmh.json) · [command](followup-numeric-on-demand-allocation/command.txt) · [environment](followup-numeric-on-demand-allocation/environment.json) · [source](followup-numeric-on-demand-allocation/source.patch) · [console](followup-numeric-on-demand-allocation/console.log) |
+| followup-numeric-token-final | Corrected single-setup fully consumed numeric token controls. | [raw](followup-numeric-token-final/jmh.json) · [command](followup-numeric-token-final/command.txt) · [environment](followup-numeric-token-final/environment.json) · [source](followup-numeric-token-final/source.patch) · [console](followup-numeric-token-final/console.log) |
+| followup-numeric-token-isolation | Initial numeric token baselines; historical duplicated setup. | [raw](followup-numeric-token-isolation/jmh.json) · [command](followup-numeric-token-isolation/command.txt) · [environment](followup-numeric-token-isolation/environment.json) · [source](followup-numeric-token-isolation/source.patch) · [console](followup-numeric-token-isolation/console.log) |
+| followup-scalar-final | Corrected single-setup large scalar/core token controls. | [raw](followup-scalar-final/jmh.json) · [command](followup-scalar-final/command.txt) · [environment](followup-scalar-final/environment.json) · [source](followup-scalar-final/source.patch) · [console](followup-scalar-final/console.log) |
+| followup-scalar-final-stack | Separate final String stack diagnostic. | [raw](followup-scalar-final-stack/jmh.json) · [command](followup-scalar-final-stack/command.txt) · [environment](followup-scalar-final-stack/environment.json) · [source](followup-scalar-final-stack/source.patch) · [console](followup-scalar-final-stack/console.log) |
+| followup-scalar-isolation | Initial fully consumed token baselines; historical duplicated setup. | [raw](followup-scalar-isolation/jmh.json) · [command](followup-scalar-isolation/command.txt) · [environment](followup-scalar-isolation/environment.json) · [source](followup-scalar-isolation/source.patch) · [console](followup-scalar-isolation/console.log) |
+| followup-unicode-after | Direct Unicode/escape loop, fresh opaque output. | [raw](followup-unicode-after/jmh.json) · [command](followup-unicode-after/command.txt) · [environment](followup-unicode-after/environment.json) · [source](followup-unicode-after/source.patch) · [console](followup-unicode-after/console.log) |
+| followup-unicode-before | Longer-warmup original writer comparison. | [raw](followup-unicode-before/jmh.json) · [command](followup-unicode-before/command.txt) · [environment](followup-unicode-before/environment.json) · [source](followup-unicode-before/source.patch) · [console](followup-unicode-before/console.log) |
+| followup-unicode-compilation | Separate C2/compilation diagnostic, non-gating. | [raw](followup-unicode-compilation/jmh.json) · [command](followup-unicode-compilation/command.txt) · [environment](followup-unicode-compilation/environment.json) · [source](followup-unicode-compilation/source.patch) · [console](followup-unicode-compilation/console.log) |
+| followup-unicode-reused | Raw output excluding matched probes. | [raw](followup-unicode-reused/jmh.json) · [command](followup-unicode-reused/command.txt) · [environment](followup-unicode-reused/environment.json) · [source](followup-unicode-reused/source.patch) · [console](followup-unicode-reused/console.log) |
+| followup-utf8-final | Corrected single-setup 8192-byte UTF-8 controls. | [raw](followup-utf8-final/jmh.json) · [command](followup-utf8-final/command.txt) · [environment](followup-utf8-final/environment.json) · [source](followup-utf8-final/source.patch) · [console](followup-utf8-final/console.log) |
+| followup-utf8-scalar-repeat | Independent corrected scalar UTF-8 corroboration. | [raw](followup-utf8-scalar-repeat/jmh.json) · [command](followup-utf8-scalar-repeat/command.txt) · [environment](followup-utf8-scalar-repeat/environment.json) · [source](followup-utf8-scalar-repeat/source.patch) · [console](followup-utf8-scalar-repeat/console.log) |
+
+| followup-utf8-scalar-compilation | Separate corrected scalar UTF-8 C2 diagnostic, non-gating. | [raw](followup-utf8-scalar-compilation/jmh.json) · [command](followup-utf8-scalar-compilation/command.txt) · [environment](followup-utf8-scalar-compilation/environment.json) · [source](followup-utf8-scalar-compilation/source.patch) · [console](followup-utf8-scalar-compilation/console.log) |
+
+[Summary with fork means](followup-summary.csv) ·
+[Generated setup lifecycle check](followup-harness-lifecycle-check.txt) ·
+[Correctness/slow consumer](followup-correctness-and-slow-consumer.log) ·
+[Final JSON verification](followup-final-json-build.log) ·
+[Corrected benchmark build](followup-corrected-harness-build.log).
+
+[Final complete-byte correctness](followup-final-correctness.log) ·
+[Runner argument rejection](followup-runner-checks.txt) ·
+[Verification commands](followup-verification-commands.txt).

@@ -1,0 +1,3 @@
+JsonUtf8IngressBenchmark: exactly one inherited setup; inherited teardown closes the same worker.
+JsonNumericConsumptionBenchmark: exactly one inherited setup; inherited teardown closes the same worker.
+JsonScalarConsumptionBenchmark: exactly one inherited setup; inherited teardown closes the same worker.

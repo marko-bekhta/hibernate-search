@@ -1,0 +1,192 @@
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by org.fusesource.jansi.internal.JansiLoader in an unnamed module (file:/home/agentuser/.m2/wrapper/dists/apache-maven-3.9.16-bin/4200fbc6/apache-maven-3.9.16/lib/jansi-2.4.3.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] --< org.hibernate.search:hibernate-search-integrationtest-performance-backend-elasticsearch >--
+[INFO] Building Hibernate Search ITs - Performance - Backend - Elasticsearch 9.0.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.5.0:clean (default-clean) @ hibernate-search-integrationtest-performance-backend-elasticsearch ---
+[INFO] Deleting /home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target
+[INFO] 
+[INFO] --- build-helper:3.6.2:rootlocation (set-root-location-property) @ hibernate-search-integrationtest-performance-backend-elasticsearch ---
+[INFO] 
+[INFO] --- build-helper:3.6.2:parse-version (parse-project-version) @ hibernate-search-integrationtest-performance-backend-elasticsearch ---
+[INFO] 
+[INFO] --- build-helper:3.6.2:parse-version (parse-project-previous-stable-version) @ hibernate-search-integrationtest-performance-backend-elasticsearch ---
+[INFO] 
+[INFO] --- build-helper:3.6.2:parse-version (parse-hibernate-version) @ hibernate-search-integrationtest-performance-backend-elasticsearch ---
+[INFO] 
+[INFO] --- build-helper:3.6.2:parse-version (parse-hibernate-orm-version) @ hibernate-search-integrationtest-performance-backend-elasticsearch ---
+[INFO] 
+[INFO] --- build-helper:3.6.2:parse-version (parse-lucene-version) @ hibernate-search-integrationtest-performance-backend-elasticsearch ---
+[INFO] 
+[INFO] --- build-helper:3.6.2:parse-version (parse-elasticsearch-main-compatible-version) @ hibernate-search-integrationtest-performance-backend-elasticsearch ---
+[INFO] 
+[INFO] --- build-helper:3.6.2:parse-version (parse-opensearch-main-compatible-version) @ hibernate-search-integrationtest-performance-backend-elasticsearch ---
+[INFO] 
+[INFO] --- build-helper:3.6.2:parse-version (parse-elasticsearch-client-version) @ hibernate-search-integrationtest-performance-backend-elasticsearch ---
+[INFO] 
+[INFO] --- build-helper:3.6.2:parse-version (parse-elasticsearch-test-version) @ hibernate-search-integrationtest-performance-backend-elasticsearch ---
+[INFO] 
+[INFO] --- build-helper:3.6.2:parse-version (parse-gson-version) @ hibernate-search-integrationtest-performance-backend-elasticsearch ---
+[INFO] 
+[INFO] --- build-helper:3.6.2:parse-version (parse-jakarta-persistence-version) @ hibernate-search-integrationtest-performance-backend-elasticsearch ---
+[INFO] 
+[INFO] --- build-helper:3.6.2:parse-version (parse-jakarta-batch-version) @ hibernate-search-integrationtest-performance-backend-elasticsearch ---
+[INFO] 
+[INFO] --- build-helper:3.6.2:parse-version (parse-wildfly-version) @ hibernate-search-integrationtest-performance-backend-elasticsearch ---
+[INFO] 
+[INFO] --- enforcer:3.6.3:enforce (enforce-common-rules) @ hibernate-search-integrationtest-performance-backend-elasticsearch ---
+[INFO] Rule 0: org.apache.maven.enforcer.rules.version.RequireJavaVersion passed
+[INFO] Rule 1: org.apache.maven.enforcer.rules.version.RequireMavenVersion passed
+[INFO] Rule 2: org.apache.maven.enforcer.rules.BanDuplicatePomDependencyVersions passed
+[INFO] 
+[INFO] --- enforcer:3.6.3:enforce (enforce-dependency-convergence) @ hibernate-search-integrationtest-performance-backend-elasticsearch ---
+[INFO] Skipping Rule Enforcement.
+[INFO] 
+[INFO] --- enforcer:3.6.3:enforce (enforce-banned-dependencies-rules) @ hibernate-search-integrationtest-performance-backend-elasticsearch ---
+[INFO] Rule 0: org.apache.maven.enforcer.rules.dependency.BannedDependencies passed
+[INFO] 
+[INFO] --- dependency:3.11.0:properties (default) @ hibernate-search-integrationtest-performance-backend-elasticsearch ---
+[INFO] 
+[INFO] --- spotless:3.10.2:apply (check-apply-formatting) @ hibernate-search-integrationtest-performance-backend-elasticsearch ---
+[INFO] Spotless.Format is keeping 1 files clean - 0 were changed to be clean, 0 were already clean, 1 were skipped because caching determined they were already clean
+[INFO] Spotless.Java is keeping 17 files clean - 0 were changed to be clean, 0 were already clean, 17 were skipped because caching determined they were already clean
+[INFO] 
+[INFO] --- processor:5.2:process (processjmh) @ hibernate-search-integrationtest-performance-backend-elasticsearch ---
+[WARNING] diagnostic: warning: [options] location of system modules is not set in conjunction with -source 17
+  not setting the location of system modules may lead to class files that cannot run on JDK 17
+    --release 17 is recommended instead of -source 17 -target 17 because it sets the location of system modules automatically
+[INFO] 
+[INFO] --- resources:3.5.0:copy-resources (copy-license) @ hibernate-search-integrationtest-performance-backend-elasticsearch ---
+[INFO] Copying 1 resource from ../../../.. to target/classes/META-INF
+[INFO] 
+[INFO] --- resources:3.5.0:resources (default-resources) @ hibernate-search-integrationtest-performance-backend-elasticsearch ---
+[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.16.0:compile (default-compile) @ hibernate-search-integrationtest-performance-backend-elasticsearch ---
+[INFO] [maven-compiler-plugin] Using executable at path '/usr/lib/jvm/java-25-openjdk/bin/javac'; resolved version: javac 25.0.4.1 openjdk version "25.0.4.1" 2026-08-18 OpenJDK Runtime Environment (Red_Hat-25.0.4.1.1-1) (build 25.0.4.1+1) OpenJDK 64-Bit Server VM (Red_Hat-25.0.4.1.1-1) (build 25.0.4.1+1, mixed mode, sharing)
+[INFO] [maven-compiler-plugin] Using executable at path '/usr/lib/jvm/java-25-openjdk/bin/javac'; resolved version: javac 25.0.4.1 openjdk version "25.0.4.1" 2026-08-18 OpenJDK Runtime Environment (Red_Hat-25.0.4.1.1-1) (build 25.0.4.1+1) OpenJDK 64-Bit Server VM (Red_Hat-25.0.4.1.1-1) (build 25.0.4.1+1, mixed mode, sharing)
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 143 source files with javac [forked debug deprecation release 17] to target/classes
+[INFO] 
+[INFO] --- forbiddenapis:3.11:check (verify-forbidden-apis-main-internal) @ hibernate-search-integrationtest-performance-backend-elasticsearch ---
+[INFO] Scanning for classes to check...
+[INFO] Reading bundled API signatures: jdk-unsafe-25
+[INFO] Reading bundled API signatures: jdk-deprecated-25
+[INFO] Reading bundled API signatures: jdk-non-portable
+[INFO] Reading bundled API signatures: jdk-internal-25
+[INFO] Reading API signatures: jar:file:/home/agentuser/.m2/repository/org/hibernate/search/hibernate-search-build-config/9.0.0-SNAPSHOT/hibernate-search-build-config-9.0.0-SNAPSHOT.jar!/forbidden-internal.txt
+[INFO] Loading classes to check...
+[INFO] Scanning classes for violations...
+[INFO] Scanned 161 class file(s) for forbidden API invocations (in 0.15s), 0 error(s).
+[INFO] 
+[INFO] --- build-helper:3.6.2:add-test-source (add-test-source-noparameters) @ hibernate-search-integrationtest-performance-backend-elasticsearch ---
+[INFO] Test Source directory: /home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/src/test/java-noparameters added.
+[INFO] 
+[INFO] --- resources:3.5.0:testResources (default-testResources) @ hibernate-search-integrationtest-performance-backend-elasticsearch ---
+[INFO] skip non existing resourceDirectory /home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.16.0:testCompile (default-testCompile) @ hibernate-search-integrationtest-performance-backend-elasticsearch ---
+[INFO] [maven-compiler-plugin] Using executable at path '/usr/lib/jvm/java-25-openjdk/bin/javac'; resolved version: javac 25.0.4.1 openjdk version "25.0.4.1" 2026-08-18 OpenJDK Runtime Environment (Red_Hat-25.0.4.1.1-1) (build 25.0.4.1+1) OpenJDK 64-Bit Server VM (Red_Hat-25.0.4.1.1-1) (build 25.0.4.1+1, mixed mode, sharing)
+[INFO] [maven-compiler-plugin] Using executable at path '/usr/lib/jvm/java-25-openjdk/bin/javac'; resolved version: javac 25.0.4.1 openjdk version "25.0.4.1" 2026-08-18 OpenJDK Runtime Environment (Red_Hat-25.0.4.1.1-1) (build 25.0.4.1+1) OpenJDK 64-Bit Server VM (Red_Hat-25.0.4.1.1-1) (build 25.0.4.1+1, mixed mode, sharing)
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 1 source file with javac [forked debug deprecation release 25] to target/test-classes
+[INFO] 
+[INFO] --- compiler:3.16.0:testCompile (noparameters-testCompile) @ hibernate-search-integrationtest-performance-backend-elasticsearch ---
+[INFO] [maven-compiler-plugin] Using executable at path '/usr/lib/jvm/java-25-openjdk/bin/javac'; resolved version: javac 25.0.4.1 openjdk version "25.0.4.1" 2026-08-18 OpenJDK Runtime Environment (Red_Hat-25.0.4.1.1-1) (build 25.0.4.1+1) OpenJDK 64-Bit Server VM (Red_Hat-25.0.4.1.1-1) (build 25.0.4.1+1, mixed mode, sharing)
+[INFO] [maven-compiler-plugin] Using executable at path '/usr/lib/jvm/java-25-openjdk/bin/javac'; resolved version: javac 25.0.4.1 openjdk version "25.0.4.1" 2026-08-18 OpenJDK Runtime Environment (Red_Hat-25.0.4.1.1-1) (build 25.0.4.1+1) OpenJDK 64-Bit Server VM (Red_Hat-25.0.4.1.1-1) (build 25.0.4.1+1, mixed mode, sharing)
+[INFO] Recompiling the module because of changed dependency.
+[INFO] 
+[INFO] --- forbiddenapis:3.11:testCheck (verify-forbidden-apis-tests) @ hibernate-search-integrationtest-performance-backend-elasticsearch ---
+[INFO] Scanning for classes to check...
+[INFO] Reading bundled API signatures: jdk-unsafe-25
+[INFO] Reading bundled API signatures: jdk-deprecated-25
+[INFO] Reading bundled API signatures: jdk-non-portable
+[INFO] Reading bundled API signatures: jdk-internal-25
+[INFO] Reading API signatures: jar:file:/home/agentuser/.m2/repository/org/hibernate/search/hibernate-search-build-config/9.0.0-SNAPSHOT/hibernate-search-build-config-9.0.0-SNAPSHOT.jar!/forbidden-internal.txt
+[INFO] Loading classes to check...
+[INFO] Scanning classes for violations...
+[INFO] Scanned 1 class file(s) for forbidden API invocations (in 0.02s), 0 error(s).
+[INFO] 
+[INFO] --- surefire:3.5.6:test (default-test) @ hibernate-search-integrationtest-performance-backend-elasticsearch ---
+[INFO] Skipped
+[INFO] 
+[INFO] --- jar:3.5.1:jar (default-jar) @ hibernate-search-integrationtest-performance-backend-elasticsearch ---
+[INFO] Building jar: /home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/hibernate-search-integrationtest-performance-backend-elasticsearch-9.0.0-SNAPSHOT.jar
+[INFO] 
+[INFO] --- shade:3.6.2:shade (default) @ hibernate-search-integrationtest-performance-backend-elasticsearch ---
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] android-json-0.0.20131108.vaadin1.jar, annotations-2.55.4.jar, apiguardian-api-1.1.2.jar, assertj-core-3.27.7.jar, auth-2.55.4.jar, awaitility-4.3.0.jar, byte-buddy-1.18.11.jar, byte-buddy-agent-1.18.11.jar, checksums-2.55.4.jar, checksums-spi-2.55.4.jar, commons-codec-1.22.1.jar, commons-logging-1.4.0.jar, commons-math3-3.6.1.jar, elasticsearch-rest-client-9.5.4.jar, elasticsearch-rest-client-sniffer-9.5.4.jar, endpoints-spi-2.55.4.jar, error_prone_annotations-2.48.0.jar, eventstream-1.0.1.jar, gson-2.14.0.jar, hamcrest-3.0.jar, hibernate-accessor-0.1.0.Alpha5.jar, hibernate-search-backend-elasticsearch-9.0.0-SNAPSHOT.jar, hibernate-search-backend-elasticsearch-aws-9.0.0-SNAPSHOT.jar, hibernate-search-backend-elasticsearch-client-rest4-9.0.0-SNAPSHOT.jar, hibernate-search-engine-9.0.0-SNAPSHOT.jar, hibernate-search-integrationtest-performance-backend-base-9.0.0-SNAPSHOT.jar, hibernate-search-integrationtest-performance-backend-elasticsearch-9.0.0-SNAPSHOT.jar, hibernate-search-util-common-9.0.0-SNAPSHOT.jar, hibernate-search-util-internal-integrationtest-mapper-stub-9.0.0-SNAPSHOT.jar, hibernate-search-util-internal-test-common-9.0.0-SNAPSHOT.jar, hibernate-search-util-json-9.0.0-SNAPSHOT.jar, http-auth-2.55.4.jar, http-auth-aws-2.55.4.jar, http-auth-aws-eventstream-2.55.4.jar, http-auth-spi-2.55.4.jar, http-client-spi-2.55.4.jar, httpasyncclient-4.1.5.jar, httpclient-4.5.14.jar, httpcore-4.4.16.jar, httpcore-nio-4.4.16.jar, identity-spi-2.55.4.jar, jackson-core-2.22.1.jar, jackson-core-3.2.2.jar, jandex-3.6.0.jar, jboss-logging-3.6.3.Final.jar, jmh-core-1.37.jar, jopt-simple-5.0.4.jar, json-utils-2.55.4.jar, jsonassert-1.5.1.jar, jspecify-1.0.0.jar, junit-jupiter-6.0.3.jar, junit-jupiter-api-6.0.3.jar, junit-jupiter-engine-6.0.3.jar, junit-jupiter-params-6.0.3.jar, junit-platform-commons-6.0.3.jar, junit-platform-engine-6.0.3.jar, junit-platform-launcher-6.0.3.jar, junit-platform-suite-api-6.0.3.jar, junit-platform-suite-engine-6.0.3.jar, log4j-api-2.26.1.jar, log4j-core-2.26.1.jar, log4j-slf4j-impl-2.26.1.jar, metrics-spi-2.55.4.jar, mockito-core-5.23.0.jar, mockito-junit-jupiter-5.23.0.jar, objenesis-3.3.jar, opentest4j-1.3.0.jar, profiles-2.55.4.jar, reactive-streams-1.0.4.jar, regions-2.55.4.jar, retries-2.55.4.jar, retries-spi-2.55.4.jar, sdk-core-2.55.4.jar, slf4j-api-1.7.36.jar, third-party-jackson-core-2.55.4.jar, utils-2.55.4.jar define 1 overlapping resource: 
+[WARNING]   - META-INF/MANIFEST.MF
+[WARNING] assertj-core-3.27.7.jar, byte-buddy-1.18.11.jar, byte-buddy-agent-1.18.11.jar, commons-codec-1.22.1.jar, commons-logging-1.4.0.jar, error_prone_annotations-2.48.0.jar, gson-2.14.0.jar, jackson-core-2.22.1.jar, jspecify-1.0.0.jar define 1 overlapping classes: 
+[WARNING]   - META-INF.versions.9.module-info
+[WARNING] junit-jupiter-6.0.3.jar, junit-jupiter-api-6.0.3.jar, junit-jupiter-engine-6.0.3.jar, junit-jupiter-params-6.0.3.jar, junit-platform-commons-6.0.3.jar, junit-platform-engine-6.0.3.jar, junit-platform-launcher-6.0.3.jar, junit-platform-suite-api-6.0.3.jar, junit-platform-suite-engine-6.0.3.jar define 2 overlapping resources: 
+[WARNING]   - META-INF/LICENSE-notice.md
+[WARNING]   - META-INF/LICENSE.md
+[WARNING] annotations-2.55.4.jar, auth-2.55.4.jar, checksums-2.55.4.jar, checksums-spi-2.55.4.jar, commons-codec-1.22.1.jar, commons-logging-1.4.0.jar, commons-math3-3.6.1.jar, elasticsearch-rest-client-9.5.4.jar, elasticsearch-rest-client-sniffer-9.5.4.jar, endpoints-spi-2.55.4.jar, http-auth-2.55.4.jar, http-auth-aws-2.55.4.jar, http-auth-aws-eventstream-2.55.4.jar, http-auth-spi-2.55.4.jar, http-client-spi-2.55.4.jar, identity-spi-2.55.4.jar, json-utils-2.55.4.jar, metrics-spi-2.55.4.jar, profiles-2.55.4.jar, regions-2.55.4.jar, retries-2.55.4.jar, retries-spi-2.55.4.jar, sdk-core-2.55.4.jar, third-party-jackson-core-2.55.4.jar, utils-2.55.4.jar define 1 overlapping resource: 
+[WARNING]   - META-INF/NOTICE.txt
+[WARNING] jmh-core-1.37.jar, mockito-core-5.23.0.jar, mockito-junit-jupiter-5.23.0.jar define 1 overlapping resource: 
+[WARNING]   - LICENSE
+[WARNING] httpasyncclient-4.1.5.jar, httpclient-4.5.14.jar, httpcore-4.4.16.jar, httpcore-nio-4.4.16.jar, log4j-api-2.26.1.jar, log4j-core-2.26.1.jar, log4j-slf4j-impl-2.26.1.jar define 1 overlapping resource: 
+[WARNING]   - META-INF/DEPENDENCIES
+[WARNING] byte-buddy-1.18.11.jar, byte-buddy-agent-1.18.11.jar, httpasyncclient-4.1.5.jar, httpclient-4.5.14.jar, httpcore-4.4.16.jar, httpcore-nio-4.4.16.jar, jackson-core-2.22.1.jar, jackson-core-3.2.2.jar, log4j-api-2.26.1.jar, log4j-core-2.26.1.jar, log4j-slf4j-impl-2.26.1.jar, objenesis-3.3.jar, third-party-jackson-core-2.55.4.jar define 1 overlapping resource: 
+[WARNING]   - META-INF/NOTICE
+[WARNING] jackson-core-2.22.1.jar, jackson-core-3.2.2.jar, third-party-jackson-core-2.55.4.jar define 3 overlapping resources: 
+[WARNING]   - META-INF/FastDoubleParser-LICENSE
+[WARNING]   - META-INF/FastDoubleParser-ThirdParty-LICENSE
+[WARNING]   - META-INF/Schubfach-LICENSE
+[WARNING] annotations-2.55.4.jar, auth-2.55.4.jar, checksums-2.55.4.jar, checksums-spi-2.55.4.jar, commons-codec-1.22.1.jar, commons-logging-1.4.0.jar, commons-math3-3.6.1.jar, elasticsearch-rest-client-9.5.4.jar, elasticsearch-rest-client-sniffer-9.5.4.jar, endpoints-spi-2.55.4.jar, hibernate-search-backend-elasticsearch-9.0.0-SNAPSHOT.jar, hibernate-search-backend-elasticsearch-aws-9.0.0-SNAPSHOT.jar, hibernate-search-backend-elasticsearch-client-rest4-9.0.0-SNAPSHOT.jar, hibernate-search-engine-9.0.0-SNAPSHOT.jar, hibernate-search-integrationtest-performance-backend-base-9.0.0-SNAPSHOT.jar, hibernate-search-integrationtest-performance-backend-elasticsearch-9.0.0-SNAPSHOT.jar, hibernate-search-util-common-9.0.0-SNAPSHOT.jar, hibernate-search-util-internal-integrationtest-mapper-stub-9.0.0-SNAPSHOT.jar, hibernate-search-util-internal-test-common-9.0.0-SNAPSHOT.jar, hibernate-search-util-json-9.0.0-SNAPSHOT.jar, http-auth-2.55.4.jar, http-auth-aws-2.55.4.jar, http-auth-aws-eventstream-2.55.4.jar, http-auth-spi-2.55.4.jar, http-client-spi-2.55.4.jar, identity-spi-2.55.4.jar, json-utils-2.55.4.jar, metrics-spi-2.55.4.jar, profiles-2.55.4.jar, regions-2.55.4.jar, retries-2.55.4.jar, retries-spi-2.55.4.jar, sdk-core-2.55.4.jar, third-party-jackson-core-2.55.4.jar, utils-2.55.4.jar define 1 overlapping resource: 
+[WARNING]   - META-INF/LICENSE.txt
+[WARNING] assertj-core-3.27.7.jar, jspecify-1.0.0.jar define 1 overlapping resource: 
+[WARNING]   - META-INF/versions/9/OSGI-INF/MANIFEST.MF
+[WARNING] hibernate-search-backend-elasticsearch-9.0.0-SNAPSHOT.jar, hibernate-search-backend-elasticsearch-aws-9.0.0-SNAPSHOT.jar, hibernate-search-backend-elasticsearch-client-rest4-9.0.0-SNAPSHOT.jar, hibernate-search-engine-9.0.0-SNAPSHOT.jar, hibernate-search-util-common-9.0.0-SNAPSHOT.jar define 1 overlapping resource: 
+[WARNING]   - META-INF/hibernate-search/logging-categories.yaml
+[WARNING] apiguardian-api-1.1.2.jar, byte-buddy-1.18.11.jar, byte-buddy-agent-1.18.11.jar, hamcrest-3.0.jar, hibernate-accessor-0.1.0.Alpha5.jar, httpasyncclient-4.1.5.jar, httpclient-4.5.14.jar, httpcore-4.4.16.jar, httpcore-nio-4.4.16.jar, jackson-core-2.22.1.jar, jackson-core-3.2.2.jar, log4j-api-2.26.1.jar, log4j-core-2.26.1.jar, log4j-slf4j-impl-2.26.1.jar, objenesis-3.3.jar, opentest4j-1.3.0.jar, third-party-jackson-core-2.55.4.jar define 1 overlapping resource: 
+[WARNING]   - META-INF/LICENSE
+[WARNING] hibernate-search-integrationtest-performance-backend-elasticsearch-9.0.0-SNAPSHOT.jar, hibernate-search-util-internal-test-common-9.0.0-SNAPSHOT.jar define 1 overlapping resource: 
+[WARNING]   - log4j2.properties
+[WARNING] maven-shade-plugin has detected that some files are
+[WARNING] present in two or more JARs. When this happens, only one
+[WARNING] single version of the file is copied to the uber jar.
+[WARNING] Usually this is not harmful and you can skip these warnings,
+[WARNING] otherwise try to manually exclude artifacts based on
+[WARNING] mvn dependency:tree -Ddetail=true and the above output.
+[WARNING] See https://maven.apache.org/plugins/maven-shade-plugin/
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  6.479 s
+[INFO] Finished at: 2026-10-05T20:08:26Z
+[INFO] ------------------------------------------------------------------------
+[INFO] 33 goals, 33 executed

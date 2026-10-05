@@ -17,8 +17,8 @@ import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
+import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
-import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
 
@@ -32,11 +32,16 @@ public class JsonUtf8IngressBenchmark {
 	@State(Scope.Thread)
 	public static class Bodies extends JsonComparisonBenchmark.Bodies {
 		byte[] input;
+		@Param({ "8192" })
+		public int feedSize;
 
+		// The inherited @Setup invokes this override; annotating it too schedules it twice.
 		@Override
-		@Setup
 		public void setup() {
 			super.setup();
+			if ( feedSize <= 0 ) {
+				throw new IllegalArgumentException( "Feed size must be positive" );
+			}
 			input = json.getBytes( StandardCharsets.UTF_8 );
 			try {
 				JsonElement search = parseSearch( this );
@@ -66,7 +71,8 @@ public class JsonUtf8IngressBenchmark {
 	private static JsonElement parseSearch(Bodies state) {
 		try ( var session = state.parsing.createParser() ) {
 			ByteBuffer input = ByteBuffer.wrap( state.input );
-			while ( input.hasRemaining() ) {
+			while ( input.position() < state.input.length ) {
+				input.limit( Math.min( input.position() + state.feedSize, state.input.length ) );
 				session.feed( input );
 			}
 			return session.endOfInput();
@@ -74,12 +80,27 @@ public class JsonUtf8IngressBenchmark {
 	}
 
 	private static com.google.gson.JsonObject parseGson(Bodies state) throws IOException {
-		try ( var reader = new InputStreamReader( new ByteArrayInputStream( state.input ), StandardCharsets.UTF_8 ) ) {
+		try ( var reader =
+				new InputStreamReader( new FragmentedInputStream( state.input, state.feedSize ), StandardCharsets.UTF_8 ) ) {
 			var result = state.gson.fromJson( reader, com.google.gson.JsonObject.class );
 			if ( reader.read() != -1 ) {
 				throw new IllegalStateException( "Incomplete UTF-8 consumption" );
 			}
 			return result;
+		}
+	}
+
+	private static final class FragmentedInputStream extends ByteArrayInputStream {
+		private final int feedSize;
+
+		private FragmentedInputStream(byte[] input, int feedSize) {
+			super( input );
+			this.feedSize = feedSize;
+		}
+
+		@Override
+		public synchronized int read(byte[] bytes, int offset, int length) {
+			return super.read( bytes, offset, Math.min( length, feedSize ) );
 		}
 	}
 }

@@ -21,6 +21,7 @@ Usage: run-json-benchmarks.sh --out DIRECTORY [options]
   --pattern REGEX    JMH benchmark selection
   --fixtures LIST    Comma-separated fixtures; empty disables fixture/lifecycle parameters
   --lifecycle MODE   fresh (default) or reused
+  --param NAME=VALUE Additional JMH parameter (repeatable)
   --profiler SPEC    Optional JMH profiler; separate diagnostic run
   --jvm-args ARGS    Additional fork JVM arguments (recorded verbatim)
   -h, --help         Show this help
@@ -33,13 +34,14 @@ skip_build=false quick=false cold=false
 pattern='JsonComparisonBenchmark.(gson|jackson|synchronousCursor|incrementalCursor|boundedWorker)$'
 fixtures=small,mapping,unicode,nested,scalar-1m,scalar-8m,bulk-10000
 lifecycle=fresh
+params=()
 while (($#)); do
     case $1 in
         -h|--help) usage; exit 0 ;;
         --skip-build) skip_build=true; shift; continue ;;
         --quick) quick=true; shift; continue ;;
         --cold) cold=true; shift; continue ;;
-        --out|--cores|--forks|--warmup|--iterations|--seconds|--pattern|--fixtures|--lifecycle|--profiler|--jvm-args)
+        --out|--cores|--forks|--warmup|--iterations|--seconds|--pattern|--fixtures|--lifecycle|--param|--profiler|--jvm-args)
             (($# >= 2)) || fail "$1 requires a value"
             case $1 in
                 --out) out=$2 ;; --cores) cores_spec=$2 ;;
@@ -48,6 +50,7 @@ while (($#)); do
                     printf -v "${1#--}" '%d' "$((10#$2))" ;;
                 --pattern) pattern=$2 ;; --fixtures) fixtures=$2 ;;
                 --lifecycle) lifecycle=$2 ;;
+                --param) [[ $2 =~ ^[a-zA-Z_][a-zA-Z_0-9]*=.+$ ]] || fail '--param requires a nonempty name=value'; params+=("$2") ;;
                 --profiler) profiler=$2 ;; --jvm-args) jvm_args=$2 ;;
             esac
             shift 2 ;;
@@ -123,6 +126,7 @@ if [[ $cold == true ]]; then warmup=0 iterations=1; fi
 command=(taskset -c "$affinity" java -jar "$JAR" "$pattern" -f "$forks" -wi "$warmup" -i "$iterations" -w "${seconds}s" -r "${seconds}s" -t 1 -jvmArgs "$jvm" -rf json -rff "$out/jmh.json")
 [[ $cold == false ]] || command+=(-bm ss)
 [[ -z $fixtures ]] || command+=(-p "fixture=$fixtures" -p "lifecycle=$lifecycle")
+for parameter in "${params[@]}"; do command+=(-p "$parameter"); done
 [[ -z $profiler ]] || command+=(-prof "$profiler")
 git diff HEAD --binary > "$out/source.patch"
 source_dirs=(integrationtest/performance/backend/elasticsearch/src integrationtest/performance/backend/scripts util/json/src)

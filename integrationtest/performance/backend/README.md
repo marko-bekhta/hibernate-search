@@ -264,3 +264,61 @@ a transport, network fragmentation or an event-loop latency guarantee. Parser
 benchmarks use only the first fixture part, as the parser accepts a single JSON
 root; output benchmarks drain the complete NDJSON body. The output lifecycle
 parameter does not alter these parser operations.
+
+### Follow-up isolation benchmarks
+
+`JsonScalarConsumptionBenchmark` starts with the same owned String for all three
+methods. Its Jackson-only method advances through every token and calls
+`getString()` for property names and scalar values, consuming each returned
+String opaquely. This forces lazy string completion and assembly. It deliberately
+omits Search's raw UTF-16 validation, single-root tree checks, name-byte checks
+and tree allocation; it isolates upstream work on valid single-root fixtures,
+not an interchangeable parser. Core token/depth/length constraints match the
+Search defaults. Setup checks the complete expected scalar outside timing.
+
+```shell
+integrationtest/performance/backend/scripts/run-json-benchmarks.sh --skip-build \
+  --out /tmp/json-scalar-isolation --cores 0,2 --warmup 8 \
+  --fixtures scalar-1m --pattern 'JsonScalarConsumptionBenchmark.*'
+```
+
+`JsonNumericConsumptionBenchmark` constructs the complete 10,000-number tree
+before reading it. `reads=none` observes the tree without numeric access;
+`selected` reads every hundredth value once (100 reads); `repeated` reads every
+value ten times (100,000 reads). Every operation consumes the tree opaquely and
+returns the sum. Setup independently checks sums of 0, 495,000 and 499,950,000.
+Construction experiments must include these cases, and full UTF-8 construction,
+when assessing eager caches versus conversion on demand. Getter-only results
+cannot answer that tradeoff.
+
+```shell
+integrationtest/performance/backend/scripts/run-json-benchmarks.sh --skip-build \
+  --out /tmp/json-numeric-consumption --cores 0,2 --fixtures numbers-10000 \
+  --pattern 'JsonNumericConsumptionBenchmark.*'
+# Select a subset with repeatable additional JMH parameter arguments:
+integrationtest/performance/backend/scripts/run-json-benchmarks.sh --skip-build \
+  --out /tmp/json-numeric-selected --cores 0,2 --fixtures numbers-10000 \
+  --pattern 'JsonNumericConsumptionBenchmark.*' --param reads=none,selected
+# Matched maximum input read/feed fragments; default feedSize remains 8192:
+integrationtest/performance/backend/scripts/run-json-benchmarks.sh --skip-build \
+  --out /tmp/json-fragments --cores 0,2 --fixtures unicode,scalar-1m \
+  --pattern 'JsonUtf8IngressBenchmark.*Parser$' --param feedSize=64,1024,8192
+```
+
+Fragmentation caps both the Gson InputStream read length and Search's offered
+ByteBuffer region. Search also retains its configured maximum internal feed
+size of 8192. Both paths parse through EOF, return complete trees and verify full
+bytes in trial setup for every chunk parameter. This measures CPU throughput
+under controlled in-memory fragmentation, not network arrival timing or an
+event-loop latency distribution. One-byte and escaped-name boundaries remain
+covered by parser correctness tests; their cost need not be repeated in every
+large-scalar throughput campaign.
+
+The scalar-consumption fixture also accepts `numbers-10000` for upstream numeric
+lexeme completion. `jacksonUtf8Tokens` completes the same scalars through Core's
+public async parser with 8192-byte slices and explicit EOF. Setup verifies every
+scalar against the fixture through both character and UTF-8 token paths. This
+UTF-8 baseline omits Search's separate canonical UTF-8 validator, ownership
+handoff clearing, tree construction and the escaped-name workaround (fixture
+names are ASCII). It is a diagnostic baseline, not a replacement SPI or a
+strictness-equivalent end-to-end tree parser.

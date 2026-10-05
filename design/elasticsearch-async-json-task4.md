@@ -1,5 +1,10 @@
 # Task 4 checkpoint: reproducible JSON comparisons
 
+Current follow-up: [bounded encoding and parser tradeoffs](elasticsearch-async-json-task4-followup.md).
+The original tables below describe checkpoint `ee3b0a5644`; the follow-up resolves
+measured Unicode output, improves numeric construction, fixes inherited parser
+benchmark setup duplication, and records the remaining parser gates.
+
 This checkpoint adds reusable server-independent performance infrastructure and
 measured, bounded optimizations to the Search cursor. Task 5 codecs/backend
 migration and Task 6 transport integration have not started.

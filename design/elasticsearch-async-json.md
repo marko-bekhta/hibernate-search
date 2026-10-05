@@ -230,7 +230,14 @@ Completed checkpoint: [Task 3 report](elasticsearch-async-json-task3.md), with b
 
 **Exit:** comparison is recorded and material regressions are resolved.
 
-Checkpoint: [Task 4 report](elasticsearch-async-json-task4.md). **Exit remains incomplete:** large-String and numeric-rich parser regressions and Unicode output variability are unresolved. Benchmark infrastructure, bounded optimizations and raw evidence are committed for follow-up; Task 5/6 have not started.
+Checkpoint: [Task 4 report](elasticsearch-async-json-task4.md), with the
+[follow-up report](elasticsearch-async-json-task4-followup.md). **Exit remains incomplete:**
+measured Unicode output recovered through direct bounded encoding, and combining
+numeric validation/accumulation improved construction. Large owned-String and
+numeric-rich UTF-8 parser regressions remain, together with scalar UTF-8 throughput
+variability. Upstream token baselines, corrected benchmark lifecycles and raw
+before/after evidence support the remaining architectural decisions. Task 5/6
+have not started.
 
 ### Task 5 — Reflection-free codecs and backend migration
 

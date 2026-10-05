@@ -70,6 +70,45 @@ class JsonModelTest {
 	}
 
 	@Test
+	void numberFactoriesRetainStrictGrammarAndSignedZero() {
+		for ( String invalid : new String[] {
+				"",
+				"-",
+				"+1",
+				"01",
+				"-01",
+				".1",
+				"-.1",
+				"0.",
+				"1e",
+				"1e+",
+				"1e-",
+				"0E+",
+				"1e+-1",
+				"1x",
+				"1 " } ) {
+			assertThatThrownBy( () -> JsonPrimitive.number( invalid ) ).isInstanceOf( IllegalArgumentException.class );
+		}
+		for ( String valid : new String[] {
+				"0",
+				"-0",
+				"0.1",
+				"-0.0",
+				"10",
+				"1e+000",
+				"-0E-000",
+				"1E999999999999999999999999999" } ) {
+			assertThat( JsonPrimitive.number( valid ).getAsString() ).isEqualTo( valid );
+		}
+		JsonPrimitive zero = JsonPrimitive.number( "-0" );
+		assertThat( zero.getAsLong() ).isZero();
+		assertThat( zero.getAsInt() ).isZero();
+		assertThat( Double.doubleToRawLongBits( zero.getAsDouble() ) ).isEqualTo( Long.MIN_VALUE );
+		assertThat( Float.floatToRawIntBits( zero.getAsFloat() ) ).isEqualTo( Integer.MIN_VALUE );
+		assertThat( zero.getAsString() ).isEqualTo( "-0" );
+	}
+
+	@Test
 	void numbersPreserveLexemesAndNarrowing() {
 		for ( String number : new String[] { "-0", "1.2300e+04", "1.0E-04", "9007199254740993", "0.000", "-1e+0003" } ) {
 			JsonElement value = parsing.parse( number );

@@ -45,28 +45,55 @@ public final class JsonNumber extends Number {
 		integral = negative ? result : -result;
 	}
 
+	private JsonNumber(String lexeme, boolean hasLong, long integral) {
+		this.lexeme = lexeme;
+		this.validated = true;
+		this.hasLong = hasLong;
+		this.integral = integral;
+	}
+
 	static JsonNumber fromParser(String lexeme) {
 		return jsonNumber( lexeme );
 	}
 
 	/** Internal factory shared with the public model's validated-number construction. */
 	public static JsonNumber jsonNumber(String lexeme) {
-		int offset = lexeme.startsWith( "-" ) ? 1 : 0;
+		boolean negative = lexeme.startsWith( "-" );
+		int offset = negative ? 1 : 0;
 		int length = lexeme.length();
 		if ( offset == length ) {
 			throw invalid( lexeme );
 		}
+		long limit = negative ? Long.MIN_VALUE : -Long.MAX_VALUE;
+		long multiplicationLimit = limit / 10;
+		long result = 0;
+		boolean fits = true;
 		if ( lexeme.charAt( offset ) == '0' ) {
 			offset++;
 		}
 		else {
-			char digit = lexeme.charAt( offset );
-			if ( digit < '1' || digit > '9' ) {
+			char first = lexeme.charAt( offset );
+			if ( first < '1' || first > '9' ) {
 				throw invalid( lexeme );
 			}
-			offset = digitsEnd( lexeme, offset );
+			while ( offset < length ) {
+				int digit = lexeme.charAt( offset ) - '0';
+				if ( digit < 0 || digit > 9 ) {
+					break;
+				}
+				if ( fits ) {
+					if ( result < multiplicationLimit || result * 10 < limit + digit ) {
+						fits = false;
+					}
+					else {
+						result = result * 10 - digit;
+					}
+				}
+				offset++;
+			}
 		}
 		if ( offset < length && lexeme.charAt( offset ) == '.' ) {
+			fits = false;
 			int start = offset + 1;
 			offset = digitsEnd( lexeme, start );
 			if ( offset == start ) {
@@ -74,6 +101,7 @@ public final class JsonNumber extends Number {
 			}
 		}
 		if ( offset < length && ( lexeme.charAt( offset ) == 'e' || lexeme.charAt( offset ) == 'E' ) ) {
+			fits = false;
 			offset++;
 			if ( offset < length && ( lexeme.charAt( offset ) == '+' || lexeme.charAt( offset ) == '-' ) ) {
 				offset++;
@@ -87,7 +115,7 @@ public final class JsonNumber extends Number {
 		if ( offset != length ) {
 			throw invalid( lexeme );
 		}
-		return new JsonNumber( lexeme, true );
+		return new JsonNumber( lexeme, fits, negative ? result : -result );
 	}
 
 	private static int digitsEnd(String text, int start) {

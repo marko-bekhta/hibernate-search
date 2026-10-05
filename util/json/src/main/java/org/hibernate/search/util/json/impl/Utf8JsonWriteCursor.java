@@ -55,7 +55,7 @@ public final class Utf8JsonWriteCursor implements JsonWriteCursor {
 		while ( destination.hasRemaining() && !complete ) {
 			if ( pendingOffset == pendingLength ) {
 				pendingOffset = pendingLength = 0;
-				if ( writeAsciiRun( destination ) ) {
+				if ( writeAsciiRun( destination ) || writeUnicodeRun( destination ) ) {
 					if ( scalar == null && nextValue == null && frames.isEmpty() ) {
 						complete = true;
 						pending = null;
@@ -118,6 +118,76 @@ public final class Utf8JsonWriteCursor implements JsonWriteCursor {
 			else {
 				scalar = null;
 			}
+		}
+		return true;
+	}
+
+	/** Encode complete units directly into caller storage; the last partial unit uses pending. */
+	private boolean writeUnicodeRun(ByteBuffer destination) {
+		if ( scalar == null
+				|| !quoted || scalarStage != 1 || !destination.hasArray()
+				|| destination.remaining() < 6 ) {
+			return false;
+		}
+		byte[] array = destination.array();
+		int base = destination.arrayOffset();
+		int position = base + destination.position();
+		int end = base + destination.limit() - 6;
+		int offset = scalarOffset;
+		String text = scalar;
+		while ( position <= end && offset < text.length() ) {
+			char character = text.charAt( offset++ );
+			if ( character < 128 && SAFE_ASCII[character] ) {
+				array[position++] = (byte) character;
+				continue;
+			}
+			char escape = switch ( character ) {
+				case '"', '\\' -> character;
+				case '\b' -> 'b';
+				case '\f' -> 'f';
+				case '\n' -> 'n';
+				case '\r' -> 'r';
+				case '\t' -> 't';
+				default -> 0;
+			};
+			if ( escape != 0 ) {
+				array[position++] = '\\';
+				array[position++] = (byte) escape;
+			}
+			else if ( character < 128
+					|| character == 0x2028 || character == 0x2029
+					|| Character.isSurrogate( character )
+							&& !( Character.isHighSurrogate( character )
+									&& offset < text.length()
+									&& Character.isLowSurrogate( text.charAt( offset ) ) ) ) {
+				array[position++] = '\\';
+				array[position++] = 'u';
+				array[position++] = (byte) HEX.charAt( character >> 12 & 0xf );
+				array[position++] = (byte) HEX.charAt( character >> 8 & 0xf );
+				array[position++] = (byte) HEX.charAt( character >> 4 & 0xf );
+				array[position++] = (byte) HEX.charAt( character & 0xf );
+			}
+			else if ( character < 0x800 ) {
+				array[position++] = (byte) ( 0xc0 | character >> 6 );
+				array[position++] = (byte) ( 0x80 | character & 0x3f );
+			}
+			else if ( Character.isHighSurrogate( character ) ) {
+				int codePoint = Character.toCodePoint( character, text.charAt( offset++ ) );
+				array[position++] = (byte) ( 0xf0 | codePoint >> 18 );
+				array[position++] = (byte) ( 0x80 | codePoint >> 12 & 0x3f );
+				array[position++] = (byte) ( 0x80 | codePoint >> 6 & 0x3f );
+				array[position++] = (byte) ( 0x80 | codePoint & 0x3f );
+			}
+			else {
+				array[position++] = (byte) ( 0xe0 | character >> 12 );
+				array[position++] = (byte) ( 0x80 | character >> 6 & 0x3f );
+				array[position++] = (byte) ( 0x80 | character & 0x3f );
+			}
+		}
+		destination.position( position - base );
+		scalarOffset = offset;
+		if ( offset == text.length() ) {
+			scalarStage = 2;
 		}
 		return true;
 	}

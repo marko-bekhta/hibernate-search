@@ -1,0 +1,168 @@
+[
+    {
+        "jmhVersion" : "1.37",
+        "benchmark" : "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.searchParser",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 3,
+        "jvm" : "/usr/lib/jvm/java-25-openjdk/bin/java",
+        "jvmArgs" : [
+            "-Xms1g",
+            "-Xmx1g",
+            "-XX:+UseG1GC",
+            "-XX:ActiveProcessorCount=2",
+            "-Djson.benchmark.cores=0,2",
+            "-XX:+PrintCompilation"
+        ],
+        "jdkVersion" : "25.0.4.1",
+        "vmName" : "OpenJDK 64-Bit Server VM",
+        "vmVersion" : "25.0.4.1+1",
+        "warmupIterations" : 8,
+        "warmupTime" : "1 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 5,
+        "measurementTime" : "1 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "feedSize" : "8192",
+            "fixture" : "scalar-1m",
+            "lifecycle" : "fresh"
+        },
+        "primaryMetric" : {
+            "score" : 1189.626179644988,
+            "scoreError" : 77.46132889455302,
+            "scoreConfidence" : [
+                1112.164850750435,
+                1267.087508539541
+            ],
+            "scorePercentiles" : {
+                "0.0" : 1136.6065215981075,
+                "50.0" : 1141.8502280729847,
+                "90.0" : 1291.037336922313,
+                "95.0" : 1291.0571874140903,
+                "99.0" : 1291.0571874140903,
+                "99.9" : 1291.0571874140903,
+                "99.99" : 1291.0571874140903,
+                "99.999" : 1291.0571874140903,
+                "99.9999" : 1291.0571874140903,
+                "100.0" : 1291.0571874140903
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    1282.4113667705954,
+                    1291.0571874140903,
+                    1289.280912595966,
+                    1291.024103261128,
+                    1288.8794533587677
+                ],
+                [
+                    1145.8592609821292,
+                    1136.6065215981075,
+                    1140.6993652601875,
+                    1140.445737669264,
+                    1141.8502280729847
+                ],
+                [
+                    1138.0262626227284,
+                    1136.9846976786364,
+                    1138.1614640939747,
+                    1138.9282537071942,
+                    1144.1778795890682
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+            "compiler.time.profiled" : {
+                "score" : 4.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    4.0,
+                    4.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 0.0,
+                    "50.0" : 0.0,
+                    "90.0" : 1.0,
+                    "95.0" : 1.0,
+                    "99.0" : 1.0,
+                    "99.9" : 1.0,
+                    "99.99" : 1.0,
+                    "99.999" : 1.0,
+                    "99.9999" : 1.0,
+                    "100.0" : 1.0
+                },
+                "scoreUnit" : "ms",
+                "rawData" : [
+                    [
+                        1.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    [
+                        1.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0,
+                        0.0
+                    ]
+                ]
+            },
+            "compiler.time.total" : {
+                "score" : 425.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    425.0,
+                    425.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 409.0,
+                    "50.0" : 418.0,
+                    "90.0" : 425.0,
+                    "95.0" : 425.0,
+                    "99.0" : 425.0,
+                    "99.9" : 425.0,
+                    "99.99" : 425.0,
+                    "99.999" : 425.0,
+                    "99.9999" : 425.0,
+                    "100.0" : 425.0
+                },
+                "scoreUnit" : "ms",
+                "rawData" : [
+                    [
+                        418.0,
+                        418.0,
+                        418.0,
+                        418.0,
+                        419.0
+                    ],
+                    [
+                        424.0,
+                        424.0,
+                        424.0,
+                        425.0,
+                        425.0
+                    ],
+                    [
+                        409.0,
+                        410.0,
+                        410.0,
+                        411.0,
+                        411.0
+                    ]
+                ]
+            }
+        }
+    }
+]
+
+

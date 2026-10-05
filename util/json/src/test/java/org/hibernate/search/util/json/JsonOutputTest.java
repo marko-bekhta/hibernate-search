@@ -23,7 +23,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 class JsonOutputTest {
 	@ParameterizedTest
-	@ValueSource(ints = { 1, 2, 5, 8192 })
+	@ValueSource(ints = { 1, 2, 3, 4, 5, 6, 7, 11, 8192 })
 	void fragmentedOutputAndBufferBoundaries(int capacity) throws IOException {
 		JsonObject tree = fixture();
 		JsonBody body = JsonBodies.of( tree );
@@ -79,6 +79,20 @@ class JsonOutputTest {
 		JsonPrimitive exact = new JsonPrimitive( "<>&='\u2028\u2029é中😀\ud800x\udfff" );
 		assertThat( new String( synchronous( JsonBodies.of( exact ) ), StandardCharsets.UTF_8 ) )
 				.isEqualTo( "\"\\u003c\\u003e\\u0026\\u003d\\u0027\\u2028\\u2029é中😀\\ud800x\\udfff\"" );
+	}
+
+	@Test
+	void directUnicodeRunsYieldAtEveryEncodedUnitBoundary() throws IOException {
+		String text = "aé中😀\"\\\b\f\n\r\t\u0000<>&='\u2028\u2029\ud800x\udfff";
+		JsonObject tree = new JsonObject();
+		// Vary the prefix to exercise each remaining destination size for both names and values.
+		for ( int prefix = 0; prefix < 12; prefix++ ) {
+			tree.addProperty( "x".repeat( prefix ) + text, text.repeat( 4 ) );
+		}
+		byte[] expected = jackson( tree );
+		for ( int capacity = 1; capacity <= 32; capacity++ ) {
+			assertThat( drain( JsonBodies.of( tree ), capacity ) ).isEqualTo( expected );
+		}
 	}
 
 	@Test
