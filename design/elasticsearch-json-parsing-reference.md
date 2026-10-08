@@ -9,10 +9,12 @@ transports still use Gson. Tasks 5 and 6 have not started.
 This guide brings together the [Task 4 checkpoint](elasticsearch-async-json-task4.md),
 [corrected follow-up](elasticsearch-async-json-task4-followup.md) and
 [owned-String experiment](elasticsearch-async-json-string-utf8.md), and
-[numeric UTF-8 follow-up](elasticsearch-async-json-numeric-utf8.md). Acceptance of
-the String-path tradeoff does **not** close Task 4: the latest heap-integer UTF-8
-campaign remains 13.2% behind Gson after a supported improvement, and scalar
-UTF-8 results still vary materially.
+[numeric UTF-8 follow-up](elasticsearch-async-json-numeric-utf8.md). On 2026-10-08,
+the user accepted the documented remaining tradeoffs provisionally for migration,
+closing Task 4's investigation gate. The latest heap-integer UTF-8 campaign still
+loses 13.2% to Gson, and scalar UTF-8 variability remains unexplained; acceptance
+does not mean those findings were fixed. The completed [internal-route audit](elasticsearch-json-internal-path-audit.md)
+adds concrete checks to avoid unnecessary text parsing during Tasks 5 and 6.
 
 ## Choose according to the input you already have
 
@@ -202,7 +204,8 @@ so heap access improves it 12.5%; the retained result still loses 13.2% to Gson.
 Mixed intervals overlap. Separate GC allocation is 1,130,610 versus 985,666 B/op
 for integer Search/Gson; node storage is unchanged. Minimal token/number/tree
 allocation diagnostics are not identical-work competitors or CPU-cost fractions.
-This follow-up does not resolve scalar UTF-8 variability or complete Task 4.
+This follow-up did not resolve scalar UTF-8 variability. Task 4 was subsequently
+accepted for migration as recorded above, without claiming universal parity.
 Historical rows above retain their original campaign identities.
 
 ### Complete-tree String-to-UTF-8 experiment
@@ -281,9 +284,11 @@ UTF-8 measurements or String-input comparisons.
 
 Retain the character String convenience, strict Search-owned tree semantics,
 combined eager numeric construction and bounded UTF-8 session API. Preserve the
-benchmark alternatives as evidence. The accepted String-path choice does not
-approve all performance regressions: numeric UTF-8 and scalar UTF-8 variability
-remain open in the [masterplan](elasticsearch-async-json.md). Existing transports
+benchmark alternatives as evidence. The user accepts the documented remaining
+numeric UTF-8 and scalar variability tradeoffs provisionally for migration, as
+recorded in the [masterplan](elasticsearch-async-json.md). New regressions still
+require investigation, and actual transport behavior requires Task 6 verification.
+Existing transports
 remain Gson, and this reference adds no codec migration, transport integration,
 worker policy or codec implementation. The new numeric rows come from the linked
 focused campaigns; the historical parsing/read/encoding rows were not rerun.

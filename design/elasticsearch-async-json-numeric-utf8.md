@@ -1,5 +1,12 @@
 # Numeric-rich UTF-8 parsing follow-up
 
+**Subsequent decision, 2026-10-08:** the user accepted the documented remaining
+performance tradeoffs provisionally for migration. Task 4's investigation gate
+is complete by that decision, not by eliminating the gaps below. This report
+retains its original experimental conclusions. See the [masterplan](elasticsearch-async-json.md)
+and the [internal-route audit](elasticsearch-json-internal-path-audit.md) for the
+current migration requirements.
+
 The retained change adds heap-array byte access to the existing Jackson 3.2.2
 ByteBuffer parser subclass. On the matched 10,000-integer workload, Search improves
 from **3,624 ±39 to 4,077 ±110 operations/s (+12.5%)**. Complete Search parsing

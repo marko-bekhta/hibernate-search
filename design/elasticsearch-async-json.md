@@ -226,27 +226,35 @@ Completed checkpoint: [Task 3 report](elasticsearch-async-json-task3.md), with b
 - [x] Use at least three JMH forks and retain raw results.
 - [x] Investigate repeatable throughput regressions above 5% in representative uncongested workloads before broad migration.
 - [x] Treat that threshold as an investigation trigger, not statistical proof.
-- [ ] Resolve regressions without restoring whole-body buffering or mandatory thread hops.
+- [x] Resolve avoidable regressions and explicitly accept the remaining measured tradeoffs without restoring whole-body buffering or mandatory thread hops.
 
-**Exit:** comparison is recorded and material regressions are resolved.
+**Exit:** comparison is recorded, material regressions are investigated, and remaining tradeoffs are explicitly accepted for migration. Universal parity with Gson is not required.
 
 Checkpoint: [Task 4 report](elasticsearch-async-json-task4.md), with the
-[follow-up report](elasticsearch-async-json-task4-followup.md). **Exit remains incomplete:**
+[follow-up report](elasticsearch-async-json-task4-followup.md). **Investigation gate accepted on 2026-10-08:**
 measured Unicode output recovered through direct bounded encoding, and combining
 numeric validation/accumulation improved construction. The focused
 [numeric UTF-8 follow-up](elasticsearch-async-json-numeric-utf8.md) retains heap-array
 byte access in the existing async parser: matched integer throughput improves
 12.5%, but still trails Gson by 13.2%. Mixed numeric construction stays near Gson;
 strict validation, immutable numeric caches and the String route remain intact.
-Numeric-rich UTF-8 parsing and scalar UTF-8 throughput variability remain open gate items. The user accepts
+Numeric-rich UTF-8 parsing still trails Gson, and scalar UTF-8 throughput variability remains unexplained. The user accepts these documented tradeoffs provisionally for migration; neither issue is claimed fixed. The user also accepts
 retaining the current character String convenience path despite its measured
 large-scalar cost. The focused [owned-String UTF-8 experiment](elasticsearch-async-json-string-utf8.md)
 remains committed as benchmark evidence: staging improves large ASCII but
 materially regresses small and Unicode-rich Strings, so no production switch or
 size dispatch was adopted. The [parsing reference](elasticsearch-json-parsing-reference.md)
 collects the current decision, use cases and curated results while keeping input
-forms, workloads and campaigns distinct. This acceptance does not approve all
-remaining performance regressions or complete Task 4. Tasks 5/6 have not started.
+forms, workloads and campaigns distinct. Task 4's investigation checkpoint is complete by explicit acceptance, not by meeting a universal throughput threshold. New regressions still require investigation. Actual transport buffering, allocation, cancellation, backpressure and event-loop responsiveness must be verified in Task 6. Tasks 5/6 have not started.
+
+### Task 4a — Internal parsing-route audit before migration
+
+- [x] Inventory production JSON parsing entry points in the backend, all four client adapters and the JSON utility module; distinguish caller-supplied text from bytes and existing trees.
+- [x] Trace metadata decoding, schema copying, raw DSL/projection conversion, custom schema files, request serialization and logging to their input/output boundary.
+- [x] Check for avoidable bytes-to-String-to-parser and tree-to-text-to-parser routes; record existing buffering separately from text parsing.
+- [x] Assign concrete migration checks to Tasks 5 and 6, including legitimate String API exceptions and verification instructions.
+
+Completed source audit: [Internal JSON parsing routes](elasticsearch-json-internal-path-audit.md). No serialized-text round trip was found in the inspected metadata/deep-copy paths. Existing response Readers, custom schema input streams and full-part request buffering need the explicitly recorded migration treatment. This is a source audit, not a runtime performance or dependency-internals guarantee.
 
 ### Task 5 — Reflection-free codecs and backend migration
 
@@ -254,6 +262,7 @@ remaining performance regressions or complete Task 4. Tasks 5/6 have not started
 - [ ] Generate direct constructor/accessor/collection/nested-codec calls.
 - [ ] Register codecs explicitly; prohibit runtime field inspection and reflective fallback.
 - [ ] Keep codecs tree-based initially. Decode known types after async tree construction completes.
+- [ ] Apply the internal-route audit: decode/copy existing trees directly, preserve genuine String-input/output APIs, and read custom schema files through bounded byte-fed parsing before codec decoding. Do not implement codec or compatibility conversion by serializing and reparsing text.
 - [ ] Preserve null omission, explicit nulls, field naming, extra properties, unknown fields, and custom representations.
 - [ ] Migrate schema, document building, validation, predicates, sorts, aggregations, projections, and work execution.
 - [ ] Migrate accessor chains with explicit adaptation at every required path step.
@@ -287,6 +296,7 @@ remaining performance regressions or complete Task 4. Tasks 5/6 have not started
 
 - [ ] Apply original-input byte counting to preserve REST response-size limits without adding a JDK response cap.
 - [ ] Preserve explicit HTTP charset selection using the bounded incremental transcoding from Task 2.
+- [ ] Repeat the internal-route audit on each live adapter: response bytes must reach parser sessions without a complete String/char-array intermediate, and existing response trees must go directly to codecs. Check both successful and error/retry paths; document specific client-owned buffering exceptions.
 - [ ] Preserve expected errors, retryable responses, non-JSON proxy responses, and connection reuse.
 - [ ] Delay reporting body parse failures where necessary to preserve status-based retries.
 - [ ] Provide lazy entity replay where required by REST diagnostics.
