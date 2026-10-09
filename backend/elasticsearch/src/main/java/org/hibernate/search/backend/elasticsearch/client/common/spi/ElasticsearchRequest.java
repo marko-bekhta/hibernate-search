@@ -10,8 +10,7 @@ import java.util.StringJoiner;
 
 import org.hibernate.search.backend.elasticsearch.client.common.util.spi.URLEncodedString;
 import org.hibernate.search.engine.common.timing.Deadline;
-
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
 
 public final class ElasticsearchRequest {
 

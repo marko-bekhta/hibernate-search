@@ -38,7 +38,6 @@ import java.util.stream.Collectors;
 import javax.net.ssl.SSLContext;
 
 import org.hibernate.search.backend.elasticsearch.cfg.ElasticsearchBackendSettings;
-import org.hibernate.search.backend.elasticsearch.client.common.gson.spi.GsonProvider;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchClient;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchClientImplementor;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchRequest;
@@ -70,6 +69,10 @@ import org.hibernate.search.util.impl.test.annotation.PortedFromSearch5;
 import org.hibernate.search.util.impl.test.annotation.TestForIssue;
 import org.hibernate.search.util.impl.test.extension.ExpectedLog4jLog;
 import org.hibernate.search.util.impl.test.extension.RetryExtension;
+import org.hibernate.search.util.json.JsonArray;
+import org.hibernate.search.util.json.JsonObject;
+import org.hibernate.search.util.json.spi.JsonParseException;
+import org.hibernate.search.util.json.spi.JsonParsing;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -81,11 +84,6 @@ import com.github.tomakehurst.wiremock.http.Request;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import com.github.tomakehurst.wiremock.matching.MatchResult;
 import com.github.tomakehurst.wiremock.matching.RequestMatcherExtension;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonSyntaxException;
 
 import org.apache.hc.client5.http.HttpRoute;
 import org.apache.hc.client5.http.config.ConnectionConfig;
@@ -407,7 +405,7 @@ class ClientOpenSearchElasticsearchClientFactoryIT {
 				.isInstanceOf( SearchException.class )
 				.hasMessageContaining( "HSEARCH400089" )
 				.extracting( Throwable::getCause, InstanceOfAssertFactories.THROWABLE )
-				.isInstanceOf( JsonSyntaxException.class );
+				.isInstanceOf( JsonParseException.class );
 	}
 
 	@RetryExtension.TestWithRetry
@@ -1218,7 +1216,7 @@ class ClientOpenSearchElasticsearchClientFactoryIT {
 		return new ClientOpenSearchElasticsearchClientFactory().create( beanResolver, clientPropertySource,
 				threadPoolProvider.threadProvider(), "Client",
 				new DelegatingSimpleScheduledExecutor( timeoutExecutorService, true ),
-				GsonProvider.create( GsonBuilder::new, true )
+				org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.create( true )
 		);
 	}
 
@@ -1239,7 +1237,7 @@ class ClientOpenSearchElasticsearchClientFactoryIT {
 			}
 		}
 		if ( payload != null ) {
-			builder = builder.body( JsonParser.parseString( payload ).getAsJsonObject() );
+			builder = builder.body( new JsonParsing().parse( payload ).getAsJsonObject() );
 		}
 		return builder.build();
 	}

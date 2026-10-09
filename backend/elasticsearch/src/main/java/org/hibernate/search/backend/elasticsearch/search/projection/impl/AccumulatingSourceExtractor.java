@@ -3,15 +3,14 @@ package org.hibernate.search.backend.elasticsearch.search.projection.impl;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonAccessor;
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonArrayAccessor;
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonElementTypes;
-import org.hibernate.search.backend.elasticsearch.gson.impl.UnexpectedJsonElementTypeException;
 import org.hibernate.search.engine.search.loading.spi.ProjectionHitMapper;
 import org.hibernate.search.engine.search.projection.ProjectionCollector;
-
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonElement;
+import org.hibernate.search.util.json.JsonObject;
+import org.hibernate.search.util.json.spi.JsonAccessor;
+import org.hibernate.search.util.json.spi.JsonArrayAccessor;
+import org.hibernate.search.util.json.spi.JsonElementTypes;
+import org.hibernate.search.util.json.spi.UnexpectedJsonElementTypeException;
 
 abstract class AccumulatingSourceExtractor<E, V, A, P>
 		implements ElasticsearchSearchProjection.Extractor<A, P> {

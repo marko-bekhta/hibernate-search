@@ -6,17 +6,16 @@ import java.util.List;
 import java.util.Map;
 
 import org.hibernate.search.engine.search.query.spi.SimpleSearchResultTotal;
+import org.hibernate.search.util.json.JsonObject;
+import org.hibernate.search.util.json.spi.JsonParsing;
 
 import org.junit.jupiter.api.Test;
-
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
 class ElasticsearchRawResultCharacterizationTest {
 
 	@Test
 	void rawResponseReturnsOriginalMutableTree() {
-		JsonObject response = JsonParser.parseString( "{\"hits\":{\"total\":{\"value\":1,\"relation\":\"eq\"},"
+		JsonObject response = new JsonParsing().parse( "{\"hits\":{\"total\":{\"value\":1,\"relation\":\"eq\"},"
 				+ "\"hits\":[{\"_id\":\"1\",\"_source\":{\"number\":9007199254740993}}]},\"custom\":null}" ).getAsJsonObject();
 		ElasticsearchSearchResultImpl<String> result = new ElasticsearchSearchResultImpl<>( response,
 				SimpleSearchResultTotal.exact( 1 ), List.of( "1" ), Map.of(), 2, false, null );

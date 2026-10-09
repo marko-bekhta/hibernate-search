@@ -11,7 +11,7 @@ import org.hibernate.search.engine.search.predicate.spi.SearchPredicateBuilderFa
 import org.hibernate.search.engine.search.predicate.spi.SimpleQueryStringPredicateBuilder;
 import org.hibernate.search.engine.search.predicate.spi.WithParametersPredicateBuilder;
 
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
 
 public class ElasticsearchSearchPredicateBuilderFactory implements SearchPredicateBuilderFactory {
 
@@ -66,6 +66,6 @@ public class ElasticsearchSearchPredicateBuilderFactory implements SearchPredica
 	}
 
 	public ElasticsearchSearchPredicate fromJson(String jsonString) {
-		return fromJson( scope.userFacingGson().fromJson( jsonString, JsonObject.class ) );
+		return fromJson( scope.userFacingCodec().decode( jsonString, JsonObject.class ) );
 	}
 }

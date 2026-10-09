@@ -202,8 +202,8 @@ Completed checkpoint: [Task 2 report](elasticsearch-async-json-task2.md), with t
 - [x] Use 8 KiB adapter buffers initially; test much smaller capacities.
 - [x] Add synchronous output by draining the same cursor.
 - [x] Add an internal Jackson synchronous generator implementation for comparison.
-- [x] Use cursor-backed writing as the new output SPI default, including independent signing streams; live transport application remains Task 6.
-- [x] Keep Elasticsearch body-part framing and trailing newlines in a separately tested backend helper; live entities remain on Gson.
+- [x] Use cursor-backed writing as the new output SPI default, including independent signing streams; Task 5 adapts the existing entities; demand-aware transport integration remains Task 6.
+- [x] Keep Elasticsearch body-part framing and trailing newlines in a separately tested backend helper; Task 5 migrates live entities to the cursor adapter.
 - [x] Allow a bounded small-body probe; never serialize a large body fully merely to calculate content length.
 - [x] Give replay and signing reads independent cursor state; transport retry/subscription lifecycle integration remains Task 6.
 
@@ -245,7 +245,7 @@ remains committed as benchmark evidence: staging improves large ASCII but
 materially regresses small and Unicode-rich Strings, so no production switch or
 size dispatch was adopted. The [parsing reference](elasticsearch-json-parsing-reference.md)
 collects the current decision, use cases and curated results while keeping input
-forms, workloads and campaigns distinct. Task 4's investigation checkpoint is complete by explicit acceptance, not by meeting a universal throughput threshold. New regressions still require investigation. Actual transport buffering, allocation, cancellation, backpressure and event-loop responsiveness must be verified in Task 6. Tasks 5/6 have not started.
+forms, workloads and campaigns distinct. Task 4's investigation checkpoint is complete by explicit acceptance, not by meeting a universal throughput threshold. New regressions still require investigation. Actual transport buffering, allocation, cancellation, backpressure and event-loop responsiveness must be verified in Task 6. Task 5 is complete; Task 6 remains pending.
 
 ### Task 4a — Internal parsing-route audit before migration
 
@@ -258,19 +258,23 @@ Completed source audit: [Internal JSON parsing routes](elasticsearch-json-intern
 
 ### Task 5 — Reflection-free codecs and backend migration
 
-- [ ] Replace the Gson processor with a Search JSON codec processor, retaining compile-time model analysis.
-- [ ] Generate direct constructor/accessor/collection/nested-codec calls.
-- [ ] Register codecs explicitly; prohibit runtime field inspection and reflective fallback.
-- [ ] Keep codecs tree-based initially. Decode known types after async tree construction completes.
-- [ ] Apply the internal-route audit: decode/copy existing trees directly, preserve genuine String-input/output APIs, and read custom schema files through bounded byte-fed parsing before codec decoding. Do not implement codec or compatibility conversion by serializing and reparsing text.
-- [ ] Preserve null omission, explicit nulls, field naming, extra properties, unknown fields, and custom representations.
-- [ ] Migrate schema, document building, validation, predicates, sorts, aggregations, projections, and work execution.
-- [ ] Migrate accessor chains with explicit adaptation at every required path step.
-- [ ] Replace Gson services and client SPI types.
-- [ ] Apply public API changes and deprecated input bridges.
-- [ ] Remove obsolete Gson adapters/providers once production callers migrate.
+- [x] Replace the Gson processor with a Search JSON codec processor, retaining compile-time model analysis.
+- [x] Generate direct constructor/accessor/collection/nested-codec calls.
+- [x] Register codecs explicitly; prohibit runtime field inspection and reflective fallback.
+- [x] Keep codecs tree-based initially. Decode known types after async tree construction completes.
+- [x] Apply the internal-route audit: decode/copy existing trees directly, preserve genuine String-input/output APIs, and read custom schema files through bounded byte-fed parsing before codec decoding. Do not implement codec or compatibility conversion by serializing and reparsing text.
+- [x] Preserve null omission, explicit nulls, field naming, extra properties, unknown fields, and custom representations.
+- [x] Migrate schema, document building, validation, predicates, sorts, aggregations, projections, and work execution.
+- [x] Migrate accessor chains with explicit adaptation at every required path step.
+- [x] Replace Gson services and client SPI types.
+- [x] Apply public API changes and deprecated input bridges.
+- [x] Remove obsolete Gson adapters/providers once production callers migrate.
 
 **Exit:** ordinary backend processing uses Search nodes and explicit/generated codecs only.
+
+Completed checkpoint: [Task 5 report](elasticsearch-async-json-task5.md), with the
+processor/backend/API migration, deprecated Gson input boundaries, direct-route
+audit, full reactor compilation, unit/live verification and explicit Task 6 seams.
 
 ### Task 6 — Transport integration
 

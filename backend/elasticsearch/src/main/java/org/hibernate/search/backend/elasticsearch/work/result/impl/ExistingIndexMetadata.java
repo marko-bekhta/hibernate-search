@@ -1,6 +1,6 @@
 package org.hibernate.search.backend.elasticsearch.work.result.impl;
 
-import org.hibernate.search.backend.elasticsearch.gson.spi.GsonProviderHelper;
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper;
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.impl.IndexMetadata;
 
 /**
@@ -19,7 +19,10 @@ public final class ExistingIndexMetadata {
 
 	@Override
 	public String toString() {
-		return GsonProviderHelper.toPrettyJson( this );
+		var value = new org.hibernate.search.util.json.JsonObject();
+		value.addProperty( "primaryName", primaryName );
+		value.add( "metadata", JsonProviderHelper.createUserFacingCodec().encode( metadata ) );
+		return JsonProviderHelper.toPrettyJson( value );
 	}
 
 	/**

@@ -7,7 +7,7 @@ import org.hibernate.search.backend.elasticsearch.document.model.impl.Elasticsea
 import org.hibernate.search.backend.elasticsearch.document.model.impl.ElasticsearchIndexModel;
 import org.hibernate.search.backend.elasticsearch.document.model.impl.ElasticsearchIndexObjectField;
 import org.hibernate.search.backend.elasticsearch.document.model.impl.ElasticsearchIndexValueField;
-import org.hibernate.search.backend.elasticsearch.gson.impl.GsonUtils;
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonUtils;
 import org.hibernate.search.backend.elasticsearch.logging.impl.IndexingLog;
 import org.hibernate.search.backend.elasticsearch.logging.spi.ElasticsearchClientLog;
 import org.hibernate.search.backend.elasticsearch.types.impl.ElasticsearchIndexValueFieldType;
@@ -18,8 +18,7 @@ import org.hibernate.search.engine.backend.document.IndexObjectFieldReference;
 import org.hibernate.search.engine.backend.document.model.spi.IndexFieldFilter;
 import org.hibernate.search.engine.backend.document.spi.NoOpDocumentElement;
 import org.hibernate.search.engine.common.tree.spi.TreeNodeInclusion;
-
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
 
 public class ElasticsearchDocumentObjectBuilder implements DocumentElement {
 
@@ -130,7 +129,7 @@ public class ElasticsearchDocumentObjectBuilder implements DocumentElement {
 		if ( !node.multiValued() && content.has( jsonPropertyName ) ) {
 			throw IndexingLog.INSTANCE.multipleValuesForSingleValuedField( node.absolutePath() );
 		}
-		GsonUtils.setOrAppendToArray( content, jsonPropertyName, type.codec().encode( value ) );
+		JsonUtils.setOrAppendToArray( content, jsonPropertyName, type.codec().encode( value ) );
 	}
 
 	@SuppressWarnings("unchecked") // We check types explicitly using reflection
@@ -158,7 +157,7 @@ public class ElasticsearchDocumentObjectBuilder implements DocumentElement {
 		if ( !node.multiValued() && content.has( jsonPropertyName ) ) {
 			throw IndexingLog.INSTANCE.multipleValuesForSingleValuedField( node.absolutePath() );
 		}
-		GsonUtils.setOrAppendToArray( content, jsonPropertyName, value );
+		JsonUtils.setOrAppendToArray( content, jsonPropertyName, value );
 
 		if ( value == null ) {
 			return NoOpDocumentElement.get(); // Will not be used

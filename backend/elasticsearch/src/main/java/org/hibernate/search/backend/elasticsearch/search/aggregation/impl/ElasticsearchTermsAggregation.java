@@ -19,10 +19,9 @@ import org.hibernate.search.engine.search.aggregation.SearchAggregation;
 import org.hibernate.search.engine.search.aggregation.spi.TermsAggregationBuilder;
 import org.hibernate.search.engine.search.common.ValueModel;
 import org.hibernate.search.util.common.impl.CollectionHelper;
-
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonArray;
+import org.hibernate.search.util.json.JsonElement;
+import org.hibernate.search.util.json.JsonObject;
 
 /**
  * @param <F> The type of field values.

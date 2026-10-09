@@ -9,8 +9,7 @@ import org.hibernate.search.backend.elasticsearch.logging.impl.QueryLog;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexScope;
 import org.hibernate.search.engine.search.aggregation.AggregationKey;
 import org.hibernate.search.engine.search.aggregation.SearchAggregation;
-
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
 
 public interface ElasticsearchSearchAggregation<A> extends SearchAggregation<A> {
 	/**

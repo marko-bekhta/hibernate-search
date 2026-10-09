@@ -5,8 +5,6 @@ import static org.hibernate.search.util.impl.integrationtest.mapper.orm.OrmUtils
 import static org.hibernate.search.util.impl.test.JsonHelper.assertJsonEquals;
 
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.util.List;
 
 import jakarta.persistence.EntityManagerFactory;
@@ -21,8 +19,6 @@ import org.hibernate.search.util.impl.integrationtest.backend.elasticsearch.exte
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-
-import com.google.gson.JsonParser;
 
 class ElasticsearchCustomIndexMappingIT {
 
@@ -66,8 +62,8 @@ class ElasticsearchCustomIndexMappingIT {
 		try ( InputStream in = ElasticsearchCustomIndexMappingIT.class.getClassLoader()
 				.getResourceAsStream( "custom/index-mapping-merged.json" ) ) {
 
-			Reader reader = new InputStreamReader( in, "UTF-8" );
-			return JsonParser.parseReader( reader ).toString();
+			return org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.createUserFacingCodec()
+					.decode( in, org.hibernate.search.util.json.JsonElement.class ).toString();
 		}
 	}
 }

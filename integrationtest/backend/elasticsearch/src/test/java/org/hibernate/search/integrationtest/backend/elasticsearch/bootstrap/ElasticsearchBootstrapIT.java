@@ -357,8 +357,8 @@ class ElasticsearchBootstrapIT {
 				.isEqualTo( "\"42\"" );
 		assertJsonEqualsIgnoringUnknownFields(
 				"{"
-						+ " 'properties': {"
-						+ "   'custom': {"
+						+ " \"properties\": {"
+						+ "   \"custom\": {"
 						+ "   }"
 						+ " }"
 						+ "}",

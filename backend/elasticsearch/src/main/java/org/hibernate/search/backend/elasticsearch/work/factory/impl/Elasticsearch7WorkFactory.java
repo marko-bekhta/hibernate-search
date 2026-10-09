@@ -3,7 +3,7 @@ package org.hibernate.search.backend.elasticsearch.work.factory.impl;
 import java.util.List;
 import java.util.Map;
 
-import org.hibernate.search.backend.elasticsearch.client.common.gson.spi.GsonProvider;
+import org.hibernate.search.backend.elasticsearch.client.common.json.spi.JsonProvider;
 import org.hibernate.search.backend.elasticsearch.client.common.util.spi.URLEncodedString;
 import org.hibernate.search.backend.elasticsearch.index.IndexStatus;
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.aliases.impl.IndexAliasDefinition;
@@ -33,19 +33,18 @@ import org.hibernate.search.backend.elasticsearch.work.impl.RefreshWork;
 import org.hibernate.search.backend.elasticsearch.work.impl.ScrollWork;
 import org.hibernate.search.backend.elasticsearch.work.impl.SearchWork;
 import org.hibernate.search.backend.elasticsearch.work.impl.WaitForIndexStatusWork;
-
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
 
 /**
  * A work builder factory for ES7.0+.
  */
 public class Elasticsearch7WorkFactory implements ElasticsearchWorkFactory {
 
-	protected final GsonProvider gsonProvider;
+	protected final JsonProvider jsonProvider;
 	private final Boolean ignoreShardFailures;
 
-	public Elasticsearch7WorkFactory(GsonProvider gsonProvider, Boolean ignoreShardFailures) {
-		this.gsonProvider = gsonProvider;
+	public Elasticsearch7WorkFactory(JsonProvider jsonProvider, Boolean ignoreShardFailures) {
+		this.jsonProvider = jsonProvider;
 		this.ignoreShardFailures = ignoreShardFailures;
 	}
 
@@ -141,7 +140,7 @@ public class Elasticsearch7WorkFactory implements ElasticsearchWorkFactory {
 
 	@Override
 	public CreateIndexWork.Builder createIndex(URLEncodedString indexName) {
-		return CreateIndexWork.Builder.create( gsonProvider, indexName );
+		return CreateIndexWork.Builder.create( jsonProvider, indexName );
 	}
 
 	@Override
@@ -166,12 +165,12 @@ public class Elasticsearch7WorkFactory implements ElasticsearchWorkFactory {
 
 	@Override
 	public PutIndexSettingsWork.Builder putIndexSettings(URLEncodedString indexName, IndexSettings settings) {
-		return new PutIndexSettingsWork.Builder( gsonProvider, indexName, settings );
+		return new PutIndexSettingsWork.Builder( jsonProvider, indexName, settings );
 	}
 
 	@Override
 	public PutIndexMappingWork.Builder putIndexTypeMapping(URLEncodedString indexName, RootTypeMapping mapping) {
-		return PutIndexMappingWork.Builder.create( gsonProvider, indexName, mapping );
+		return PutIndexMappingWork.Builder.create( jsonProvider, indexName, mapping );
 	}
 
 	@Override
@@ -188,7 +187,7 @@ public class Elasticsearch7WorkFactory implements ElasticsearchWorkFactory {
 	@Override
 	public PutIndexAliasesWork.Builder putIndexAliases(URLEncodedString indexName,
 			Map<String, IndexAliasDefinition> aliases) {
-		return new PutIndexAliasesWork.Builder( gsonProvider, indexName, aliases );
+		return new PutIndexAliasesWork.Builder( jsonProvider, indexName, aliases );
 	}
 
 	@Override

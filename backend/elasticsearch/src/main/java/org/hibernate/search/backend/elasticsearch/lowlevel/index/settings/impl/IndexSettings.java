@@ -6,17 +6,16 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import org.hibernate.search.backend.elasticsearch.gson.impl.GsonSerializable;
-import org.hibernate.search.backend.elasticsearch.gson.impl.SerializeExtraProperties;
-import org.hibernate.search.backend.elasticsearch.gson.spi.GsonProviderHelper;
-
-import com.google.gson.JsonElement;
-import com.google.gson.annotations.SerializedName;
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonName;
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonSerializable;
+import org.hibernate.search.backend.elasticsearch.json.impl.SerializeExtraProperties;
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper;
+import org.hibernate.search.util.json.JsonElement;
 
 /**
  * Settings for an Elasticsearch index.
  */
-@GsonSerializable
+@JsonSerializable
 public class IndexSettings {
 
 	public static final String MAX_RESULT_WINDOW_ATTRIBUTE = "max_result_window";
@@ -25,10 +24,10 @@ public class IndexSettings {
 
 	private Analysis analysis;
 
-	@SerializedName(IndexSettings.MAX_RESULT_WINDOW_ATTRIBUTE)
+	@JsonName(IndexSettings.MAX_RESULT_WINDOW_ATTRIBUTE)
 	private Integer maxResultWindow;
 
-	@SerializedName(IndexSettings.KNN_ATTRIBUTE)
+	@JsonName(IndexSettings.KNN_ATTRIBUTE)
 	private Boolean knn;
 
 	@SerializeExtraProperties
@@ -153,6 +152,6 @@ public class IndexSettings {
 
 	@Override
 	public String toString() {
-		return GsonProviderHelper.toPrettyJson( this );
+		return JsonProviderHelper.toPrettyJson( this );
 	}
 }

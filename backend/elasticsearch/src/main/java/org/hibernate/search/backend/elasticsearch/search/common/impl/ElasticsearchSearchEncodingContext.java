@@ -5,8 +5,7 @@ import java.util.function.Function;
 
 import org.hibernate.search.backend.elasticsearch.types.codec.impl.ElasticsearchFieldCodec;
 import org.hibernate.search.engine.search.common.ValueModel;
-
-import com.google.gson.JsonElement;
+import org.hibernate.search.util.json.JsonElement;
 
 public interface ElasticsearchSearchEncodingContext<F> {
 

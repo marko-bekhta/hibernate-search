@@ -2,9 +2,6 @@ package org.hibernate.search.backend.elasticsearch.types.predicate.impl;
 
 import java.util.Collection;
 
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonAccessor;
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonArrayAccessor;
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonObjectAccessor;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.AbstractElasticsearchCodecAwareSearchQueryElementFactory;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexScope;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexValueFieldContext;
@@ -14,18 +11,23 @@ import org.hibernate.search.backend.elasticsearch.types.codec.impl.Elasticsearch
 import org.hibernate.search.engine.search.common.ValueModel;
 import org.hibernate.search.engine.search.predicate.SearchPredicate;
 import org.hibernate.search.engine.search.predicate.spi.TermsPredicateBuilder;
-
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonArray;
+import org.hibernate.search.util.json.JsonElement;
+import org.hibernate.search.util.json.JsonObject;
+import org.hibernate.search.util.json.spi.JsonAccessor;
+import org.hibernate.search.util.json.spi.JsonArrayAccessor;
+import org.hibernate.search.util.json.spi.JsonObjectAccessor;
 
 public class ElasticsearchTermsPredicate extends AbstractElasticsearchSingleFieldPredicate {
 
-	private static final JsonObjectAccessor TERMS_ACCESSOR = JsonAccessor.root().property( "terms" ).asObject();
-	private static final JsonObjectAccessor TERM_ACCESSOR = JsonAccessor.root().property( "term" ).asObject();
+	private static final JsonObjectAccessor TERMS_ACCESSOR =
+			JsonAccessor.root().property( "terms" ).unwrapSingletonArrays().asObject();
+	private static final JsonObjectAccessor TERM_ACCESSOR =
+			JsonAccessor.root().property( "term" ).unwrapSingletonArrays().asObject();
 
 	// for boolean query:
-	private static final JsonObjectAccessor BOOL_ACCESSOR = JsonAccessor.root().property( "bool" ).asObject();
+	private static final JsonObjectAccessor BOOL_ACCESSOR =
+			JsonAccessor.root().property( "bool" ).unwrapSingletonArrays().asObject();
 	private static final JsonArrayAccessor MUST_ACCESSOR = JsonAccessor.root().property( "must" ).asArray();
 
 	private static final JsonAccessor<JsonElement> VALUE_ACCESSOR = JsonAccessor.root().property( "value" );

@@ -4,8 +4,7 @@ import java.util.Optional;
 
 import org.hibernate.search.backend.elasticsearch.lowlevel.syntax.search.impl.ElasticsearchSearchSyntax;
 import org.hibernate.search.util.common.AssertionFailure;
-
-import com.google.gson.JsonElement;
+import org.hibernate.search.util.json.JsonElement;
 
 /**
  * Defines how a given value will be encoded as JSON and decoded from JSON.
@@ -45,7 +44,7 @@ public interface ElasticsearchFieldCodec<F> {
 	 * @param key The "key" property  returned by the aggregation.
 	 * May be a number, a string, ... depending on the field type.
 	 * @param keyAsString The "key_as_string" property returned by the term aggregation.
-	 * Either null or a {@link com.google.gson.JsonPrimitive} containing a string.
+	 * Either null or a {@link org.hibernate.search.util.json.JsonPrimitive} containing a string.
 	 * @return The decoded term.
 	 */
 	default F decodeAggregationKey(JsonElement key, JsonElement keyAsString) {

@@ -20,14 +20,12 @@ import org.hibernate.search.integrationtest.backend.elasticsearch.testsupport.ut
 import org.hibernate.search.integrationtest.backend.tck.testsupport.util.extension.SearchSetupHelper;
 import org.hibernate.search.util.impl.integrationtest.mapper.stub.SimpleMappedIndex;
 import org.hibernate.search.util.impl.integrationtest.mapper.stub.StubMappingScope;
+import org.hibernate.search.util.json.JsonObject;
 
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 
 /**
  * Test the content of generated Elasticsearch search queries.
@@ -98,7 +96,8 @@ class ElasticsearchSearchQueryIT {
 				ElasticsearchRequest.post()
 						.pathComponent( readName )
 						.pathComponent( Paths._SEARCH )
-						.body( new Gson().fromJson( "{'_source':false}", JsonObject.class ) )
+						.body( org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.create( false ).getCodec()
+								.decode( "{\"_source\":false}", JsonObject.class ) )
 						.build(),
 				ElasticsearchRequestAssertionMode.EXTENSIBLE
 		);
@@ -121,7 +120,8 @@ class ElasticsearchSearchQueryIT {
 				ElasticsearchRequest.post()
 						.pathComponent( readName )
 						.pathComponent( Paths._SEARCH )
-						.body( new Gson().fromJson( "{'_source':['string']}", JsonObject.class ) )
+						.body( org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.create( false ).getCodec()
+								.decode( "{\"_source\":[\"string\"]}", JsonObject.class ) )
 						.build(),
 				ElasticsearchRequestAssertionMode.EXTENSIBLE
 		);

@@ -3,8 +3,9 @@
 **Current decision: keep the pre-experiment character parser for already supplied
 Strings.** The user accepted this choice after the bounded UTF-8 experiment.
 The experiment and its fixtures remain committed as reference; its encoders are
-benchmark alternatives. The async UTF-8 SPI already exists, but live Elasticsearch
-transports still use Gson. Tasks 5 and 6 have not started.
+benchmark alternatives. The async UTF-8 SPI already exists. Task 5 migrates backend processing to Search
+nodes and registered codecs, with bounded synchronous byte-stream adapters.
+Task 6's demand-aware publishers and per-attempt response consumers remain pending.
 
 This guide brings together the [Task 4 checkpoint](elasticsearch-async-json-task4.md),
 [corrected follow-up](elasticsearch-async-json-task4-followup.md) and
@@ -22,7 +23,7 @@ adds concrete checks to avoid unnecessary text parsing during Tasks 5 and 6.
 | --- | --- | --- |
 | A JSON query, fixture or configuration already supplied as `String` | `JsonParsing.parse(json)` uses Jackson Core's character parser | Complete Search tree; retained convenience path |
 | Incoming UTF-8 buffers, possibly arriving over time | A new `JsonParserSession` from `createParser()`, repeated `feed`, then `endOfInput` | Complete Search tree after EOF; SPI available, live transport integration pending |
-| Existing Elasticsearch transport processing | Existing Gson code | Complete Gson tree; unchanged by the experiment |
+| Existing Elasticsearch transport processing | Task 5 bounded InputStream feeds and direct Search codecs | Complete Search tree; client-owned REST buffering remains until Task 6 |
 | Investigating upstream token/string completion | Minimal Jackson consumed-token benchmark | Tokens and completed scalar Strings, without a tree; diagnostic only |
 | Testing String-to-UTF-8 alternatives | Benchmark-only wrapped or staged standard encoder feeding the async session | Complete Search tree; neither alternative adopted |
 
@@ -288,7 +289,7 @@ benchmark alternatives as evidence. The user accepts the documented remaining
 numeric UTF-8 and scalar variability tradeoffs provisionally for migration, as
 recorded in the [masterplan](elasticsearch-async-json.md). New regressions still
 require investigation, and actual transport behavior requires Task 6 verification.
-Existing transports
-remain Gson, and this reference adds no codec migration, transport integration,
-worker policy or codec implementation. The new numeric rows come from the linked
+The [Task 5 migration](elasticsearch-async-json-task5.md) uses direct Search codecs
+and bounded byte-fed stream seams; the existing REST response consumers still
+buffer externally. This reference introduces no demand/cancellation/worker policy. The new numeric rows come from the linked
 focused campaigns; the historical parsing/read/encoding rows were not rerun.

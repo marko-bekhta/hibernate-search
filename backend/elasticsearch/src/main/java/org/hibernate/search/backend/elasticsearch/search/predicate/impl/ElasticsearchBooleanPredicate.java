@@ -7,13 +7,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
 
-import org.hibernate.search.backend.elasticsearch.gson.impl.GsonUtils;
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonAccessor;
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonUtils;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexScope;
 import org.hibernate.search.engine.search.predicate.SearchPredicate;
 import org.hibernate.search.engine.search.predicate.spi.BooleanPredicateBuilder;
-
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
+import org.hibernate.search.util.json.spi.JsonAccessor;
 
 class ElasticsearchBooleanPredicate extends AbstractElasticsearchPredicate {
 
@@ -23,7 +22,7 @@ class ElasticsearchBooleanPredicate extends AbstractElasticsearchPredicate {
 	private static final String FILTER_PROPERTY_NAME = "filter";
 
 	private static final JsonAccessor<String> MINIMUM_SHOULD_MATCH_ACCESSOR =
-			JsonAccessor.root().property( "minimum_should_match" ).asString();
+			JsonAccessor.root().property( "minimum_should_match" ).unwrapSingletonArrays().asString();
 
 	private final List<ElasticsearchSearchPredicate> mustClauses;
 	private final List<ElasticsearchSearchPredicate> mustNotClauses;
@@ -75,7 +74,7 @@ class ElasticsearchBooleanPredicate extends AbstractElasticsearchPredicate {
 		if ( isOnlyMustNot( innerObject ) && !super.hasNoModifiers() ) {
 			JsonObject matchAllClause = new JsonObject();
 			MATCH_ALL_ACCESSOR.set( matchAllClause, new JsonObject() );
-			GsonUtils.setOrAppendToArray( innerObject, MUST_PROPERTY_NAME, matchAllClause );
+			JsonUtils.setOrAppendToArray( innerObject, MUST_PROPERTY_NAME, matchAllClause );
 		}
 
 		if ( !minimumShouldMatchConstraints.isEmpty() ) {
@@ -97,7 +96,7 @@ class ElasticsearchBooleanPredicate extends AbstractElasticsearchPredicate {
 		}
 
 		for ( ElasticsearchSearchPredicate clause : clauses ) {
-			GsonUtils.setOrAppendToArray( innerObject, occurProperty, clause.toJsonQuery( context ) );
+			JsonUtils.setOrAppendToArray( innerObject, occurProperty, clause.toJsonQuery( context ) );
 		}
 	}
 

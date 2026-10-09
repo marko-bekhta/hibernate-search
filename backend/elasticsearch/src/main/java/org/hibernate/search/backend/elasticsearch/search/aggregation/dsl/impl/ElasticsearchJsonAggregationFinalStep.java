@@ -4,7 +4,7 @@ import org.hibernate.search.engine.search.aggregation.SearchAggregation;
 import org.hibernate.search.engine.search.aggregation.dsl.AggregationFinalStep;
 import org.hibernate.search.engine.search.aggregation.spi.SearchAggregationBuilder;
 
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
 
 final class ElasticsearchJsonAggregationFinalStep
 		implements AggregationFinalStep<JsonObject> {

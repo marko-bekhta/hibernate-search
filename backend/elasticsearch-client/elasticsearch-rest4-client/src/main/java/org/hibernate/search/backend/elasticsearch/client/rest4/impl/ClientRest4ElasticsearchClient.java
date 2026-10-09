@@ -2,8 +2,6 @@ package org.hibernate.search.backend.elasticsearch.client.rest4.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -13,11 +11,12 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import org.hibernate.search.backend.elasticsearch.client.common.gson.spi.JsonLogHelper;
+import org.hibernate.search.backend.elasticsearch.client.common.json.spi.JsonLogHelper;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchClientImplementor;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchRequest;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchResponse;
 import org.hibernate.search.backend.elasticsearch.client.common.util.spi.ElasticsearchClientUtils;
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
 import org.hibernate.search.backend.elasticsearch.logging.spi.ElasticsearchClientLog;
 import org.hibernate.search.backend.elasticsearch.logging.spi.ElasticsearchRequestLog;
 import org.hibernate.search.engine.common.execution.spi.SimpleScheduledExecutor;
@@ -25,9 +24,7 @@ import org.hibernate.search.engine.common.timing.Deadline;
 import org.hibernate.search.engine.environment.bean.BeanHolder;
 import org.hibernate.search.util.common.impl.Closer;
 import org.hibernate.search.util.common.impl.Futures;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.client.config.RequestConfig;
@@ -51,19 +48,19 @@ public class ClientRest4ElasticsearchClient implements ElasticsearchClientImplem
 	private final Optional<Integer> requestTimeoutMs;
 	private final int connectionTimeoutMs;
 
-	private final Gson gson;
+	private final JsonCodecService json;
 	private final JsonLogHelper jsonLogHelper;
 
 	ClientRest4ElasticsearchClient(BeanHolder<? extends RestClient> restClientHolder, Sniffer sniffer,
 			SimpleScheduledExecutor timeoutExecutorService,
 			Optional<Integer> requestTimeoutMs, int connectionTimeoutMs,
-			Gson gson, JsonLogHelper jsonLogHelper) {
+			JsonCodecService json, JsonLogHelper jsonLogHelper) {
 		this.restClientHolder = restClientHolder;
 		this.sniffer = sniffer;
 		this.timeoutExecutorService = timeoutExecutorService;
 		this.requestTimeoutMs = requestTimeoutMs;
 		this.connectionTimeoutMs = connectionTimeoutMs;
-		this.gson = gson;
+		this.json = json;
 		this.jsonLogHelper = jsonLogHelper;
 	}
 
@@ -92,7 +89,7 @@ public class ClientRest4ElasticsearchClient implements ElasticsearchClientImplem
 
 		HttpEntity entity;
 		try {
-			entity = ClientRest4GsonHttpEntity.toEntity( gson, elasticsearchRequest );
+			entity = ClientRest4JsonHttpEntity.toEntity( json, elasticsearchRequest );
 		}
 		catch (IOException | RuntimeException e) {
 			completableFuture.completeExceptionally( e );
@@ -213,9 +210,8 @@ public class ClientRest4ElasticsearchClient implements ElasticsearchClientImplem
 		}
 
 		Charset charset = getCharset( entity );
-		try ( InputStream inputStream = entity.getContent();
-				Reader reader = new InputStreamReader( inputStream, charset ) ) {
-			return gson.fromJson( reader, JsonObject.class );
+		try ( InputStream inputStream = entity.getContent() ) {
+			return json.decode( inputStream, charset, JsonObject.class );
 		}
 	}
 

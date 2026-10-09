@@ -8,8 +8,7 @@ import org.hibernate.search.engine.search.aggregation.SearchAggregation;
 import org.hibernate.search.engine.search.aggregation.dsl.AggregationFinalStep;
 import org.hibernate.search.engine.search.aggregation.spi.WithParametersAggregationBuilder;
 import org.hibernate.search.engine.search.common.NamedValues;
-
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
 
 public class ElasticsearchWithParametersAggregation<A> extends AbstractElasticsearchAggregation<A> {
 	private final ElasticsearchSearchIndexScope<?> scope;

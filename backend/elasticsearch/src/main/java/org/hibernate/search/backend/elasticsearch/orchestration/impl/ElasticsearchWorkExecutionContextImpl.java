@@ -1,6 +1,6 @@
 package org.hibernate.search.backend.elasticsearch.orchestration.impl;
 
-import org.hibernate.search.backend.elasticsearch.client.common.gson.spi.GsonProvider;
+import org.hibernate.search.backend.elasticsearch.client.common.json.spi.JsonProvider;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchClient;
 import org.hibernate.search.backend.elasticsearch.work.impl.ElasticsearchWorkExecutionContext;
 
@@ -12,11 +12,11 @@ import org.hibernate.search.backend.elasticsearch.work.impl.ElasticsearchWorkExe
 class ElasticsearchWorkExecutionContextImpl implements ElasticsearchWorkExecutionContext {
 
 	private final ElasticsearchClient client;
-	private final GsonProvider gsonProvider;
+	private final JsonProvider jsonProvider;
 
-	public ElasticsearchWorkExecutionContextImpl(ElasticsearchClient client, GsonProvider gsonProvider) {
+	public ElasticsearchWorkExecutionContextImpl(ElasticsearchClient client, JsonProvider jsonProvider) {
 		this.client = client;
-		this.gsonProvider = gsonProvider;
+		this.jsonProvider = jsonProvider;
 	}
 
 	@Override
@@ -25,8 +25,8 @@ class ElasticsearchWorkExecutionContextImpl implements ElasticsearchWorkExecutio
 	}
 
 	@Override
-	public GsonProvider getGsonProvider() {
-		return gsonProvider;
+	public JsonProvider getJsonProvider() {
+		return jsonProvider;
 	}
 
 }

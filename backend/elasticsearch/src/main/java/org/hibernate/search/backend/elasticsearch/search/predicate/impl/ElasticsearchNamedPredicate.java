@@ -18,8 +18,7 @@ import org.hibernate.search.engine.search.predicate.dsl.TypedSearchPredicateFact
 import org.hibernate.search.engine.search.predicate.spi.NamedPredicateBuilder;
 import org.hibernate.search.engine.search.predicate.spi.NamedValuesBasedPredicateDefinitionContext;
 import org.hibernate.search.engine.search.predicate.spi.NamedValuesBasedTypedPredicateDefinitionContext;
-
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
 
 public class ElasticsearchNamedPredicate extends AbstractElasticsearchSingleFieldPredicate {
 

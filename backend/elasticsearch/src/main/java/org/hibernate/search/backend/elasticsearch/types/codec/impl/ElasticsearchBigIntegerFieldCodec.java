@@ -5,15 +5,14 @@ import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
 
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonElementTypes;
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
 import org.hibernate.search.backend.elasticsearch.logging.impl.IndexingLog;
 import org.hibernate.search.engine.cfg.spi.NumberScaleConstants;
 import org.hibernate.search.engine.cfg.spi.NumberUtils;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonNull;
-import com.google.gson.JsonPrimitive;
+import org.hibernate.search.util.json.JsonElement;
+import org.hibernate.search.util.json.JsonNull;
+import org.hibernate.search.util.json.JsonPrimitive;
+import org.hibernate.search.util.json.spi.JsonElementTypes;
 
 public class ElasticsearchBigIntegerFieldCodec extends AbstractElasticsearchFieldCodec<BigInteger> {
 
@@ -22,8 +21,8 @@ public class ElasticsearchBigIntegerFieldCodec extends AbstractElasticsearchFiel
 	private final BigDecimal minScaledValue;
 	private final BigDecimal maxScaledValue;
 
-	public ElasticsearchBigIntegerFieldCodec(Gson gson, int decimalScale) {
-		super( gson );
+	public ElasticsearchBigIntegerFieldCodec(JsonCodecService json, int decimalScale) {
+		super( json );
 		this.decimalScale = decimalScale;
 		scalingFactor = BigDecimal.TEN.pow( decimalScale, new MathContext( 10, RoundingMode.HALF_UP ) );
 		minScaledValue = new BigDecimal( NumberScaleConstants.MIN_LONG_AS_BIGINTEGER, decimalScale );

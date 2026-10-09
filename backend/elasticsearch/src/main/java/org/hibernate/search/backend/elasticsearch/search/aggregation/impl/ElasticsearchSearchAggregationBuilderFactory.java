@@ -6,7 +6,7 @@ import org.hibernate.search.engine.search.aggregation.spi.SearchAggregationBuild
 import org.hibernate.search.engine.search.aggregation.spi.SearchAggregationBuilderFactory;
 import org.hibernate.search.engine.search.aggregation.spi.WithParametersAggregationBuilder;
 
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
 
 public class ElasticsearchSearchAggregationBuilderFactory
 		implements SearchAggregationBuilderFactory {
@@ -22,7 +22,7 @@ public class ElasticsearchSearchAggregationBuilderFactory
 	}
 
 	public SearchAggregationBuilder<JsonObject> fromJson(String jsonString) {
-		return fromJson( scope.userFacingGson().fromJson( jsonString, JsonObject.class ) );
+		return fromJson( scope.userFacingCodec().decode( jsonString, JsonObject.class ) );
 	}
 
 	@Override

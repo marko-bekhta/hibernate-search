@@ -4,8 +4,6 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
 
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonAccessor;
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonObjectAccessor;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexScope;
 import org.hibernate.search.backend.elasticsearch.types.predicate.impl.ElasticsearchCommonQueryStringPredicateBuilderFieldState;
 import org.hibernate.search.engine.search.common.spi.SearchQueryElementTypeKey;
@@ -13,14 +11,16 @@ import org.hibernate.search.engine.search.predicate.SearchPredicate;
 import org.hibernate.search.engine.search.predicate.dsl.SimpleQueryFlag;
 import org.hibernate.search.engine.search.predicate.spi.SimpleQueryStringPredicateBuilder;
 import org.hibernate.search.util.common.AssertionFailure;
-
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
+import org.hibernate.search.util.json.spi.JsonAccessor;
+import org.hibernate.search.util.json.spi.JsonObjectAccessor;
 
 public class ElasticsearchSimpleQueryStringPredicate extends ElasticsearchCommonQueryStringPredicate {
 
 	private static final JsonObjectAccessor SIMPLE_QUERY_STRING_ACCESSOR =
-			JsonAccessor.root().property( "simple_query_string" ).asObject();
-	private static final JsonAccessor<String> FLAGS_ACCESSOR = JsonAccessor.root().property( "flags" ).asString();
+			JsonAccessor.root().property( "simple_query_string" ).unwrapSingletonArrays().asObject();
+	private static final JsonAccessor<String> FLAGS_ACCESSOR =
+			JsonAccessor.root().property( "flags" ).unwrapSingletonArrays().asString();
 
 	private final Set<SimpleQueryFlag> flags;
 

@@ -2,8 +2,6 @@ package org.hibernate.search.backend.elasticsearch.client.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpHeaders;
@@ -21,11 +19,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
-import org.hibernate.search.backend.elasticsearch.client.common.gson.spi.JsonLogHelper;
+import org.hibernate.search.backend.elasticsearch.client.common.json.spi.JsonLogHelper;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchClientImplementor;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchRequest;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchResponse;
 import org.hibernate.search.backend.elasticsearch.client.common.util.spi.ElasticsearchClientUtils;
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
 import org.hibernate.search.backend.elasticsearch.logging.spi.ElasticsearchClientLog;
 import org.hibernate.search.backend.elasticsearch.logging.spi.ElasticsearchRequestLog;
 import org.hibernate.search.engine.common.execution.spi.SimpleScheduledExecutor;
@@ -33,9 +32,7 @@ import org.hibernate.search.engine.common.timing.Deadline;
 import org.hibernate.search.engine.environment.bean.BeanHolder;
 import org.hibernate.search.util.common.impl.Closer;
 import org.hibernate.search.util.common.impl.Futures;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
 
 public class ClientJdkElasticsearchClient implements ElasticsearchClientImplementor {
 
@@ -48,7 +45,7 @@ public class ClientJdkElasticsearchClient implements ElasticsearchClientImplemen
 
 	private final Optional<Integer> requestTimeoutMs;
 
-	private final Gson gson;
+	private final JsonCodecService json;
 	private final JsonLogHelper jsonLogHelper;
 
 	private final List<HttpRequestInterceptor> requestInterceptors;
@@ -56,12 +53,12 @@ public class ClientJdkElasticsearchClient implements ElasticsearchClientImplemen
 	ClientJdkElasticsearchClient(BeanHolder<? extends RestJdkClient> restClientHolder,
 			SimpleScheduledExecutor timeoutExecutorService,
 			Optional<Integer> requestTimeoutMs,
-			Gson gson, JsonLogHelper jsonLogHelper, List<HttpRequestInterceptor> requestInterceptors
+			JsonCodecService json, JsonLogHelper jsonLogHelper, List<HttpRequestInterceptor> requestInterceptors
 	) {
 		this.restClientHolder = restClientHolder;
 		this.timeoutExecutorService = timeoutExecutorService;
 		this.requestTimeoutMs = requestTimeoutMs;
-		this.gson = gson;
+		this.json = json;
 		this.jsonLogHelper = jsonLogHelper;
 		this.requestInterceptors = requestInterceptors;
 	}
@@ -114,7 +111,7 @@ public class ClientJdkElasticsearchClient implements ElasticsearchClientImplemen
 	private CompletableFuture<HttpResponse<JsonObject>> send(ElasticsearchRequest elasticsearchRequest) {
 		HttpRequest request;
 		try {
-			HttpRequest.BodyPublisher entity = ClientJdkGsonHttpEntity.toEntity( gson, elasticsearchRequest );
+			HttpRequest.BodyPublisher entity = ClientJdkJsonHttpEntity.toEntity( json, elasticsearchRequest );
 			request = toRequest( elasticsearchRequest, entity );
 		}
 		catch (IOException | RuntimeException e) {
@@ -164,7 +161,7 @@ public class ClientJdkElasticsearchClient implements ElasticsearchClientImplemen
 		HttpRequest.Builder request = HttpRequest.newBuilder( uri )
 				.method( elasticsearchRequest.method(), bodyPublisher );
 		setPerRequestSocketTimeout( elasticsearchRequest, request );
-		if ( !ClientJdkGsonHttpEntity.isNoBodyPublisher( bodyPublisher ) ) {
+		if ( !ClientJdkJsonHttpEntity.isNoBodyPublisher( bodyPublisher ) ) {
 			request.header( "Content-Type", "application/json" );
 		}
 
@@ -235,19 +232,19 @@ public class ClientJdkElasticsearchClient implements ElasticsearchClientImplemen
 		}
 	}
 
-	private class GsonJsonMapper implements Function<InputStream, JsonObject> {
+	private class JsonMapper implements Function<InputStream, JsonObject> {
 		private final Charset charset;
 		private final int statusCode;
 
-		public GsonJsonMapper(Charset charset, int statusCode) {
+		public JsonMapper(Charset charset, int statusCode) {
 			this.charset = charset;
 			this.statusCode = statusCode;
 		}
 
 		@Override
 		public JsonObject apply(InputStream inputStream) {
-			try ( inputStream; Reader reader = new InputStreamReader( inputStream, charset ) ) {
-				return gson.fromJson( reader, JsonObject.class );
+			try ( inputStream ) {
+				return json.decode( inputStream, charset, JsonObject.class );
 			}
 			catch (IOException e) {
 				throw ElasticsearchClientLog.INSTANCE.failedToParseElasticsearchResponse( statusCode, null, e.getMessage(), e );
@@ -263,7 +260,7 @@ public class ClientJdkElasticsearchClient implements ElasticsearchClientImplemen
 
 			return HttpResponse.BodySubscribers.mapping(
 					HttpResponse.BodySubscribers.ofInputStream(),
-					new GsonJsonMapper( charset, responseInfo.statusCode() )
+					new JsonMapper( charset, responseInfo.statusCode() )
 			);
 		}
 	}

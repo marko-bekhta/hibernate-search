@@ -3,7 +3,7 @@ package org.hibernate.search.backend.elasticsearch.search.projection.impl;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchDocumentReference;
 import org.hibernate.search.engine.backend.common.DocumentReference;
 
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
 
 public final class DocumentReferenceExtractionHelper implements ProjectionExtractionHelper<DocumentReference> {
 

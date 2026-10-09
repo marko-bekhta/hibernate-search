@@ -7,7 +7,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.hibernate.search.backend.elasticsearch.client.common.util.spi.URLEncodedString;
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonAccessor;
 import org.hibernate.search.backend.elasticsearch.logging.impl.QueryLog;
 import org.hibernate.search.backend.elasticsearch.orchestration.impl.ElasticsearchParallelWorkOrchestrator;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexContext;
@@ -33,9 +32,9 @@ import org.hibernate.search.engine.search.query.spi.AbstractSearchQuery;
 import org.hibernate.search.engine.search.timeout.spi.TimeoutManager;
 import org.hibernate.search.util.common.impl.Contracts;
 import org.hibernate.search.util.common.impl.Futures;
-
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonElement;
+import org.hibernate.search.util.json.JsonObject;
+import org.hibernate.search.util.json.spi.JsonAccessor;
 
 public class ElasticsearchSearchQueryImpl<H> extends AbstractSearchQuery<H, ElasticsearchSearchResult<H>>
 		implements ElasticsearchSearchQuery<H> {
@@ -162,7 +161,8 @@ public class ElasticsearchSearchQueryImpl<H> extends AbstractSearchQuery<H, Elas
 		timeoutManager.start();
 
 		JsonObject filteredPayload = new JsonObject();
-		Optional<JsonObject> querySubTree = JsonAccessor.root().property( "query" ).asObject().get( payload );
+		Optional<JsonObject> querySubTree =
+				JsonAccessor.root().property( "query" ).unwrapSingletonArrays().asObject().get( payload );
 		if ( querySubTree.isPresent() ) {
 			filteredPayload.add( "query", querySubTree.get() );
 		}

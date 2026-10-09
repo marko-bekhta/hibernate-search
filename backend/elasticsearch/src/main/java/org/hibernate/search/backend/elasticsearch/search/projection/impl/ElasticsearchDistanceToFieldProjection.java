@@ -3,9 +3,6 @@ package org.hibernate.search.backend.elasticsearch.search.projection.impl;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonAccessor;
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonArrayAccessor;
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonObjectAccessor;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.AbstractElasticsearchValueFieldSearchQueryElementFactory;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexScope;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexValueFieldContext;
@@ -19,9 +16,11 @@ import org.hibernate.search.engine.search.projection.SearchProjection;
 import org.hibernate.search.engine.search.projection.spi.DistanceToFieldProjectionBuilder;
 import org.hibernate.search.engine.spatial.DistanceUnit;
 import org.hibernate.search.engine.spatial.GeoPoint;
-
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonElement;
+import org.hibernate.search.util.json.JsonObject;
+import org.hibernate.search.util.json.spi.JsonAccessor;
+import org.hibernate.search.util.json.spi.JsonArrayAccessor;
+import org.hibernate.search.util.json.spi.JsonObjectAccessor;
 
 /**
  * A projection on the distance from a given center to the GeoPoint defined in an index field.
@@ -32,8 +31,10 @@ import com.google.gson.JsonObject;
 public class ElasticsearchDistanceToFieldProjection<A, P> extends AbstractElasticsearchProjection<P>
 		implements ElasticsearchSearchProjection.Extractor<A, P> {
 
-	private static final JsonObjectAccessor SCRIPT_FIELDS_ACCESSOR = JsonAccessor.root().property( "script_fields" ).asObject();
-	private static final JsonObjectAccessor FIELDS_ACCESSOR = JsonAccessor.root().property( "fields" ).asObject();
+	private static final JsonObjectAccessor SCRIPT_FIELDS_ACCESSOR =
+			JsonAccessor.root().property( "script_fields" ).unwrapSingletonArrays().asObject();
+	private static final JsonObjectAccessor FIELDS_ACCESSOR =
+			JsonAccessor.root().property( "fields" ).unwrapSingletonArrays().asObject();
 	private static final JsonArrayAccessor SORT_ACCESSOR = JsonAccessor.root().property( "sort" ).asArray();
 
 	private static final ProjectionConverter<Double, Double> NO_OP_DOUBLE_CONVERTER =
@@ -108,9 +109,8 @@ public class ElasticsearchDistanceToFieldProjection<A, P> extends AbstractElasti
 		}
 		else if ( scriptFieldName != null ) {
 			// we rely on a script to compute the distance
-			SCRIPT_FIELDS_ACCESSOR
-					.property( scriptFieldName ).asObject()
-					.property( "script" ).asObject()
+			SCRIPT_FIELDS_ACCESSOR.property( scriptFieldName ).unwrapSingletonArrays().asObject().property( "script" )
+					.unwrapSingletonArrays().asObject()
 					.set( requestBody, createScript( absoluteFieldPath, center ) );
 			return this;
 		}

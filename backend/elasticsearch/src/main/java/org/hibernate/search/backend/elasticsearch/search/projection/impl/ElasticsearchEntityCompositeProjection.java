@@ -4,7 +4,7 @@ import org.hibernate.search.backend.elasticsearch.reporting.impl.ElasticsearchSe
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexScope;
 import org.hibernate.search.engine.search.projection.spi.ProjectionTypeKeys;
 
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
 
 public class ElasticsearchEntityCompositeProjection<E> extends AbstractElasticsearchProjection<E> {
 	private final ElasticsearchSearchProjection<E> delegate;

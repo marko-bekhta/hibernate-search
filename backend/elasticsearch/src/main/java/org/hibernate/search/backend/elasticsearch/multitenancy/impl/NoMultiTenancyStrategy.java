@@ -7,15 +7,14 @@ import java.util.Set;
 import org.hibernate.search.backend.elasticsearch.common.impl.DocumentIdHelper;
 import org.hibernate.search.backend.elasticsearch.document.impl.DocumentMetadataContributor;
 import org.hibernate.search.backend.elasticsearch.document.model.dsl.impl.IndexSchemaRootContributor;
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonAccessor;
 import org.hibernate.search.backend.elasticsearch.logging.spi.ConfigurationLog;
 import org.hibernate.search.backend.elasticsearch.logging.spi.ElasticsearchClientLog;
 import org.hibernate.search.backend.elasticsearch.search.projection.impl.ProjectionExtractContext;
 import org.hibernate.search.backend.elasticsearch.search.projection.impl.ProjectionExtractionHelper;
 import org.hibernate.search.backend.elasticsearch.search.projection.impl.ProjectionRequestContext;
 import org.hibernate.search.util.common.reporting.EventContext;
-
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
+import org.hibernate.search.util.json.spi.JsonAccessor;
 
 public class NoMultiTenancyStrategy implements MultiTenancyStrategy {
 
@@ -83,7 +82,7 @@ public class NoMultiTenancyStrategy implements MultiTenancyStrategy {
 	private static final class NoMultiTenancyIdProjectionExtractionHelper
 			implements ProjectionExtractionHelper<String> {
 		private static final JsonAccessor<String> HIT_ID_ACCESSOR =
-				JsonAccessor.root().property( "_id" ).asString();
+				JsonAccessor.root().property( "_id" ).unwrapSingletonArrays().asString();
 
 		@Override
 		public void request(JsonObject requestBody, ProjectionRequestContext context) {

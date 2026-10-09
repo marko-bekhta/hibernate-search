@@ -5,6 +5,7 @@ import java.util.ArrayDeque;
 import org.hibernate.search.util.json.JsonArray;
 import org.hibernate.search.util.json.JsonElement;
 import org.hibernate.search.util.json.JsonObject;
+import org.hibernate.search.util.json.spi.JsonEmptyInputException;
 import org.hibernate.search.util.json.spi.JsonParseException;
 
 /** Stack-based tree construction; never uses accessor chains. */
@@ -56,7 +57,7 @@ final class JsonTreeBuilder {
 
 	JsonElement finish() {
 		if ( root == null ) {
-			throw new JsonParseException( "Expected one JSON root; input was empty" );
+			throw new JsonEmptyInputException();
 		}
 		if ( !frames.isEmpty() ) {
 			throw new JsonParseException( "Truncated JSON input" );

@@ -5,7 +5,7 @@ import org.hibernate.search.backend.elasticsearch.search.common.impl.Elasticsear
 import org.hibernate.search.engine.search.loading.spi.LoadingResult;
 import org.hibernate.search.engine.search.loading.spi.ProjectionHitMapper;
 
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
 
 class ElasticsearchJsonHitProjection extends AbstractElasticsearchProjection<JsonObject>
 		implements ElasticsearchSearchProjection.Extractor<JsonObject, JsonObject> {

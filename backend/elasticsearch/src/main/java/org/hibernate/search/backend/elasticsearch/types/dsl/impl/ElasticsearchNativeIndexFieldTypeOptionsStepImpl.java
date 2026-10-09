@@ -1,5 +1,6 @@
 package org.hibernate.search.backend.elasticsearch.types.dsl.impl;
 
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.mapping.impl.PropertyMapping;
 import org.hibernate.search.backend.elasticsearch.search.aggregation.impl.ElasticsearchRangeAggregation;
 import org.hibernate.search.backend.elasticsearch.search.aggregation.impl.ElasticsearchTermsAggregation;
@@ -15,9 +16,7 @@ import org.hibernate.search.engine.search.aggregation.spi.AggregationTypeKeys;
 import org.hibernate.search.engine.search.predicate.spi.PredicateTypeKeys;
 import org.hibernate.search.engine.search.projection.spi.ProjectionTypeKeys;
 import org.hibernate.search.engine.search.sort.spi.SortTypeKeys;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
+import org.hibernate.search.util.json.JsonElement;
 
 class ElasticsearchNativeIndexFieldTypeOptionsStepImpl
 		extends AbstractElasticsearchIndexFieldTypeOptionsStep<ElasticsearchNativeIndexFieldTypeOptionsStepImpl, JsonElement>
@@ -35,9 +34,9 @@ class ElasticsearchNativeIndexFieldTypeOptionsStepImpl
 
 	@Override
 	public IndexFieldType<JsonElement> toIndexFieldType() {
-		Gson gson = buildContext.getUserFacingGson();
+		JsonCodecService json = buildContext.getUserFacingCodec();
 
-		ElasticsearchJsonElementFieldCodec codec = new ElasticsearchJsonElementFieldCodec( gson );
+		ElasticsearchJsonElementFieldCodec codec = new ElasticsearchJsonElementFieldCodec( json );
 		builder.codec( codec );
 
 		builder.searchable( true );

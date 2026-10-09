@@ -1,11 +1,10 @@
 package org.hibernate.search.backend.elasticsearch.types.dsl.impl;
 
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.mapping.impl.PropertyMapping;
 import org.hibernate.search.backend.elasticsearch.types.dsl.ElasticsearchNativeIndexFieldTypeMappingStep;
 import org.hibernate.search.backend.elasticsearch.types.dsl.ElasticsearchNativeIndexFieldTypeOptionsStep;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
 
 class ElasticsearchNativeIndexFieldTypeMappingStepImpl
 		implements ElasticsearchNativeIndexFieldTypeMappingStep {
@@ -18,15 +17,15 @@ class ElasticsearchNativeIndexFieldTypeMappingStepImpl
 
 	@Override
 	public ElasticsearchNativeIndexFieldTypeOptionsStep<?> mapping(JsonObject jsonObject) {
-		Gson gson = buildContext.getUserFacingGson();
-		PropertyMapping mapping = gson.fromJson( jsonObject, PropertyMapping.class );
+		JsonCodecService json = buildContext.getUserFacingCodec();
+		PropertyMapping mapping = json.decode( jsonObject, PropertyMapping.class );
 		return new ElasticsearchNativeIndexFieldTypeOptionsStepImpl( buildContext, mapping );
 	}
 
 	@Override
 	public ElasticsearchNativeIndexFieldTypeOptionsStep<?> mapping(String jsonString) {
-		Gson gson = buildContext.getUserFacingGson();
-		return mapping( gson.fromJson( jsonString, JsonObject.class ) );
+		JsonCodecService json = buildContext.getUserFacingCodec();
+		return mapping( json.decode( jsonString, JsonObject.class ) );
 	}
 
 }

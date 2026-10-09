@@ -15,13 +15,11 @@ import org.hibernate.search.engine.search.aggregation.AggregationKey;
 import org.hibernate.search.engine.search.query.SearchResult;
 import org.hibernate.search.mapper.orm.Search;
 import org.hibernate.search.mapper.orm.session.SearchSession;
+import org.hibernate.search.util.json.JsonObject;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 
 class ElasticsearchAggregationDslIT {
 
@@ -47,15 +45,14 @@ class ElasticsearchAggregationDslIT {
 			// tag::elasticsearch-fromJson-jsonObject[]
 			JsonObject jsonObject =
 					// end::elasticsearch-fromJson-jsonObject[]
-					new Gson().fromJson(
+					new org.hibernate.search.util.json.spi.JsonParsing().parse(
 							"{"
 									+ "    \"histogram\": {"
 									+ "        \"field\": \"price\","
 									+ "        \"interval\": 10"
 									+ "    }"
-									+ "}",
-							JsonObject.class
-					)
+									+ "}" )
+							.getAsJsonObject()
 			// tag::elasticsearch-fromJson-jsonObject[]
 			/* ... */;
 			AggregationKey<JsonObject> countsByPriceHistogramKey = AggregationKey.of( "countsByPriceHistogram" );

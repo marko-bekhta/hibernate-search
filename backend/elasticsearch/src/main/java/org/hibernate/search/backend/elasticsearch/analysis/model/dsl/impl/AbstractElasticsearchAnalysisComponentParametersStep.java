@@ -8,10 +8,9 @@ import org.hibernate.search.backend.elasticsearch.analysis.model.dsl.Elasticsear
 import org.hibernate.search.backend.elasticsearch.analysis.model.impl.ElasticsearchAnalysisDefinitionContributor;
 import org.hibernate.search.backend.elasticsearch.logging.impl.AnalysisLog;
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.analysis.impl.AnalysisDefinition;
-
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonPrimitive;
+import org.hibernate.search.util.json.JsonArray;
+import org.hibernate.search.util.json.JsonElement;
+import org.hibernate.search.util.json.JsonPrimitive;
 
 abstract class AbstractElasticsearchAnalysisComponentParametersStep<D extends AnalysisDefinition>
 		implements ElasticsearchAnalysisComponentParametersStep,

@@ -43,8 +43,7 @@ import org.hibernate.search.engine.search.projection.spi.ProjectionTypeKeys;
 import org.hibernate.search.engine.search.sort.spi.SortTypeKeys;
 import org.hibernate.search.util.common.AssertionFailure;
 import org.hibernate.search.util.common.impl.Contracts;
-
-import com.google.gson.JsonPrimitive;
+import org.hibernate.search.util.json.JsonPrimitive;
 
 class ElasticsearchStringIndexFieldTypeOptionsStep
 		extends AbstractElasticsearchStandardIndexFieldTypeOptionsStep<ElasticsearchStringIndexFieldTypeOptionsStep, String>
@@ -195,7 +194,7 @@ class ElasticsearchStringIndexFieldTypeOptionsStep
 			mapping.setNullValue( new JsonPrimitive( indexNullAs ) );
 		}
 
-		ElasticsearchStringFieldCodec codec = new ElasticsearchStringFieldCodec( buildContext.getUserFacingGson() );
+		ElasticsearchStringFieldCodec codec = new ElasticsearchStringFieldCodec( buildContext.getUserFacingCodec() );
 		builder.codec( codec );
 
 		if ( resolvedSearchable ) {

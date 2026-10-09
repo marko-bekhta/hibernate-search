@@ -7,9 +7,8 @@ import org.hibernate.search.backend.elasticsearch.search.common.impl.Elasticsear
 import org.hibernate.search.engine.backend.session.spi.BackendSessionContext;
 import org.hibernate.search.engine.search.common.NamedValues;
 import org.hibernate.search.engine.search.query.spi.QueryParameters;
-
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonArray;
+import org.hibernate.search.util.json.JsonObject;
 
 public class PredicateRequestContext {
 

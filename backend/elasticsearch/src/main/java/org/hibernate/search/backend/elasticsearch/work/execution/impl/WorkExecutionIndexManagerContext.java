@@ -3,7 +3,7 @@ package org.hibernate.search.backend.elasticsearch.work.execution.impl;
 import org.hibernate.search.backend.elasticsearch.client.common.util.spi.URLEncodedString;
 import org.hibernate.search.engine.backend.work.execution.spi.DocumentContributor;
 
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
 
 /**
  * An interface with knowledge of the index manager internals,

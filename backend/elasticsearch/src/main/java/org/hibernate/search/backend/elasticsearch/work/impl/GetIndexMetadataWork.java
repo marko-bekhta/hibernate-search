@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.hibernate.search.backend.elasticsearch.client.common.gson.spi.GsonProvider;
+import org.hibernate.search.backend.elasticsearch.client.common.json.spi.JsonProvider;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchRequest;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchResponse;
 import org.hibernate.search.backend.elasticsearch.client.common.util.spi.URLEncodedString;
@@ -17,9 +17,8 @@ import org.hibernate.search.backend.elasticsearch.lowlevel.index.mapping.impl.Ro
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.settings.impl.IndexSettings;
 import org.hibernate.search.backend.elasticsearch.work.result.impl.ExistingIndexMetadata;
 import org.hibernate.search.util.common.AssertionFailure;
-
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonElement;
+import org.hibernate.search.util.json.JsonObject;
 
 public class GetIndexMetadataWork extends AbstractNonBulkableWork<List<ExistingIndexMetadata>> {
 
@@ -52,11 +51,11 @@ public class GetIndexMetadataWork extends AbstractNonBulkableWork<List<ExistingI
 					"Elasticsearch API call succeeded, but the aliases weren't mentioned in the result: " + index );
 		}
 
-		GsonProvider gsonProvider = context.getGsonProvider();
+		JsonProvider jsonProvider = context.getJsonProvider();
 		Map<String, IndexAliasDefinition> result = new LinkedHashMap<>();
 		for ( Map.Entry<String, JsonElement> entry : aliases.getAsJsonObject().entrySet() ) {
 			IndexAliasDefinition aliasDefinition =
-					gsonProvider.getGson().fromJson( entry.getValue(), IndexAliasDefinition.class );
+					jsonProvider.getCodec().decode( entry.getValue(), IndexAliasDefinition.class );
 			result.put( entry.getKey(), aliasDefinition );
 		}
 		return result;
@@ -71,8 +70,8 @@ public class GetIndexMetadataWork extends AbstractNonBulkableWork<List<ExistingI
 
 		JsonElement indexSettings = settings.getAsJsonObject().get( "index" );
 		if ( indexSettings != null ) {
-			GsonProvider gsonProvider = context.getGsonProvider();
-			return gsonProvider.getGson().fromJson( indexSettings, IndexSettings.class );
+			JsonProvider jsonProvider = context.getJsonProvider();
+			return jsonProvider.getCodec().decode( indexSettings, IndexSettings.class );
 		}
 		else {
 			// Empty settings
@@ -84,8 +83,8 @@ public class GetIndexMetadataWork extends AbstractNonBulkableWork<List<ExistingI
 		JsonElement mappings = index.get( "mappings" );
 
 		if ( mappings != null ) {
-			GsonProvider gsonProvider = context.getGsonProvider();
-			return gsonProvider.getGson().fromJson( mappings, RootTypeMapping.class );
+			JsonProvider jsonProvider = context.getJsonProvider();
+			return jsonProvider.getCodec().decode( mappings, RootTypeMapping.class );
 		}
 		else {
 			return null;

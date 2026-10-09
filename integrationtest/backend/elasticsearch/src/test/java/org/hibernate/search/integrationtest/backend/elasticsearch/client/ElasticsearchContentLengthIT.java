@@ -21,12 +21,12 @@ import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.hibernate.search.backend.elasticsearch.cfg.ElasticsearchBackendSettings;
-import org.hibernate.search.backend.elasticsearch.client.common.gson.spi.GsonProvider;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchClient;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchClientImplementor;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchRequest;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchResponse;
 import org.hibernate.search.backend.elasticsearch.client.common.util.spi.URLEncodedString;
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
 import org.hibernate.search.engine.cfg.ConfigurationPropertySource;
 import org.hibernate.search.engine.cfg.spi.AllAwareConfigurationPropertySource;
 import org.hibernate.search.engine.common.execution.spi.DelegatingSimpleScheduledExecutor;
@@ -39,6 +39,8 @@ import org.hibernate.search.util.impl.integrationtest.backend.elasticsearch.Elas
 import org.hibernate.search.util.impl.integrationtest.common.TestConfigurationProvider;
 import org.hibernate.search.util.impl.test.annotation.PortedFromSearch5;
 import org.hibernate.search.util.impl.test.annotation.TestForIssue;
+import org.hibernate.search.util.json.JsonObject;
+import org.hibernate.search.util.json.spi.JsonParsing;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -47,32 +49,27 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.stream.JsonWriter;
 
 /**
  * Test that we manage to compute the content-length of Elasticsearch
- * requests appropriately (for small requests, or when computing digests, e.g. on AWS),
+ * requests appropriately after a bounded small-body probe,
  * and use the "chunked" transfer-encoding otherwise.
  */
 @TestForIssue(jiraKey = "HSEARCH-2849")
 @PortedFromSearch5(original = "org.hibernate.search.elasticsearch.test.client.ElasticsearchContentLengthIT")
 class ElasticsearchContentLengthIT {
 
-	private static final JsonObject BODY_PART = JsonParser.parseString( "{ \"foo\": \"bar\" }" ).getAsJsonObject();
+	private static final JsonObject BODY_PART = new JsonParsing().parse( "{ \"foo\": \"bar\" }" ).getAsJsonObject();
 
 	private static final int BODY_PART_BYTE_SIZE;
 	static {
-		Gson gson = new Gson();
+		JsonCodecService json =
+				org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.create( false ).getCodec();
 		try ( ByteArrayOutputStream out = new ByteArrayOutputStream();
-				Writer writer = new OutputStreamWriter( out, StandardCharsets.UTF_8 );
-				JsonWriter jsonWriter = new JsonWriter( writer ) ) {
-			gson.toJson( BODY_PART, jsonWriter );
+				Writer writer = new OutputStreamWriter( out, StandardCharsets.UTF_8 ) ) {
+			json.write( BODY_PART, writer );
 			writer.write( '\n' ); // Account for EOL at the end of each body part
-			jsonWriter.flush();
+			writer.flush();
 			BODY_PART_BYTE_SIZE = out.size();
 		}
 		catch (IOException e) {
@@ -80,7 +77,7 @@ class ElasticsearchContentLengthIT {
 		}
 	}
 
-	private static final int BUFFER_LIMIT = 1024;
+	private static final int BUFFER_LIMIT = org.hibernate.search.util.json.spi.JsonBodies.DEFAULT_BUFFER_SIZE;
 
 	@RegisterExtension
 	private final WireMockExtension wireMockRule = WireMockExtension.newInstance()
@@ -168,8 +165,8 @@ class ElasticsearchContentLengthIT {
 	}
 
 	/**
-	 * When the request is post-processed (e.g. with the AWS integration),
-	 * we have to store it entirely in memory, so chunked transfer does not make sense.
+	 * Signing uses an independent bounded cursor stream. Large requests keep their
+	 * unknown length after signing and are sent with chunked transfer encoding.
 	 */
 	@Test
 	void payloadJustAboveBufferSize_requestPostProcessing() throws Exception {
@@ -187,8 +184,8 @@ class ElasticsearchContentLengthIT {
 			doPost( client, "/myIndex/myType", produceBody( bodyPartCount ) );
 			wireMockRule.verify(
 					postRequestedFor( urlPathLike( "/myIndex/myType" ) )
-							.withoutHeader( "Transfer-Encoding" )
-							.withHeader( "Content-length", equalTo( String.valueOf( bodyPartCount * BODY_PART_BYTE_SIZE ) ) )
+							.withHeader( "Transfer-Encoding", equalTo( "chunked" ) )
+							.withoutHeader( "Content-length" )
 			);
 		}
 	}
@@ -215,7 +212,7 @@ class ElasticsearchContentLengthIT {
 				.create( beanResolver, clientPropertySource,
 						threadPoolProvider.threadProvider(), "Client",
 						new DelegatingSimpleScheduledExecutor( timeoutExecutorService, true ),
-						GsonProvider.create( GsonBuilder::new, true ) );
+						org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.create( true ) );
 	}
 
 	private ElasticsearchResponse doPost(ElasticsearchClient client, String path, Collection<JsonObject> bodyParts) {

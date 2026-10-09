@@ -11,9 +11,8 @@ import org.hibernate.search.backend.elasticsearch.work.factory.impl.Elasticsearc
 import org.hibernate.search.engine.backend.work.execution.OperationSubmitter;
 import org.hibernate.search.engine.backend.work.execution.spi.IndexWorkspace;
 import org.hibernate.search.engine.backend.work.execution.spi.UnsupportedOperationBehavior;
-
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonArray;
+import org.hibernate.search.util.json.JsonObject;
 
 public class ElasticsearchIndexWorkspace implements IndexWorkspace {
 

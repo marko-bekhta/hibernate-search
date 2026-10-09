@@ -9,7 +9,7 @@ import org.hibernate.search.backend.elasticsearch.lowlevel.index.settings.impl.A
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.settings.impl.IndexSettings;
 import org.hibernate.search.backend.elasticsearch.reporting.impl.ElasticsearchValidationMessages;
 
-import com.google.gson.JsonElement;
+import org.hibernate.search.util.json.JsonElement;
 
 public class IndexSettingsValidator implements Validator<IndexSettings> {
 

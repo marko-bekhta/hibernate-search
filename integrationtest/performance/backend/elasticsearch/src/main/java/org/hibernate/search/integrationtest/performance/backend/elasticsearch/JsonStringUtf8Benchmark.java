@@ -2,7 +2,7 @@ package org.hibernate.search.integrationtest.performance.backend.elasticsearch;
 
 import java.util.concurrent.TimeUnit;
 
-import org.hibernate.search.backend.elasticsearch.gson.spi.GsonProviderHelper;
+import org.hibernate.search.integrationtest.performance.backend.elasticsearch.legacy.gson.spi.GsonProviderHelper;
 import org.hibernate.search.util.json.JsonElement;
 import org.hibernate.search.util.json.JsonObject;
 import org.hibernate.search.util.json.JsonPrimitive;

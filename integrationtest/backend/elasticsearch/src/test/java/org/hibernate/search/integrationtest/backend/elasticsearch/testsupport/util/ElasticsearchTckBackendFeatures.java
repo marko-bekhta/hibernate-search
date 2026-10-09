@@ -20,11 +20,11 @@ import java.time.ZonedDateTime;
 import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
 import org.hibernate.search.backend.elasticsearch.types.format.impl.ElasticsearchDefaultFieldFormatProvider;
 import org.hibernate.search.engine.backend.types.VectorSimilarity;
 import org.hibernate.search.engine.cfg.spi.FormatUtils;
@@ -48,16 +48,14 @@ import org.hibernate.search.integrationtest.backend.tck.testsupport.types.YearMo
 import org.hibernate.search.integrationtest.backend.tck.testsupport.types.ZonedDateTimeFieldTypeDescriptor;
 import org.hibernate.search.integrationtest.backend.tck.testsupport.util.TckBackendFeatures;
 import org.hibernate.search.util.impl.integrationtest.backend.elasticsearch.dialect.ElasticsearchTestDialect;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonElement;
+import org.hibernate.search.util.json.JsonObject;
 
 @SuppressWarnings("unused") // For EJC and lambda arg
 public class ElasticsearchTckBackendFeatures extends TckBackendFeatures {
 
-	private Gson gson = new GsonBuilder().setPrettyPrinting().create();
+	private JsonCodecService json =
+			org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.createUserFacingCodec();
 
 	ElasticsearchTckBackendFeatures() {
 	}
@@ -397,17 +395,24 @@ public class ElasticsearchTckBackendFeatures extends TckBackendFeatures {
 	@Override
 	public <F> Object toRawValue(FieldTypeDescriptor<F, ?> descriptor, F value) {
 		if ( TemporalAccessor.class.isAssignableFrom( descriptor.getJavaType() ) ) {
-			return gson.toJson( formatForQueryStringPredicate( descriptor, value ) );
+			return json.write( formatForQueryStringPredicate( descriptor, value ) );
 		}
 
 		if ( GeoPointFieldTypeDescriptor.INSTANCE.equals( descriptor ) ) {
 			// we use a linked map to preserve the order of keys so that we get a predictable string.
-			var point = new LinkedHashMap<>();
-			point.put( "lat", ( (GeoPoint) value ).latitude() );
-			point.put( "lon", ( (GeoPoint) value ).longitude() );
-			return gson.toJson( point );
+			var point = new JsonObject();
+			point.addProperty( "lat", ( (GeoPoint) value ).latitude() );
+			point.addProperty( "lon", ( (GeoPoint) value ).longitude() );
+			return json.write( point );
 		}
-		return gson.toJson( value );
+		if ( value != null && value.getClass().isArray() ) {
+			var array = new org.hibernate.search.util.json.JsonArray();
+			for ( int i = 0; i < java.lang.reflect.Array.getLength( value ); i++ ) {
+				array.add( json.encode( java.lang.reflect.Array.get( value, i ) ) );
+			}
+			return json.write( array );
+		}
+		return json.write( value );
 	}
 
 	@Override
@@ -479,8 +484,8 @@ public class ElasticsearchTckBackendFeatures extends TckBackendFeatures {
 					return -1;
 				}
 				// compare parsed JSONs to address possible attribute order change:
-				return gson.fromJson( (String) o1, JsonElement.class )
-						.equals( gson.fromJson( (String) o2, JsonElement.class ) ) ? 0 : -1;
+				return json.decode( (String) o1, JsonElement.class )
+						.equals( json.decode( (String) o2, JsonElement.class ) ) ? 0 : -1;
 			} );
 		}
 		return super.rawValueEqualsComparator( fieldType );
@@ -511,8 +516,8 @@ public class ElasticsearchTckBackendFeatures extends TckBackendFeatures {
 	@SuppressWarnings("unchecked")
 	@Override
 	public <F, T> T fromRawAggregation(FieldTypeDescriptor<F, ?> typeDescriptor, T value) {
-		JsonObject jsonObject = gson.fromJson( value.toString(), JsonObject.class );
-		return (T) ( gson.toJson( jsonObject.has( "value_as_string" )
+		JsonObject jsonObject = json.decode( value.toString(), JsonObject.class );
+		return (T) ( json.write( jsonObject.has( "value_as_string" )
 				? jsonObject.get( "value_as_string" )
 				: jsonObject.get( "value" ) ) );
 	}

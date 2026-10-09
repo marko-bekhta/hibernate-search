@@ -20,14 +20,12 @@ import org.hibernate.search.integrationtest.backend.elasticsearch.testsupport.ut
 import org.hibernate.search.integrationtest.backend.tck.testsupport.util.extension.SearchSetupHelper;
 import org.hibernate.search.util.impl.integrationtest.mapper.stub.SimpleMappedIndex;
 import org.hibernate.search.util.impl.integrationtest.mapper.stub.StubMappingScope;
+import org.hibernate.search.util.json.JsonElement;
+import org.hibernate.search.util.json.JsonObject;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 
 /**
  * Test the content of generated Elasticsearch search queries when the
@@ -74,7 +72,8 @@ class ElasticsearchSearchQueryRequestTransformerIT {
 				ElasticsearchRequest.post()
 						.pathComponent( defaultReadAlias( otherIndex.name() ) )
 						.pathComponent( URLEncodedString.fromString( "_search" ) )
-						.body( new Gson().fromJson( "{}", JsonObject.class ) )
+						.body( org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.create( false ).getCodec()
+								.decode( "{}", JsonObject.class ) )
 						.build(),
 				ElasticsearchRequestAssertionMode.EXTENSIBLE
 		);
@@ -102,7 +101,8 @@ class ElasticsearchSearchQueryRequestTransformerIT {
 				ElasticsearchRequest.post()
 						.pathComponent( defaultReadAlias( mainIndex.name() ) )
 						.pathComponent( Paths._SEARCH )
-						.body( new Gson().fromJson( "{}", JsonObject.class ) )
+						.body( org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.create( false ).getCodec()
+								.decode( "{}", JsonObject.class ) )
 						.param( "search_type", "dfs_query_then_fetch" )
 						.build(),
 				ElasticsearchRequestAssertionMode.EXTENSIBLE
@@ -134,7 +134,8 @@ class ElasticsearchSearchQueryRequestTransformerIT {
 				ElasticsearchRequest.post()
 						.pathComponent( defaultReadAlias( mainIndex.name() ) )
 						.pathComponent( Paths._SEARCH )
-						.body( new Gson().fromJson( "{'min_score':0.5}", JsonObject.class ) )
+						.body( org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.create( false ).getCodec()
+								.decode( "{\"min_score\":0.5}", JsonObject.class ) )
 						.build(),
 				ElasticsearchRequestAssertionMode.EXTENSIBLE
 		);

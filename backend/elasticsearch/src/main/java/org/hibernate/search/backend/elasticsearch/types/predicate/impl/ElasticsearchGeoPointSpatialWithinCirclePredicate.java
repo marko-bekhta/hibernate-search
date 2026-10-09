@@ -1,7 +1,5 @@
 package org.hibernate.search.backend.elasticsearch.types.predicate.impl;
 
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonAccessor;
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonObjectAccessor;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.AbstractElasticsearchCodecAwareSearchQueryElementFactory;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexScope;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexValueFieldContext;
@@ -12,18 +10,19 @@ import org.hibernate.search.engine.search.predicate.SearchPredicate;
 import org.hibernate.search.engine.search.predicate.spi.SpatialWithinCirclePredicateBuilder;
 import org.hibernate.search.engine.spatial.DistanceUnit;
 import org.hibernate.search.engine.spatial.GeoPoint;
-
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonElement;
+import org.hibernate.search.util.json.JsonObject;
+import org.hibernate.search.util.json.spi.JsonAccessor;
+import org.hibernate.search.util.json.spi.JsonObjectAccessor;
 
 public class ElasticsearchGeoPointSpatialWithinCirclePredicate extends AbstractElasticsearchSingleFieldPredicate {
 
 	private static final JsonObjectAccessor GEO_DISTANCE_ACCESSOR =
-			JsonAccessor.root().property( "geo_distance" ).asObject();
+			JsonAccessor.root().property( "geo_distance" ).unwrapSingletonArrays().asObject();
 	private static final JsonAccessor<Double> DISTANCE_ACCESSOR =
-			JsonAccessor.root().property( "distance" ).asDouble();
+			JsonAccessor.root().property( "distance" ).unwrapSingletonArrays().asDouble();
 	private static final JsonAccessor<Boolean> IGNORE_UNMAPPED_ACCESSOR =
-			JsonAccessor.root().property( "ignore_unmapped" ).asBoolean();
+			JsonAccessor.root().property( "ignore_unmapped" ).unwrapSingletonArrays().asBoolean();
 
 	private final double distanceInMeters;
 	private final JsonElement center;

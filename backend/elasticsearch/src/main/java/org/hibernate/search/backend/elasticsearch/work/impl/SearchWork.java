@@ -10,8 +10,7 @@ import org.hibernate.search.backend.elasticsearch.client.common.util.spi.URLEnco
 import org.hibernate.search.backend.elasticsearch.client.impl.Paths;
 import org.hibernate.search.backend.elasticsearch.logging.impl.QueryLog;
 import org.hibernate.search.engine.common.timing.Deadline;
-
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
 
 public class SearchWork<R> extends AbstractNonBulkableWork<R> {
 
@@ -32,7 +31,7 @@ public class SearchWork<R> extends AbstractNonBulkableWork<R> {
 		QueryLog.INSTANCE.executingElasticsearchQuery(
 				request.path(),
 				request.parameters(),
-				executionContext.getGsonProvider().getLogHelper().toString( request.bodyParts() )
+				executionContext.getJsonProvider().getLogHelper().toString( request.bodyParts() )
 		);
 		return super.beforeExecute( executionContext, request );
 	}

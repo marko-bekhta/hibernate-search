@@ -5,13 +5,12 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.hibernate.search.backend.elasticsearch.common.impl.DocumentIdHelper;
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
 import org.hibernate.search.backend.elasticsearch.lowlevel.syntax.search.impl.ElasticsearchSearchSyntax;
 import org.hibernate.search.engine.search.common.spi.SearchIndexCompositeNodeContext;
 import org.hibernate.search.engine.search.common.spi.SearchIndexScope;
 import org.hibernate.search.engine.search.timeout.spi.TimeoutManager;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
 
 public interface ElasticsearchSearchIndexScope<S extends ElasticsearchSearchIndexScope<?>>
 		extends SearchIndexScope<S> {
@@ -21,7 +20,7 @@ public interface ElasticsearchSearchIndexScope<S extends ElasticsearchSearchInde
 
 	ElasticsearchSearchIndexNodeContext field(String fieldPath);
 
-	Gson userFacingGson();
+	JsonCodecService userFacingCodec();
 
 	ElasticsearchSearchSyntax searchSyntax();
 

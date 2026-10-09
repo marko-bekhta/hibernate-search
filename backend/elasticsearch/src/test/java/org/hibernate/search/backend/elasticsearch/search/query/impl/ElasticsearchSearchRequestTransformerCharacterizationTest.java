@@ -7,17 +7,16 @@ import java.util.function.Function;
 
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchRequest;
 import org.hibernate.search.util.common.AssertionFailure;
+import org.hibernate.search.util.json.JsonObject;
+import org.hibernate.search.util.json.spi.JsonParsing;
 
 import org.junit.jupiter.api.Test;
-
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
 class ElasticsearchSearchRequestTransformerCharacterizationTest {
 
 	@Test
 	void copiesBodyOnFirstAccessAndKeepsItForSubsequentAccesses() {
-		JsonObject body = JsonParser.parseString( "{\"query\":{\"term\":{\"name\":\"original\"}}}" ).getAsJsonObject();
+		JsonObject body = new JsonParsing().parse( "{\"query\":{\"term\":{\"name\":\"original\"}}}" ).getAsJsonObject();
 		ElasticsearchRequest original = ElasticsearchRequest.builder( "POST" ).wholeEncodedPath( "/index/_search" )
 				.param( "size", "10" ).body( body ).build();
 		Function<ElasticsearchRequest, ElasticsearchRequest> transform =

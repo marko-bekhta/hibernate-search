@@ -2,13 +2,12 @@ package org.hibernate.search.backend.elasticsearch.types.codec.impl;
 
 import java.util.Objects;
 
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonElementTypes;
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
 import org.hibernate.search.engine.backend.types.VectorSimilarity;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonNull;
+import org.hibernate.search.util.json.JsonArray;
+import org.hibernate.search.util.json.JsonElement;
+import org.hibernate.search.util.json.JsonNull;
+import org.hibernate.search.util.json.spi.JsonElementTypes;
 
 public abstract class AbstractElasticsearchVectorFieldCodec<F> extends AbstractElasticsearchFieldCodec<F>
 		implements ElasticsearchVectorFieldCodec<F> {
@@ -19,9 +18,10 @@ public abstract class AbstractElasticsearchVectorFieldCodec<F> extends AbstractE
 	private final Integer efConstruction;
 	private final F indexNullAs;
 
-	protected AbstractElasticsearchVectorFieldCodec(Gson gson, VectorSimilarity similarity, int dimension, Integer m,
+	protected AbstractElasticsearchVectorFieldCodec(JsonCodecService json, VectorSimilarity similarity, int dimension,
+			Integer m,
 			Integer efConstruction, F indexNullAs) {
-		super( gson );
+		super( json );
 		this.similarity = similarity;
 		this.dimension = dimension;
 		this.m = m;

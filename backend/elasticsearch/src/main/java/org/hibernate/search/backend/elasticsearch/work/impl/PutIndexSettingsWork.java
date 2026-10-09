@@ -1,14 +1,13 @@
 package org.hibernate.search.backend.elasticsearch.work.impl;
 
-import org.hibernate.search.backend.elasticsearch.client.common.gson.spi.GsonProvider;
+import org.hibernate.search.backend.elasticsearch.client.common.json.spi.JsonProvider;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchRequest;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchResponse;
 import org.hibernate.search.backend.elasticsearch.client.common.util.spi.URLEncodedString;
 import org.hibernate.search.backend.elasticsearch.client.impl.Paths;
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.settings.impl.IndexSettings;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
 
 public class PutIndexSettingsWork extends AbstractNonBulkableWork<Void> {
 
@@ -27,7 +26,7 @@ public class PutIndexSettingsWork extends AbstractNonBulkableWork<Void> {
 		private final JsonObject payload;
 
 		public Builder(
-				GsonProvider gsonProvider,
+				JsonProvider jsonProvider,
 				URLEncodedString indexName, IndexSettings settings) {
 			super( ElasticsearchRequestSuccessAssessor.DEFAULT_INSTANCE );
 			this.indexName = indexName;
@@ -35,8 +34,8 @@ public class PutIndexSettingsWork extends AbstractNonBulkableWork<Void> {
 			 * Serializing nulls is really not a good idea here, it triggers NPEs in Elasticsearch
 			 * We better not include the null fields.
 			 */
-			Gson gson = gsonProvider.getGsonNoSerializeNulls();
-			this.payload = gson.toJsonTree( settings ).getAsJsonObject();
+			JsonCodecService json = jsonProvider.getCodecNoSerializeNulls();
+			this.payload = json.encode( settings ).getAsJsonObject();
 		}
 
 		@Override

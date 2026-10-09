@@ -1,6 +1,5 @@
 package org.hibernate.search.backend.elasticsearch.types.predicate.impl;
 
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonAccessor;
 import org.hibernate.search.backend.elasticsearch.logging.impl.AnalysisLog;
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.analysis.impl.AnalyzerConstants;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.AbstractElasticsearchCodecAwareSearchQueryElementFactory;
@@ -12,17 +11,19 @@ import org.hibernate.search.backend.elasticsearch.types.codec.impl.Elasticsearch
 import org.hibernate.search.engine.reporting.spi.EventContexts;
 import org.hibernate.search.engine.search.predicate.SearchPredicate;
 import org.hibernate.search.engine.search.predicate.spi.MatchPredicateBuilder;
-
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
+import org.hibernate.search.util.json.spi.JsonAccessor;
 
 public class ElasticsearchTextMatchPredicate extends ElasticsearchStandardMatchPredicate {
 
-	private static final JsonAccessor<Integer> FUZZINESS_ACCESSOR = JsonAccessor.root().property( "fuzziness" ).asInteger();
+	private static final JsonAccessor<Integer> FUZZINESS_ACCESSOR =
+			JsonAccessor.root().property( "fuzziness" ).unwrapSingletonArrays().asInteger();
 	private static final JsonAccessor<Integer> PREFIX_LENGTH_ACCESSOR =
-			JsonAccessor.root().property( "prefix_length" ).asInteger();
-	private static final JsonAccessor<String> ANALYZER_ACCESSOR = JsonAccessor.root().property( "analyzer" ).asString();
-	private static final JsonAccessor<String> MINIMUM_SHOULD_MATCH_ACCESSOR = JsonAccessor.root()
-			.property( "minimum_should_match" ).asString();
+			JsonAccessor.root().property( "prefix_length" ).unwrapSingletonArrays().asInteger();
+	private static final JsonAccessor<String> ANALYZER_ACCESSOR =
+			JsonAccessor.root().property( "analyzer" ).unwrapSingletonArrays().asString();
+	private static final JsonAccessor<String> MINIMUM_SHOULD_MATCH_ACCESSOR =
+			JsonAccessor.root().property( "minimum_should_match" ).unwrapSingletonArrays().asString();
 
 	private final Integer fuzziness;
 	private final Integer prefixLength;

@@ -2,7 +2,7 @@ package org.hibernate.search.backend.elasticsearch.work.impl;
 
 import org.hibernate.search.engine.common.timing.Deadline;
 
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
 
 public interface ElasticsearchSearchResultExtractor<R> {
 

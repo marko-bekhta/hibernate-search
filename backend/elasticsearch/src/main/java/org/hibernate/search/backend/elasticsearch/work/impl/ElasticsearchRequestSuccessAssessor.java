@@ -9,22 +9,22 @@ import java.util.Set;
 
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchResponse;
 import org.hibernate.search.backend.elasticsearch.client.impl.ElasticsearchClientUtils;
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonAccessor;
 import org.hibernate.search.backend.elasticsearch.logging.spi.ElasticsearchClientLog;
 import org.hibernate.search.util.common.SearchException;
-
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
+import org.hibernate.search.util.json.spi.JsonAccessor;
 
 public class ElasticsearchRequestSuccessAssessor {
 
-	private static final JsonAccessor<Integer> BULK_ITEM_STATUS_CODE = JsonAccessor.root().property( "status" ).asInteger();
+	private static final JsonAccessor<Integer> BULK_ITEM_STATUS_CODE =
+			JsonAccessor.root().property( "status" ).unwrapSingletonArrays().asInteger();
 	private static final JsonAccessor<String> ERROR_TYPE =
-			JsonAccessor.root().property( "error" ).property( "type" ).asString();
+			JsonAccessor.root().property( "error" ).unwrapSingletonArrays().property( "type" ).unwrapSingletonArrays()
+					.asString();
 
-	private static final JsonAccessor<Integer> FAILED_SHARDS_COUNT = JsonAccessor.root()
-			.property( "_shards" )
-			.property( "failed" )
-			.asInteger();
+	private static final JsonAccessor<Integer> FAILED_SHARDS_COUNT = JsonAccessor.root().property( "_shards" )
+			.unwrapSingletonArrays().property( "failed" )
+			.unwrapSingletonArrays().asInteger();
 	private static final int TIME_OUT_HTTP_STATUS_CODE = 408;
 
 	public static final ElasticsearchRequestSuccessAssessor SHARD_FAILURE_CHECKED_INSTANCE =

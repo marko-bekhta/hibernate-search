@@ -15,12 +15,11 @@ import org.hibernate.search.backend.elasticsearch.ElasticsearchVersion;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchClient;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchResponse;
 import org.hibernate.search.util.common.SearchException;
+import org.hibernate.search.util.json.JsonObject;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-
-import com.google.gson.JsonObject;
 
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoSettings;

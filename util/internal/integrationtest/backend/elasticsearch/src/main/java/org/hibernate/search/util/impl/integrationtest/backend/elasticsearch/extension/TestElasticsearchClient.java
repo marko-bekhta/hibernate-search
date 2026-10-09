@@ -20,7 +20,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import org.hibernate.search.backend.elasticsearch.ElasticsearchVersion;
 import org.hibernate.search.backend.elasticsearch.cfg.ElasticsearchBackendSettings;
 import org.hibernate.search.backend.elasticsearch.cfg.ElasticsearchIndexSettings;
-import org.hibernate.search.backend.elasticsearch.client.common.gson.spi.GsonProvider;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchClientFactory;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchClientImplementor;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchRequest;
@@ -28,6 +27,7 @@ import org.hibernate.search.backend.elasticsearch.client.common.spi.Elasticsearc
 import org.hibernate.search.backend.elasticsearch.client.common.util.spi.URLEncodedString;
 import org.hibernate.search.backend.elasticsearch.client.impl.ElasticsearchClientUtils;
 import org.hibernate.search.backend.elasticsearch.client.impl.Paths;
+import org.hibernate.search.backend.elasticsearch.gson.GsonJsonConversion;
 import org.hibernate.search.backend.elasticsearch.index.IndexStatus;
 import org.hibernate.search.backend.elasticsearch.index.layout.impl.IndexNames;
 import org.hibernate.search.backend.elasticsearch.logging.impl.ElasticsearchRequestFormatter;
@@ -47,16 +47,13 @@ import org.hibernate.search.util.impl.integrationtest.backend.elasticsearch.Elas
 import org.hibernate.search.util.impl.integrationtest.backend.elasticsearch.dialect.ElasticsearchTestDialect;
 import org.hibernate.search.util.impl.integrationtest.common.TestConfigurationProvider;
 import org.hibernate.search.util.impl.integrationtest.common.extension.BackendConfiguration;
+import org.hibernate.search.util.json.JsonArray;
+import org.hibernate.search.util.json.JsonElement;
+import org.hibernate.search.util.json.JsonObject;
 
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
-
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
 public class TestElasticsearchClient implements BeforeEachCallback, AfterEachCallback, Closeable {
 
@@ -518,7 +515,7 @@ public class TestElasticsearchClient implements BeforeEachCallback, AfterEachCal
 								timeoutExecutorService,
 								threadPoolProvider.isScheduledExecutorBlocking()
 						),
-						GsonProvider.create( GsonBuilder::new, true )
+						org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.create( true )
 				);
 	}
 
@@ -618,12 +615,13 @@ public class TestElasticsearchClient implements BeforeEachCallback, AfterEachCal
 	}
 
 	/*
-	 * Convert provided JSON to JsonElement, so that some Elasticsearch peculiarities (such as the fact that
-	 * single quotes are not accepted as a substitute for single quotes) can be worked around.
-	 * In tests, single quotes are way easier to include in JSON strings, because we don't have to escape them.
+	 * Historical fixture Strings accept Gson's lenient syntax, including single quotes.
+	 * Convert once at this test-only legacy-input boundary. Request/response processing
+	 * uses Search nodes and does not use this compatibility path.
 	 */
+	@SuppressWarnings("removal")
 	private JsonElement toJsonElement(String jsonAsString) {
-		return JsonParser.parseString( jsonAsString );
+		return GsonJsonConversion.fromGson( com.google.gson.JsonParser.parseString( jsonAsString ) );
 	}
 
 	public static BeanHolder<? extends ElasticsearchClientFactory> getDiscoveredClientFactory(BeanResolver beanResolver) {

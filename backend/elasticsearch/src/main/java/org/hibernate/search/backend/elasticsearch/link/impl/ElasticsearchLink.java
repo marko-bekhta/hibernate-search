@@ -1,6 +1,6 @@
 package org.hibernate.search.backend.elasticsearch.link.impl;
 
-import org.hibernate.search.backend.elasticsearch.client.common.gson.spi.GsonProvider;
+import org.hibernate.search.backend.elasticsearch.client.common.json.spi.JsonProvider;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchClient;
 import org.hibernate.search.backend.elasticsearch.index.layout.IndexLayoutStrategy;
 import org.hibernate.search.backend.elasticsearch.index.layout.impl.IndexNames;
@@ -21,7 +21,7 @@ public interface ElasticsearchLink {
 
 	ElasticsearchClient getClient();
 
-	GsonProvider getGsonProvider();
+	JsonProvider getJsonProvider();
 
 	ElasticsearchSearchSyntax getSearchSyntax();
 

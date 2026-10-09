@@ -4,8 +4,8 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.hibernate.search.backend.elasticsearch.client.common.gson.entity.spi.GsonHttpEntityContentProvider;
 import org.hibernate.search.backend.elasticsearch.client.common.json.impl.ElasticsearchJsonBody;
+import org.hibernate.search.integrationtest.performance.backend.elasticsearch.legacy.client.common.gson.entity.spi.GsonHttpEntityContentProvider;
 import org.hibernate.search.util.json.JsonElement;
 import org.hibernate.search.util.json.spi.JsonBody;
 import org.hibernate.search.util.json.spi.JsonParsing;
@@ -126,9 +126,11 @@ public class JsonComparisonBenchmark {
 
 	@State(Scope.Thread)
 	public static class Accessors {
-		final org.hibernate.search.backend.elasticsearch.gson.impl.JsonAccessor<Long> gsonAccessor =
-				org.hibernate.search.backend.elasticsearch.gson.impl.JsonAccessor.root()
-						.property( "hits" ).property( "total" ).property( "value" ).asLong();
+		final org.hibernate.search.integrationtest.performance.backend.elasticsearch.legacy.gson.impl.JsonAccessor<
+				Long> gsonAccessor =
+						org.hibernate.search.integrationtest.performance.backend.elasticsearch.legacy.gson.impl.JsonAccessor
+								.root()
+								.property( "hits" ).property( "total" ).property( "value" ).asLong();
 		final org.hibernate.search.util.json.spi.JsonAccessor<Long> strict =
 				org.hibernate.search.util.json.spi.JsonAccessor.root().property( "hits" ).property( "total" )
 						.property( "value" ).asLong();

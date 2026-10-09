@@ -2,20 +2,19 @@ package org.hibernate.search.backend.elasticsearch.lowlevel.index.aliases.impl;
 
 import java.util.Map;
 
-import org.hibernate.search.backend.elasticsearch.gson.impl.GsonSerializable;
-import org.hibernate.search.backend.elasticsearch.gson.impl.SerializeExtraProperties;
-import org.hibernate.search.backend.elasticsearch.gson.spi.GsonProviderHelper;
-
-import com.google.gson.JsonElement;
-import com.google.gson.annotations.SerializedName;
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonName;
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonSerializable;
+import org.hibernate.search.backend.elasticsearch.json.impl.SerializeExtraProperties;
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper;
+import org.hibernate.search.util.json.JsonElement;
 
 /**
  * An alias definition for an Elasticsearch index.
  */
-@GsonSerializable
+@JsonSerializable
 public class IndexAliasDefinition {
 
-	@SerializedName("is_write_index")
+	@JsonName("is_write_index")
 	private Boolean isWriteIndex;
 
 	@SerializeExtraProperties
@@ -39,6 +38,6 @@ public class IndexAliasDefinition {
 
 	@Override
 	public String toString() {
-		return GsonProviderHelper.toPrettyJson( this );
+		return JsonProviderHelper.toPrettyJson( this );
 	}
 }

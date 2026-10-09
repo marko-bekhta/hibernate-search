@@ -10,8 +10,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Deque;
 import java.util.Locale;
 
-import org.hibernate.search.backend.elasticsearch.client.common.gson.entity.spi.ContentEncoder;
-import org.hibernate.search.backend.elasticsearch.client.common.gson.entity.spi.GsonHttpEntityContentProvider;
+import org.hibernate.search.integrationtest.performance.backend.elasticsearch.legacy.client.common.gson.entity.spi.ContentEncoder;
+import org.hibernate.search.integrationtest.performance.backend.elasticsearch.legacy.client.common.gson.entity.spi.GsonHttpEntityContentProvider;
 
 /**
  * Baseline-only inspection of encoded storage owned by the existing HTTP provider.

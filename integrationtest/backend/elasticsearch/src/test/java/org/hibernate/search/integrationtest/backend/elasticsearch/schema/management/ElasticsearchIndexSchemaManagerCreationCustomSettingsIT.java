@@ -53,46 +53,46 @@ class ElasticsearchIndexSchemaManagerCreationCustomSettingsIT {
 
 		assertJsonEquals(
 				" { " +
-						"   'analyzer': { " +
-						"   	'DefaultAnalysisDefinitions_analyzer_ngram': { " +
+						"   \"analyzer\": { " +
+						"   	\"DefaultAnalysisDefinitions_analyzer_ngram\": { " +
 						"   		'type': 'custom', " +
 						"   		'tokenizer': 'DefaultAnalysisDefinitions_analyzer_ngram_tokenizer' " +
 						"   	}, " +
-						"   	'my_standard-english': { " +
+						"   	\"my_standard-english\": { " +
 						"   		'type': 'standard', " +
 						"   		'stopwords': '_english_' " +
 						"   	}, " +
-						"   	'DefaultAnalysisDefinitions_analyzer_whitespace': { " +
+						"   	\"DefaultAnalysisDefinitions_analyzer_whitespace\": { " +
 						"   		'type': 'custom', " +
 						"   		'tokenizer': 'whitespace' " +
 						"   	}, " +
-						"   	'my_analyzer_ngram': { " +
+						"   	\"my_analyzer_ngram\": { " +
 						"   		'type': 'custom', " +
 						"   		'tokenizer': 'my_analyzer_ngram_tokenizer' " +
 						"   	}, " +
-						"   	'DefaultAnalysisDefinitions_analyzer_whitespace_lowercase': { " +
+						"   	\"DefaultAnalysisDefinitions_analyzer_whitespace_lowercase\": { " +
 						"   		'type': 'custom', " +
 						"   		'tokenizer': 'whitespace', " +
-						"   		'filter': ['lowercase'] " +
+						"   		\"filter\": [\"lowercase\"] " +
 						"   	}, " +
-						"   	'DefaultAnalysisDefinitions_standard-english': { " +
+						"   	\"DefaultAnalysisDefinitions_standard-english\": { " +
 						"   		'type': 'standard', " +
 						"   		'stopwords': '_english_' " +
 						"   	} " +
 						"   }, " +
-						"   'normalizer': { " +
-						"   	'DefaultAnalysisDefinitions_lowercase': { " +
+						"   \"normalizer\": { " +
+						"   	\"DefaultAnalysisDefinitions_lowercase\": { " +
 						"   		'type': 'custom', " +
-						"   		'filter': ['lowercase'] " +
+						"   		\"filter\": [\"lowercase\"] " +
 						"   	} " +
 						"   }, " +
-						"   'tokenizer': { " +
-						"   	'DefaultAnalysisDefinitions_analyzer_ngram_tokenizer': { " +
+						"   \"tokenizer\": { " +
+						"   	\"DefaultAnalysisDefinitions_analyzer_ngram_tokenizer\": { " +
 						"   		'type': 'ngram', " +
 						"   		'min_gram': '5', " +
 						"   		'max_gram': '6' " +
 						"   	}, " +
-						"   	'my_analyzer_ngram_tokenizer': { " +
+						"   	\"my_analyzer_ngram_tokenizer\": { " +
 						"   		'type': 'ngram', " +
 						"   		'min_gram': '5', " +
 						"   		'max_gram': '6' " +
@@ -120,33 +120,33 @@ class ElasticsearchIndexSchemaManagerCreationCustomSettingsIT {
 
 		assertJsonEquals(
 				" { " +
-						" 	'analyzer': { " +
-						" 		'DefaultAnalysisDefinitions_analyzer_ngram': { " +
+						" 	\"analyzer\": { " +
+						" 		\"DefaultAnalysisDefinitions_analyzer_ngram\": { " +
 						" 			'type': 'custom', " +
 						" 			'tokenizer': 'DefaultAnalysisDefinitions_analyzer_ngram_tokenizer' " +
 						" 		}, " +
-						" 		'DefaultAnalysisDefinitions_analyzer_whitespace': { " +
+						" 		\"DefaultAnalysisDefinitions_analyzer_whitespace\": { " +
 						" 			'type': 'custom', " +
 						" 			'tokenizer': 'whitespace' " +
 						" 		}, " +
-						" 		'DefaultAnalysisDefinitions_analyzer_whitespace_lowercase': { " +
+						" 		\"DefaultAnalysisDefinitions_analyzer_whitespace_lowercase\": { " +
 						" 			'type': 'custom', " +
 						" 			'tokenizer': 'whitespace', " +
-						" 			'filter': ['lowercase'] " +
+						" 			\"filter\": [\"lowercase\"] " +
 						" 		}, " +
-						" 		'DefaultAnalysisDefinitions_standard-english': { " +
+						" 		\"DefaultAnalysisDefinitions_standard-english\": { " +
 						" 			'type': 'standard', " +
 						" 			'stopwords': '_english_' " +
 						" 		} " +
 						" 	}, " +
-						" 	'normalizer': { " +
-						" 		'DefaultAnalysisDefinitions_lowercase': { " +
+						" 	\"normalizer\": { " +
+						" 		\"DefaultAnalysisDefinitions_lowercase\": { " +
 						" 			'type': 'custom', " +
-						" 			'filter': ['lowercase'] " +
+						" 			\"filter\": [\"lowercase\"] " +
 						" 		} " +
 						" 	}, " +
-						" 	'tokenizer': { " +
-						" 		'DefaultAnalysisDefinitions_analyzer_ngram_tokenizer': { " +
+						" 	\"tokenizer\": { " +
+						" 		\"DefaultAnalysisDefinitions_analyzer_ngram_tokenizer\": { " +
 						" 			'type': 'ngram', " +
 						" 			'min_gram': '7', " +
 						" 			'max_gram': '8'" +
@@ -174,18 +174,18 @@ class ElasticsearchIndexSchemaManagerCreationCustomSettingsIT {
 
 		assertJsonEquals(
 				" { " +
-						" 	'analyzer': { " +
-						" 		'my_standard-english': { " +
+						" 	\"analyzer\": { " +
+						" 		\"my_standard-english\": { " +
 						" 			'type': 'standard', " +
 						" 			'stopwords': '_english_' " +
 						" 		}, " +
-						" 		'my_analyzer_ngram': { " +
+						" 		\"my_analyzer_ngram\": { " +
 						" 			'type': 'custom', " +
 						" 			'tokenizer': 'my_analyzer_ngram_tokenizer' " +
 						" 		} " +
 						" 	}, " +
-						" 	'tokenizer': { " +
-						" 		'my_analyzer_ngram_tokenizer': { " +
+						" 	\"tokenizer\": { " +
+						" 		\"my_analyzer_ngram_tokenizer\": { " +
 						" 			'type': 'ngram', " +
 						" 			'min_gram': '5', " +
 						" 			'max_gram': '6' " +

@@ -3,7 +3,7 @@ package org.hibernate.search.backend.elasticsearch.work.impl;
 import org.hibernate.search.backend.elasticsearch.logging.spi.ElasticsearchClientLog;
 import org.hibernate.search.engine.backend.work.execution.DocumentRefreshStrategy;
 
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
 
 public abstract class AbstractSingleDocumentIndexingWork
 		implements BulkableWork<Void>, SingleDocumentIndexingWork {

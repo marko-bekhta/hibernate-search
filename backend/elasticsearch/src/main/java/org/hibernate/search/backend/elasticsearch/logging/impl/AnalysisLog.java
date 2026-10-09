@@ -10,13 +10,12 @@ import org.hibernate.search.util.common.logging.CategorizedLogger;
 import org.hibernate.search.util.common.logging.impl.LoggerFactory;
 import org.hibernate.search.util.common.logging.impl.MessageConstants;
 import org.hibernate.search.util.common.reporting.EventContext;
+import org.hibernate.search.util.json.JsonElement;
 
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.logging.annotations.Param;
-
-import com.google.gson.JsonElement;
 
 @CategorizedLogger(
 		category = AnalysisLog.CATEGORY_NAME

@@ -8,7 +8,7 @@ import org.hibernate.search.engine.backend.types.converter.runtime.FromDocumentV
 import org.hibernate.search.engine.backend.types.converter.runtime.spi.FromDocumentValueConvertContextImpl;
 import org.hibernate.search.engine.search.loading.spi.ProjectionHitMapper;
 
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
 
 /**
  * The context holding all the useful information pertaining to the extraction of data from

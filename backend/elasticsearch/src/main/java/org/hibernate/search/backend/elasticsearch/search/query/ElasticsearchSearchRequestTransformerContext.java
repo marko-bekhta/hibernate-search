@@ -3,8 +3,7 @@ package org.hibernate.search.backend.elasticsearch.search.query;
 import java.util.Map;
 
 import org.hibernate.search.util.common.annotation.Incubating;
-
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
 
 /**
  * The context passed to {@link ElasticsearchSearchRequestTransformer#transform(ElasticsearchSearchRequestTransformerContext)}.

@@ -10,8 +10,7 @@ import org.hibernate.search.util.json.spi.JsonBody;
 import org.hibernate.search.util.json.spi.JsonWriteCursor;
 
 /**
- * Elasticsearch body-part framing prepared for transport integration. Existing Gson entities do not
- * use this helper yet. Every part has one final newline; an empty list emits no bytes.
+ * Elasticsearch body-part framing shared by the synchronous client entity adapters. Every part has one final newline; an empty list emits no bytes.
  */
 public final class ElasticsearchJsonBody {
 	private ElasticsearchJsonBody() {

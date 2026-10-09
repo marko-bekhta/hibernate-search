@@ -2,8 +2,6 @@ package org.hibernate.search.backend.elasticsearch.schema.management.impl;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -11,24 +9,22 @@ import java.util.List;
 import java.util.Map;
 
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchRequest;
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
 import org.hibernate.search.backend.elasticsearch.logging.impl.ElasticsearchMiscLog;
 import org.hibernate.search.backend.elasticsearch.schema.management.ElasticsearchIndexSchemaExport;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.stream.JsonWriter;
+import org.hibernate.search.util.json.JsonArray;
+import org.hibernate.search.util.json.JsonElement;
+import org.hibernate.search.util.json.JsonObject;
 
 public class ElasticsearchIndexSchemaExportImpl implements ElasticsearchIndexSchemaExport {
 
-	private final Gson userFacingGson;
+	private final JsonCodecService userFacingCodec;
 	private final String indexName;
 	private final ElasticsearchRequest request;
 
-	public ElasticsearchIndexSchemaExportImpl(Gson userFacingGson, String indexName,
+	public ElasticsearchIndexSchemaExportImpl(JsonCodecService userFacingCodec, String indexName,
 			ElasticsearchRequest request) {
-		this.userFacingGson = userFacingGson;
+		this.userFacingCodec = userFacingCodec;
 		this.indexName = indexName;
 		this.request = request;
 	}
@@ -49,11 +45,8 @@ public class ElasticsearchIndexSchemaExportImpl implements ElasticsearchIndexSch
 	}
 
 	private void write(Path path, String filename, JsonElement data) {
-		try ( OutputStream outputStream = Files.newOutputStream( Files.createDirectories( path ).resolve( filename ) );
-				OutputStreamWriter writer = new OutputStreamWriter( outputStream, StandardCharsets.UTF_8 );
-				JsonWriter jsonWriter = new JsonWriter( writer ) ) {
-			userFacingGson.toJson( data, jsonWriter );
-			jsonWriter.flush();
+		try ( OutputStream outputStream = Files.newOutputStream( Files.createDirectories( path ).resolve( filename ) ) ) {
+			userFacingCodec.writeCompact( data, outputStream );
 		}
 		catch (IOException e) {
 			throw ElasticsearchMiscLog.INSTANCE.unableToExportSchema( indexName, e.getMessage(), e );

@@ -2,24 +2,23 @@ package org.hibernate.search.backend.elasticsearch.lowlevel.index.mapping.impl;
 
 import java.util.Map;
 
-import org.hibernate.search.backend.elasticsearch.gson.impl.GsonSerializable;
-import org.hibernate.search.backend.elasticsearch.gson.impl.SerializeExtraProperties;
-import org.hibernate.search.backend.elasticsearch.gson.spi.GsonProviderHelper;
-
-import com.google.gson.JsonElement;
-import com.google.gson.annotations.SerializedName;
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonName;
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonSerializable;
+import org.hibernate.search.backend.elasticsearch.json.impl.SerializeExtraProperties;
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper;
+import org.hibernate.search.util.json.JsonElement;
 
 /**
  * An object representing OpenSearch K-NN vector Method attributes.
  *
  * See https://opensearch.org/docs/latest/field-types/supported-field-types/knn-vector/
  */
-@GsonSerializable
+@JsonSerializable
 public class OpenSearchVectorTypeMethod {
 
 	private String name;
 
-	@SerializedName("space_type")
+	@JsonName("space_type")
 	private String spaceType;
 
 	private String engine;
@@ -71,13 +70,13 @@ public class OpenSearchVectorTypeMethod {
 
 	@Override
 	public String toString() {
-		return GsonProviderHelper.toPrettyJson( this );
+		return JsonProviderHelper.toPrettyJson( this );
 	}
 
-	@GsonSerializable
+	@JsonSerializable
 	public static class Parameters {
 
-		@SerializedName("ef_construction")
+		@JsonName("ef_construction")
 		private Integer efConstruction;
 		private Integer m;
 
@@ -110,7 +109,7 @@ public class OpenSearchVectorTypeMethod {
 
 		@Override
 		public String toString() {
-			return GsonProviderHelper.toPrettyJson( this );
+			return JsonProviderHelper.toPrettyJson( this );
 		}
 	}
 }

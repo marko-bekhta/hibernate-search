@@ -16,8 +16,7 @@ import org.hibernate.search.engine.reporting.spi.EventContexts;
 import org.hibernate.search.engine.search.common.ValueModel;
 import org.hibernate.search.engine.search.common.spi.SearchIndexSchemaElementContextHelper;
 import org.hibernate.search.util.common.reporting.EventContext;
-
-import com.google.gson.JsonElement;
+import org.hibernate.search.util.json.JsonElement;
 
 public final class ElasticsearchIndexValueField<F>
 		extends AbstractIndexValueField<

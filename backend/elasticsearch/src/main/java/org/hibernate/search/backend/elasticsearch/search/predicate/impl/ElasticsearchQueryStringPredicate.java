@@ -2,27 +2,29 @@ package org.hibernate.search.backend.elasticsearch.search.predicate.impl;
 
 import java.util.Locale;
 
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonAccessor;
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonObjectAccessor;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexScope;
 import org.hibernate.search.backend.elasticsearch.types.predicate.impl.ElasticsearchCommonQueryStringPredicateBuilderFieldState;
 import org.hibernate.search.engine.search.common.RewriteMethod;
 import org.hibernate.search.engine.search.common.spi.SearchQueryElementTypeKey;
 import org.hibernate.search.engine.search.predicate.SearchPredicate;
 import org.hibernate.search.engine.search.predicate.spi.QueryStringPredicateBuilder;
-
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
+import org.hibernate.search.util.json.spi.JsonAccessor;
+import org.hibernate.search.util.json.spi.JsonObjectAccessor;
 
 public class ElasticsearchQueryStringPredicate extends ElasticsearchCommonQueryStringPredicate {
 
-	private static final JsonObjectAccessor QUERY_STRING_ACCESSOR = JsonAccessor.root().property( "query_string" ).asObject();
+	private static final JsonObjectAccessor QUERY_STRING_ACCESSOR =
+			JsonAccessor.root().property( "query_string" ).unwrapSingletonArrays().asObject();
 
 	private static final JsonAccessor<Boolean> ALLOW_LEADING_WILDCARD_ACCESSOR =
-			JsonAccessor.root().property( "allow_leading_wildcard" ).asBoolean();
+			JsonAccessor.root().property( "allow_leading_wildcard" ).unwrapSingletonArrays().asBoolean();
 	private static final JsonAccessor<Boolean> ENABLE_POSITION_INCREMENTS_ACCESSOR =
-			JsonAccessor.root().property( "enable_position_increments" ).asBoolean();
-	private static final JsonAccessor<Integer> PHRASE_SLOP_ACCESSOR = JsonAccessor.root().property( "phrase_slop" ).asInteger();
-	private static final JsonAccessor<String> REWRITE_ACCESSOR = JsonAccessor.root().property( "rewrite" ).asString();
+			JsonAccessor.root().property( "enable_position_increments" ).unwrapSingletonArrays().asBoolean();
+	private static final JsonAccessor<Integer> PHRASE_SLOP_ACCESSOR =
+			JsonAccessor.root().property( "phrase_slop" ).unwrapSingletonArrays().asInteger();
+	private static final JsonAccessor<String> REWRITE_ACCESSOR =
+			JsonAccessor.root().property( "rewrite" ).unwrapSingletonArrays().asString();
 
 	private final Boolean allowLeadingWildcard;
 	private final Boolean enablePositionIncrements;

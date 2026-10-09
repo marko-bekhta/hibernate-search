@@ -1,16 +1,16 @@
 package org.hibernate.search.backend.elasticsearch.types.codec.impl;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonNull;
-import com.google.gson.JsonPrimitive;
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
+import org.hibernate.search.util.json.JsonElement;
+import org.hibernate.search.util.json.JsonNull;
+import org.hibernate.search.util.json.JsonPrimitive;
 
 public class ElasticsearchJsonElementFieldCodec implements ElasticsearchFieldCodec<JsonElement> {
 
-	private final Gson gson;
+	private final JsonCodecService json;
 
-	public ElasticsearchJsonElementFieldCodec(Gson gson) {
-		this.gson = gson;
+	public ElasticsearchJsonElementFieldCodec(JsonCodecService json) {
+		this.json = json;
 	}
 
 	@Override
@@ -44,16 +44,16 @@ public class ElasticsearchJsonElementFieldCodec implements ElasticsearchFieldCod
 		}
 
 		ElasticsearchJsonElementFieldCodec castedOther = (ElasticsearchJsonElementFieldCodec) other;
-		return gson.equals( castedOther.gson );
+		return json.equals( castedOther.json );
 	}
 
 	@Override
 	public JsonElement fromJsonStringToElement(String value) {
-		return gson.fromJson( value, JsonElement.class );
+		return json.decode( value, JsonElement.class );
 	}
 
 	@Override
 	public String fromJsonElementToString(JsonElement value) {
-		return gson.toJson( value );
+		return json.write( value );
 	}
 }

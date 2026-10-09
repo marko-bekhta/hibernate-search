@@ -3,9 +3,6 @@ package org.hibernate.search.backend.elasticsearch.search.projection.impl;
 import java.util.Optional;
 import java.util.Set;
 
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonAccessor;
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonArrayAccessor;
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonObjectAccessor;
 import org.hibernate.search.backend.elasticsearch.logging.impl.QueryLog;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.AbstractElasticsearchValueFieldSearchQueryElementFactory;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexScope;
@@ -19,15 +16,18 @@ import org.hibernate.search.engine.search.loading.spi.ProjectionHitMapper;
 import org.hibernate.search.engine.search.projection.ProjectionCollector;
 import org.hibernate.search.engine.search.projection.SearchProjection;
 import org.hibernate.search.engine.search.projection.dsl.spi.HighlightProjectionBuilder;
-
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonArray;
+import org.hibernate.search.util.json.JsonElement;
+import org.hibernate.search.util.json.JsonObject;
+import org.hibernate.search.util.json.spi.JsonAccessor;
+import org.hibernate.search.util.json.spi.JsonArrayAccessor;
+import org.hibernate.search.util.json.spi.JsonObjectAccessor;
 
 public class ElasticsearchFieldHighlightProjection<T> implements ElasticsearchSearchProjection<T> {
 
 	private static final JsonObjectAccessor REQUEST_HIGHLIGHT_FIELDS_ACCESSOR =
-			JsonAccessor.root().property( "highlight" ).asObject().property( "fields" ).asObject();
+			JsonAccessor.root().property( "highlight" ).unwrapSingletonArrays().asObject().property( "fields" )
+					.unwrapSingletonArrays().asObject();
 
 	private final Set<String> indexNames;
 	private final String absoluteFieldPath;
@@ -107,7 +107,8 @@ public class ElasticsearchFieldHighlightProjection<T> implements ElasticsearchSe
 		private final ProjectionCollector<String, String, A, T> collector;
 
 		private FieldHighlightExtractor(String fieldPath, ProjectionCollector<String, String, A, T> collector) {
-			this.highlightAccessor = JsonAccessor.root().property( "highlight" ).property( fieldPath ).asArray();
+			this.highlightAccessor =
+					JsonAccessor.root().property( "highlight" ).unwrapSingletonArrays().property( fieldPath ).asArray();
 			this.collector = collector;
 		}
 

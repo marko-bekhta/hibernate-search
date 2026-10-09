@@ -1,20 +1,20 @@
 package org.hibernate.search.backend.elasticsearch.search.projection.impl;
 
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonAccessor;
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonObjectAccessor;
 import org.hibernate.search.backend.elasticsearch.reporting.impl.ElasticsearchSearchHints;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexScope;
 import org.hibernate.search.engine.search.loading.spi.LoadingResult;
 import org.hibernate.search.engine.search.loading.spi.ProjectionHitMapper;
-
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
+import org.hibernate.search.util.json.spi.JsonAccessor;
+import org.hibernate.search.util.json.spi.JsonObjectAccessor;
 
 class ElasticsearchExplanationProjection extends AbstractElasticsearchProjection<JsonObject>
 		implements ElasticsearchSearchProjection.Extractor<JsonObject, JsonObject> {
 
-	private static final JsonAccessor<Boolean> REQUEST_EXPLAIN_ACCESSOR = JsonAccessor.root().property( "explain" ).asBoolean();
+	private static final JsonAccessor<Boolean> REQUEST_EXPLAIN_ACCESSOR =
+			JsonAccessor.root().property( "explain" ).unwrapSingletonArrays().asBoolean();
 	private static final JsonObjectAccessor HIT_EXPLANATION_ACCESSOR =
-			JsonAccessor.root().property( "_explanation" ).asObject();
+			JsonAccessor.root().property( "_explanation" ).unwrapSingletonArrays().asObject();
 
 	ElasticsearchExplanationProjection(ElasticsearchSearchIndexScope<?> scope) {
 		super( scope );

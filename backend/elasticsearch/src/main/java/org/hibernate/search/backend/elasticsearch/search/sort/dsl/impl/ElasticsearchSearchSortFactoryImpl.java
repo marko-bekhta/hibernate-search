@@ -9,7 +9,7 @@ import org.hibernate.search.engine.search.sort.dsl.spi.AbstractSearchSortFactory
 import org.hibernate.search.engine.search.sort.dsl.spi.SearchSortDslContext;
 import org.hibernate.search.engine.search.sort.dsl.spi.StaticSortThenStep;
 
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
 
 public class ElasticsearchSearchSortFactoryImpl<SR>
 		extends AbstractSearchSortFactory<

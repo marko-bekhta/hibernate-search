@@ -6,17 +6,17 @@ import static org.hibernate.search.util.impl.test.JsonHelper.assertJsonEquals;
 import java.util.List;
 
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchRequest;
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
 import org.hibernate.search.util.impl.integrationtest.common.extension.Call;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonArray;
+import org.hibernate.search.util.json.JsonObject;
 
 import org.skyscreamer.jsonassert.JSONCompareMode;
 
 class ElasticsearchClientSubmitCall extends Call<ElasticsearchClientSubmitCall> {
 
-	private final Gson gson = new Gson();
+	private final JsonCodecService json =
+			org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.create( false ).getCodec();
 
 	private final ElasticsearchRequest request;
 	private final ElasticsearchRequestAssertionMode assertionMode;
@@ -78,7 +78,7 @@ class ElasticsearchClientSubmitCall extends Call<ElasticsearchClientSubmitCall> 
 		for ( JsonObject bodyPart : bodyParts ) {
 			array.add( bodyPart );
 		}
-		return gson.toJson( array );
+		return json.write( array );
 	}
 
 }

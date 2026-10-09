@@ -423,3 +423,11 @@ counts and complete unique stacks; it does not infer exact CPU fractions.
 The [numeric UTF-8 report](../../../design/elasticsearch-async-json-numeric-utf8.md)
 records the retained heap-access optimization, rejected probes, matched controls,
 allocation and the still-open numeric regression.
+
+Task 5 moves the historical Gson provider, generated adapters, schema model and
+paged writer into the Elasticsearch benchmark module's `legacy` package. These
+are captured baseline implementations, not production backend services. The
+baseline benchmarks and buffer-retention probe use that package; Search output
+comparisons continue to use `JsonBody`/`ElasticsearchJsonBody`. This preserves
+reusable comparisons without keeping obsolete Gson processing in production.
+No new Task 5 throughput campaign or claim of universal Gson parity is implied.

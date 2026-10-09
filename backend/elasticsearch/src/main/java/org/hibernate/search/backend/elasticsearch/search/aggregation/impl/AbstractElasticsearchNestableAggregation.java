@@ -2,8 +2,6 @@ package org.hibernate.search.backend.elasticsearch.search.aggregation.impl;
 
 import java.util.List;
 
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonAccessor;
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonObjectAccessor;
 import org.hibernate.search.backend.elasticsearch.logging.impl.QueryLog;
 import org.hibernate.search.backend.elasticsearch.logging.spi.ElasticsearchClientLog;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexScope;
@@ -13,27 +11,31 @@ import org.hibernate.search.backend.elasticsearch.search.predicate.impl.Predicat
 import org.hibernate.search.backend.elasticsearch.search.predicate.impl.PredicateRequestContext;
 import org.hibernate.search.engine.search.aggregation.AggregationKey;
 import org.hibernate.search.engine.search.predicate.SearchPredicate;
-
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
+import org.hibernate.search.util.json.spi.JsonAccessor;
+import org.hibernate.search.util.json.spi.JsonObjectAccessor;
 
 public abstract class AbstractElasticsearchNestableAggregation<A> extends AbstractElasticsearchAggregation<A> {
 
 	private static final JsonAccessor<String> REQUEST_NESTED_PATH_ACCESSOR =
-			JsonAccessor.root().property( "nested" ).property( "path" ).asString();
+			JsonAccessor.root().property( "nested" ).unwrapSingletonArrays().property( "path" ).unwrapSingletonArrays()
+					.asString();
 	private static final JsonObjectAccessor REQUEST_FILTER_ACCESSOR =
-			JsonAccessor.root().property( "filter" ).asObject();
+			JsonAccessor.root().property( "filter" ).unwrapSingletonArrays().asObject();
 
 	private static final String NESTED_NAME = "nested";
 	private static final JsonAccessor<JsonObject> REQUEST_AGGREGATIONS_NESTED_ACCESSOR =
-			JsonAccessor.root().property( "aggregations" ).property( NESTED_NAME ).asObject();
+			JsonAccessor.root().property( "aggregations" ).unwrapSingletonArrays().property( NESTED_NAME )
+					.unwrapSingletonArrays().asObject();
 	private static final JsonAccessor<JsonObject> RESPONSE_NESTED_ACCESSOR =
-			JsonAccessor.root().property( NESTED_NAME ).asObject();
+			JsonAccessor.root().property( NESTED_NAME ).unwrapSingletonArrays().asObject();
 
 	private static final String FILTERED_NAME = "filtered";
 	private static final JsonAccessor<JsonObject> REQUEST_AGGREGATIONS_FILTERED_ACCESSOR =
-			JsonAccessor.root().property( "aggregations" ).property( FILTERED_NAME ).asObject();
+			JsonAccessor.root().property( "aggregations" ).unwrapSingletonArrays().property( FILTERED_NAME )
+					.unwrapSingletonArrays().asObject();
 	private static final JsonAccessor<JsonObject> RESPONSE_FILTERED_ACCESSOR =
-			JsonAccessor.root().property( FILTERED_NAME ).asObject();
+			JsonAccessor.root().property( FILTERED_NAME ).unwrapSingletonArrays().asObject();
 
 	protected final List<String> nestedPathHierarchy;
 	protected final ElasticsearchSearchPredicate filter;

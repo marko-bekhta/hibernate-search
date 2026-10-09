@@ -8,14 +8,14 @@ import org.hibernate.search.backend.elasticsearch.client.common.spi.Elasticsearc
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchResponse;
 import org.hibernate.search.backend.elasticsearch.client.common.util.spi.URLEncodedString;
 import org.hibernate.search.backend.elasticsearch.client.impl.Paths;
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonAccessor;
 import org.hibernate.search.engine.common.timing.Deadline;
-
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
+import org.hibernate.search.util.json.spi.JsonAccessor;
 
 public class CountWork extends AbstractNonBulkableWork<Long> {
 
-	private static final JsonAccessor<Long> COUNT_ACCESSOR = JsonAccessor.root().property( "count" ).asLong();
+	private static final JsonAccessor<Long> COUNT_ACCESSOR =
+			JsonAccessor.root().property( "count" ).unwrapSingletonArrays().asLong();
 
 	protected CountWork(Builder builder) {
 		super( builder );

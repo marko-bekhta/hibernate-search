@@ -8,9 +8,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.hibernate.search.backend.elasticsearch.client.common.gson.entity.spi.ContentEncoder;
-import org.hibernate.search.backend.elasticsearch.client.common.gson.entity.spi.ContentProducer;
-import org.hibernate.search.backend.elasticsearch.client.common.gson.entity.spi.HttpAsyncContentProducerInputStream;
+import org.hibernate.search.backend.elasticsearch.client.common.json.entity.spi.ContentEncoder;
+import org.hibernate.search.backend.elasticsearch.client.common.json.entity.spi.ContentProducer;
+import org.hibernate.search.backend.elasticsearch.client.common.json.entity.spi.HttpAsyncContentProducerInputStream;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchRequestInterceptor;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchRequestInterceptorContext;
 import org.hibernate.search.util.common.AssertionFailure;

@@ -8,8 +8,7 @@ import org.hibernate.search.backend.elasticsearch.client.common.util.spi.URLEnco
 import org.hibernate.search.backend.elasticsearch.client.impl.Paths;
 import org.hibernate.search.backend.elasticsearch.logging.impl.QueryLog;
 import org.hibernate.search.backend.elasticsearch.work.result.impl.ExplainResult;
-
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
 
 public class ExplainWork extends AbstractNonBulkableWork<ExplainResult> {
 

@@ -4,8 +4,7 @@ import java.util.Objects;
 
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.analysis.impl.AnalysisDefinition;
 import org.hibernate.search.backend.elasticsearch.reporting.impl.ElasticsearchValidationMessages;
-
-import com.google.gson.JsonElement;
+import org.hibernate.search.util.json.JsonElement;
 
 class AnalysisDefinitionValidator<T extends AnalysisDefinition> implements Validator<T> {
 

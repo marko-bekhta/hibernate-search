@@ -6,7 +6,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.hibernate.search.backend.elasticsearch.document.impl.DocumentMetadataContributor;
 import org.hibernate.search.backend.elasticsearch.document.model.dsl.impl.IndexSchemaRootContributor;
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonAccessor;
 import org.hibernate.search.backend.elasticsearch.index.layout.IndexLayoutStrategy;
 import org.hibernate.search.backend.elasticsearch.index.layout.impl.IndexNames;
 import org.hibernate.search.backend.elasticsearch.logging.spi.ElasticsearchClientLog;
@@ -16,8 +15,8 @@ import org.hibernate.search.backend.elasticsearch.search.projection.impl.Project
 import org.hibernate.search.engine.backend.document.model.dsl.spi.ImplicitFieldContributor;
 import org.hibernate.search.util.common.AssertionFailure;
 import org.hibernate.search.util.common.SearchException;
-
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
+import org.hibernate.search.util.json.spi.JsonAccessor;
 
 /**
  * Rely on the "_index" meta-field to resolve the type name.
@@ -69,7 +68,7 @@ public class IndexNameTypeNameMapping implements TypeNameMapping {
 	private static final class TypeNameFromIndexNameExtractionHelper implements ProjectionExtractionHelper<String> {
 
 		private static final JsonAccessor<String> HIT_INDEX_NAME_ACCESSOR =
-				JsonAccessor.root().property( "_index" ).asString();
+				JsonAccessor.root().property( "_index" ).unwrapSingletonArrays().asString();
 
 		private final IndexLayoutStrategy indexLayoutStrategy;
 		private final Map<String, String> primaryIndexNameUniqueKeyToMappedTypeNames = new ConcurrentHashMap<>();

@@ -22,6 +22,7 @@ import org.hibernate.search.util.common.logging.impl.ClassFormatter;
 import org.hibernate.search.util.common.logging.impl.DurationInSecondsAndFractionsFormatter;
 import org.hibernate.search.util.common.logging.impl.LoggerFactory;
 import org.hibernate.search.util.common.logging.impl.MessageConstants;
+import org.hibernate.search.util.json.JsonObject;
 
 import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Cause;
@@ -29,8 +30,6 @@ import org.jboss.logging.annotations.FormatWith;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
-
-import com.google.gson.JsonObject;
 
 @CategorizedLogger(
 		category = ElasticsearchClientLog.CATEGORY_NAME,

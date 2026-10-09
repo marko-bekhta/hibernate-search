@@ -2,16 +2,15 @@ package org.hibernate.search.backend.elasticsearch.work.impl;
 
 import java.util.Map;
 
-import org.hibernate.search.backend.elasticsearch.client.common.gson.spi.GsonProvider;
+import org.hibernate.search.backend.elasticsearch.client.common.json.spi.JsonProvider;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchRequest;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchResponse;
 import org.hibernate.search.backend.elasticsearch.client.common.util.spi.URLEncodedString;
 import org.hibernate.search.backend.elasticsearch.client.impl.Paths;
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.aliases.impl.IndexAliasDefinition;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonArray;
+import org.hibernate.search.util.json.JsonObject;
 
 public class PutIndexAliasesWork extends AbstractNonBulkableWork<Void> {
 
@@ -28,10 +27,10 @@ public class PutIndexAliasesWork extends AbstractNonBulkableWork<Void> {
 			extends AbstractBuilder<Builder> {
 		private final JsonObject payload;
 
-		public Builder(GsonProvider gsonProvider, URLEncodedString indexName,
+		public Builder(JsonProvider jsonProvider, URLEncodedString indexName,
 				Map<String, IndexAliasDefinition> aliases) {
 			super( ElasticsearchRequestSuccessAssessor.DEFAULT_INSTANCE );
-			this.payload = createPayload( gsonProvider, indexName.original, aliases );
+			this.payload = createPayload( jsonProvider, indexName.original, aliases );
 		}
 
 		@Override
@@ -48,13 +47,13 @@ public class PutIndexAliasesWork extends AbstractNonBulkableWork<Void> {
 			return new PutIndexAliasesWork( this );
 		}
 
-		private static JsonObject createPayload(GsonProvider gsonProvider, String indexName,
+		private static JsonObject createPayload(JsonProvider jsonProvider, String indexName,
 				Map<String, IndexAliasDefinition> aliases) {
 			/*
 			 * Serializing nulls is really not a good idea here, it triggers NPEs in Elasticsearch
 			 * We better not include the null fields.
 			 */
-			Gson gson = gsonProvider.getGsonNoSerializeNulls();
+			JsonCodecService json = jsonProvider.getCodecNoSerializeNulls();
 
 			JsonObject payload = new JsonObject();
 			JsonArray actions = new JsonArray();
@@ -62,7 +61,7 @@ public class PutIndexAliasesWork extends AbstractNonBulkableWork<Void> {
 
 			for ( Map.Entry<String, IndexAliasDefinition> entry : aliases.entrySet() ) {
 				JsonObject action = new JsonObject();
-				JsonObject aliasDefinition = gson.toJsonTree( entry.getValue() ).getAsJsonObject();
+				JsonObject aliasDefinition = json.encode( entry.getValue() ).getAsJsonObject();
 				action.add( "add", aliasDefinition );
 				aliasDefinition.addProperty( "index", indexName );
 				aliasDefinition.addProperty( "alias", entry.getKey() );

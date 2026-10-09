@@ -5,8 +5,7 @@ import java.util.Map;
 
 import org.hibernate.search.engine.common.schema.management.SchemaExport;
 import org.hibernate.search.util.common.annotation.Incubating;
-
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
 
 /**
  * Extended version of an {@link SchemaExport} that exposes any Elasticsearch-specific methods.

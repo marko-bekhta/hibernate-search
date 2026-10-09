@@ -9,7 +9,7 @@ import org.hibernate.search.engine.search.predicate.dsl.spi.AbstractSearchPredic
 import org.hibernate.search.engine.search.predicate.dsl.spi.SearchPredicateDslContext;
 import org.hibernate.search.engine.search.predicate.dsl.spi.StaticPredicateFinalStep;
 
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
 
 public class ElasticsearchSearchPredicateFactoryImpl<SR>
 		extends AbstractSearchPredicateFactory<

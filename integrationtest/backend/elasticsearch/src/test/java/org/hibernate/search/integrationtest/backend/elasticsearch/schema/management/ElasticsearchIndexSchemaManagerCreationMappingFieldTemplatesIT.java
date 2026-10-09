@@ -60,17 +60,17 @@ class ElasticsearchIndexSchemaManagerCreationMappingFieldTemplatesIT {
 				"{"
 						+ " 'dynamic': 'true',"
 						+ " 'dynamic_templates': ["
-						+ "   {'myTemplate1': {"
+						+ "   {\"myTemplate1\": {"
 						+ "     'match_mapping_type': 'object',"
 						+ "     'path_match': '*_obj',"
-						+ "     'mapping': {"
+						+ "     \"mapping\": {"
 						+ "       'type': 'nested',"
 						+ "       'dynamic': 'true'"
 						+ "     }"
 						+ "   } },"
-						+ "   {'myTemplate2': {"
+						+ "   {\"myTemplate2\": {"
 						+ "     'path_match': '*_kw',"
-						+ "     'mapping': {"
+						+ "     \"mapping\": {"
 						+ "       'type': 'keyword',"
 						+ "       'doc_values': false,"
 						+ "       'index': true,"
@@ -78,7 +78,7 @@ class ElasticsearchIndexSchemaManagerCreationMappingFieldTemplatesIT {
 						+ "     }"
 						+ "   } }"
 						+ " ],"
-						+ " 'properties': {"
+						+ " \"properties\": {"
 						+ defaultMetadataMappingForExpectations()
 						+ " }"
 						+ "}",
@@ -107,17 +107,17 @@ class ElasticsearchIndexSchemaManagerCreationMappingFieldTemplatesIT {
 				"{"
 						+ " 'dynamic': 'strict',"
 						+ " 'dynamic_templates': ["
-						+ "   {'staticObject.myTemplate1': {"
+						+ "   {\"staticObject.myTemplate1\": {"
 						+ "     'match_mapping_type': 'object',"
 						+ "     'path_match': 'staticObject.*_obj',"
-						+ "     'mapping': {"
+						+ "     \"mapping\": {"
 						+ "       'type': 'nested',"
 						+ "       'dynamic': 'true'"
 						+ "     }"
 						+ "   } },"
-						+ "   {'staticObject.myTemplate2': {"
+						+ "   {\"staticObject.myTemplate2\": {"
 						+ "     'path_match': 'staticObject.*_kw',"
-						+ "     'mapping': {"
+						+ "     \"mapping\": {"
 						+ "       'type': 'keyword',"
 						+ "       'doc_values': false,"
 						+ "       'index': true,"
@@ -125,9 +125,9 @@ class ElasticsearchIndexSchemaManagerCreationMappingFieldTemplatesIT {
 						+ "     }"
 						+ "   } }"
 						+ " ],"
-						+ " 'properties': {"
+						+ " \"properties\": {"
 						+ defaultMetadataMappingAndCommaForExpectations()
-						+ "   'staticObject': {"
+						+ "   \"staticObject\": {"
 						+ "     'type': 'object',"
 						+ "     'dynamic': 'true'"
 						+ "   }"
@@ -155,24 +155,24 @@ class ElasticsearchIndexSchemaManagerCreationMappingFieldTemplatesIT {
 		assertJsonEquals(
 				"{" +
 						"  'dynamic': 'true'," +
-						"  '_source': {" +
+						"  \"_source\": {" +
 						"    'enabled': false" +
 						"  }," +
 						"  'dynamic_templates': [" +
 						"    {" +
-						"      'myTemplate1': {" +
+						"      \"myTemplate1\": {" +
 						"        'path_match': '*_obj'," +
 						"        'match_mapping_type': 'object'," +
-						"        'mapping': {" +
+						"        \"mapping\": {" +
 						"          'dynamic': 'true'," +
 						"          'type': 'nested'" +
 						"        }" +
 						"      }" +
 						"    }," +
 						"    {" +
-						"      'myTemplate2': {" +
+						"      \"myTemplate2\": {" +
 						"        'path_match': '*_kw'," +
-						"        'mapping': {" +
+						"        \"mapping\": {" +
 						"          'doc_values': false," +
 						"          'index': true," +
 						"          'norms': false," +
@@ -181,16 +181,16 @@ class ElasticsearchIndexSchemaManagerCreationMappingFieldTemplatesIT {
 						"      }" +
 						"    }" +
 						"  ]," +
-						"  'properties': {" +
-						"    '_entity_type': {" +
+						"  \"properties\": {" +
+						"    \"_entity_type\": {" +
 						"      'type': 'keyword'," +
 						"      'index': false" +
 						"    }," +
-						"    'userField': {" +
+						"    \"userField\": {" +
 						"      'type': 'keyword'," +
 						"      'norms': true" +
 						"    }," +
-						"    'userObject': {" +
+						"    \"userObject\": {" +
 						"      'type': 'object'," +
 						"      'dynamic': 'true'" +
 						"    }" +
@@ -219,24 +219,24 @@ class ElasticsearchIndexSchemaManagerCreationMappingFieldTemplatesIT {
 		assertJsonEquals(
 				"{" +
 						"  'dynamic': 'true'," +
-						"  '_source': {" +
+						"  \"_source\": {" +
 						"    'enabled': false" +
 						"  }," +
 						"  'dynamic_templates': [" +
 						"    {" +
-						"      'myTemplate1': {" +
+						"      \"myTemplate1\": {" +
 						"        'path_match': '*_obj'," +
 						"        'match_mapping_type': 'object'," +
-						"        'mapping': {" +
+						"        \"mapping\": {" +
 						"          'dynamic': 'true'," +
 						"          'type': 'nested'" +
 						"        }" +
 						"      }" +
 						"    }," +
 						"    {" +
-						"      'myTemplate2': {" +
+						"      \"myTemplate2\": {" +
 						"        'path_match': '*_kw'," +
-						"        'mapping': {" +
+						"        \"mapping\": {" +
 						"          'doc_values': false," +
 						"          'index': true," +
 						"          'norms': false," +
@@ -245,16 +245,16 @@ class ElasticsearchIndexSchemaManagerCreationMappingFieldTemplatesIT {
 						"      }" +
 						"    }" +
 						"  ]," +
-						"  'properties': {" +
-						"    '_entity_type': {" +
+						"  \"properties\": {" +
+						"    \"_entity_type\": {" +
 						"      'type': 'keyword'," +
 						"      'index': false" +
 						"    }," +
-						"    'userField': {" +
+						"    \"userField\": {" +
 						"      'type': 'keyword'," +
 						"      'norms': true" +
 						"    }," +
-						"    'userObject': {" +
+						"    \"userObject\": {" +
 						"      'type': 'object'," +
 						"      'dynamic': 'true'" +
 						"    }" +
@@ -284,24 +284,24 @@ class ElasticsearchIndexSchemaManagerCreationMappingFieldTemplatesIT {
 		assertJsonEquals(
 				"{" +
 						"  'dynamic': 'strict'," +
-						"  '_source': {" +
+						"  \"_source\": {" +
 						"    'enabled': false" +
 						"  }," +
 						"  'dynamic_templates': [" +
 						"    {" +
-						"      'staticObject.myTemplate1': {" +
+						"      \"staticObject.myTemplate1\": {" +
 						"        'path_match': 'staticObject.*_obj'," +
 						"        'match_mapping_type': 'object'," +
-						"        'mapping': {" +
+						"        \"mapping\": {" +
 						"          'dynamic': 'true'," +
 						"          'type': 'nested'" +
 						"        }" +
 						"      }" +
 						"    }," +
 						"    {" +
-						"      'staticObject.myTemplate2': {" +
+						"      \"staticObject.myTemplate2\": {" +
 						"        'path_match': 'staticObject.*_kw'," +
-						"        'mapping': {" +
+						"        \"mapping\": {" +
 						"          'doc_values': false," +
 						"          'index': true," +
 						"          'norms': false," +
@@ -310,20 +310,20 @@ class ElasticsearchIndexSchemaManagerCreationMappingFieldTemplatesIT {
 						"      }" +
 						"    }" +
 						"  ]," +
-						"  'properties': {" +
-						"    '_entity_type': {" +
+						"  \"properties\": {" +
+						"    \"_entity_type\": {" +
 						"      'type': 'keyword'," +
 						"      'index': false" +
 						"    }," +
-						"    'staticObject': {" +
+						"    \"staticObject\": {" +
 						"      'type': 'object'," +
 						"      'dynamic': 'true'" +
 						"    }," +
-						"    'userField': {" +
+						"    \"userField\": {" +
 						"      'type': 'keyword'," +
 						"      'norms': true" +
 						"    }," +
-						"    'userObject': {" +
+						"    \"userObject\": {" +
 						"      'type': 'object'," +
 						"      'dynamic': 'true'" +
 						"    }" +

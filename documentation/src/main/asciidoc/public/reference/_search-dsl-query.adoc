@@ -789,7 +789,7 @@ Here we're extracting the result of the suggester we configured above.
 
 [NOTE]
 ====
-Gson's API for building JSON objects is quite verbose,
+The Search JSON API for building JSON objects is quite verbose,
 so the example above relies on a small, custom helper method to make the code more readable:
 
 [source, java, indent=0, subs="+callouts"]

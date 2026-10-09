@@ -2,7 +2,7 @@ package org.hibernate.search.backend.elasticsearch.validation.impl;
 
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.aliases.impl.IndexAliasDefinition;
 
-import com.google.gson.JsonElement;
+import org.hibernate.search.util.json.JsonElement;
 
 public class IndexAliasDefinitionValidator implements Validator<IndexAliasDefinition> {
 

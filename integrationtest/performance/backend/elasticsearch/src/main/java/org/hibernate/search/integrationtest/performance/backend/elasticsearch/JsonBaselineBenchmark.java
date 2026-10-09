@@ -5,12 +5,12 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.concurrent.TimeUnit;
 
-import org.hibernate.search.backend.elasticsearch.client.common.gson.entity.spi.ContentEncoder;
-import org.hibernate.search.backend.elasticsearch.client.common.gson.entity.spi.GsonHttpEntityContentProvider;
-import org.hibernate.search.backend.elasticsearch.client.common.gson.spi.GsonProvider;
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonAccessor;
-import org.hibernate.search.backend.elasticsearch.gson.spi.GsonProviderHelper;
-import org.hibernate.search.backend.elasticsearch.lowlevel.index.mapping.impl.RootTypeMapping;
+import org.hibernate.search.integrationtest.performance.backend.elasticsearch.legacy.client.common.gson.entity.spi.ContentEncoder;
+import org.hibernate.search.integrationtest.performance.backend.elasticsearch.legacy.client.common.gson.entity.spi.GsonHttpEntityContentProvider;
+import org.hibernate.search.integrationtest.performance.backend.elasticsearch.legacy.client.common.gson.spi.GsonProvider;
+import org.hibernate.search.integrationtest.performance.backend.elasticsearch.legacy.gson.impl.JsonAccessor;
+import org.hibernate.search.integrationtest.performance.backend.elasticsearch.legacy.gson.spi.GsonProviderHelper;
+import org.hibernate.search.integrationtest.performance.backend.elasticsearch.legacy.lowlevel.index.mapping.impl.RootTypeMapping;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -29,7 +29,7 @@ import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
 
 /**
- * Server-independent baseline of the current Gson tree, codecs and HTTP body writer.
+ * Server-independent baseline of the historical Gson tree, codecs and HTTP body writer.
  * Fixture construction is excluded from measured operations; encoded-body construction is included.
  */
 @BenchmarkMode(Mode.Throughput)

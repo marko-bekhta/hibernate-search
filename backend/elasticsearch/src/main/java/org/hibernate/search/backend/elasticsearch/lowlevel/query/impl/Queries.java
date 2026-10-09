@@ -2,8 +2,8 @@ package org.hibernate.search.backend.elasticsearch.lowlevel.query.impl;
 
 import java.util.Collection;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonArray;
+import org.hibernate.search.util.json.JsonObject;
 
 public final class Queries {
 

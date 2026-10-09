@@ -1,0 +1,3 @@
+file	line	reference
+util/internal/integrationtest/backend/elasticsearch/src/main/java/org/hibernate/search/util/impl/integrationtest/backend/elasticsearch/extension/TestElasticsearchClient.java	30	import org.hibernate.search.backend.elasticsearch.gson.GsonJsonConversion;
+util/internal/integrationtest/backend/elasticsearch/src/main/java/org/hibernate/search/util/impl/integrationtest/backend/elasticsearch/extension/TestElasticsearchClient.java	624	return GsonJsonConversion.fromGson( com.google.gson.JsonParser.parseString( jsonAsString ) );

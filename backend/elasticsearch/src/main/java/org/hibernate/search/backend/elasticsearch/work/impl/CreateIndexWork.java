@@ -2,18 +2,17 @@ package org.hibernate.search.backend.elasticsearch.work.impl;
 
 import java.util.Map;
 
-import org.hibernate.search.backend.elasticsearch.client.common.gson.spi.GsonProvider;
+import org.hibernate.search.backend.elasticsearch.client.common.json.spi.JsonProvider;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchRequest;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchResponse;
 import org.hibernate.search.backend.elasticsearch.client.common.util.spi.URLEncodedString;
 import org.hibernate.search.backend.elasticsearch.client.impl.ElasticsearchClientUtils;
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.aliases.impl.IndexAliasDefinition;
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.mapping.impl.RootTypeMapping;
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.settings.impl.IndexSettings;
 import org.hibernate.search.backend.elasticsearch.work.result.impl.CreateIndexResult;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
 
 public class CreateIndexWork extends AbstractNonBulkableWork<CreateIndexResult> {
 
@@ -37,17 +36,17 @@ public class CreateIndexWork extends AbstractNonBulkableWork<CreateIndexResult> 
 
 	public static class Builder
 			extends AbstractBuilder<Builder> {
-		private final GsonProvider gsonProvider;
+		private final JsonProvider jsonProvider;
 		private final URLEncodedString indexName;
 		private final JsonObject payload = new JsonObject();
 
-		public static Builder create(GsonProvider gsonProvider, URLEncodedString indexName) {
-			return new Builder( gsonProvider, indexName );
+		public static Builder create(JsonProvider jsonProvider, URLEncodedString indexName) {
+			return new Builder( jsonProvider, indexName );
 		}
 
-		private Builder(GsonProvider gsonProvider, URLEncodedString indexName) {
+		private Builder(JsonProvider jsonProvider, URLEncodedString indexName) {
 			super( ElasticsearchRequestSuccessAssessor.DEFAULT_INSTANCE );
-			this.gsonProvider = gsonProvider;
+			this.jsonProvider = jsonProvider;
 			this.indexName = indexName;
 		}
 
@@ -56,8 +55,9 @@ public class CreateIndexWork extends AbstractNonBulkableWork<CreateIndexResult> 
 			 * Serializing nulls is really not a good idea here, it triggers NPEs in Elasticsearch
 			 * We better not include the null fields.
 			 */
-			Gson gson = gsonProvider.getGsonNoSerializeNulls();
-			payload.add( "aliases", gson.toJsonTree( aliases ) );
+			JsonCodecService json = jsonProvider.getCodecNoSerializeNulls();
+			payload.add( "aliases", org.hibernate.search.util.json.spi.JsonCodecs
+					.map( json.getCodec( IndexAliasDefinition.class ) ).encode( aliases, false ) );
 			return this;
 		}
 
@@ -66,15 +66,15 @@ public class CreateIndexWork extends AbstractNonBulkableWork<CreateIndexResult> 
 			 * Serializing nulls is really not a good idea here, it triggers NPEs in Elasticsearch
 			 * We better not include the null fields.
 			 */
-			Gson gson = gsonProvider.getGsonNoSerializeNulls();
-			payload.add( "settings", gson.toJsonTree( settings ) );
+			JsonCodecService json = jsonProvider.getCodecNoSerializeNulls();
+			payload.add( "settings", json.encode( settings ) );
 			return this;
 		}
 
 		public Builder mapping(RootTypeMapping mapping) {
-			Gson gson = gsonProvider.getGsonNoSerializeNulls();
+			JsonCodecService json = jsonProvider.getCodecNoSerializeNulls();
 
-			payload.add( MAPPINGS_PROPERTY, gson.toJsonTree( mapping ) );
+			payload.add( MAPPINGS_PROPERTY, json.encode( mapping ) );
 
 			return this;
 		}

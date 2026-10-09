@@ -7,7 +7,6 @@ import java.util.regex.Pattern;
 import org.hibernate.search.backend.elasticsearch.common.impl.DocumentIdHelper;
 import org.hibernate.search.backend.elasticsearch.document.impl.DocumentMetadataContributor;
 import org.hibernate.search.backend.elasticsearch.document.model.dsl.impl.IndexSchemaRootContributor;
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonAccessor;
 import org.hibernate.search.backend.elasticsearch.logging.spi.ConfigurationLog;
 import org.hibernate.search.backend.elasticsearch.logging.spi.ElasticsearchClientLog;
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.mapping.impl.DataTypes;
@@ -19,9 +18,9 @@ import org.hibernate.search.backend.elasticsearch.search.projection.impl.Project
 import org.hibernate.search.backend.elasticsearch.search.projection.impl.ProjectionExtractionHelper;
 import org.hibernate.search.backend.elasticsearch.search.projection.impl.ProjectionRequestContext;
 import org.hibernate.search.util.common.reporting.EventContext;
-
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
+import org.hibernate.search.util.json.JsonObject;
+import org.hibernate.search.util.json.JsonPrimitive;
+import org.hibernate.search.util.json.spi.JsonAccessor;
 
 public class DiscriminatorMultiTenancyStrategy implements MultiTenancyStrategy {
 
@@ -115,9 +114,9 @@ public class DiscriminatorMultiTenancyStrategy implements MultiTenancyStrategy {
 
 	private static class DiscriminatorMultiTenancyDocumentMetadataContributor implements DocumentMetadataContributor {
 		private static final JsonAccessor<String> TENANT_ID_ACCESSOR =
-				JsonAccessor.root().property( TENANT_ID_FIELD_NAME ).asString();
+				JsonAccessor.root().property( TENANT_ID_FIELD_NAME ).unwrapSingletonArrays().asString();
 		private static final JsonAccessor<String> ID_ACCESSOR =
-				JsonAccessor.root().property( ID_FIELD_NAME ).asString();
+				JsonAccessor.root().property( ID_FIELD_NAME ).unwrapSingletonArrays().asString();
 
 		@Override
 		public void contribute(JsonObject document, String tenantId, String id) {
@@ -129,9 +128,8 @@ public class DiscriminatorMultiTenancyStrategy implements MultiTenancyStrategy {
 	private static final class DiscriminatorMultiTenancyIdProjectionExtractionHelper
 			implements ProjectionExtractionHelper<String> {
 		private static final JsonAccessor<String> HIT_ID_ACCESSOR =
-				JsonAccessor.root().property( "fields" ).asObject()
-						.property( ID_FIELD_NAME ).asArray()
-						.element( 0 ).asString();
+				JsonAccessor.root().property( "fields" ).unwrapSingletonArrays().asObject().property( ID_FIELD_NAME ).asArray()
+						.element( 0 ).unwrapSingletonArrays().asString();
 
 		private static final JsonPrimitive ID_FIELD_NAME_JSON = new JsonPrimitive( ID_FIELD_NAME );
 

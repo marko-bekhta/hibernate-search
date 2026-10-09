@@ -4,7 +4,7 @@ import org.hibernate.search.backend.elasticsearch.lowlevel.index.mapping.impl.Dy
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.mapping.impl.PropertyMapping;
 import org.hibernate.search.backend.elasticsearch.reporting.impl.ElasticsearchValidationMessages;
 
-import com.google.gson.JsonElement;
+import org.hibernate.search.util.json.JsonElement;
 
 class DynamicTemplateValidator implements Validator<DynamicTemplate> {
 

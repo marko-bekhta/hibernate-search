@@ -7,8 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonAccessor;
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonObjectAccessor;
 import org.hibernate.search.backend.elasticsearch.search.aggregation.impl.ElasticsearchSearchAggregation;
 import org.hibernate.search.backend.elasticsearch.search.projection.impl.ElasticsearchSearchProjection;
 import org.hibernate.search.backend.elasticsearch.search.projection.impl.ProjectionExtractContext;
@@ -18,40 +16,41 @@ import org.hibernate.search.engine.search.aggregation.AggregationKey;
 import org.hibernate.search.engine.search.loading.spi.ProjectionHitMapper;
 import org.hibernate.search.engine.search.query.SearchResultTotal;
 import org.hibernate.search.engine.search.query.spi.SimpleSearchResultTotal;
-
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonArray;
+import org.hibernate.search.util.json.JsonElement;
+import org.hibernate.search.util.json.JsonObject;
+import org.hibernate.search.util.json.spi.JsonAccessor;
+import org.hibernate.search.util.json.spi.JsonObjectAccessor;
 
 class Elasticsearch7SearchResultExtractor<H>
 		implements ElasticsearchSearchResultExtractor<ElasticsearchLoadableSearchResult<H>> {
 
 	protected static final JsonObjectAccessor HITS_ACCESSOR =
-			JsonAccessor.root().property( "hits" ).asObject();
+			JsonAccessor.root().property( "hits" ).unwrapSingletonArrays().asObject();
 
 	private static final JsonAccessor<JsonArray> HITS_HITS_ACCESSOR =
 			HITS_ACCESSOR.property( "hits" ).asArray();
 
 	private static final JsonAccessor<Long> HITS_TOTAL_ACCESSOR =
-			HITS_ACCESSOR.property( "total" ).property( "value" ).asLong();
+			HITS_ACCESSOR.property( "total" ).unwrapSingletonArrays().property( "value" ).unwrapSingletonArrays().asLong();
 
 	private static final JsonAccessor<String> HITS_TOTAL_RELATION_ACCESSOR =
-			HITS_ACCESSOR.property( "total" ).property( "relation" ).asString();
+			HITS_ACCESSOR.property( "total" ).unwrapSingletonArrays().property( "relation" ).unwrapSingletonArrays().asString();
 
 	private static final JsonObjectAccessor AGGREGATIONS_ACCESSOR =
-			JsonAccessor.root().property( "aggregations" ).asObject();
+			JsonAccessor.root().property( "aggregations" ).unwrapSingletonArrays().asObject();
 
 	private static final JsonAccessor<Integer> TOOK_ACCESSOR =
-			JsonAccessor.root().property( "took" ).asInteger();
+			JsonAccessor.root().property( "took" ).unwrapSingletonArrays().asInteger();
 
 	private static final JsonAccessor<Boolean> TIMED_OUT_ACCESSOR =
-			JsonAccessor.root().property( "timed_out" ).asBoolean();
+			JsonAccessor.root().property( "timed_out" ).unwrapSingletonArrays().asBoolean();
 
 	private static final JsonAccessor<String> SCROLL_ID_ACCESSOR =
-			JsonAccessor.root().property( "_scroll_id" ).asString();
+			JsonAccessor.root().property( "_scroll_id" ).unwrapSingletonArrays().asString();
 
 	private static final JsonObjectAccessor HIT_SOURCE_ACCESSOR =
-			JsonAccessor.root().property( "_source" ).asObject();
+			JsonAccessor.root().property( "_source" ).unwrapSingletonArrays().asObject();
 
 	private static final String HITS_TOTAL_RELATION_EXACT_VALUE = "eq";
 

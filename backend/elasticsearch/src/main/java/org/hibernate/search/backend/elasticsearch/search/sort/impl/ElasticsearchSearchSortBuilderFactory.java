@@ -7,7 +7,7 @@ import org.hibernate.search.engine.search.sort.spi.ScoreSortBuilder;
 import org.hibernate.search.engine.search.sort.spi.SearchSortBuilderFactory;
 import org.hibernate.search.engine.search.sort.spi.WithParametersSortBuilder;
 
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
 
 public class ElasticsearchSearchSortBuilderFactory implements SearchSortBuilderFactory {
 
@@ -42,6 +42,6 @@ public class ElasticsearchSearchSortBuilderFactory implements SearchSortBuilderF
 	}
 
 	public ElasticsearchSearchSort fromJson(String jsonString) {
-		return fromJson( scope.userFacingGson().fromJson( jsonString, JsonObject.class ) );
+		return fromJson( scope.userFacingCodec().decode( jsonString, JsonObject.class ) );
 	}
 }

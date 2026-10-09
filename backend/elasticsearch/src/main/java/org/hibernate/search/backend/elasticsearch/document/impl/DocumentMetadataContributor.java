@@ -1,6 +1,6 @@
 package org.hibernate.search.backend.elasticsearch.document.impl;
 
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
 
 public interface DocumentMetadataContributor {
 

@@ -13,13 +13,11 @@ import org.hibernate.search.documentation.testsupport.BackendConfigurations;
 import org.hibernate.search.documentation.testsupport.DocumentationSetupHelper;
 import org.hibernate.search.mapper.orm.Search;
 import org.hibernate.search.mapper.orm.session.SearchSession;
+import org.hibernate.search.util.json.JsonObject;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 
 class ElasticsearchPredicateDslIT {
 
@@ -48,14 +46,13 @@ class ElasticsearchPredicateDslIT {
 			// tag::elasticsearch-fromJson-jsonObject[]
 			JsonObject jsonObject =
 					// end::elasticsearch-fromJson-jsonObject[]
-					new Gson().fromJson(
+					new org.hibernate.search.util.json.spi.JsonParsing().parse(
 							"{"
 									+ "    \"regexp\": {"
 									+ "        \"description\": \"neighbor|neighbour\""
 									+ "    }"
-									+ "}",
-							JsonObject.class
-					)
+									+ "}" )
+							.getAsJsonObject()
 			// tag::elasticsearch-fromJson-jsonObject[]
 			/* ... */; // <1>
 			List<Book> hits = searchSession.search( Book.class )

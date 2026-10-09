@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.hibernate.search.backend.elasticsearch.common.impl.DocumentIdHelper;
 import org.hibernate.search.backend.elasticsearch.document.model.impl.ElasticsearchIndexModel;
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
 import org.hibernate.search.backend.elasticsearch.lowlevel.syntax.search.impl.ElasticsearchSearchSyntax;
 import org.hibernate.search.backend.elasticsearch.multitenancy.impl.MultiTenancyStrategy;
 import org.hibernate.search.backend.elasticsearch.search.aggregation.dsl.ElasticsearchSearchAggregationFactory;
@@ -46,9 +47,7 @@ import org.hibernate.search.engine.search.projection.SearchProjection;
 import org.hibernate.search.engine.search.projection.dsl.spi.SearchProjectionDslContext;
 import org.hibernate.search.engine.search.sort.dsl.spi.SearchSortDslContext;
 import org.hibernate.search.engine.search.timeout.spi.TimeoutManager;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
 
 public final class ElasticsearchSearchIndexScopeImpl<SR>
 		extends AbstractSearchIndexScope<
@@ -62,7 +61,7 @@ public final class ElasticsearchSearchIndexScopeImpl<SR>
 
 	// Backend context
 	private final SearchBackendContext backendContext;
-	private final Gson userFacingGson;
+	private final JsonCodecService userFacingCodec;
 	private final ElasticsearchSearchSyntax searchSyntax;
 	private final MultiTenancyStrategy multiTenancyStrategy;
 	private final TimingSource timingSource;
@@ -80,13 +79,13 @@ public final class ElasticsearchSearchIndexScopeImpl<SR>
 	public ElasticsearchSearchIndexScopeImpl(BackendMappingContext mappingContext,
 			Class<SR> rootScopeType,
 			SearchBackendContext backendContext,
-			Gson userFacingGson, ElasticsearchSearchSyntax searchSyntax,
+			JsonCodecService userFacingCodec, ElasticsearchSearchSyntax searchSyntax,
 			MultiTenancyStrategy multiTenancyStrategy,
 			TimingSource timingSource,
 			Set<ElasticsearchIndexModel> indexModels) {
 		super( mappingContext, rootScopeType, indexModels );
 		this.backendContext = backendContext;
-		this.userFacingGson = userFacingGson;
+		this.userFacingCodec = userFacingCodec;
 		this.searchSyntax = searchSyntax;
 		this.multiTenancyStrategy = multiTenancyStrategy;
 		this.timingSource = timingSource;
@@ -117,7 +116,7 @@ public final class ElasticsearchSearchIndexScopeImpl<SR>
 			ElasticsearchSearchIndexCompositeNodeContext overriddenRoot) {
 		super( parentScope, overriddenRoot );
 		this.backendContext = parentScope.backendContext;
-		this.userFacingGson = parentScope.userFacingGson;
+		this.userFacingCodec = parentScope.userFacingCodec;
 		this.searchSyntax = parentScope.searchSyntax;
 		this.multiTenancyStrategy = parentScope.multiTenancyStrategy;
 		this.timingSource = parentScope.timingSource;
@@ -201,8 +200,8 @@ public final class ElasticsearchSearchIndexScopeImpl<SR>
 	}
 
 	@Override
-	public Gson userFacingGson() {
-		return userFacingGson;
+	public JsonCodecService userFacingCodec() {
+		return userFacingCodec;
 	}
 
 	@Override

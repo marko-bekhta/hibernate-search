@@ -3,20 +3,19 @@ package org.hibernate.search.backend.elasticsearch.types.codec.impl;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonElementTypes;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonNull;
-import com.google.gson.JsonPrimitive;
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
+import org.hibernate.search.util.json.JsonElement;
+import org.hibernate.search.util.json.JsonNull;
+import org.hibernate.search.util.json.JsonPrimitive;
+import org.hibernate.search.util.json.spi.JsonElementTypes;
 
 public abstract class AbstractElasticsearchJavaTimeFieldCodec<T extends TemporalAccessor>
 		extends AbstractElasticsearchFieldCodec<T> {
 
 	protected final DateTimeFormatter formatter;
 
-	public AbstractElasticsearchJavaTimeFieldCodec(Gson gson, DateTimeFormatter delegate) {
-		super( gson );
+	public AbstractElasticsearchJavaTimeFieldCodec(JsonCodecService json, DateTimeFormatter delegate) {
+		super( json );
 		this.formatter = delegate;
 	}
 

@@ -1,6 +1,6 @@
 package org.hibernate.search.backend.elasticsearch.types.dsl;
 
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
 
 public interface ElasticsearchNativeIndexFieldTypeMappingStep {
 
@@ -20,4 +20,14 @@ public interface ElasticsearchNativeIndexFieldTypeMappingStep {
 	 */
 	ElasticsearchNativeIndexFieldTypeOptionsStep<?> mapping(String jsonString);
 
+	/**
+	* @deprecated Use Search JSON nodes. Conversion walks and allocates a new tree.
+	* This bridge and GsonJsonConversion will be removed together in a future breaking release.
+	* A literal null argument is ambiguous; cast it to the intended input type.
+	*/
+	@Deprecated(forRemoval = true)
+	@SuppressWarnings("removal")
+	default ElasticsearchNativeIndexFieldTypeOptionsStep<?> mapping(com.google.gson.JsonObject jsonObject) {
+		return mapping( org.hibernate.search.backend.elasticsearch.gson.GsonJsonConversion.fromGson( jsonObject ) );
+	}
 }

@@ -21,8 +21,7 @@ import org.hibernate.search.engine.search.loading.spi.SearchLoadingContext;
 import org.hibernate.search.engine.search.projection.ProjectionCollector;
 import org.hibernate.search.engine.search.query.spi.QueryParameters;
 import org.hibernate.search.engine.spatial.GeoPoint;
-
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
 
 /**
  * The context holding all the useful information pertaining to the Elasticsearch search query,

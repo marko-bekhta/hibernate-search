@@ -4,8 +4,7 @@ import java.util.List;
 import java.util.Objects;
 
 import org.hibernate.search.backend.elasticsearch.logging.impl.QueryLog;
-
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
 
 public abstract class AbstractElasticsearchNestablePredicate extends AbstractElasticsearchPredicate {
 

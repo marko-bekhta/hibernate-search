@@ -2,13 +2,12 @@ package org.hibernate.search.backend.elasticsearch.lowlevel.syntax.search.impl;
 
 import java.util.List;
 
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonAccessor;
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonArrayAccessor;
-
-import com.google.gson.JsonElement;
-import com.google.gson.JsonNull;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
+import org.hibernate.search.util.json.JsonElement;
+import org.hibernate.search.util.json.JsonNull;
+import org.hibernate.search.util.json.JsonObject;
+import org.hibernate.search.util.json.JsonPrimitive;
+import org.hibernate.search.util.json.spi.JsonAccessor;
+import org.hibernate.search.util.json.spi.JsonArrayAccessor;
 
 /**
  * The search syntax for ES8.1 and later.
@@ -22,7 +21,7 @@ public class Elasticsearch81SearchSyntax implements ElasticsearchSearchSyntax {
 	private static final JsonAccessor<JsonElement> PATH_ACCESSOR = JsonAccessor.root().property( "path" );
 	private static final JsonAccessor<JsonElement> FILTER_ACCESSOR = JsonAccessor.root().property( "filter" );
 	private static final JsonAccessor<Boolean> IGNORE_UNMAPPED_ACCESSOR =
-			JsonAccessor.root().property( "ignore_unmapped" ).asBoolean();
+			JsonAccessor.root().property( "ignore_unmapped" ).unwrapSingletonArrays().asBoolean();
 
 	@Override
 	public String getTermAggregationOrderByTermToken() {

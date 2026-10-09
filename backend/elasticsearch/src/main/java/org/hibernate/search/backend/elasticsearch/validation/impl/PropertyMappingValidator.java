@@ -12,8 +12,7 @@ import org.hibernate.search.backend.elasticsearch.lowlevel.index.mapping.impl.Pr
 import org.hibernate.search.backend.elasticsearch.reporting.impl.ElasticsearchValidationMessages;
 import org.hibernate.search.engine.backend.analysis.AnalyzerNames;
 import org.hibernate.search.util.common.impl.CollectionHelper;
-
-import com.google.gson.JsonElement;
+import org.hibernate.search.util.json.JsonElement;
 
 abstract class PropertyMappingValidator extends AbstractTypeMappingValidator<PropertyMapping> {
 

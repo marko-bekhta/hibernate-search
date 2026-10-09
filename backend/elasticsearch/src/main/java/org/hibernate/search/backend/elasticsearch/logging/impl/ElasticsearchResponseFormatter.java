@@ -1,6 +1,6 @@
 package org.hibernate.search.backend.elasticsearch.logging.impl;
 
-import org.hibernate.search.backend.elasticsearch.client.common.gson.spi.JsonLogHelper;
+import org.hibernate.search.backend.elasticsearch.client.common.json.spi.JsonLogHelper;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchResponse;
 
 /**

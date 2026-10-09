@@ -3,34 +3,33 @@ package org.hibernate.search.backend.elasticsearch.lowlevel.index.settings.impl;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hibernate.search.backend.elasticsearch.gson.impl.GsonSerializable;
-import org.hibernate.search.backend.elasticsearch.gson.impl.SerializeExtraProperties;
-import org.hibernate.search.backend.elasticsearch.gson.spi.GsonProviderHelper;
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonName;
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonSerializable;
+import org.hibernate.search.backend.elasticsearch.json.impl.SerializeExtraProperties;
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper;
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.analysis.impl.AnalyzerDefinition;
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.analysis.impl.CharFilterDefinition;
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.analysis.impl.NormalizerDefinition;
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.analysis.impl.TokenFilterDefinition;
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.analysis.impl.TokenizerDefinition;
+import org.hibernate.search.util.json.JsonElement;
 
-import com.google.gson.JsonElement;
-import com.google.gson.annotations.SerializedName;
-
-@GsonSerializable
+@JsonSerializable
 public class Analysis {
 
-	@SerializedName("analyzer")
+	@JsonName("analyzer")
 	private Map<String, AnalyzerDefinition> analyzers;
 
-	@SerializedName("normalizer")
+	@JsonName("normalizer")
 	private Map<String, NormalizerDefinition> normalizers;
 
-	@SerializedName("tokenizer")
+	@JsonName("tokenizer")
 	private Map<String, TokenizerDefinition> tokenizers;
 
-	@SerializedName("filter")
+	@JsonName("filter")
 	private Map<String, TokenFilterDefinition> tokenFilters;
 
-	@SerializedName("char_filter")
+	@JsonName("char_filter")
 	private Map<String, CharFilterDefinition> charFilters;
 
 	@SerializeExtraProperties
@@ -138,6 +137,6 @@ public class Analysis {
 
 	@Override
 	public String toString() {
-		return GsonProviderHelper.toPrettyJson( this );
+		return JsonProviderHelper.toPrettyJson( this );
 	}
 }

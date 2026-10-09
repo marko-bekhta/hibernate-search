@@ -4,8 +4,7 @@ import java.util.Optional;
 
 import org.hibernate.search.backend.elasticsearch.types.codec.impl.ElasticsearchFieldCodec;
 import org.hibernate.search.engine.search.common.spi.SearchIndexValueFieldTypeContext;
-
-import com.google.gson.JsonPrimitive;
+import org.hibernate.search.util.json.JsonPrimitive;
 
 public interface ElasticsearchSearchIndexValueFieldTypeContext<F>
 		extends

@@ -1,0 +1,41 @@
+package org.hibernate.search.integrationtest.performance.backend.elasticsearch.legacy.lowlevel.index.analysis.impl;
+
+import java.util.Map;
+
+import org.hibernate.search.integrationtest.performance.backend.elasticsearch.legacy.gson.impl.SerializeExtraProperties;
+import org.hibernate.search.integrationtest.performance.backend.elasticsearch.legacy.gson.spi.GsonProviderHelper;
+
+import com.google.gson.JsonElement;
+
+/**
+ * An abstract base class for analysis-related definitions.
+ *
+ */
+public abstract class AnalysisDefinition {
+
+	private String type;
+
+	@SerializeExtraProperties
+	private Map<String, JsonElement> parameters;
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
+	public Map<String, JsonElement> getParameters() {
+		return parameters;
+	}
+
+	public void setParameters(Map<String, JsonElement> parameters) {
+		this.parameters = parameters;
+	}
+
+	@Override
+	public String toString() {
+		return GsonProviderHelper.toPrettyJson( this );
+	}
+}

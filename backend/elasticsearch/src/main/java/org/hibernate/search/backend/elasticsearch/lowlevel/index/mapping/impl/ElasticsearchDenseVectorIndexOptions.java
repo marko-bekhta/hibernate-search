@@ -2,26 +2,25 @@ package org.hibernate.search.backend.elasticsearch.lowlevel.index.mapping.impl;
 
 import java.util.Map;
 
-import org.hibernate.search.backend.elasticsearch.gson.impl.GsonSerializable;
-import org.hibernate.search.backend.elasticsearch.gson.impl.SerializeExtraProperties;
-import org.hibernate.search.backend.elasticsearch.gson.spi.GsonProviderHelper;
-
-import com.google.gson.JsonElement;
-import com.google.gson.annotations.SerializedName;
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonName;
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonSerializable;
+import org.hibernate.search.backend.elasticsearch.json.impl.SerializeExtraProperties;
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper;
+import org.hibernate.search.util.json.JsonElement;
 
 /**
  * An object representing Elasticsearch dense vector-specific index options attributes.
  *
  * See https://www.elastic.co/guide/en/elasticsearch/reference/current/dense-vector.html
  */
-@GsonSerializable
+@JsonSerializable
 public class ElasticsearchDenseVectorIndexOptions {
 
 	private String type;
 
 	private Integer m;
 
-	@SerializedName("ef_construction")
+	@JsonName("ef_construction")
 	private Integer efConstruction;
 
 	@SerializeExtraProperties
@@ -61,6 +60,6 @@ public class ElasticsearchDenseVectorIndexOptions {
 
 	@Override
 	public String toString() {
-		return GsonProviderHelper.toPrettyJson( this );
+		return JsonProviderHelper.toPrettyJson( this );
 	}
 }

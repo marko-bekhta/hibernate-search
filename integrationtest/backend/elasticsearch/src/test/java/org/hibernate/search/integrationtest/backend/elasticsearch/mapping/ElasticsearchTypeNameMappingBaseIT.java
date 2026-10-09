@@ -21,13 +21,12 @@ import org.hibernate.search.util.impl.integrationtest.backend.elasticsearch.exte
 import org.hibernate.search.util.impl.integrationtest.mapper.stub.BulkIndexer;
 import org.hibernate.search.util.impl.integrationtest.mapper.stub.StubMappedIndex;
 import org.hibernate.search.util.impl.integrationtest.mapper.stub.StubMappingSchemaManagementStrategy;
+import org.hibernate.search.util.json.JsonObject;
 
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-
-import com.google.gson.JsonObject;
 
 /**
  * Test the base functionality of type name mapping strategies.

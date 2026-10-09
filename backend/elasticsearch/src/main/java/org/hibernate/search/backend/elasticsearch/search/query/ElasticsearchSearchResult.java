@@ -3,7 +3,7 @@ package org.hibernate.search.backend.elasticsearch.search.query;
 import org.hibernate.search.engine.search.query.SearchResult;
 import org.hibernate.search.util.common.annotation.Incubating;
 
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
 
 public interface ElasticsearchSearchResult<H> extends SearchResult<H> {
 

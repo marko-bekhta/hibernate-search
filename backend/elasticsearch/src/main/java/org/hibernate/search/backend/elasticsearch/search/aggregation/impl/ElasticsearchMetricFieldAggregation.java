@@ -3,7 +3,6 @@ package org.hibernate.search.backend.elasticsearch.search.aggregation.impl;
 import java.util.List;
 import java.util.Optional;
 
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonAccessor;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.AbstractElasticsearchCodecAwareSearchQueryElementFactory;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexScope;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexValueFieldContext;
@@ -14,9 +13,9 @@ import org.hibernate.search.engine.backend.types.converter.spi.ProjectionConvert
 import org.hibernate.search.engine.search.aggregation.AggregationKey;
 import org.hibernate.search.engine.search.aggregation.spi.FieldMetricAggregationBuilder;
 import org.hibernate.search.engine.search.common.ValueModel;
-
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonElement;
+import org.hibernate.search.util.json.JsonObject;
+import org.hibernate.search.util.json.spi.JsonAccessor;
 
 /**
  * @param <F> The type of field values.
@@ -26,22 +25,22 @@ import com.google.gson.JsonObject;
 public class ElasticsearchMetricFieldAggregation<F, K> extends AbstractElasticsearchNestableAggregation<K> {
 
 	private static final JsonAccessor<JsonObject> SUM_PROPERTY_ACCESSOR =
-			JsonAccessor.root().property( "sum" ).asObject();
+			JsonAccessor.root().property( "sum" ).unwrapSingletonArrays().asObject();
 
 	private static final JsonAccessor<JsonObject> MIN_PROPERTY_ACCESSOR =
-			JsonAccessor.root().property( "min" ).asObject();
+			JsonAccessor.root().property( "min" ).unwrapSingletonArrays().asObject();
 
 	private static final JsonAccessor<JsonObject> MAX_PROPERTY_ACCESSOR =
-			JsonAccessor.root().property( "max" ).asObject();
+			JsonAccessor.root().property( "max" ).unwrapSingletonArrays().asObject();
 
 	private static final JsonAccessor<JsonObject> AVG_PROPERTY_ACCESSOR =
-			JsonAccessor.root().property( "avg" ).asObject();
+			JsonAccessor.root().property( "avg" ).unwrapSingletonArrays().asObject();
 
 	private static final JsonAccessor<String> FIELD_PROPERTY_ACCESSOR =
-			JsonAccessor.root().property( "field" ).asString();
+			JsonAccessor.root().property( "field" ).unwrapSingletonArrays().asString();
 
 	private static final JsonAccessor<Double> VALUE_ACCESSOR =
-			JsonAccessor.root().property( "value" ).asDouble();
+			JsonAccessor.root().property( "value" ).unwrapSingletonArrays().asDouble();
 
 	public static <F> ElasticsearchMetricFieldAggregation.Factory<F> sum(ElasticsearchFieldCodec<F> codec) {
 		return new ElasticsearchMetricFieldAggregation.Factory<>( codec, SUM_PROPERTY_ACCESSOR );

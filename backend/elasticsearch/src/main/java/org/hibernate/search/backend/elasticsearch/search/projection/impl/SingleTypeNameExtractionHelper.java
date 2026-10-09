@@ -1,6 +1,6 @@
 package org.hibernate.search.backend.elasticsearch.search.projection.impl;
 
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
 
 public final class SingleTypeNameExtractionHelper implements ProjectionExtractionHelper<String> {
 

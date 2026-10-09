@@ -1,24 +1,23 @@
 package org.hibernate.search.backend.elasticsearch.types.codec.impl;
 
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonAccessor;
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonElementTypes;
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
 import org.hibernate.search.backend.elasticsearch.logging.spi.ElasticsearchClientLog;
 import org.hibernate.search.engine.spatial.GeoPoint;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonNull;
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonElement;
+import org.hibernate.search.util.json.JsonNull;
+import org.hibernate.search.util.json.JsonObject;
+import org.hibernate.search.util.json.spi.JsonAccessor;
+import org.hibernate.search.util.json.spi.JsonElementTypes;
 
 public final class ElasticsearchGeoPointFieldCodec extends AbstractElasticsearchFieldCodec<GeoPoint> {
 
 	private static final JsonAccessor<Double> LATITUDE_ACCESSOR =
-			JsonAccessor.root().property( "lat" ).asDouble();
+			JsonAccessor.root().property( "lat" ).unwrapSingletonArrays().asDouble();
 	private static final JsonAccessor<Double> LONGITUDE_ACCESSOR =
-			JsonAccessor.root().property( "lon" ).asDouble();
+			JsonAccessor.root().property( "lon" ).unwrapSingletonArrays().asDouble();
 
-	public ElasticsearchGeoPointFieldCodec(Gson gson) {
-		super( gson );
+	public ElasticsearchGeoPointFieldCodec(JsonCodecService json) {
+		super( json );
 	}
 
 	@Override

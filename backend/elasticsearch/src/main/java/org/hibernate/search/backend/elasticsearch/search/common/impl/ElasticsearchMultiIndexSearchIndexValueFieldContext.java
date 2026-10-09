@@ -6,8 +6,7 @@ import java.util.Optional;
 import org.hibernate.search.backend.elasticsearch.types.codec.impl.ElasticsearchFieldCodec;
 import org.hibernate.search.engine.search.common.spi.AbstractMultiIndexSearchIndexValueFieldContext;
 import org.hibernate.search.engine.search.common.spi.SearchIndexSchemaElementContextHelper;
-
-import com.google.gson.JsonPrimitive;
+import org.hibernate.search.util.json.JsonPrimitive;
 
 public class ElasticsearchMultiIndexSearchIndexValueFieldContext<F>
 		extends AbstractMultiIndexSearchIndexValueFieldContext<

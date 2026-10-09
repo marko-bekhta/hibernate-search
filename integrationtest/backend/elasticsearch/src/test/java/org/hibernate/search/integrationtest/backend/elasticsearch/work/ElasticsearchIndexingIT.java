@@ -11,6 +11,7 @@ import org.hibernate.search.backend.elasticsearch.cfg.ElasticsearchBackendSettin
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchRequest;
 import org.hibernate.search.backend.elasticsearch.client.common.util.spi.URLEncodedString;
 import org.hibernate.search.backend.elasticsearch.client.impl.Paths;
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
 import org.hibernate.search.engine.backend.document.IndexFieldReference;
 import org.hibernate.search.engine.backend.document.model.dsl.IndexSchemaElement;
 import org.hibernate.search.engine.backend.work.execution.OperationSubmitter;
@@ -21,14 +22,12 @@ import org.hibernate.search.integrationtest.backend.elasticsearch.testsupport.ut
 import org.hibernate.search.integrationtest.backend.tck.testsupport.util.extension.SearchSetupHelper;
 import org.hibernate.search.util.impl.integrationtest.backend.elasticsearch.dialect.ElasticsearchTestDialect;
 import org.hibernate.search.util.impl.integrationtest.mapper.stub.SimpleMappedIndex;
+import org.hibernate.search.util.json.JsonObject;
 
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 
 /**
  * Test the content of generated Elasticsearch indexing requests.
@@ -69,7 +68,8 @@ class ElasticsearchIndexingIT {
 	@MethodSource("params")
 	void addUpdateDelete_noRouting(Object layoutStrategy, URLEncodedString writeName) {
 		init( layoutStrategy, writeName );
-		Gson gson = new Gson();
+		JsonCodecService json =
+				org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.create( false ).getCodec();
 
 		IndexIndexingPlan plan = index.createIndexingPlan();
 
@@ -79,7 +79,8 @@ class ElasticsearchIndexingIT {
 		clientSpy.expectNext(
 				ElasticsearchRequest.post()
 						.pathComponent( Paths._BULK )
-						.body( gson.fromJson( "{'index':{'_index': '" + writeName + "','_id': '1'}}", JsonObject.class ) )
+						.body( json.decode( "{\"index\":{\"_index\": \"" + writeName + "\",\"_id\": \"1\"}}",
+								JsonObject.class ) )
 						.body( new JsonObject() ) // We don't care about the document
 						.build(),
 				ElasticsearchRequestAssertionMode.EXTENSIBLE
@@ -93,7 +94,8 @@ class ElasticsearchIndexingIT {
 		clientSpy.expectNext(
 				ElasticsearchRequest.post()
 						.pathComponent( Paths._BULK )
-						.body( gson.fromJson( "{'index':{'_index': '" + writeName + "','_id': '1'}}", JsonObject.class ) )
+						.body( json.decode( "{\"index\":{\"_index\": \"" + writeName + "\",\"_id\": \"1\"}}",
+								JsonObject.class ) )
 						.body( new JsonObject() ) // We don't care about the document
 						.build(),
 				ElasticsearchRequestAssertionMode.EXTENSIBLE
@@ -105,7 +107,8 @@ class ElasticsearchIndexingIT {
 		clientSpy.expectNext(
 				ElasticsearchRequest.post()
 						.pathComponent( Paths._BULK )
-						.body( gson.fromJson( "{'delete':{'_index': '" + writeName + "','_id': '1'}}", JsonObject.class ) )
+						.body( json.decode( "{\"delete\":{\"_index\": \"" + writeName + "\",\"_id\": \"1\"}}",
+								JsonObject.class ) )
 						.build(),
 				ElasticsearchRequestAssertionMode.EXTENSIBLE
 		);
@@ -117,7 +120,8 @@ class ElasticsearchIndexingIT {
 	@MethodSource("params")
 	void addUpdateDelete_routing(Object layoutStrategy, URLEncodedString writeName) {
 		init( layoutStrategy, writeName );
-		Gson gson = new Gson();
+		JsonCodecService json =
+				org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.create( false ).getCodec();
 
 		String routingKey = "someRoutingKey";
 		IndexIndexingPlan plan = index.createIndexingPlan();
@@ -128,8 +132,8 @@ class ElasticsearchIndexingIT {
 		clientSpy.expectNext(
 				ElasticsearchRequest.post()
 						.pathComponent( Paths._BULK )
-						.body( gson.fromJson( "{'index':{'_index': '" + writeName + "','routing': '" + routingKey + "',"
-								+ "'_id': '1'}}", JsonObject.class ) )
+						.body( json.decode( "{\"index\":{\"_index\": \"" + writeName + "\",\"routing\": \"" + routingKey + "\","
+								+ "\"_id\": \"1\"}}", JsonObject.class ) )
 						.body( new JsonObject() ) // We don't care about the document
 						.build(),
 				ElasticsearchRequestAssertionMode.EXTENSIBLE
@@ -143,8 +147,8 @@ class ElasticsearchIndexingIT {
 		clientSpy.expectNext(
 				ElasticsearchRequest.post()
 						.pathComponent( Paths._BULK )
-						.body( gson.fromJson( "{'index':{'_index': '" + writeName + "','routing': '" + routingKey + "',"
-								+ "'_id': '1'}}", JsonObject.class ) )
+						.body( json.decode( "{\"index\":{\"_index\": \"" + writeName + "\",\"routing\": \"" + routingKey + "\","
+								+ "\"_id\": \"1\"}}", JsonObject.class ) )
 						.body( new JsonObject() ) // We don't care about the document
 						.build(),
 				ElasticsearchRequestAssertionMode.EXTENSIBLE
@@ -156,8 +160,9 @@ class ElasticsearchIndexingIT {
 		clientSpy.expectNext(
 				ElasticsearchRequest.post()
 						.pathComponent( Paths._BULK )
-						.body( gson.fromJson( "{'delete':{'_index': '" + writeName + "','routing': '" + routingKey + "',"
-								+ "'_id': '1'}}", JsonObject.class ) )
+						.body( json
+								.decode( "{\"delete\":{\"_index\": \"" + writeName + "\",\"routing\": \"" + routingKey + "\","
+										+ "\"_id\": \"1\"}}", JsonObject.class ) )
 						.build(),
 				ElasticsearchRequestAssertionMode.EXTENSIBLE
 		);

@@ -18,6 +18,11 @@
     </properties>
 
     <dependencies>
+        <!-- Historical JSON baselines are deliberately local to this benchmark module. -->
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.hibernate.search</groupId>
             <artifactId>hibernate-search-backend-elasticsearch</artifactId>

@@ -8,7 +8,7 @@ import org.hibernate.search.engine.search.projection.dsl.spi.AbstractSearchProje
 import org.hibernate.search.engine.search.projection.dsl.spi.SearchProjectionDslContext;
 import org.hibernate.search.engine.search.projection.dsl.spi.StaticProjectionFinalStep;
 
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
 
 public class ElasticsearchSearchProjectionFactoryImpl<SR, R, E>
 		extends AbstractSearchProjectionFactory<

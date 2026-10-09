@@ -1,6 +1,6 @@
 package org.hibernate.search.backend.elasticsearch.client.common.spi;
 
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
 
 public final class ElasticsearchResponse {
 	private final String hostAndPort;

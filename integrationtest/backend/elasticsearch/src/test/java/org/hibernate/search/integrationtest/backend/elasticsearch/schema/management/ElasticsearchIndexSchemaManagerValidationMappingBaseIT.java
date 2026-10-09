@@ -64,14 +64,14 @@ class ElasticsearchIndexSchemaManagerValidationMappingBaseIT {
 		elasticSearchClient.index( index.name() ).deleteAndCreate();
 		elasticSearchClient.index( index.name() ).type().putMapping(
 				simpleMappingForInitialization(
-						"'myField': {"
+						"\"myField\": {"
 								+ "  'type': 'date',"
 								+ "  'index': true,"
 								+ "  'format': '"
 								+ elasticSearchClient.getDialect().getLocalDateDefaultMappingFormat() + "',"
 								+ "  'ignore_malformed': true" // Ignored during validation
 								+ "},"
-								+ "'NOTmyField': {" // Ignored during validation
+								+ "\"NOTmyField\": {" // Ignored during validation
 								+ "  'type': 'date',"
 								+ "  'index': true"
 								+ "}"
@@ -94,11 +94,11 @@ class ElasticsearchIndexSchemaManagerValidationMappingBaseIT {
 		elasticSearchClient.index( index.name() ).deleteAndCreate();
 		elasticSearchClient.index( index.name() ).type().putMapping(
 				simpleMappingForInitialization(
-						"'myField': {"
+						"\"myField\": {"
 								+ "  'type': 'boolean',"
 								+ "  'index': true"
 								+ "},"
-								+ "'NOTmyField': {" // Ignored during validation
+								+ "\"NOTmyField\": {" // Ignored during validation
 								+ "  'type': 'boolean',"
 								+ "  'index': true"
 								+ "}"
@@ -124,12 +124,12 @@ class ElasticsearchIndexSchemaManagerValidationMappingBaseIT {
 		elasticSearchClient.index( index.name() ).deleteAndCreate();
 		elasticSearchClient.index( index.name() ).type().putMapping(
 				simpleMappingForInitialization(
-						"'myField': {"
+						"\"myField\": {"
 								+ "  'type': 'text',"
 								+ "  'index': true,"
 								+ "  'analyzer': 'default'"
 								+ "},"
-								+ "'NOTmyField': {" // Ignored during validation
+								+ "\"NOTmyField\": {" // Ignored during validation
 								+ "  'type': 'text',"
 								+ "  'index': true"
 								+ "}"
@@ -149,7 +149,7 @@ class ElasticsearchIndexSchemaManagerValidationMappingBaseIT {
 		elasticSearchClient.index( index.name() ).deleteAndCreate();
 		elasticSearchClient.index( index.name() ).type().putMapping(
 				simpleMappingForInitialization(
-						"'notMyField': {"
+						"\"notMyField\": {"
 								+ "    'type': 'integer',"
 								+ "    'index': true"
 								+ "  }"
@@ -181,12 +181,12 @@ class ElasticsearchIndexSchemaManagerValidationMappingBaseIT {
 		elasticSearchClient.index( index.name() ).deleteAndCreate();
 		elasticSearchClient.index( index.name() ).type().putMapping(
 				simpleMappingForInitialization(
-						"'myField': {"
+						"\"myField\": {"
 								+ "  'type': 'long',"
 								+ "  'index': true,"
 								+ "  'store': true"
 								+ "},"
-								+ "'myTextField': {"
+								+ "\"myTextField\": {"
 								+ "  'type': 'text',"
 								+ "  'index': true,"
 								+ "  'norms': true"
@@ -208,11 +208,11 @@ class ElasticsearchIndexSchemaManagerValidationMappingBaseIT {
 		elasticSearchClient.index( index.name() ).deleteAndCreate();
 		elasticSearchClient.index( index.name() ).type().putMapping(
 				simpleMappingForInitialization(
-						"'float': {"
+						"\"float\": {"
 								+ "  'type': 'float',"
 								+ "  'null_value': 1.7"
 								+ "},"
-								+ "'double': {"
+								+ "\"double\": {"
 								+ "  'type': 'double',"
 								+ "  'null_value': 1.7"
 								+ "}"
@@ -233,11 +233,11 @@ class ElasticsearchIndexSchemaManagerValidationMappingBaseIT {
 		elasticSearchClient.index( index.name() ).deleteAndCreate();
 		elasticSearchClient.index( index.name() ).type().putMapping(
 				simpleMappingForInitialization(
-						"'float': {"
+						"\"float\": {"
 								+ "  'type': 'float',"
 								+ "  'null_value': 1.9"
 								+ "},"
-								+ "'double': {"
+								+ "\"double\": {"
 								+ "  'type': 'double',"
 								+ "  'null_value': 1.9"
 								+ "}"
@@ -262,22 +262,22 @@ class ElasticsearchIndexSchemaManagerValidationMappingBaseIT {
 		StubMappedIndex index = StubMappedIndex.ofNonRetrievable( root -> {
 			root.field( "float", f -> f
 					.extension( ElasticsearchExtension.get() )
-					.asNative().mapping( "{'type': 'float', 'null_value': AAA }" )
+					.asNative().mapping( "{\"type\": \"float\", \"null_value\": \"AAA\" }" )
 			).toReference();
 			root.field( "double", f -> f
 					.extension( ElasticsearchExtension.get() )
-					.asNative().mapping( "{'type': 'double', 'null_value': BBB }" )
+					.asNative().mapping( "{\"type\": \"double\", \"null_value\": \"BBB\" }" )
 			).toReference();
 		} );
 
 		elasticSearchClient.index( index.name() ).deleteAndCreate();
 		elasticSearchClient.index( index.name() ).type().putMapping(
 				simpleMappingForInitialization(
-						"'float': {"
+						"\"float\": {"
 								+ "  'type': 'float',"
 								+ "  'null_value': 1.9"
 								+ "},"
-								+ "'double': {"
+								+ "\"double\": {"
 								+ "  'type': 'double',"
 								+ "  'null_value': 1.9"
 								+ "}"
@@ -313,11 +313,11 @@ class ElasticsearchIndexSchemaManagerValidationMappingBaseIT {
 		elasticSearchClient.index( index.name() ).deleteAndCreate();
 		elasticSearchClient.index( index.name() ).type().putMapping(
 				simpleMappingForInitialization(
-						"'myObjectField': {"
+						"\"myObjectField\": {"
 								+ "  'type': 'object',"
 								+ "  'dynamic': 'strict',"
-								+ "  'properties': {"
-								+ "    'myField': {"
+								+ "  \"properties\": {"
+								+ "    \"myField\": {"
 								+ "      'type': 'date',"
 								+ "      'format': '"
 								+ elasticSearchClient.getDialect().getLocalDateDefaultMappingFormat() + "',"
@@ -350,9 +350,9 @@ class ElasticsearchIndexSchemaManagerValidationMappingBaseIT {
 		elasticSearchClient.index( index.name() ).type().putMapping(
 				"{"
 						+ "  'dynamic': false,"
-						+ "  'properties': {"
+						+ "  \"properties\": {"
 						+ defaultMetadataMappingAndCommaForInitialization()
-						+ "    'myField': {"
+						+ "    \"myField\": {"
 						+ "      'type': 'integer'"
 						+ "    }"
 						+ "  }"
@@ -391,7 +391,7 @@ class ElasticsearchIndexSchemaManagerValidationMappingBaseIT {
 			elasticSearchClient.index( index.name() ).deleteAndCreate();
 		}
 		else {
-			elasticSearchClient.index( index.name() ).deleteAndCreate( "index", "{ 'knn': true }" );
+			elasticSearchClient.index( index.name() ).deleteAndCreate( "index", "{ \"knn\": true }" );
 		}
 		elasticSearchClient.index( index.name() ).type().putMapping(
 				simpleMappingForInitialization(
@@ -425,7 +425,7 @@ class ElasticsearchIndexSchemaManagerValidationMappingBaseIT {
 			elasticSearchClient.index( index.name() ).deleteAndCreate();
 		}
 		else {
-			elasticSearchClient.index( index.name() ).deleteAndCreate( "index", "{ 'knn': true }" );
+			elasticSearchClient.index( index.name() ).deleteAndCreate( "index", "{ \"knn\": true }" );
 		}
 		elasticSearchClient.index( index.name() ).type().putMapping(
 				simpleMappingForInitialization(
@@ -458,7 +458,7 @@ class ElasticsearchIndexSchemaManagerValidationMappingBaseIT {
 			elasticSearchClient.index( index.name() ).deleteAndCreate();
 		}
 		else {
-			elasticSearchClient.index( index.name() ).deleteAndCreate( "index", "{ 'knn': true }" );
+			elasticSearchClient.index( index.name() ).deleteAndCreate( "index", "{ \"knn\": true }" );
 		}
 		elasticSearchClient.index( index.name() ).type().putMapping(
 				simpleMappingForInitialization(
@@ -501,7 +501,7 @@ class ElasticsearchIndexSchemaManagerValidationMappingBaseIT {
 			elasticSearchClient.index( index.name() ).deleteAndCreate();
 		}
 		else {
-			elasticSearchClient.index( index.name() ).deleteAndCreate( "index", "{ 'knn': true }" );
+			elasticSearchClient.index( index.name() ).deleteAndCreate( "index", "{ \"knn\": true }" );
 		}
 		elasticSearchClient.index( index.name() ).type().putMapping(
 				simpleMappingForInitialization(
@@ -551,7 +551,7 @@ class ElasticsearchIndexSchemaManagerValidationMappingBaseIT {
 			elasticSearchClient.index( index.name() ).deleteAndCreate();
 		}
 		else {
-			elasticSearchClient.index( index.name() ).deleteAndCreate( "index", "{ 'knn': true }" );
+			elasticSearchClient.index( index.name() ).deleteAndCreate( "index", "{ \"knn\": true }" );
 		}
 
 		elasticSearchClient.index( index.name() ).type().putMapping(
@@ -609,7 +609,7 @@ class ElasticsearchIndexSchemaManagerValidationMappingBaseIT {
 			elasticSearchClient.index( index.name() ).deleteAndCreate();
 		}
 		else {
-			elasticSearchClient.index( index.name() ).deleteAndCreate( "index", "{ 'knn': true }" );
+			elasticSearchClient.index( index.name() ).deleteAndCreate( "index", "{ \"knn\": true }" );
 		}
 		elasticSearchClient.index( index.name() ).type().putMapping(
 				simpleMappingForInitialization(

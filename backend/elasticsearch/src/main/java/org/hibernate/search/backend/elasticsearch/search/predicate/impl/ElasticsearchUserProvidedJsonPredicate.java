@@ -3,8 +3,7 @@ package org.hibernate.search.backend.elasticsearch.search.predicate.impl;
 import java.util.Set;
 
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexScope;
-
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
 
 class ElasticsearchUserProvidedJsonPredicate implements ElasticsearchSearchPredicate {
 

@@ -4,10 +4,9 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.hibernate.search.backend.elasticsearch.gson.impl.SerializeExtraProperties;
-import org.hibernate.search.backend.elasticsearch.gson.spi.GsonProviderHelper;
-
-import com.google.gson.JsonElement;
+import org.hibernate.search.backend.elasticsearch.json.impl.SerializeExtraProperties;
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper;
+import org.hibernate.search.util.json.JsonElement;
 
 /**
  * An object representing Elasticsearch type mappings.
@@ -110,6 +109,6 @@ public abstract class AbstractTypeMapping {
 
 	@Override
 	public String toString() {
-		return GsonProviderHelper.toPrettyJson( this );
+		return JsonProviderHelper.toPrettyJson( this );
 	}
 }

@@ -22,17 +22,17 @@ for scores and the [masterplan](elasticsearch-async-json.md) for subsequent task
 | [JDK client](../backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/client/impl/ClientJdkElasticsearchClient.java), `GsonJsonMapper` / `JsonObjectBodyHandler` | `BodySubscribers.ofInputStream()` supplies bytes; `InputStreamReader` feeds Gson. No complete response String at this call site. | Task 6: byte-fed parser session with demand, EOF, cancellation and error handling. Do not replace the Reader with a whole-body String conversion. |
 | [REST 4](../backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/client/impl/ClientRest4ElasticsearchClient.java), [REST 5](../backend/elasticsearch-client/elasticsearch-rest5-client/src/main/java/org/hibernate/search/backend/elasticsearch/client/rest5/impl/ClientRest5ElasticsearchClient.java), [OpenSearch](../backend/elasticsearch-client/opensearch-rest-client/src/main/java/org/hibernate/search/backend/elasticsearch/client/opensearch/rest/impl/ClientOpenSearchElasticsearchClient.java), `parseBody` | Entity content stream through a charset-aware Reader to Gson. Client-owned entity buffering is separate from this observation. | Task 6: parse bytes incrementally through the available client consumer/carrier; retain explicit charset support and document concrete client limitations. Do not add `EntityUtils.toString`, `readAllBytes` plus String construction, or text rendering of a parsed tree. |
 | [Metadata work](../backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/work/impl/GetIndexMetadataWork.java), aliases/settings/mappings | `gson.fromJson(JsonElement, type)` consumes existing tree nodes. The method name does not imply parsing text. | Task 5: direct generated/registered codec decode from Search nodes. No `node.toString()` followed by parsing. |
-| [Schema deep copy](../backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/gson/impl/GsonUtils.java), called by [metadata builder](../backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/document/model/lowlevel/impl/LowLevelIndexMetadataBuilder.java) | Object to Gson tree to object; no JSON String. Copies preserve configured null handling. | Task 5: generated codec/tree copy preserving semantics. Do not turn this tree round trip into a text round trip. |
+| [Schema deep copy](../backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/json/impl/JsonUtils.java), called by [metadata builder](../backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/document/model/lowlevel/impl/LowLevelIndexMetadataBuilder.java) | Object to Gson tree to object; no JSON String. Copies preserve configured null handling. | Task 5: generated codec/tree copy preserving semantics. Do not turn this tree round trip into a text round trip. |
 | [Custom settings/mappings files](../backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/impl/ElasticsearchBackendImpl.java), `customIndexSettings` / `customIndexMappings` | Resource InputStream to UTF-8 Reader to typed Gson codec during bootstrap. | Task 5: bounded stream reads into parser session, then explicit codec decode. No whole-file text merely to use `parse(String)`. Preserve ownership and contextual errors. |
 | Native JSON [predicate](../backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/search/predicate/impl/ElasticsearchSearchPredicateBuilderFactory.java), [sort](../backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/search/sort/impl/ElasticsearchSearchSortBuilderFactory.java), [aggregation](../backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/search/aggregation/impl/ElasticsearchSearchAggregationBuilderFactory.java), [mapping](../backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/types/dsl/impl/ElasticsearchNativeIndexFieldTypeMappingStepImpl.java) | Explicit caller-supplied `jsonString`, or separate tree overload. | Task 5: String overload uses the accepted character convenience; tree overload works directly on the tree. No simulated network input or String-size dispatch. |
 | Raw DSL / raw projection [converters](../backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/types/impl/ElasticsearchIndexValueFieldType.java) and [field codec](../backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/types/codec/impl/AbstractElasticsearchFieldCodec.java) | Raw DSL deliberately accepts JSON text; raw projection deliberately returns text. Normal native [JSON field encode/decode](../backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/types/codec/impl/ElasticsearchJsonElementFieldCodec.java) returns an existing node. | Task 5: preserve explicit text contracts, including null and custom scalar behavior; normal values/projections remain tree/value-based. Do not use raw text converters as internal intermediates. |
 | [Request transformer](../backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/search/query/impl/ElasticsearchSearchRequestTransformerContextImpl.java) | Copies the original tree with `deepCopy` when needed. | Task 5: structural Search-node copy preserving mutation isolation; no rendering/reparse. |
-| [Request entity content provider](../backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/client/common/gson/entity/spi/GsonHttpEntityContentProvider.java) | Progressive output serializes a whole body part before checking backpressure; the initial probe can retain a large part. This is known Task 1 output buffering, not a String-parser detour. | Task 6: integrate resumable body/cursor and bounded length probe. Do not copy this full-part buffering into the replacement. |
-| [Logging helper](../backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/client/common/gson/spi/JsonLogHelper.java) and client `log` methods | Deliberate diagnostic text. Successful-request logging returns before rendering when trace is disabled; failure logging is a separate branch. | Tasks 5/6: preserve diagnostic boundaries and disabled-success-log guard; do not reuse logged text for parsing or transport. Review exception rendering separately from ordinary request processing. |
+| [Request entity content provider](../backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/client/common/json/entity/spi/JsonHttpEntityContentProvider.java) | Progressive output serializes a whole body part before checking backpressure; the initial probe can retain a large part. This is known Task 1 output buffering, not a String-parser detour. | Task 6: integrate resumable body/cursor and bounded length probe. Do not copy this full-part buffering into the replacement. |
+| [Logging helper](../backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/client/common/json/spi/JsonLogHelper.java) and client `log` methods | Deliberate diagnostic text. Successful-request logging returns before rendering when trace is disabled; failure logging is a separate branch. | Tasks 5/6: preserve diagnostic boundaries and disabled-success-log guard; do not reuse logged text for parsing or transport. Review exception rendering separately from ordinary request processing. |
 | [Schema export](../backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/schema/management/impl/ElasticsearchIndexSchemaExportImpl.java) | Writes JSON through a Writer to a file; no parse round trip. | Task 5: preserve streaming export and formatting contracts; no whole-body String prerequisite. |
 | [JSON utility entry points](../util/json/src/main/java/org/hibernate/search/util/json/spi/JsonParsing.java) | `parse(String)` selects the character parser; `createParser()` selects byte-fed sessions. No backend production caller of the new String entry point was found at this checkpoint. | Keep this source-based distinction during migration. Known object codecs decode nodes rather than invoking a parser. |
 
-The existing [codec generator](../build/gson-processor/src/main/java/org/hibernate/search/build/gson/TypeAdapterFactoryWriter.java)
+The existing [codec generator](../build/json-processor/src/main/java/org/hibernate/search/build/json/JsonCodecWriter.java)
 emits direct typed adapter operations. Its replacement must use direct operations
 on Search trees, not generated rendering and reparsing of fields.
 
@@ -64,14 +64,14 @@ the byte-fed route avoids the character parser for data already available as byt
 
 ## Verification checklist for migration agents
 
-- [ ] Task 5: classify every new `JsonParsing.parse(String)` call by its argument's
+- [x] Task 5: classify every new `JsonParsing.parse(String)` call by its argument's
   source. Native JSON String overloads and raw DSL String values are legitimate;
   explain additional boundaries in this inventory.
-- [ ] Task 5: inspect generated sources and direct codec/conversion helpers for
+- [x] Task 5: inspect generated sources and direct codec/conversion helpers for
   serialization followed by parsing. Gson compatibility conversion must traverse
   nodes directly. Verify metadata, deep-copy, null, native-field and raw-text
   behavior with characterization tests.
-- [ ] Task 5: custom schema files use bounded reads and sessions; verify
+- [x] Task 5: custom schema files use bounded reads and sessions; verify
   close/EOF/error behavior without whole-file String materialization.
 - [ ] Task 6: inspect each adapter's success, error and retry paths. Bytes reach
   sessions without a complete raw String/char-array copy; trees reach codecs
@@ -79,18 +79,63 @@ the byte-fed route avoids the character parser for data already available as byt
 - [ ] Task 6: verify request backpressure within large parts, bounded length
   probes, cancellation and replay using retention/slow-consumer fixtures.
   Paginated writes alone do not prove bounded retained serialization.
-- [ ] Tasks 5/6: retain disabled logging guards and distinguish explicit String
+- [x] Task 5: retain disabled logging guards and distinguish explicit String
   projections, diagnostics and file export from internal data flow.
-- [ ] Repeat the source audit after each migration checkpoint. Inspect call
+- [x] Repeat the source audit after the Task 5 migration checkpoint. Inspect call
   sites rather than imposing a blanket ban on `toString` or String APIs.
+- [ ] Task 6: repeat the logging and source-route audit for the new transport adapters.
 
 Useful searches from the repository root; inspect overloads and callers:
 
 ```sh
-rg -n 'fromJson\(|parseString\(|parseReader\(|toJsonTree\(' backend/elasticsearch backend/elasticsearch-client build/gson-processor --glob '*.java' --glob '!**/src/test/**'
+rg -n 'decode\(|fromJson\(|parseString\(|parseReader\(|toJsonTree\(' backend/elasticsearch backend/elasticsearch-client build/json-processor --glob '*.java' --glob '!**/src/test/**'
 rg -n 'JsonParsing|readAllBytes|readString|StringReader|InputStreamReader|EntityUtils|ByteArrayOutputStream' backend/elasticsearch backend/elasticsearch-client util/json --glob '*.java' --glob '!**/src/test/**'
 rg -n 'fromJsonStringToElement|fromJsonElementToString|deepCopy\(' backend/elasticsearch/src/main/java
 ```
 
 The pre-migration audit is complete. The checklist above belongs to later
 implementation tasks and is deliberately not marked complete by this review.
+
+## Task 5 repeated source audit
+
+The earlier table describes the pre-migration checkpoint. Its links now point to
+the replacement files where paths moved. Task 5's current inventory is
+[parsing-routes.tsv](elasticsearch-async-json-task5/parsing-routes.tsv); production
+Gson compatibility references are in
+[gson-compatibility.tsv](elasticsearch-async-json-task5/gson-compatibility.tsv).
+
+- `JsonCodecService.decode(String, Class)` directly invokes the character parser.
+  Its callers are native predicate/sort/aggregation/mapping String inputs and the
+  explicit raw DSL String contract. There is no String-size dispatch or staging.
+- `decode(InputStream, Charset, Class)` reads at most 8192 bytes, feeds the bounded
+  parser session until each slice is consumed, validates EOF and decodes the tree.
+  All four HTTP adapters retain their existing completion/lifecycle boundary;
+  custom schema files use the UTF-8 overload and close their resource streams.
+- Metadata uses direct registered codec decode. `JsonUtils.deepCopy` composes
+  codec encode/decode without text; generated codecs copy extra trees structurally
+  according to null policy. Aliases use an explicitly typed map codec.
+- Transformers use Search `deepCopy`; native values and raw response projections
+  retain their node identity. Gson conversion exists only in the four deprecated
+  input default methods and public converter; it walks nodes directly.
+- Request entities now use `ElasticsearchJsonBody.ndjson`, the existing cursor
+  output SPI and fixed-size pending storage. Schema export writes compact cursor
+  bytes directly. Stable unknown large-body length replaces the former length
+  discovery by completing serialization/signing.
+- `JsonCodecService.write` produces text only for explicit raw projections and
+  diagnostics. Its bounded output decoder is not an input parser route. Successful
+  response formatting remains guarded by trace enablement in all four clients.
+
+Generated-source and backend-boundary tests check that codecs do not introduce
+Gson/Jackson types, reflective field mapping, or rendering/reparsing. Source review
+found no ordinary whole-response String/char-array or whole-body byte helper.
+Client-owned REST response buffers, compressed-request wrappers and diagnostic
+error constructors remain the documented external limitations. This seam does not
+complete the unchecked Task 6 demand, cancellation, response consumer or retry
+policy work, and source checks alone do not establish network latency guarantees.
+
+The internal integration-test client's historical mapping/settings/alias fixture
+constructor remains a deliberate legacy-input boundary: it parses supplied lenient
+fixture Strings with Gson and calls the deprecated direct tree converter once.
+It does not parse transport bytes, convert requests/responses, or render/reparse a
+Search tree. See the [test fixture allowlist](elasticsearch-async-json-task5/test-fixture-compatibility.tsv).
+Production native String APIs remain strict and use the character parser.

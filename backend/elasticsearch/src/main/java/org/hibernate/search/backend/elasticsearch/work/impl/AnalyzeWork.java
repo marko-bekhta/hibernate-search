@@ -7,22 +7,24 @@ import org.hibernate.search.backend.elasticsearch.client.common.spi.Elasticsearc
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchResponse;
 import org.hibernate.search.backend.elasticsearch.client.common.util.spi.URLEncodedString;
 import org.hibernate.search.backend.elasticsearch.client.impl.Paths;
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonAccessor;
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonArrayAccessor;
 import org.hibernate.search.engine.backend.analysis.AnalysisToken;
 import org.hibernate.search.util.common.AssertionFailure;
-
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonArray;
+import org.hibernate.search.util.json.JsonElement;
+import org.hibernate.search.util.json.JsonObject;
+import org.hibernate.search.util.json.spi.JsonAccessor;
+import org.hibernate.search.util.json.spi.JsonArrayAccessor;
 
 public class AnalyzeWork extends AbstractNonBulkableWork<List<? extends AnalysisToken>> {
 	private static final JsonArrayAccessor TOKENS_ACCESSOR = JsonAccessor.root().property( "tokens" ).asArray();
-	private static final JsonAccessor<String> TOKEN_ACCESSOR = JsonAccessor.root().property( "token" ).asString();
+	private static final JsonAccessor<String> TOKEN_ACCESSOR =
+			JsonAccessor.root().property( "token" ).unwrapSingletonArrays().asString();
 	private static final JsonAccessor<Integer> START_OFFSET_ACCESSOR =
-			JsonAccessor.root().property( "start_offset" ).asInteger();
-	private static final JsonAccessor<Integer> END_OFFSET_ACCESSOR = JsonAccessor.root().property( "end_offset" ).asInteger();
-	private static final JsonAccessor<String> TYPE_ACCESSOR = JsonAccessor.root().property( "type" ).asString();
+			JsonAccessor.root().property( "start_offset" ).unwrapSingletonArrays().asInteger();
+	private static final JsonAccessor<Integer> END_OFFSET_ACCESSOR =
+			JsonAccessor.root().property( "end_offset" ).unwrapSingletonArrays().asInteger();
+	private static final JsonAccessor<String> TYPE_ACCESSOR =
+			JsonAccessor.root().property( "type" ).unwrapSingletonArrays().asString();
 
 	private static final ElasticsearchRequestSuccessAssessor SUCCESS_ASSESSOR =
 			ElasticsearchRequestSuccessAssessor.builder().build();
@@ -36,7 +38,7 @@ public class AnalyzeWork extends AbstractNonBulkableWork<List<? extends Analysis
 			ElasticsearchResponse response) {
 		JsonObject body = response.body();
 
-		// we don't use Gson to keep ElasticsearchAnalysisToken immutable.
+		// we don't use JsonCodecService to keep ElasticsearchAnalysisToken immutable.
 		List<ElasticsearchAnalysisToken> tokens = new ArrayList<>();
 		for ( JsonElement element : TOKENS_ACCESSOR.getOrCreate( body, JsonArray::new ) ) {
 			JsonObject token = element.getAsJsonObject();

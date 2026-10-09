@@ -3,14 +3,13 @@ package org.hibernate.search.backend.elasticsearch.search.aggregation.impl;
 import java.util.List;
 import java.util.Map;
 
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonAccessor;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexScope;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexValueFieldContext;
 import org.hibernate.search.backend.elasticsearch.search.predicate.impl.ElasticsearchSearchPredicate;
 import org.hibernate.search.engine.search.aggregation.AggregationKey;
-
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonElement;
+import org.hibernate.search.util.json.JsonObject;
+import org.hibernate.search.util.json.spi.JsonAccessor;
 
 /**
  * @param <K> The type of keys in the returned map.
@@ -20,17 +19,18 @@ public abstract class AbstractElasticsearchBucketAggregation<K, V>
 		extends AbstractElasticsearchNestableAggregation<Map<K, V>> {
 
 	protected static final JsonAccessor<JsonObject> REQUEST_AGGREGATIONS_ACCESSOR =
-			JsonAccessor.root().property( "aggregations" ).asObject();
+			JsonAccessor.root().property( "aggregations" ).unwrapSingletonArrays().asObject();
 
 	private static final JsonAccessor<JsonObject> REQUEST_REVERSE_NESTED_ACCESSOR =
-			JsonAccessor.root().property( "reverse_nested" ).asObject();
+			JsonAccessor.root().property( "reverse_nested" ).unwrapSingletonArrays().asObject();
 
 	protected static final JsonAccessor<JsonObject> REQUEST_REVERSE_NESTED_WRAPPER_ACCESSOR =
-			JsonAccessor.root().property( "reverse_nested_wrapper" ).asObject();
+			JsonAccessor.root().property( "reverse_nested_wrapper" ).unwrapSingletonArrays().asObject();
 
 	private static final String ROOT_DOC_COUNT_NAME = "root_doc_count";
 	private static final JsonAccessor<JsonObject> REQUEST_AGGREGATIONS_ROOT_DOC_COUNT_ACCESSOR =
-			JsonAccessor.root().property( "aggregations" ).property( ROOT_DOC_COUNT_NAME ).asObject();
+			JsonAccessor.root().property( "aggregations" ).unwrapSingletonArrays().property( ROOT_DOC_COUNT_NAME )
+					.unwrapSingletonArrays().asObject();
 
 	protected static final String INNER_EXTRACTOR = "innerExtractor";
 

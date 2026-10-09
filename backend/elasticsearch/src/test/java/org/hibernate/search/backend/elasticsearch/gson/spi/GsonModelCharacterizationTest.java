@@ -49,7 +49,7 @@ class GsonModelCharacterizationTest {
 	void requestEscapingAndTreeStringEscaping() {
 		JsonObject object = new JsonObject();
 		object.addProperty( "text", "<>&='\n\"\\é漢😀" );
-		String requestJson = GsonProviderHelper.createUserFacingGson().toJson( object );
+		String requestJson = new com.google.gson.GsonBuilder().setPrettyPrinting().create().toJson( object );
 		assertThat( requestJson ).contains( "\\u003c\\u003e\\u0026\\u003d\\u0027", "\\n", "\\\"", "\\\\", "é漢😀" );
 		assertThat( object.toString() ).contains( "<>&='" );
 		assertThat( JsonParser.parseString( requestJson ) ).isEqualTo( object );

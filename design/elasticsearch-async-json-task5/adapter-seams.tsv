@@ -1,0 +1,10 @@
+fixture	execution	tests	failures	errors	skipped
+org.hibernate.search.integrationtest.backend.elasticsearch.client.ClientRest4ElasticsearchClientFactoryIT(elasticsearch-default-elasticsearch-rest)	elasticsearch-rest	5	0	0	0
+org.hibernate.search.integrationtest.backend.elasticsearch.client.ClientRest5ElasticsearchClientFactoryIT(elasticsearch-default-elasticsearch-rest5)	elasticsearch-rest5	5	0	0	0
+org.hibernate.search.integrationtest.backend.elasticsearch.client.ClientOpenSearchElasticsearchClientFactoryIT(elasticsearch-default-opensearch-rest)	opensearch-rest	5	0	0	0
+AWS-local-signing-large-body	elasticsearch-jdk	1	0	0	0
+AWS-local-signing-large-body	elasticsearch-rest	1	0	0	0
+AWS-local-signing-large-body	elasticsearch-rest5	1	0	0	0
+AWS-local-signing-large-body	opensearch-rest	1	0	0	0
+legacy-vector-fixtures-elastic-9.5.4	elasticsearch-rest	4	0	0	0
+legacy-vector-fixtures-opensearch-3.8.0	elasticsearch-rest	4	0	0	0

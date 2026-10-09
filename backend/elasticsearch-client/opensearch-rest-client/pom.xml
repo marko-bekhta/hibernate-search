@@ -52,10 +52,6 @@
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging-annotations</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-        </dependency>
 
         <!-- We only depend on Jackson indirectly through the Elasticsearch client sniffer,
              but Dependabot apparently ignores dependency management,

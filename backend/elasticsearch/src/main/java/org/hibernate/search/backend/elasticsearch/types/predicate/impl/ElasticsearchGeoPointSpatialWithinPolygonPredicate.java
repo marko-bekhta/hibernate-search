@@ -2,8 +2,6 @@ package org.hibernate.search.backend.elasticsearch.types.predicate.impl;
 
 import java.util.List;
 
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonAccessor;
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonObjectAccessor;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.AbstractElasticsearchValueFieldSearchQueryElementFactory;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexScope;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexValueFieldContext;
@@ -13,16 +11,17 @@ import org.hibernate.search.engine.search.predicate.SearchPredicate;
 import org.hibernate.search.engine.search.predicate.spi.SpatialWithinPolygonPredicateBuilder;
 import org.hibernate.search.engine.spatial.GeoPoint;
 import org.hibernate.search.engine.spatial.GeoPolygon;
-
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonArray;
+import org.hibernate.search.util.json.JsonObject;
+import org.hibernate.search.util.json.spi.JsonAccessor;
+import org.hibernate.search.util.json.spi.JsonObjectAccessor;
 
 public class ElasticsearchGeoPointSpatialWithinPolygonPredicate extends AbstractElasticsearchSingleFieldPredicate {
 
 	private static final JsonObjectAccessor GEO_SHAPE_ACCESSOR =
-			JsonAccessor.root().property( "geo_shape" ).asObject();
+			JsonAccessor.root().property( "geo_shape" ).unwrapSingletonArrays().asObject();
 	private static final JsonAccessor<Boolean> IGNORE_UNMAPPED_ACCESSOR =
-			JsonAccessor.root().property( "ignore_unmapped" ).asBoolean();
+			JsonAccessor.root().property( "ignore_unmapped" ).unwrapSingletonArrays().asBoolean();
 
 	private static final String COORDINATES_PROPERTY_NAME = "coordinates";
 	private static final String TYPE_PROPERTY_NAME = "type";

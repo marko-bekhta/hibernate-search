@@ -2,7 +2,7 @@ package org.hibernate.search.backend.elasticsearch.search.query;
 
 import org.hibernate.search.engine.search.query.ExtendedSearchQuery;
 
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
 
 public interface ElasticsearchSearchQuery<H>
 		extends ExtendedSearchQuery<H, ElasticsearchSearchResult<H>, ElasticsearchSearchScroll<H>>,

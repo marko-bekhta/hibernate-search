@@ -2,9 +2,9 @@ package org.hibernate.search.backend.elasticsearch.lowlevel.syntax.search.impl;
 
 import java.util.List;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
+import org.hibernate.search.util.json.JsonElement;
+import org.hibernate.search.util.json.JsonObject;
+import org.hibernate.search.util.json.JsonPrimitive;
 
 public interface ElasticsearchSearchSyntax {
 

@@ -3,10 +3,10 @@ package org.hibernate.search.backend.elasticsearch.validation.impl;
 import java.util.Map;
 import java.util.Objects;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
+import org.hibernate.search.util.json.JsonArray;
+import org.hibernate.search.util.json.JsonElement;
+import org.hibernate.search.util.json.JsonObject;
+import org.hibernate.search.util.json.JsonPrimitive;
 
 /**
  * Determines whether two {@link JsonElement}s should be considered equivalent.

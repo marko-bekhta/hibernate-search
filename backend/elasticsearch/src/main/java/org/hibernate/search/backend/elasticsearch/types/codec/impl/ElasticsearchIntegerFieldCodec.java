@@ -1,17 +1,16 @@
 package org.hibernate.search.backend.elasticsearch.types.codec.impl;
 
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonElementTypes;
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
 import org.hibernate.search.engine.cfg.spi.NumberUtils;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonNull;
-import com.google.gson.JsonPrimitive;
+import org.hibernate.search.util.json.JsonElement;
+import org.hibernate.search.util.json.JsonNull;
+import org.hibernate.search.util.json.JsonPrimitive;
+import org.hibernate.search.util.json.spi.JsonElementTypes;
 
 public final class ElasticsearchIntegerFieldCodec extends AbstractElasticsearchFieldCodec<Integer> {
 
-	public ElasticsearchIntegerFieldCodec(Gson gson) {
-		super( gson );
+	public ElasticsearchIntegerFieldCodec(JsonCodecService json) {
+		super( json );
 	}
 
 	@Override

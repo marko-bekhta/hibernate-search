@@ -6,17 +6,19 @@ import org.hibernate.search.backend.elasticsearch.ElasticsearchVersion;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchClient;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchRequest;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchResponse;
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonAccessor;
 import org.hibernate.search.backend.elasticsearch.logging.spi.ElasticsearchClientLog;
 import org.hibernate.search.util.common.AssertionFailure;
 import org.hibernate.search.util.common.impl.Futures;
+import org.hibernate.search.util.json.spi.JsonAccessor;
 
 public final class ElasticsearchClientUtils {
 
 	private static final JsonAccessor<String> DISTRIBUTION_ACCESSOR =
-			JsonAccessor.root().property( "version" ).property( "distribution" ).asString();
+			JsonAccessor.root().property( "version" ).unwrapSingletonArrays().property( "distribution" ).unwrapSingletonArrays()
+					.asString();
 	private static final JsonAccessor<String> VERSION_ACCESSOR =
-			JsonAccessor.root().property( "version" ).property( "number" ).asString();
+			JsonAccessor.root().property( "version" ).unwrapSingletonArrays().property( "number" ).unwrapSingletonArrays()
+					.asString();
 
 	private ElasticsearchClientUtils() {
 		// Private constructor

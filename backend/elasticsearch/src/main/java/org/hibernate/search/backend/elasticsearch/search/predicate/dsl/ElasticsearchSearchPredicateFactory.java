@@ -3,7 +3,7 @@ package org.hibernate.search.backend.elasticsearch.search.predicate.dsl;
 import org.hibernate.search.engine.search.predicate.dsl.ExtendedSearchPredicateFactory;
 import org.hibernate.search.engine.search.predicate.dsl.PredicateFinalStep;
 
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
 
 /**
  * A factory for search predicates with some Elasticsearch-specific methods.
@@ -33,4 +33,14 @@ public interface ElasticsearchSearchPredicateFactory<SR>
 	 */
 	PredicateFinalStep fromJson(JsonObject jsonObject);
 
+	/**
+	* @deprecated Use Search JSON nodes. Conversion walks and allocates a new tree.
+	* This bridge and GsonJsonConversion will be removed together in a future breaking release.
+	* A literal null argument is ambiguous; cast it to the intended input type.
+	*/
+	@Deprecated(forRemoval = true)
+	@SuppressWarnings("removal")
+	default PredicateFinalStep fromJson(com.google.gson.JsonObject jsonObject) {
+		return fromJson( org.hibernate.search.backend.elasticsearch.gson.GsonJsonConversion.fromGson( jsonObject ) );
+	}
 }

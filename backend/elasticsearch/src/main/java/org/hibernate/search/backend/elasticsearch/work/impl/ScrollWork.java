@@ -5,7 +5,7 @@ import org.hibernate.search.backend.elasticsearch.client.common.spi.Elasticsearc
 import org.hibernate.search.backend.elasticsearch.client.impl.Paths;
 import org.hibernate.search.engine.common.timing.Deadline;
 
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
 
 public class ScrollWork<R> extends AbstractNonBulkableWork<R> {
 

@@ -4,7 +4,7 @@ import org.hibernate.search.engine.search.projection.dsl.ExtendedSearchProjectio
 import org.hibernate.search.engine.search.projection.dsl.ProjectionFinalStep;
 import org.hibernate.search.engine.search.projection.dsl.TypedSearchProjectionFactory;
 
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
 
 /**
  * A factory for search projections with some Elasticsearch-specific methods.

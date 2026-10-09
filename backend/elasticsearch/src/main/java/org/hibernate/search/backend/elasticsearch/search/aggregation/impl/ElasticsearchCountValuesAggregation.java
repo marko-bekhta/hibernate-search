@@ -2,8 +2,6 @@ package org.hibernate.search.backend.elasticsearch.search.aggregation.impl;
 
 import java.util.List;
 
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonAccessor;
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonElementTypes;
 import org.hibernate.search.backend.elasticsearch.logging.impl.QueryLog;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexNodeContext;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexScope;
@@ -12,20 +10,21 @@ import org.hibernate.search.backend.elasticsearch.search.predicate.impl.Elastics
 import org.hibernate.search.engine.search.aggregation.AggregationKey;
 import org.hibernate.search.engine.search.aggregation.spi.CountValuesAggregationBuilder;
 import org.hibernate.search.engine.search.common.spi.SearchQueryElementFactory;
-
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonElement;
+import org.hibernate.search.util.json.JsonObject;
+import org.hibernate.search.util.json.spi.JsonAccessor;
+import org.hibernate.search.util.json.spi.JsonElementTypes;
 
 public class ElasticsearchCountValuesAggregation extends AbstractElasticsearchNestableAggregation<Long> {
 
 	private static final JsonAccessor<JsonObject> COUNT_PROPERTY_ACCESSOR =
-			JsonAccessor.root().property( "value_count" ).asObject();
+			JsonAccessor.root().property( "value_count" ).unwrapSingletonArrays().asObject();
 
 	private static final JsonAccessor<JsonObject> COUNT_DISTINCT_PROPERTY_ACCESSOR =
-			JsonAccessor.root().property( "cardinality" ).asObject();
+			JsonAccessor.root().property( "cardinality" ).unwrapSingletonArrays().asObject();
 
 	private static final JsonAccessor<String> FIELD_PROPERTY_ACCESSOR =
-			JsonAccessor.root().property( "field" ).asString();
+			JsonAccessor.root().property( "field" ).unwrapSingletonArrays().asString();
 
 	private final String absoluteFieldPath;
 	private final JsonAccessor<JsonObject> operation;

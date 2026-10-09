@@ -7,9 +7,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonAccessor;
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonArrayAccessor;
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonObjectAccessor;
 import org.hibernate.search.backend.elasticsearch.logging.impl.QueryLog;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexScope;
 import org.hibernate.search.engine.search.highlighter.dsl.HighlighterEncoder;
@@ -19,9 +16,11 @@ import org.hibernate.search.engine.search.highlighter.spi.BoundaryScannerType;
 import org.hibernate.search.engine.search.highlighter.spi.SearchHighlighterBuilder;
 import org.hibernate.search.engine.search.highlighter.spi.SearchHighlighterType;
 import org.hibernate.search.engine.search.projection.ProjectionCollector;
-
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonArray;
+import org.hibernate.search.util.json.JsonObject;
+import org.hibernate.search.util.json.spi.JsonAccessor;
+import org.hibernate.search.util.json.spi.JsonArrayAccessor;
+import org.hibernate.search.util.json.spi.JsonObjectAccessor;
 
 public class ElasticsearchSearchHighlighterImpl implements ElasticsearchSearchHighlighter {
 
@@ -30,25 +29,35 @@ public class ElasticsearchSearchHighlighterImpl implements ElasticsearchSearchHi
 			null, null, null
 	);
 
-	private static final JsonObjectAccessor REQUEST_HIGHLIGHT_ACCESSOR = JsonAccessor.root().property( "highlight" ).asObject();
-	private static final JsonAccessor<String> TYPE = JsonAccessor.root().property( "type" ).asString();
-	private static final JsonAccessor<String> BOUNDARY_CHARS = JsonAccessor.root().property( "boundary_chars" ).asString();
+	private static final JsonObjectAccessor REQUEST_HIGHLIGHT_ACCESSOR =
+			JsonAccessor.root().property( "highlight" ).unwrapSingletonArrays().asObject();
+	private static final JsonAccessor<String> TYPE = JsonAccessor.root().property( "type" ).unwrapSingletonArrays().asString();
+	private static final JsonAccessor<String> BOUNDARY_CHARS =
+			JsonAccessor.root().property( "boundary_chars" ).unwrapSingletonArrays().asString();
 	private static final JsonAccessor<Integer> BOUNDARY_MAX_SCAN =
-			JsonAccessor.root().property( "boundary_max_scan" ).asInteger();
-	private static final JsonAccessor<String> ENCODER = JsonAccessor.root().property( "encoder" ).asString();
-	private static final JsonAccessor<Integer> FRAGMENT_SIZE = JsonAccessor.root().property( "fragment_size" ).asInteger();
-	private static final JsonAccessor<Integer> NO_MATCH_SIZE = JsonAccessor.root().property( "no_match_size" ).asInteger();
+			JsonAccessor.root().property( "boundary_max_scan" ).unwrapSingletonArrays().asInteger();
+	private static final JsonAccessor<String> ENCODER =
+			JsonAccessor.root().property( "encoder" ).unwrapSingletonArrays().asString();
+	private static final JsonAccessor<Integer> FRAGMENT_SIZE =
+			JsonAccessor.root().property( "fragment_size" ).unwrapSingletonArrays().asInteger();
+	private static final JsonAccessor<Integer> NO_MATCH_SIZE =
+			JsonAccessor.root().property( "no_match_size" ).unwrapSingletonArrays().asInteger();
 	private static final JsonAccessor<Integer> NUMBER_OF_FRAGMENTS =
-			JsonAccessor.root().property( "number_of_fragments" ).asInteger();
-	private static final JsonAccessor<String> ORDER = JsonAccessor.root().property( "order" ).asString();
-	private static final JsonAccessor<String> TAGS_SCHEMA = JsonAccessor.root().property( "tags_schema" ).asString();
+			JsonAccessor.root().property( "number_of_fragments" ).unwrapSingletonArrays().asInteger();
+	private static final JsonAccessor<String> ORDER =
+			JsonAccessor.root().property( "order" ).unwrapSingletonArrays().asString();
+	private static final JsonAccessor<String> TAGS_SCHEMA =
+			JsonAccessor.root().property( "tags_schema" ).unwrapSingletonArrays().asString();
 	private static final JsonArrayAccessor PRE_TAGS = JsonAccessor.root().property( "pre_tags" ).asArray();
 	private static final JsonArrayAccessor POST_TAGS = JsonAccessor.root().property( "post_tags" ).asArray();
-	private static final JsonAccessor<String> BOUNDARY_SCANNER = JsonAccessor.root().property( "boundary_scanner" ).asString();
+	private static final JsonAccessor<String> BOUNDARY_SCANNER =
+			JsonAccessor.root().property( "boundary_scanner" ).unwrapSingletonArrays().asString();
 	private static final JsonAccessor<String> BOUNDARY_SCANNER_LOCALE =
-			JsonAccessor.root().property( "boundary_scanner_locale" ).asString();
-	private static final JsonAccessor<String> FRAGMENTER = JsonAccessor.root().property( "fragmenter" ).asString();
-	private static final JsonAccessor<Integer> PHRASE_LIMIT = JsonAccessor.root().property( "phrase_limit" ).asInteger();
+			JsonAccessor.root().property( "boundary_scanner_locale" ).unwrapSingletonArrays().asString();
+	private static final JsonAccessor<String> FRAGMENTER =
+			JsonAccessor.root().property( "fragmenter" ).unwrapSingletonArrays().asString();
+	private static final JsonAccessor<Integer> PHRASE_LIMIT =
+			JsonAccessor.root().property( "phrase_limit" ).unwrapSingletonArrays().asInteger();
 
 	private final Set<String> indexNames;
 	private final SearchHighlighterType type;

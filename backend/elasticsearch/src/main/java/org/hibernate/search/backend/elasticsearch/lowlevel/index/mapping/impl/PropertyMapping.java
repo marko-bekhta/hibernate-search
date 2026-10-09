@@ -2,18 +2,17 @@ package org.hibernate.search.backend.elasticsearch.lowlevel.index.mapping.impl;
 
 import java.util.List;
 
-import org.hibernate.search.backend.elasticsearch.gson.impl.GsonSerializable;
-import org.hibernate.search.backend.elasticsearch.gson.impl.GsonTypeAdapter;
-
-import com.google.gson.JsonElement;
-import com.google.gson.annotations.SerializedName;
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonFieldCodec;
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonName;
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonSerializable;
+import org.hibernate.search.util.json.JsonElement;
 
 /**
  * An object representing Elasticsearch property mappings, i.e. the mappings of properties inside a type mapping.
  *
  * See https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html#mapping-type
  */
-@GsonSerializable
+@JsonSerializable
 public class PropertyMapping extends AbstractTypeMapping {
 
 	private String type;
@@ -26,22 +25,17 @@ public class PropertyMapping extends AbstractTypeMapping {
 
 	private Boolean norms;
 
-	@SerializedName("doc_values")
+	@JsonName("doc_values")
 	private Boolean docValues;
 
 	/**
 	 * The null-value replacement, which can be a string (real string or formatted date), a boolean
 	 * or a numeric value, depending on the data type.
 	 *
-	 * <p>Using JsonPrimitive here instead of Object allows us to take advantage of lazily parsed numbers,
-	 * so that long values are not arbitrarily parsed as doubles, which would involve losing some
-	 * information. See the difference in behavior between those adapters when parsing numbers:
-	 * <ul>
-	 * <li>com.google.gson.internal.bind.TypeAdapters.JSON_ELEMENT
-	 * <li> and com.google.gson.internal.bind.ObjectTypeAdapter
-	 * </ul>
+	 * <p>Search JSON nodes preserve numeric lexemes and precision, so long values are not
+	 * routed through doubles when decoding this replacement value.
 	 */
-	@SerializedName("null_value")
+	@JsonName("null_value")
 	private JsonElement nullValue;
 
 	/*
@@ -56,7 +50,7 @@ public class PropertyMapping extends AbstractTypeMapping {
 	 * https://www.elastic.co/guide/en/elasticsearch/reference/current/search-analyzer.html
 	 */
 
-	@SerializedName("search_analyzer")
+	@JsonName("search_analyzer")
 	private String searchAnalyzer;
 
 	/*
@@ -70,20 +64,20 @@ public class PropertyMapping extends AbstractTypeMapping {
 	 * Date datatype
 	 * https://www.elastic.co/guide/en/elasticsearch/reference/current/date.html
 	 */
-	@GsonTypeAdapter(FormatJsonAdapter.class)
+	@JsonFieldCodec(FormatJsonCodec.class)
 	private List<String> format;
 
-	@SerializedName("scaling_factor")
+	@JsonName("scaling_factor")
 	private Double scalingFactor;
 
-	@SerializedName("term_vector")
+	@JsonName("term_vector")
 	private String termVector;
 
 	/*
 	 * Dense vector datatype
 	 * https://www.elastic.co/guide/en/elasticsearch/reference/current/dense-vector.html
 	 */
-	@SerializedName("element_type")
+	@JsonName("element_type")
 	private String elementType;
 
 	/*
@@ -102,7 +96,7 @@ public class PropertyMapping extends AbstractTypeMapping {
 	 * Dense vector datatype
 	 * https://www.elastic.co/guide/en/elasticsearch/reference/current/dense-vector.html
 	 */
-	@SerializedName("index_options")
+	@JsonName("index_options")
 	private ElasticsearchDenseVectorIndexOptions indexOptions;
 
 	/*
@@ -121,7 +115,7 @@ public class PropertyMapping extends AbstractTypeMapping {
 	 * k-NN vector datatype
 	 * https://opensearch.org/docs/latest/field-types/supported-field-types/knn-vector/
 	 */
-	@SerializedName("data_type")
+	@JsonName("data_type")
 	private String dataType;
 
 

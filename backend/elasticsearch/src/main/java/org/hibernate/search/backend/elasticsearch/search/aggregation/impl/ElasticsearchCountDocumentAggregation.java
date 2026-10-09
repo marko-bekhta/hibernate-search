@@ -1,6 +1,5 @@
 package org.hibernate.search.backend.elasticsearch.search.aggregation.impl;
 
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonAccessor;
 import org.hibernate.search.backend.elasticsearch.logging.impl.QueryLog;
 import org.hibernate.search.backend.elasticsearch.logging.spi.ElasticsearchClientLog;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexNodeContext;
@@ -9,20 +8,21 @@ import org.hibernate.search.backend.elasticsearch.search.query.impl.Elasticsearc
 import org.hibernate.search.engine.search.aggregation.AggregationKey;
 import org.hibernate.search.engine.search.aggregation.spi.CountDocumentAggregationBuilder;
 import org.hibernate.search.engine.search.common.spi.SearchQueryElementFactory;
-
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
+import org.hibernate.search.util.json.spi.JsonAccessor;
 
 public class ElasticsearchCountDocumentAggregation extends AbstractElasticsearchAggregation<Long> {
 
 	private static final JsonAccessor<Long> TOTAL_HITS_VALUE_PROPERTY_ACCESSOR =
 			JsonAccessor.root().property( "hits" )
-					.property( "total" )
-					.property( "value" ).asLong();
+					.unwrapSingletonArrays().property( "total" )
+					.unwrapSingletonArrays().property( "value" ).unwrapSingletonArrays().asLong();
 
 	private static final JsonAccessor<Long> RESPONSE_DOC_COUNT_ACCESSOR =
-			JsonAccessor.root().property( "doc_count" ).asLong();
+			JsonAccessor.root().property( "doc_count" ).unwrapSingletonArrays().asLong();
 	private static final JsonAccessor<Long> RESPONSE_ROOT_DOC_COUNT_ACCESSOR =
-			JsonAccessor.root().property( "root_doc_count" ).property( "doc_count" ).asLong();
+			JsonAccessor.root().property( "root_doc_count" ).unwrapSingletonArrays().property( "doc_count" )
+					.unwrapSingletonArrays().asLong();
 
 	private final boolean isNested;
 

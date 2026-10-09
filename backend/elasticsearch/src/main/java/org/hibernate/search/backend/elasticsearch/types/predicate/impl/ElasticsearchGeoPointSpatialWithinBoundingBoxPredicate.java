@@ -1,7 +1,5 @@
 package org.hibernate.search.backend.elasticsearch.types.predicate.impl;
 
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonAccessor;
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonObjectAccessor;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.AbstractElasticsearchCodecAwareSearchQueryElementFactory;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexScope;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexValueFieldContext;
@@ -12,16 +10,17 @@ import org.hibernate.search.engine.search.predicate.SearchPredicate;
 import org.hibernate.search.engine.search.predicate.spi.SpatialWithinBoundingBoxPredicateBuilder;
 import org.hibernate.search.engine.spatial.GeoBoundingBox;
 import org.hibernate.search.engine.spatial.GeoPoint;
-
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonElement;
+import org.hibernate.search.util.json.JsonObject;
+import org.hibernate.search.util.json.spi.JsonAccessor;
+import org.hibernate.search.util.json.spi.JsonObjectAccessor;
 
 public class ElasticsearchGeoPointSpatialWithinBoundingBoxPredicate extends AbstractElasticsearchSingleFieldPredicate {
 
 	private static final JsonObjectAccessor GEO_BOUNDING_BOX_ACCESSOR =
-			JsonAccessor.root().property( "geo_bounding_box" ).asObject();
+			JsonAccessor.root().property( "geo_bounding_box" ).unwrapSingletonArrays().asObject();
 	private static final JsonAccessor<Boolean> IGNORE_UNMAPPED_ACCESSOR =
-			JsonAccessor.root().property( "ignore_unmapped" ).asBoolean();
+			JsonAccessor.root().property( "ignore_unmapped" ).unwrapSingletonArrays().asBoolean();
 
 	private static final String TOP_LEFT_PROPERTY_NAME = "top_left";
 	private static final String BOTTOM_RIGHT_PROPERTY_NAME = "bottom_right";

@@ -5,9 +5,7 @@ import java.util.Set;
 import org.hibernate.search.backend.elasticsearch.client.common.util.spi.URLEncodedString;
 import org.hibernate.search.backend.elasticsearch.index.layout.impl.IndexNames;
 import org.hibernate.search.util.common.impl.CollectionHelper;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
 
 public class ElasticsearchIndexMetadataTestUtils {
 
@@ -72,7 +70,8 @@ public class ElasticsearchIndexMetadataTestUtils {
 			result = new JsonObject();
 		}
 		else {
-			result = new Gson().fromJson( "{" + otherAttributes + "}", JsonObject.class );
+			result = org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.create( false ).getCodec()
+					.decode( "{" + otherAttributes + "}", JsonObject.class );
 		}
 
 		result.addProperty( "is_write_index", isWriteIndex );

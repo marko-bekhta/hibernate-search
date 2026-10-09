@@ -1051,12 +1051,12 @@ would work as well.
 <4> Call `asNative` to start defining a native type.
 <5> Pass the Elasticsearch mapping as JSON.
 <6> Values of native fields are represented as a `JsonElement` in Hibernate Search.
-`JsonElement` is a type from the link:{gsonUrl}[Gson] library.
+`JsonElement` is a type from `org.hibernate.search.util.json`.
 Do not forget to format them correctly before you pass them to the backend.
 Here we are creating a `JsonPrimitive` (a subtype of `JsonElement`) from a `String`
 because we just need a JSON string,
 but it's completely possible to handle more complex objects,
-or even to convert directly from POJOs to JSON using Gson.
+Applications using Gson can migrate their inputs with the deprecated `GsonJsonConversion` utility; conversion walks and allocates an independent tree.
 <7> For nicer projections, you can also implement this method to convert
 from `JsonElement` to the mapped type (here, `String`).
 
