@@ -1,0 +1,3 @@
+09:50:46,655 (elasticsearch-rest-client-0-thread-1)  INFO AsyncHttpRequestRetryExec:189 - ex-0000000001 recoverable I/O exception (java.nio.channels.ClosedChannelException) caught when sending request to http://localhost:33721;request will be automatically re-executed in 0 MILLISECONDS (exec count 2)
+automaticRetries=true, cancelled=true, listenerNotified=true, listenerFailure=CancellationException, socketEofWithin3Seconds=false
+automaticRetries=false, cancelled=true, listenerNotified=true, listenerFailure=CancellationException, socketEofWithin3Seconds=false

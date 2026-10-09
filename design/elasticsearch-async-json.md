@@ -245,7 +245,7 @@ remains committed as benchmark evidence: staging improves large ASCII but
 materially regresses small and Unicode-rich Strings, so no production switch or
 size dispatch was adopted. The [parsing reference](elasticsearch-json-parsing-reference.md)
 collects the current decision, use cases and curated results while keeping input
-forms, workloads and campaigns distinct. Task 4's investigation checkpoint is complete by explicit acceptance, not by meeting a universal throughput threshold. New regressions still require investigation. Actual transport buffering, allocation, cancellation, backpressure and event-loop responsiveness must be verified in Task 6. Task 5 is complete; Task 6 remains pending.
+forms, workloads and campaigns distinct. Task 4's investigation checkpoint is complete by explicit acceptance, not by meeting a universal throughput threshold. New regressions still require investigation. Task 5 and Task 6 are complete. The [Task 6 report](elasticsearch-async-json-task6.md) records transport buffering, retained-storage, cancellation and backpressure evidence and explicit synchronous callback/signing limits. Task 7 remains separate.
 
 ### Task 4a — Internal parsing-route audit before migration
 
@@ -280,37 +280,39 @@ audit, full reactor compilation, unit/live verification and explicit Task 6 seam
 
 **JDK**
 
-- [ ] Replace response `InputStream` mapping with a subscriber consuming `List<ByteBuffer>`.
-- [ ] Apply demand control and propagate parsing errors/cancellation.
-- [ ] Replace input-stream request publishing with a demand-aware cursor publisher.
-- [ ] Handle reentrant/invalid demand, repeated subscriptions, and cancellation.
-- [ ] Never reuse emitted storage while subscribers may retain it.
+- [x] Replace response `InputStream` mapping with a subscriber consuming `List<ByteBuffer>`.
+- [x] Apply demand control and propagate parsing errors/cancellation.
+- [x] Replace input-stream request publishing with a demand-aware cursor publisher.
+- [x] Handle reentrant/invalid demand, repeated subscriptions, and cancellation.
+- [x] Never reuse emitted storage while subscribers may retain it.
 
 **REST 4, REST 5, and OpenSearch**
 
-- [ ] Install custom per-attempt response consumers on every request.
-- [ ] Merge consumer options with existing timeout configuration.
-- [ ] Parse chunks directly and associate the completed tree or parse failure with the response.
-- [ ] Convert from that carrier without serializing/reparsing.
-- [ ] Preserve status, headers, warnings, host selection, and retry behavior.
-- [ ] Adapt request producers to cursor partial writes and transport wakeups.
-- [ ] Release per-attempt state and propagate cancellation through available client handles.
+- [x] Install custom per-attempt response consumers on every request.
+- [x] Merge consumer options with existing timeout configuration.
+- [x] Parse chunks directly and associate the completed tree or parse failure with the response.
+- [x] Convert from that carrier without serializing/reparsing.
+- [x] Preserve status, headers, warnings, host selection, and retry behavior.
+- [x] Adapt request producers to cursor partial writes and transport wakeups.
+- [x] Release per-attempt state and propagate cancellation through available client handles.
 
 **Cross-cutting behavior**
 
-- [ ] Apply original-input byte counting to preserve REST response-size limits without adding a JDK response cap.
-- [ ] Preserve explicit HTTP charset selection using the bounded incremental transcoding from Task 2.
-- [ ] Repeat the internal-route audit on each live adapter: response bytes must reach parser sessions without a complete String/char-array intermediate, and existing response trees must go directly to codecs. Check both successful and error/retry paths; document specific client-owned buffering exceptions.
-- [ ] Preserve expected errors, retryable responses, non-JSON proxy responses, and connection reuse.
-- [ ] Delay reporting body parse failures where necessary to preserve status-based retries.
-- [ ] Provide lazy entity replay where required by REST diagnostics.
-- [ ] Document REST-client error constructors that materialize strings as specific client limitations.
-- [ ] Decode compressed responses incrementally, respecting existing decompression layers.
-- [ ] Characterize client compression wrappers that buffer requests; record unavoidable exceptions with source references and tests.
-- [ ] Preserve signing with an independent cursor-backed stream; repeated traversal is acceptable, accumulated payload bytes are not.
-- [ ] Keep disabled logging free of serialization work. Explicit full-body diagnostic formatting may allocate strings.
+- [x] Apply original-input byte counting to preserve REST response-size limits without adding a JDK response cap.
+- [x] Preserve explicit HTTP charset selection using the bounded incremental transcoding from Task 2.
+- [x] Repeat the internal-route audit on each live adapter: response bytes must reach parser sessions without a complete String/char-array intermediate, and existing response trees must go directly to codecs. Check both successful and error/retry paths; document specific client-owned buffering exceptions.
+- [x] Preserve expected errors, retryable responses, non-JSON proxy responses, and connection reuse.
+- [x] Delay reporting body parse failures where necessary to preserve status-based retries.
+- [x] Provide lazy entity replay where required by REST diagnostics.
+- [x] Document REST-client error constructors that materialize strings as specific client limitations.
+- [x] Decode compressed responses incrementally, respecting existing decompression layers.
+- [x] Characterize client compression wrappers that buffer requests; record unavoidable exceptions with source references and tests.
+- [x] Preserve signing with an independent cursor-backed stream; repeated traversal is acceptable, accumulated payload bytes are not.
+- [x] Keep disabled logging free of serialization work. Explicit full-body diagnostic formatting may allocate strings.
 
-**Exit:** all four clients pass lifecycle and streaming tests.
+**Exit:** all four clients pass lifecycle and streaming tests. See the
+[Task 6 report](elasticsearch-async-json-task6.md) for exact campaigns, retained-storage
+evidence and concrete pinned-client diagnostic/compression/cancellation limitations.
 
 ### Task 7 — Documentation and enforcement
 

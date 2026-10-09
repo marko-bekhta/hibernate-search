@@ -19,32 +19,10 @@ import org.apache.hc.core5.http.nio.AsyncEntityProducer;
 import org.apache.hc.core5.http.nio.DataStreamChannel;
 
 /**
- * Optimised adapter to encode Search JSON objects into HttpEntity instances.
- * The naive approach was using various StringBuilders; the objects we
- * need to serialise into JSON might get large and this was causing the
- * internal StringBuilder buffers to need frequent resizing and cause
- * problems with excessive allocations.
- *
- * Rather than trying to guess reasonable default sizes for these buffers,
- * we can defer the serialisation to write directly into the ByteBuffer
- * of the HTTP client, this has the additional benefit of making the
- * intermediary buffers short lived.
- *
- * The one complexity to watch for is flow control: when writing into
- * the output buffer chances are that not all bytes are accepted; in
- * this case we have to hold on the remaining portion of data to
- * be written when the flow control is re-enabled.
- *
- * A side effect of this strategy is that the total content length which
- * is being produced is not known in advance. Not reporting the length
- * in advance to the Apache Http client causes it to use chunked-encoding,
- * which is great for large blocks but not optimal for small messages.
- * For this reason we attempt to start encoding into a small buffer
- * upfront: if all data we need to produce fits into that then we can
- * report the content length; if not the encoding completion will be deferred
- * but not resetting so to avoid repeating encoding work.
- *
- * @author Sanne Grinovero (C) 2017 Red Hat Inc.
+ * Replayable JSON entity using one bounded pending cursor buffer per asynchronous attempt.
+ * Partial/zero transport acceptance retains the unread suffix until output readiness resumes.
+ * A bounded independent probe reports small content lengths; large bodies remain chunked.
+ * Signing and synchronous reads each open independent cursors. Close/release resets attempt state.
  */
 final class ClientRest5JsonHttpEntity extends JsonHttpEntityContentProvider implements HttpEntity, AsyncEntityProducer {
 
@@ -65,12 +43,12 @@ final class ClientRest5JsonHttpEntity extends JsonHttpEntityContentProvider impl
 
 	@Override
 	public boolean isRepeatable() {
-		return true;
+		return !isCancelled();
 	}
 
 	@Override
 	public void failed(Exception cause) {
-
+		close();
 	}
 
 	@Override
@@ -106,12 +84,21 @@ final class ClientRest5JsonHttpEntity extends JsonHttpEntityContentProvider impl
 
 	@Override
 	public int available() {
-		return 0;
+		return availableBytes();
 	}
 
 	@Override
 	public void produce(DataStreamChannel channel) throws IOException {
-		produceContent( new ClientRest5ContentEncoder( channel ) );
+		try {
+			produceContent( new ClientRest5ContentEncoder( channel ) );
+			if ( availableBytes() > 0 ) {
+				channel.requestOutput();
+			}
+		}
+		catch (IOException | RuntimeException e) {
+			close();
+			throw e;
+		}
 	}
 
 	@Override

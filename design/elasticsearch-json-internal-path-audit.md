@@ -139,3 +139,34 @@ fixture Strings with Gson and calls the deprecated direct tree converter once.
 It does not parse transport bytes, convert requests/responses, or render/reparse a
 Search tree. See the [test fixture allowlist](elasticsearch-async-json-task5/test-fixture-compatibility.tsv).
 Production native String APIs remain strict and use the character parser.
+
+
+## Task 6 repeated transport audit
+
+The current adapters replace Task 5's completion-boundary InputStreams with direct
+network consumers: JDK `ClientJdkJsonBodySubscriber` feeds `List<ByteBuffer>`;
+REST4 `ClientRest4JsonResponseConsumer` reads an 8192-byte decoder buffer;
+REST5/OpenSearch response consumers feed HC5-delivered buffers directly. Explicit
+charsets select the bounded transcoding session. Completed carrier trees go directly
+to `JsonCodecService.decode`; successful/error/retry routes do not render/reparse
+JSON or traverse a Search/Gson bridge. Original owned String APIs continue to use
+the character parser. Custom-file stream handling remains Task 5's bounded adapter.
+
+Request output uses independent cursors for JDK subscriptions, asynchronous entity
+attempts, client-owned OpenSearch stream attempts and signing. Partial/zero writes
+retain one bounded suffix and wake transport output. Cancellation releases active
+parser/cursor state without depending on low-level socket cleanup.
+
+[Task 6 source audit](elasticsearch-async-json-task6/source-audit.tsv) includes pinned
+dependency internals: normal buffered response consumers are replaced, gzip layer
+ownership and input caps are preserved, and concrete diagnostic/request-compression
+exceptions remain documented. REST error constructors can materialize a normalized
+replay String; malformed diagnostics retain an explicitly truncated 8192-byte
+prefix. Optional client request compression can still accumulate compressed bytes.
+Sniffer/background requests belong to the dependency client, outside Search request
+factories. Enabled diagnostics/projections can explicitly format whole trees.
+
+[Task 6 report](elasticsearch-async-json-task6.md) records lifecycle, compression,
+charset, retry, signing, retained-storage and real-network evidence, including the
+HC5 cancellation/header-delivery race. No event-loop latency guarantee follows from
+bounded feeds: growing scalar/tree finalization and signing are synchronous.

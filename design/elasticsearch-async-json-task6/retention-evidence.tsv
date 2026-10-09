@@ -1,0 +1,11 @@
+fixture	storage under test	evidence
+ClientJdkJsonTransportTest.demandRetainedStorageAndReplay	request publisher	one emission per demand; no work before demand; retained read-only buffers unchanged after later writes; replay has independent cursor
+ClientRest4JsonTransportTest/ClientRest5JsonTransportTest/ClientOpenSearchJsonTransportTest	request pending bytes	reflection observes 8192 capacity for growing individual scalars; zero/partial sink acceptance preserves pending bytes; close releases pending reference
+JsonResponseBodyTest	response diagnostic prefix	8192 maximum across 100, 10000 and 1000000 byte payloads; success/cancellation releases prefix and parser; malformed diagnostics explicitly bounded
+JsonResponseBodyTest	gzip decoder	8192 output capacity; close releases output buffer and native inflater; fragmented headers/trailers and concatenated members validated
+Client*JsonTransportTest.localHttpParsesBeforeResponseCompletion	live response parser	real parser detects malformed prefix while HTTP EOF is blocked by latch; response future remains incomplete; proves parsing precedes complete-response buffering
+ElasticsearchJsonTransportIT.slowUploadAndEarlyRejection	live upload	server pauses after first <=8192 received bytes from 6000013 byte request; unfinished future; resume completes exact length; early rejection completes without hang
+ElasticsearchJsonTransportIT.slowDownloadAndConnectionReuse	live download	latch blocks EOF of growing scalar; response incomplete until release; next request reuses connection
+ClientRest4JsonTransportTest.cancellationClosesIndependentClientOwnedRequestStreams	client-owned stream adapters	permanent request cancellation closes both independent streams, prevents reopening/repeatability, and releases pending cursor state
+Client*JsonTransportTest.requestCancellationEagerlyReleasesPerAttemptState	response cancellation	request scope closes active parser before EOF, clears consumer carrier, and is idempotent
+ClientRest4JsonTransportTest.completionCanReleaseTheRequestProducerImmediately	request completion lifecycle	cursor and pending bytes are released before completion callback; callback may release/reset producer without use-after-release; independent replay remains correct

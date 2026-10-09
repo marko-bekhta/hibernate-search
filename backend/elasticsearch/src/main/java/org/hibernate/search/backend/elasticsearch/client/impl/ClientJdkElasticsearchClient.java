@@ -1,7 +1,6 @@
 package org.hibernate.search.backend.elasticsearch.client.impl;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpHeaders;
@@ -16,7 +15,6 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 import java.util.regex.Pattern;
 
 import org.hibernate.search.backend.elasticsearch.client.common.json.spi.JsonLogHelper;
@@ -31,7 +29,6 @@ import org.hibernate.search.engine.common.execution.spi.SimpleScheduledExecutor;
 import org.hibernate.search.engine.common.timing.Deadline;
 import org.hibernate.search.engine.environment.bean.BeanHolder;
 import org.hibernate.search.util.common.impl.Closer;
-import org.hibernate.search.util.common.impl.Futures;
 import org.hibernate.search.util.json.JsonObject;
 
 public class ClientJdkElasticsearchClient implements ElasticsearchClientImplementor {
@@ -65,8 +62,19 @@ public class ClientJdkElasticsearchClient implements ElasticsearchClientImplemen
 
 	@Override
 	public CompletableFuture<ElasticsearchResponse> submit(ElasticsearchRequest request) {
-		CompletableFuture<ElasticsearchResponse> result = Futures.create( () -> send( request ) )
-				.thenApply( this::convertResponse );
+		CompletableFuture<HttpResponse<JsonObject>> sent;
+		try {
+			sent = send( request );
+		}
+		catch (RuntimeException e) {
+			return CompletableFuture.failedFuture( e );
+		}
+		CompletableFuture<ElasticsearchResponse> result = sent.thenApply( this::convertResponse );
+		result.whenComplete( (response, failure) -> {
+			if ( result.isCancelled() ) {
+				sent.cancel( true );
+			}
+		} );
 		if ( ElasticsearchRequestLog.INSTANCE.isDebugEnabled() ) {
 			long startTime = System.nanoTime();
 			result.thenAccept( response -> log( request, startTime, response ) );
@@ -120,10 +128,26 @@ public class ClientJdkElasticsearchClient implements ElasticsearchClientImplemen
 			return completableFuture;
 		}
 
-		CompletableFuture<HttpResponse<JsonObject>> completableFuture = restClientHolder.get().sendAsync(
+		JsonObjectBodyHandler handler = new JsonObjectBodyHandler();
+		CompletableFuture<HttpResponse<JsonObject>> transportFuture = restClientHolder.get().sendAsync(
 				request,
-				new JsonObjectBodyHandler()
+				handler
 		);
+		CompletableFuture<HttpResponse<JsonObject>> completableFuture = new CompletableFuture<>();
+		transportFuture.whenComplete( (response, failure) -> {
+			if ( failure == null ) {
+				completableFuture.complete( response );
+			}
+			else {
+				completableFuture.completeExceptionally( failure );
+			}
+		} );
+		completableFuture.whenComplete( (response, failure) -> {
+			if ( failure != null ) {
+				handler.cancel();
+				transportFuture.cancel( true );
+			}
+		} );
 
 		Deadline deadline = elasticsearchRequest.deadline();
 		if ( deadline == null && requestTimeoutMs.isEmpty() ) {
@@ -131,26 +155,29 @@ public class ClientJdkElasticsearchClient implements ElasticsearchClientImplemen
 			return completableFuture;
 		}
 
-		long currentTimeoutValue =
-				deadline == null ? Long.valueOf( requestTimeoutMs.get() ) : deadline.checkRemainingTimeMillis();
+		try {
+			long currentTimeoutValue =
+					deadline == null ? Long.valueOf( requestTimeoutMs.get() ) : deadline.checkRemainingTimeMillis();
 
-		/*
-		 * TODO HSEARCH-3590 maybe the callback should also cancel the request?
-		 */
-		ScheduledFuture<?> timeout = timeoutExecutorService.schedule(
-				() -> {
-					if ( !completableFuture.isDone() ) {
-						RuntimeException cause = ElasticsearchClientLog.INSTANCE.requestTimedOut(
-								Duration.ofNanos( TimeUnit.MILLISECONDS.toNanos( currentTimeoutValue ) ),
-								elasticsearchRequest );
-						completableFuture.completeExceptionally(
-								deadline != null ? deadline.forceTimeoutAndCreateException( cause ) : cause
-						);
-					}
-				},
-				currentTimeoutValue, TimeUnit.MILLISECONDS
-		);
-		completableFuture.thenRun( () -> timeout.cancel( false ) );
+			ScheduledFuture<?> timeout = timeoutExecutorService.schedule(
+					() -> {
+						if ( !completableFuture.isDone() ) {
+							RuntimeException cause = ElasticsearchClientLog.INSTANCE.requestTimedOut(
+									Duration.ofNanos( TimeUnit.MILLISECONDS.toNanos( currentTimeoutValue ) ),
+									elasticsearchRequest );
+							completableFuture.completeExceptionally(
+									deadline != null ? deadline.forceTimeoutAndCreateException( cause ) : cause
+							);
+						}
+					},
+					currentTimeoutValue, TimeUnit.MILLISECONDS
+			);
+			completableFuture.whenComplete( (response, failure) -> timeout.cancel( false ) );
+		}
+		catch (RuntimeException e) {
+			// A deadline or executor failure after submission must still cancel the active transport.
+			completableFuture.completeExceptionally( e );
+		}
 
 		return completableFuture;
 	}
@@ -232,36 +259,37 @@ public class ClientJdkElasticsearchClient implements ElasticsearchClientImplemen
 		}
 	}
 
-	private class JsonMapper implements Function<InputStream, JsonObject> {
-		private final Charset charset;
-		private final int statusCode;
-
-		public JsonMapper(Charset charset, int statusCode) {
-			this.charset = charset;
-			this.statusCode = statusCode;
-		}
-
-		@Override
-		public JsonObject apply(InputStream inputStream) {
-			try ( inputStream ) {
-				return json.decode( inputStream, charset, JsonObject.class );
-			}
-			catch (IOException e) {
-				throw ElasticsearchClientLog.INSTANCE.failedToParseElasticsearchResponse( statusCode, null, e.getMessage(), e );
-			}
-		}
-	}
-
 	private class JsonObjectBodyHandler implements HttpResponse.BodyHandler<JsonObject> {
+		private ClientJdkJsonBodySubscriber subscriber;
+		private boolean cancelled;
+
+		void cancel() {
+			ClientJdkJsonBodySubscriber active;
+			synchronized (this) {
+				cancelled = true;
+				active = subscriber;
+			}
+			if ( active != null ) {
+				active.getBody().toCompletableFuture().cancel( true );
+			}
+		}
 
 		@Override
-		public HttpResponse.BodySubscriber<JsonObject> apply(HttpResponse.ResponseInfo responseInfo) {
-			Charset charset = getCharset( responseInfo.headers() );
-
-			return HttpResponse.BodySubscribers.mapping(
-					HttpResponse.BodySubscribers.ofInputStream(),
-					new JsonMapper( charset, responseInfo.statusCode() )
-			);
+		public synchronized HttpResponse.BodySubscriber<JsonObject> apply(HttpResponse.ResponseInfo responseInfo) {
+			try {
+				subscriber =
+						new ClientJdkJsonBodySubscriber( json, getCharset( responseInfo.headers() ), responseInfo.statusCode(),
+								responseInfo.headers().firstValue( "Content-Encoding" ).map( "gzip"::equalsIgnoreCase )
+										.orElse( false ) );
+				if ( cancelled ) {
+					subscriber.getBody().toCompletableFuture().cancel( true );
+				}
+				return subscriber;
+			}
+			catch (RuntimeException e) {
+				throw ElasticsearchClientLog.INSTANCE.failedToParseElasticsearchResponse(
+						responseInfo.statusCode(), null, e.getMessage(), e );
+			}
 		}
 	}
 }
