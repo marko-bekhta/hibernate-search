@@ -170,3 +170,28 @@ factories. Enabled diagnostics/projections can explicitly format whole trees.
 charset, retry, signing, retained-storage and real-network evidence, including the
 HC5 cancellation/header-delivery race. No event-loop latency guarantee follows from
 bounded feeds: growing scalar/tree finalization and signing are synchronous.
+
+
+## Task 7 final enforcement checkpoint
+
+All planned migration tasks are complete; the historical inventory above describes the
+pre-migration checkpoint and its assigned work. [Task 7](elasticsearch-async-json-task7.md)
+adds the user-facing [JSON reference](../documentation/src/main/asciidoc/public/reference/_backend-elasticsearch-json.adoc)
+and [migration guide](../documentation/src/main/asciidoc/migration/index.adoc), compiled examples,
+and enforcement across the JSON utility, codec processor, backend, all client modules and AWS module.
+Compiled public/protected contracts reject Jackson types, including generics, superinterfaces,
+fields, constructors, throws and CLASS-retained/type-use annotations. The JSON module also
+rejects Gson and exposed implementation types. Negative fixtures verify the checker.
+Source/codegen checks enforce the exact [five-file Gson compatibility allowlist](elasticsearch-async-json-task7/gson-compatibility.tsv)
+and reject reflective field/method mapping. Existing runtime unknown-type and processor
+unsupported-type tests continue to prohibit a reflective codec fallback. Scoped Maven rules
+reject both Jackson majors' Databind dependencies without banning unrelated modules.
+The test-only `TestElasticsearchClient` historical single-quoted fixture boundary and benchmark
+legacy implementations remain as documented in Task 5; they must not become production routes.
+
+Ordinary String/byte/tree routes and the explicit Task 6 client-owned exceptions are unchanged.
+Misleading Gson names in the two HC5 interceptor adapters are corrected; no compatibility
+surface is renamed. The remaining Jackson synchronous comparison writer is exercised by
+output tests and the 45-entry benchmark jar, and is not an obsolete normal-route writer.
+No automatic worker hop, strict event-loop latency bound, Vert.x transport, or new performance
+parity claim follows from this completed migration.

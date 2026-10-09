@@ -37,6 +37,20 @@ regardless of the coordination strategy.
 See link:https://docs.hibernate.org/search/{hibernateSearchVersionShort}/reference/en-US/html_single/#limitations-stateless-session[limitations]
 for details.
 
+[[incremental-elasticsearch-json]]
+=== Incremental Elasticsearch JSON
+
+The four Elasticsearch/OpenSearch HTTP adapters now parse response chunks into Search JSON trees
+and write replayable requests through bounded cursors.
+The public `hibernate-search-util-json` artifact exposes reusable model/accessor/streaming contracts.
+Raw results, projections, native fields and client extensions use `org.hibernate.search.util.json` nodes.
+See the link:https://docs.hibernate.org/search/{hibernateSearchVersionShort}/migration/html_single/#elasticsearch-json[migration guide]
+for incompatible API changes and temporary deprecated Gson input bridges,
+and the link:https://docs.hibernate.org/search/{hibernateSearchVersionShort}/reference/en-US/html_single/#backend-elasticsearch-json[reference]
+for ownership and remaining execution/client limits.
+Trees and scalar Strings remain materialized; synchronous token completion, signing and interceptors
+still prevent a fixed event-loop latency guarantee.
+
 == Removals
 
 [[v5migrationhelper-removal]]

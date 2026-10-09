@@ -3,6 +3,8 @@ package org.hibernate.search.integrationtest.java.modules.pojo.standalone.elasti
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.hibernate.search.mapper.pojo.standalone.mapping.SearchMapping;
+import org.hibernate.search.util.json.JsonObject;
+import org.hibernate.search.util.json.spi.JsonParsing;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -33,6 +35,23 @@ class JavaModulePathIT {
 			service.add( "foo bar" );
 			assertThat( service.search( "foo" ) ).hasSize( 2 );
 		}
+	}
+
+	@Test
+	void jsonApiIsTransitiveAndImplementationIsEncapsulated() {
+		checkIsInModulePath( JsonApiExample.class );
+		checkIsInModulePath( JsonObject.class );
+		checkIsInModulePath( JsonParsing.class );
+		assertThat( JsonApiExample.requestValue() ).isEqualTo( 42L );
+		assertThat( JsonObject.class.getModule().isExported( "org.hibernate.search.util.json.impl",
+				JsonApiExample.class.getModule() ) ).isFalse();
+		assertThat( JsonObject.class.getModule().getDescriptor().opens() ).isEmpty();
+		assertThat( JsonObject.class.getModule().getDescriptor().requires() )
+				.anySatisfy( requirement -> {
+					assertThat( requirement.name() ).isEqualTo( "tools.jackson.core" );
+					assertThat( requirement.modifiers() )
+							.doesNotContain( java.lang.module.ModuleDescriptor.Requires.Modifier.TRANSITIVE );
+				} );
 	}
 
 	private void checkIsInModulePath(Class<?> clazz) {

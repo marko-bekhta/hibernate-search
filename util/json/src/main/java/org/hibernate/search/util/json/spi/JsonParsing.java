@@ -5,7 +5,7 @@ import java.nio.charset.Charset;
 import org.hibernate.search.util.json.JsonElement;
 import org.hibernate.search.util.json.impl.JacksonJsonParserFactory;
 
-/** Shareable parser factory with immutable constraints and no Gson/Jackson signatures. */
+/** Shareable parser factory with immutable constraints and library-neutral signatures. */
 public final class JsonParsing {
 	private final JacksonJsonParserFactory implementation;
 

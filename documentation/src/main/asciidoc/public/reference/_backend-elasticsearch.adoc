@@ -1700,3 +1700,5 @@ Use the following configuration property at the backend level to change the defa
 hibernate.search.backend.query.shard_failure.ignore = true
 ----
 The default for this property is `false`.
+
+include::_backend-elasticsearch-json.adoc[]

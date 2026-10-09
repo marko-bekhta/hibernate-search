@@ -1,0 +1,7 @@
+coordinate	sha256	status
+org.elasticsearch.client:elasticsearch-rest-client:9.5.4	74b95116bda4685f11b06706cd45b3d771a9cda0b717689a4a8e72cc68ee8551	Task 6 pinned source artifact reverified
+co.elastic.clients:elasticsearch-rest5-client:9.5.4	0f5629b48d3bd73378257de204645e7e09b40c00d0547b9c26ddb3350f9b8327	Task 6 pinned source artifact reverified
+org.opensearch.client:opensearch-rest-client:3.8.0	05db3ac621791242315c0792ea69679e548db87b999cf1602e5a3ca30e941a78	Task 6 pinned source artifact reverified
+org.apache.httpcomponents.client5:httpclient5:5.6.4	6739ab6a3ef576236c784efd94767248b2aad5549d433ff3562f3df76fabeb83	Task 6 pinned source artifact reverified
+org.apache.httpcomponents.core5:httpcore5:5.4.4	932c9cde70737449ec7d57d312d383cff4abf0a0d3570717bdfe22fe889ad509	Task 6 pinned source artifact reverified
+org.apache.httpcomponents:httpcore:4.4.16	705f8cf3671093b6c1db16bbf6971a7ef400e3819784f1af53e5bc3e67b5a9a0	Task 6 pinned source artifact reverified

@@ -54,7 +54,10 @@ If several are available, startup fails unless you set `hibernate.search.backend
 to `elasticsearch-rest4`, `elasticsearch-rest5`, `opensearch-rest`, or `jdk-rest`.
 The value of `ElasticsearchBackendSettings.Defaults.CLIENT_FACTORY` changed from `elasticsearch-rest4` to `jdk-rest`.
 
-Other than the migration helper removal, the coordinates of Maven artifacts in Hibernate Search {hibernateSearchVersion}
+The new `org.hibernate.search:hibernate-search-util-json` artifact supplies Search JSON nodes and streaming SPI.
+The Elasticsearch backend brings it in transitively; direct users can declare it explicitly.
+
+Other than these changes, the coordinates of Maven artifacts in Hibernate Search {hibernateSearchVersion}
 are the same as in Hibernate Search {hibernateSearchPreviousStableVersionShort}.
 
 [[data-format]]
@@ -137,6 +140,43 @@ For the REST4 client, use the corresponding interfaces in `org.hibernate.search.
 To replace the old context's `configuredVersion()` method, read `ElasticsearchBackendSettings.VERSION`
 from `configurationPropertySource()`.
 
+[[elasticsearch-json]]
+=== Elasticsearch JSON API migration
+
+Replace imports of Gson JSON nodes in native fields, raw results and extensions with
+`org.hibernate.search.util.json.JsonElement`, `JsonObject`, `JsonArray`, `JsonPrimitive` and `JsonNull`.
+Primary method names stay unchanged. Update generics and recompile applications:
+changed return types and client SPIs are source and binary incompatible.
+
+* `ElasticsearchSearchResult.responseBody()` and both `ElasticsearchSearchQuery.explain(...)` overloads return Search `JsonObject`.
+* Projection factory `source()`, `explanation()` and `jsonHit()` return `ProjectionFinalStep<JsonObject>`.
+* Native aggregation `fromJson(...)` returns `AggregationFinalStep<JsonObject>`, including the deprecated Gson input overload.
+* `ElasticsearchSearchRequestTransformerContext.body()` returns a mutable Search `JsonObject` and keeps copy-on-first-access isolation.
+* Native field values use Search `JsonElement`: update bridge conversions, field references and projected value types.
+* `ElasticsearchIndexSchemaExport.bodyParts()` returns `List<JsonObject>`.
+
+Native predicate, sort, aggregation and mapping methods accept Search objects.
+String overloads remain and parse the original characters using strict JSON grammar;
+single-quoted strings/property names and comments are no longer accepted.
+There is no legacy output facade. Deprecated Gson input bridges remain temporarily.
+The public deprecated `org.hibernate.search.backend.elasticsearch.gson.GsonJsonConversion`
+converts elements/objects/arrays in either direction through direct traversal,
+preserving valid number lexemes, member order and nulls while allocating an independent tree.
+It never serializes/reparses, but each conversion still costs traversal and allocation.
+All bridges and this utility will be removed together in a future breaking release.
+Literal null arguments may require an explicit cast to select the intended overload;
+input validation still applies.
+
+Do not mutate raw returned trees; copy them with `deepCopy()` first.
+Submitted request trees must remain unchanged until signing, consumption and retries finish.
+The new accessor SPI is strict by default: opt into `unwrapSingletonArrays()` at every
+intermediate/terminal location requiring the old implicit singleton-array adaptation.
+`asArray()` does not flatten nested arrays. Numeric narrowing remains a separate policy.
+Adapted absence/multiple-element-array failures now have contextual exceptions;
+numeric equality/hashing and JSON grammar include intentional corrections.
+See the link:{hibernateSearchDocUrl}#backend-elasticsearch-json[JSON reference]
+for compiled examples, creation/write behavior, ownership and transport limits.
+
 [[spi]]
 == SPI
 
@@ -150,6 +190,18 @@ with the following exceptions:
 * The `ValueReadHandleFactory` SPI interface has been removed. Use `ValueHandleFactory` instead.
 
 * The `ElasticsearchBackendImplSettings` class (both `cfg.impl` and `cfg.spi` variants) has been removed.
+
+* Custom `ElasticsearchClientFactory.create(...)` implementations now receive
+`org.hibernate.search.backend.elasticsearch.client.common.json.spi.JsonProvider` instead of Gson services.
+Request `bodyParts()` uses `List<JsonObject>`, builder `body(...)` accepts Search `JsonObject`,
+and response `body()` returns Search `JsonObject`.
+Use the supplied codec service for registered types and library-neutral parser/cursor contracts for streaming.
+Unknown types fail rather than falling back to reflection. Keep independent parser/cursor state per attempt,
+close on terminal events, and preserve caller-buffer ownership and backpressure.
+Signing and interceptors remain synchronous; incremental JSON imposes no automatic worker hop or event-loop latency bound.
+The link:{hibernateSearchDocUrl}#backend-elasticsearch-json-custom-clients[custom-client reference]
+details lifecycle, stable content length, client-owned diagnostic/compression boundaries and cancellation limits.
+
 
 * The `HibernateOrmQueryLoader.createMultiIdentifierLoadAccess(SessionImplementor)` method has been removed.
 Use `HibernateOrmQueryLoader.findMultiple(SessionImplementor, List, FindOption...)` instead.

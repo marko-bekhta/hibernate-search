@@ -245,7 +245,7 @@ remains committed as benchmark evidence: staging improves large ASCII but
 materially regresses small and Unicode-rich Strings, so no production switch or
 size dispatch was adopted. The [parsing reference](elasticsearch-json-parsing-reference.md)
 collects the current decision, use cases and curated results while keeping input
-forms, workloads and campaigns distinct. Task 4's investigation checkpoint is complete by explicit acceptance, not by meeting a universal throughput threshold. New regressions still require investigation. Task 5 and Task 6 are complete. The [Task 6 report](elasticsearch-async-json-task6.md) records transport buffering, retained-storage, cancellation and backpressure evidence and explicit synchronous callback/signing limits. Task 7 remains separate.
+forms, workloads and campaigns distinct. Task 4's investigation checkpoint is complete by explicit acceptance, not by meeting a universal throughput threshold. New regressions still require investigation. Task 5 and Task 6 are complete. The [Task 6 report](elasticsearch-async-json-task6.md) records transport buffering, retained-storage, cancellation and backpressure evidence and explicit synchronous callback/signing limits. Task 7 is complete; the [Task 7 report](elasticsearch-async-json-task7.md) records the user-facing migration reference, compiled API/source/dependency enforcement, documentation/Javadoc/JPMS verification and preserved limitations. All planned implementation tasks are complete.
 
 ### Task 4a — Internal parsing-route audit before migration
 
@@ -316,14 +316,20 @@ evidence and concrete pinned-client diagnostic/compression/cancellation limitati
 
 ### Task 7 — Documentation and enforcement
 
-- [ ] Document migration for raw results, projections, transformers, native fields, and custom clients.
-- [ ] Document accessor coercion and distinguish it from parser behavior.
-- [ ] Document buffer ownership, lifecycle, replay, cancellation, and adapter scheduling.
-- [ ] Document remaining synchronous signing/interceptor behavior for future Vert.x integration.
-- [ ] Add checks rejecting Jackson types in public API/SPI and Gson references outside the compatibility allowlist.
-- [ ] Verify no Databind dependency is introduced.
-- [ ] Update JPMS, distribution, BOM, and documentation tests.
-- [ ] Remove superseded writers and dead helpers.
+- [x] Document migration for raw results, projections, transformers, native fields, and custom clients.
+- [x] Document accessor coercion and distinguish it from parser behavior.
+- [x] Document buffer ownership, lifecycle, replay, cancellation, and adapter scheduling.
+- [x] Document remaining synchronous signing/interceptor behavior for future Vert.x integration.
+- [x] Add checks rejecting Jackson types in public API/SPI and Gson references outside the compatibility allowlist.
+- [x] Verify no Databind dependency is introduced.
+- [x] Update JPMS, distribution, BOM, and documentation tests.
+- [x] Remove superseded writers and dead helpers.
+
+Completed checkpoint: [Task 7 report](elasticsearch-async-json-task7.md). All planned tasks are complete.
+The backend is async friendly, with bounded normal-route encoded buffering; materialized trees,
+synchronous token completion/signing/interceptors and the documented pinned-client diagnostic,
+compression and cancellation exceptions remain. No fixed event-loop latency or universal Gson
+performance parity is claimed.
 
 ## 5. Verification and acceptance
 

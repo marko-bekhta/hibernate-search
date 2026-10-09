@@ -1,0 +1,225 @@
+[[backend-elasticsearch-json]]
+== JSON trees and streaming
+
+Hibernate Search exposes its own JSON nodes from `org.hibernate.search.util.json`:
+`JsonElement`, `JsonObject`, `JsonArray`, `JsonPrimitive` and `JsonNull`.
+They are the actual mutable trees used by the backend.
+The published `org.hibernate.search:hibernate-search-util-json` artifact provides the model
+and reusable accessor, parser, output and codec contracts in `org.hibernate.search.util.json.spi`.
+On the module path, `org.hibernate.search.backend.elasticsearch` requires `org.hibernate.search.util.json`
+transitively. That JSON module exports its model/SPI, requires Jackson Core without a transitive read,
+and opens no packages. Temporary Gson callers need their own `requires com.google.gson`.
+Jackson Core is an implementation dependency; its types do not appear in these contracts.
+Hibernate Search uses minimal Core token parsing, without Databind or reflective object mapping.
+The Elasticsearch REST 4 sniffer independently requires Jackson 2 Core; keep that dependency
+when using that client. There is no optional Jackson 2 parser fallback in the Search JSON module.
+
+Objects preserve insertion order. Missing members are distinct from `JsonNull.INSTANCE`;
+`JsonObject.get(name)` returns Java `null` for a missing member.
+Adding Java `null` stores JSON null. Parsed numbers retain their original valid JSON lexemes.
+Trees returned by raw search results must not be modified: use `deepCopy()` before editing them.
+Request builders and transformers may mutate their own trees before submission.
+Once a tree is submitted, leave it unchanged until consumption, signing and all retries finish.
+Trees used for output must be acyclic. The streaming body keeps references to the tree;
+it does not freeze it automatically or make a defensive copy.
+
+[[backend-elasticsearch-json-api]]
+=== Native inputs and raw results
+
+Use Search `JsonObject` with native predicate, sort and aggregation `fromJson(...)`,
+and native field `mapping(...)`. The primary method names remain the same.
+The `String` overloads remain available and parse the supplied characters directly,
+using strict JSON grammar: property names and string values require double quotes.
+Single quotes, comments, non-finite numbers and trailing content are rejected.
+There is no preliminary whole-String UTF-8 encoding.
+
+The following signatures use Search nodes:
+
+[cols="2,3",options="header"]
+|===
+|Surface |Result or value type
+|`ElasticsearchSearchResult.responseBody()` |`JsonObject`
+|`ElasticsearchSearchQuery.explain(Object)` and `explain(String, Object)` |`JsonObject`
+|Projection factory `source()`, `explanation()` and `jsonHit()` |`ProjectionFinalStep<JsonObject>`
+|Aggregation factory `fromJson(JsonObject)` and `fromJson(String)` |`AggregationFinalStep<JsonObject>`
+|`ElasticsearchSearchRequestTransformerContext.body()` |Mutable `JsonObject`; retains copy-on-first-body-access isolation
+|Native index field values |`JsonElement`; update bridge types and field references accordingly
+|`ElasticsearchIndexSchemaExport.bodyParts()` |`List<JsonObject>`
+|Client `ElasticsearchRequest.bodyParts()` and builder `body(JsonObject)` |`List<JsonObject>` and Search input respectively
+|Client `ElasticsearchResponse.body()` |`JsonObject`
+|===
+
+String projections and explicit diagnostic formatting still serialize whole trees when requested.
+Changing imports alone may be insufficient: update generic declarations, bridge conversions,
+custom clients and any callers compiled against the previous return types.
+The return-type, generic and client SPI changes are source and binary incompatible; recompile applications and extensions.
+
+For a gradual migration, the native predicate, sort, aggregation and mapping factories retain
+**deprecated Gson input overloads**. Even the Gson aggregation input bridge returns a Search `JsonObject` result.
+The deprecated public `org.hibernate.search.backend.elasticsearch.gson.GsonJsonConversion`
+offers `fromGson` and `toGson` overloads for elements, objects and arrays.
+It walks the tree directly, preserving valid number lexemes, member order and nulls,
+without serialization and reparsing. It allocates independent containers and costs a full traversal;
+avoid repeatedly converting trees in ordinary processing.
+Java null remains Java null. Literal null arguments to overloaded APIs may need an explicit type cast;
+for example `GsonJsonConversion.fromGson((com.google.gson.JsonObject) null)`.
+Casting selects the overload and does not relax that API's input validation.
+All Gson input bridges and the converter will be removed together in a future breaking release.
+
+.Migrating an application tree
+[source, JAVA, indent=0]
+----
+include::{sourcedir}/org/hibernate/search/documentation/backend/elasticsearch/json/JsonMigrationExamplesTest.java[tags=migration]
+----
+
+Import the Search node classes in new code. The example's Gson types and converter
+are only for the temporary compatibility boundary.
+
+[[backend-elasticsearch-json-accessors]]
+=== Accessors and explicit coercion
+
+`JsonAccessor` definitions are immutable and reusable across independent trees.
+They navigate completed response trees or request trees under construction.
+They are backend consumers of the completed tree: the incremental parser builds its tree
+with its own stack and does not use accessors.
+
+Typed access checks the JSON value type by default. It does not implicitly traverse singleton arrays.
+Select `unwrapSingletonArrays()` at each required intermediate or terminal location:
+
+.Opting into array adaptation at both locations
+[source, JAVA, indent=0]
+----
+include::{sourcedir}/org/hibernate/search/documentation/backend/elasticsearch/json/JsonMigrationExamplesTest.java[tags=accessors]
+----
+
+The strict accessor rejects arrays at either `parent` or `value`.
+The tolerant accessor repeatedly unwraps singleton arrays at the selected location,
+treats an empty array as absent for reads, and rejects arrays with multiple members.
+Non-array values still undergo the subsequent type check.
+`asArray()` retains the selected container; it does not flatten nested arrays unless adaptation is explicitly selected.
+Array indexing retains its normal container behavior.
+Typed scalar/object reads return an empty `Optional` for missing or JSON-null values;
+untyped reads can return `JsonNull.INSTANCE` for an explicit null.
+Numeric narrowing remains independent of array adaptation: `asLong()` can narrow a number such as `1.9` to `1`,
+and integer conversions can overflow. Strict typing does not promise exact-integer conversion.
+
+Writes through an existing adapted parent preserve its singleton containers.
+Setting the selected terminal value replaces that location, including its terminal array wrapper;
+setting Java null writes JSON null.
+Missing or raw JSON-null parents can be created during traversal.
+`getOrCreate` bases creation on raw missing/JSON-null presence:
+an existing empty array or singleton containing null adapts to absence but is not replaced,
+and the method returns Java null without calling the supplier.
+Traversal for a write or creation through such an absent adapted parent throws a contextual `IllegalStateException`.
+This explicit error replaces incidental failures from the old implicit adaptation.
+Other intentional model/parser corrections include strict JSON grammar and consistent numeric equality/hashing.
+
+`JsonParsingOptions` centralizes configurable parser constraints, independently of application-wide Jackson defaults.
+Defaults limit nesting to 1000, decoded strings to 20,000,000 characters,
+field names to 50,000 UTF-8 bytes and number tokens to Core's 1000-length counting,
+with at most 8192 input bytes accepted per feed.
+Total original input bytes are unlimited by default (`0`); HTTP adapters apply their own limits below.
+Canonical UTF-8 and raw UTF-16 are validated. Broken escaped surrogate pairs in field names are rejected;
+escaped isolated surrogates remain representable in string values.
+
+[[backend-elasticsearch-json-custom-clients]]
+=== Custom clients, ownership and execution
+
+Custom `ElasticsearchClientFactory.create(...)` implementations now receive
+`org.hibernate.search.backend.elasticsearch.client.common.json.spi.JsonProvider`
+instead of Gson services. It supplies `getCodec()`, `getCodecNoSerializeNulls()` and `getLogHelper()`.
+`JsonCodecService` decodes existing Search trees directly and parses original String or byte-stream inputs as appropriate.
+Known Java types use explicit `JsonCodecRegistry` registrations and generated direct field operations.
+Unknown/unsupported types fail explicitly; no reflective mapper is selected as a fallback.
+Registered codecs decode completed trees, after parsing finishes.
+
+Parser factories are shareable. Each `JsonParserSession` is a single-consumer state machine
+owned by one input/response. `feed(ByteBuffer)` processes a bounded slice synchronously
+and advances the caller's position by the consumed slice on success.
+Call it again while the buffer has remaining bytes. Do not mutate storage during the call;
+after it returns, including failure, the parser retains no caller storage.
+On failure the buffer position is unspecified. Consume the remaining bytes before reusing
+or releasing the entire buffer as a completed input chunk.
+Call `endOfInput()` exactly when EOF arrives: only then is the complete root returned,
+after rejecting empty, truncated or trailing input. An absent/whitespace HTTP body is interpreted
+by the transport boundary, independently of the parser's missing-root error.
+Close on completion, error or cancellation to release partial state.
+
+.Feeding caller-owned UTF-8 chunks
+[source, JAVA, indent=0]
+----
+include::{sourcedir}/org/hibernate/search/documentation/backend/elasticsearch/json/JsonMigrationExamplesTest.java[tags=parser]
+----
+
+An asynchronous transport keeps the session alive across callbacks and closes it at a terminal event.
+The helper illustrates the feed loop; it does not require collecting response chunks in a list.
+
+`JsonBody` sources are replayable; each cursor or stream has independent traversal state.
+Open a new cursor for every attempt/subscription and an independent stream for signing.
+`JsonWriteCursor.write(ByteBuffer)` fills only remaining capacity and advances position;
+it does not retain the destination or change its limit. Zero capacity makes no progress.
+The caller owns emitted storage and must preserve an unread suffix if its sink only partially accepts it.
+Cursors can pause within names, strings, escapes and numeric lexemes.
+Completion releases traversal state; `close()`/`cancel()` is idempotent and cancels unfinished output.
+Closing a cursor does not close the caller's destination.
+
+.Draining a cursor into caller-owned storage
+[source, JAVA, indent=0]
+----
+include::{sourcedir}/org/hibernate/search/documentation/backend/elasticsearch/json/JsonMigrationExamplesTest.java[tags=cursor]
+----
+
+Here `consumeFully` represents the application's synchronous sink.
+An asynchronous sink must wait for consumption before reusing storage.
+The default content-length probe traverses at most 8 KiB without retaining the bytes.
+A body fitting the probe gets a known length; a larger body keeps `-1` even after signing or full output.
+The Elasticsearch framing helper keeps NDJSON separators/trailing newlines outside the reusable JSON SPI.
+
+The JDK adapter processes incoming batches synchronously and requests another after consuming them.
+Its publisher emits only on demand and gives each emission fresh read-only storage.
+REST adapters parse during response callbacks and reset state per response attempt;
+partial or zero output preserves a bounded suffix and requests transport output.
+Cancellation releases Search state, and cleanup may wait for an active callback to relinquish ownership.
+
+These contracts make the backend async friendly. They impose no executor, automatic worker hop
+or event-loop latency guarantee. Transport callbacks still perform parsing and output synchronously;
+finishing a large token or building its tree can take substantial CPU time.
+Materialized trees, field names and scalar Strings still grow with the content.
+Normal Search routes avoid a complete raw response/request body copy; bounded ingress/output
+is not a constant-memory tree model.
+HTTP interceptors and signing remain synchronous. A future Vert.x adapter can choose an offload policy
+for that work; the SPI is prepared for it, but no Vert.x transport is implemented.
+
+[[backend-elasticsearch-json-client-limits]]
+=== Client limits and diagnostics
+
+The pinned REST clients call `EntityUtils.toString` in their error constructors.
+This client-owned diagnostic String is a remaining complete-body materialization boundary.
+Search supplies lazy repeatable replay of completed trees as normalized UTF-8 JSON:
+original whitespace and original encoding are not reconstructed.
+For malformed input it retains only the first 8192 original-charset bytes delivered to the diagnostic layer,
+decodes that prefix and adds a truncation marker when necessary.
+A partial multibyte character at the prefix boundary can be replaced.
+The original parsing failure remains available; malformed 503 bodies still allow status-based retries.
+
+The REST default 100 MiB response limit is enforced by cumulative counting before charset transcoding,
+including unknown-length/chunked input and draining after syntax failure.
+REST 4 counts compressed wire bytes because its consumer precedes decompression;
+this also adds cumulative enforcement where that client previously checked only declared length.
+REST 5 and OpenSearch count the decompressed original-charset bytes delivered by their existing HC5 layer.
+The JDK adapter has no default response cap. Explicit charsets use bounded incremental transcoding.
+Gzip is decoded incrementally where the client has not already decoded it.
+
+Optional REST request-compression wrappers accumulate the complete compressed body in `getContent()`;
+OpenSearch's forced compressed content length uses that path too.
+Normal OpenSearch requests use the client's 8 KiB producer reading Search's bounded cursor stream,
+which bypasses Search's `AsyncEntityProducer` callbacks but remains bounded.
+Background sniffer requests belong to the underlying client.
+Enabled full-body logging and String projections remain explicit formatting boundaries.
+
+With HC5 clients, cancellation racing with header delivery can leave a stalled socket open
+even after the future is cancelled and Search parser/cursor state is released.
+This also occurs with the stock REST 5 consumer and with retries disabled.
+Search preserves retry policies and owns its state cleanup; it cannot guarantee prompt socket closure in that client race.
+EOF, failure and cancellation must still terminate a custom client's own parser/cursor lifecycle.
+EOF and successful output close their state independently of client socket cleanup.

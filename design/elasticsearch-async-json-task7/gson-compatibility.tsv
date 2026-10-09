@@ -1,0 +1,6 @@
+file	boundary	removal
+backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/gson/GsonJsonConversion.java	Deprecated direct independent tree converter	All bridges and converter together in a future breaking release
+backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/search/predicate/dsl/ElasticsearchSearchPredicateFactory.java	Deprecated Gson predicate input bridge	All bridges and converter together in a future breaking release
+backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/search/sort/dsl/ElasticsearchSearchSortFactory.java	Deprecated Gson sort input bridge	All bridges and converter together in a future breaking release
+backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/search/aggregation/dsl/ElasticsearchSearchAggregationFactory.java	Deprecated Gson aggregation input bridge; Search result	All bridges and converter together in a future breaking release
+backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/types/dsl/ElasticsearchNativeIndexFieldTypeMappingStep.java	Deprecated Gson native mapping input bridge	All bridges and converter together in a future breaking release

@@ -3,7 +3,7 @@
 **Current decision: keep the pre-experiment character parser for already supplied
 Strings.** The user accepted this choice after the bounded UTF-8 experiment.
 The experiment and its fixtures remain committed as reference; its encoders are
-benchmark alternatives. The async UTF-8 SPI already exists. Task 5 migrates backend processing to Search
+benchmark alternatives. The async UTF-8 SPI already exists. Task 5 completed backend processing migration to Search
 nodes and registered codecs. [Task 6](elasticsearch-async-json-task6.md) integrates
 demand-aware JDK publishers/subscribers and per-attempt REST response consumers.
 
@@ -15,7 +15,7 @@ the user accepted the documented remaining tradeoffs provisionally for migration
 closing Task 4's investigation gate. The latest heap-integer UTF-8 campaign still
 loses 13.2% to Gson, and scalar UTF-8 variability remains unexplained; acceptance
 does not mean those findings were fixed. The completed [internal-route audit](elasticsearch-json-internal-path-audit.md)
-adds concrete checks to avoid unnecessary text parsing during Tasks 5 and 6.
+records the completed direct String/byte/tree routes from Tasks 5 and 6.
 
 ## Choose according to the input you already have
 
@@ -294,3 +294,13 @@ records demand, cancellation, streaming, limits, charset and compression evidenc
 Callback parsing and signing remain synchronous; bounded feeds alone do not bound
 large-token completion latency. The numeric rows come from the linked
 focused campaigns; the historical parsing/read/encoding rows were not rerun.
+
+
+[Task 7](elasticsearch-async-json-task7.md) completes migration documentation and enforcement:
+see the [user-facing JSON reference](../documentation/src/main/asciidoc/public/reference/_backend-elasticsearch-json.adoc)
+for actual API signatures, accessor coercion and parser/cursor ownership, and the
+[migration guide](../documentation/src/main/asciidoc/migration/index.adoc) for source/binary changes.
+All planned implementation tasks are now complete. Compiled API, scoped source/codegen and
+dependency checks guard the neutral SPI, the exact deprecated Gson boundaries and
+reflection-free known-type codecs. Task 7 reruns no timing campaign: every historical
+performance number and accepted limitation above retains its original identity.
