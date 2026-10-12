@@ -2,14 +2,9 @@ package org.hibernate.search.integrationtest.performance.backend.elasticsearch;
 
 import java.util.concurrent.TimeUnit;
 
-import org.hibernate.search.integrationtest.performance.backend.elasticsearch.legacy.gson.spi.GsonProviderHelper;
 import org.hibernate.search.util.json.JsonElement;
 import org.hibernate.search.util.json.JsonObject;
-import org.hibernate.search.util.json.JsonPrimitive;
 import org.hibernate.search.util.json.spi.JsonParsing;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
@@ -24,7 +19,7 @@ import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.infra.Blackhole;
 
-/** Already materialized String to complete tree; valid-input Gson acceptance policy differs. */
+/** Already materialized String to complete tree through character and UTF-8 parser paths. */
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.SECONDS)
 @Warmup(iterations = 8, time = 1)
@@ -36,13 +31,11 @@ public class JsonStringUtf8Benchmark {
 		@Param({ "scalar-1m", "unicode-1m", "small", "fields-1m" })
 		public String fixture;
 		final JsonParsing parsing = new JsonParsing();
-		Gson gson;
 		String json;
 
 		@Setup
 		public void setup() {
 			JsonBenchmarkSupport.verifyAffinity();
-			gson = GsonProviderHelper.create( GsonBuilder::new, false ).getGson();
 			JsonObject expected = new JsonObject();
 			switch ( fixture ) {
 				case "scalar-1m":
@@ -84,7 +77,6 @@ public class JsonStringUtf8Benchmark {
 			verify( expected, JsonStringUtf8Encoding.parse( parsing, json, JsonStringUtf8Encoding.BYTE_CAPACITY ) );
 			verify( expected, JsonStringUtf8Encoding.parseStaged( parsing, json,
 					JsonStringUtf8Encoding.BYTE_CAPACITY, JsonStringUtf8Encoding.CHAR_CAPACITY ) );
-			verifyGson( expected, gson.fromJson( json, com.google.gson.JsonElement.class ) );
 			// Lexical/escape invariants independently checked even on fixtures with no numeric fields.
 			JsonStringUtf8Verification.verifyLexemes( parsing );
 		}
@@ -95,31 +87,6 @@ public class JsonStringUtf8Benchmark {
 			}
 		}
 
-		private static void verifyGson(JsonElement expected, com.google.gson.JsonElement actual) {
-			if ( expected.isJsonObject() ) {
-				var object = actual.getAsJsonObject();
-				if ( expected.getAsJsonObject().size() != object.size() ) {
-					throw new IllegalStateException( "Gson member count mismatch" );
-				}
-				for ( var entry : expected.getAsJsonObject().entrySet() ) {
-					verifyGson( entry.getValue(), object.get( entry.getKey() ) );
-				}
-			}
-			else if ( expected.isJsonPrimitive() ) {
-				JsonPrimitive scalar = expected.getAsJsonPrimitive();
-				if ( !scalar.getAsString().equals( actual.getAsString() ) ) {
-					throw new IllegalStateException( "Gson scalar mismatch" );
-				}
-			}
-			else {
-				throw new IllegalStateException( "Unexpected fixture kind" );
-			}
-		}
-	}
-
-	@Benchmark
-	public void gsonString(Input state, Blackhole blackhole) {
-		blackhole.consume( state.gson.fromJson( state.json, com.google.gson.JsonObject.class ) );
 	}
 
 	@Benchmark

@@ -4,59 +4,41 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hibernate.search.integrationtest.performance.backend.elasticsearch.legacy.gson.spi.GsonProviderHelper;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
+import org.hibernate.search.util.json.JsonObject;
+import org.hibernate.search.util.json.spi.JsonParsing;
 
 /** Shared server-independent JSON workloads; setup is never timed. */
 public class JsonBenchmarkFixtures {
 	public String fixture;
-	public Gson gson;
 	public List<JsonObject> parts;
 	public String json;
+	public byte[] expectedBytes;
 	public long encodedBytes;
 
 	public void setup() {
-		gson = GsonProviderHelper.create( GsonBuilder::new, false ).getGson();
-		parts = new ArrayList<>();
-		JsonObject body = new JsonObject();
+		List<String> documents = new ArrayList<>();
 		switch ( fixture ) {
 			case "small":
-				body = gson.fromJson( "{\"query\":{\"term\":{\"name\":\"test\"}},\"size\":10}", JsonObject.class );
+				documents.add( "{\"query\":{\"term\":{\"name\":\"test\"}},\"size\":10}" );
 				break;
 			case "mapping":
-				body = gson.fromJson( "{\"dynamic\":\"strict\",\"_routing\":{\"required\":true},"
+				documents.add( "{\"dynamic\":\"strict\",\"_routing\":{\"required\":true},"
 						+ "\"properties\":{\"name\":{\"type\":\"keyword\"},\"time\":{\"type\":\"date\","
-						+ "\"format\":\"strict_date_optional_time||epoch_millis\"}}}", JsonObject.class );
+						+ "\"format\":\"strict_date_optional_time||epoch_millis\"}}}" );
 				break;
 			case "unicode":
-				body.addProperty( "text", "é漢😀\n\"\\".repeat( 256 ) );
+				documents.add( "{\"text\":\"" + "é漢😀\\n\\\"\\\\".repeat( 256 ) + "\"}" );
 				break;
 			case "nested":
-				JsonObject current = body;
-				for ( int i = 0; i < 32; i++ ) {
-					JsonObject child = new JsonObject();
-					current.add( "child", child );
-					current = child;
-				}
-				current.addProperty( "value", 9007199254740993L );
+				documents.add( "{\"child\":".repeat( 32 ) + "{\"value\":9007199254740993}" + "}".repeat( 32 ) );
 				break;
 			case "scalar-1m":
-				body.addProperty( "text", "x".repeat( 1024 * 1024 ) );
+				documents.add( "{\"text\":\"" + "x".repeat( 1024 * 1024 ) + "\"}" );
 				break;
 			case "scalar-8m":
-				body.addProperty( "text", "x".repeat( 8 * 1024 * 1024 ) );
+				documents.add( "{\"text\":\"" + "x".repeat( 8 * 1024 * 1024 ) + "\"}" );
 				break;
 			case "numbers-10000":
-				JsonArray numbers = new JsonArray();
-				for ( int i = 0; i < 10_000; i++ ) {
-					numbers.add( i );
-				}
-				body.add( "values", numbers );
-				break;
 			case "numbers-mixed-10000":
 				String[] mixed = { "-0", "-42", "0.125", "1.00", "6.022e23", "-7E-9", "9223372036854775808", "1e2147483648" };
 				StringBuilder numericDocument = new StringBuilder( "{\"values\":[" );
@@ -64,34 +46,28 @@ public class JsonBenchmarkFixtures {
 					if ( i != 0 ) {
 						numericDocument.append( ',' );
 					}
-					numericDocument.append( mixed[i % mixed.length] );
+					numericDocument
+							.append( "numbers-10000".equals( fixture ) ? Integer.toString( i ) : mixed[i % mixed.length] );
 				}
-				body = gson.fromJson( numericDocument.append( "]}" ).toString(), JsonObject.class );
+				documents.add( numericDocument.append( "]}" ).toString() );
 				break;
 			case "bulk-10000":
 				for ( int i = 0; i < 10_000; i++ ) {
-					JsonObject metadata = new JsonObject();
-					JsonObject index = new JsonObject();
-					index.addProperty( "_index", "benchmark" );
-					index.addProperty( "_id", i );
-					metadata.add( "index", index );
-					parts.add( metadata );
-					JsonObject document = new JsonObject();
-					document.addProperty( "text", "x".repeat( 256 ) );
-					document.addProperty( "number", i );
-					parts.add( document );
+					documents.add( "{\"index\":{\"_index\":\"benchmark\",\"_id\":" + i + "}}" );
+					documents.add( "{\"text\":\"" + "x".repeat( 256 ) + "\",\"number\":" + i + "}" );
 				}
 				break;
 			default:
 				throw new IllegalArgumentException( fixture );
 		}
-		if ( parts.isEmpty() ) {
-			parts.add( body );
-		}
-		json = gson.toJson( parts.get( 0 ) );
-		encodedBytes = 0;
-		for ( JsonObject part : parts ) {
-			encodedBytes += gson.toJson( part ).getBytes( StandardCharsets.UTF_8 ).length + 1;
+		// Expected NDJSON is built from fixture text, independently of the measured writers.
+		json = documents.get( 0 );
+		expectedBytes = ( String.join( "\n", documents ) + "\n" ).getBytes( StandardCharsets.UTF_8 );
+		encodedBytes = expectedBytes.length;
+		JsonParsing parsing = new JsonParsing();
+		parts = new ArrayList<>();
+		for ( String document : documents ) {
+			parts.add( parsing.parse( document ).getAsJsonObject() );
 		}
 	}
 }

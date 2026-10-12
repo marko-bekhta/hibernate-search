@@ -41,8 +41,7 @@ public class JsonNumericConsumptionBenchmark {
 				case "repeated" -> 499_950_000;
 				default -> throw new IllegalArgumentException( reads );
 			};
-			if ( readSearch( parsing.parse( json ), reads ) != expected
-					|| readGson( gson.fromJson( json, com.google.gson.JsonObject.class ), reads ) != expected ) {
+			if ( readSearch( parsing.parse( json ), reads ) != expected ) {
 				throw new IllegalStateException( "Numeric consumption mismatch" );
 			}
 		}
@@ -55,34 +54,11 @@ public class JsonNumericConsumptionBenchmark {
 		return readSearch( tree, state.reads );
 	}
 
-	@Benchmark
-	public long gsonParser(Numbers state, Blackhole blackhole) {
-		var tree = state.gson.fromJson( state.json, com.google.gson.JsonObject.class );
-		blackhole.consume( tree );
-		return readGson( tree, state.reads );
-	}
-
 	private static long readSearch(JsonElement tree, String reads) {
 		if ( "none".equals( reads ) ) {
 			return 0;
 		}
 		var values = tree.getAsJsonObject().getAsJsonArray( "values" );
-		int step = "selected".equals( reads ) ? 100 : 1;
-		int repetitions = "selected".equals( reads ) ? 1 : 10;
-		long sum = 0;
-		for ( int pass = 0; pass < repetitions; pass++ ) {
-			for ( int index = 0; index < values.size(); index += step ) {
-				sum += values.get( index ).getAsLong();
-			}
-		}
-		return sum;
-	}
-
-	private static long readGson(com.google.gson.JsonObject tree, String reads) {
-		if ( "none".equals( reads ) ) {
-			return 0;
-		}
-		var values = tree.getAsJsonArray( "values" );
 		int step = "selected".equals( reads ) ? 100 : 1;
 		int repetitions = "selected".equals( reads ) ? 1 : 10;
 		long sum = 0;

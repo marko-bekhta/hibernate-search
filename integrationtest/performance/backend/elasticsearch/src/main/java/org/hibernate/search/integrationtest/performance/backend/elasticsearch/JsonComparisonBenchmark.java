@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.hibernate.search.backend.elasticsearch.client.common.json.impl.ElasticsearchJsonBody;
-import org.hibernate.search.integrationtest.performance.backend.elasticsearch.legacy.client.common.gson.entity.spi.GsonHttpEntityContentProvider;
 import org.hibernate.search.util.json.JsonElement;
 import org.hibernate.search.util.json.spi.JsonBody;
 import org.hibernate.search.util.json.spi.JsonParsing;
@@ -39,7 +38,6 @@ public class JsonComparisonBenchmark {
 		public String lifecycle;
 		List<JsonElement> searchParts;
 		JsonBody body;
-		GsonHttpEntityContentProvider provider;
 		JsonBoundedWorker worker;
 		final ByteBuffer buffer = ByteBuffer.allocate( 8192 );
 		final JsonParsing parsing = new JsonParsing();
@@ -51,9 +49,8 @@ public class JsonComparisonBenchmark {
 			super.setup();
 			JsonBenchmarkSupport.verifyAffinity();
 			try {
-				searchParts = JsonBenchmarkSupport.convert( this );
+				searchParts = List.copyOf( parts );
 				body = ElasticsearchJsonBody.ndjson( searchParts );
-				provider = new GsonHttpEntityContentProvider( gson, parts );
 				worker = new JsonBoundedWorker();
 				JsonBenchmarkSupport.verify( this, searchParts, worker );
 			}
@@ -70,16 +67,6 @@ public class JsonComparisonBenchmark {
 		public void close() throws Exception {
 			worker.close();
 		}
-	}
-
-	@Benchmark
-	public long gson(Bodies state, Blackhole blackhole) throws Exception {
-		var sink = new JsonBenchmarkSupport.OpaqueSink( blackhole );
-		GsonHttpEntityContentProvider provider = "fresh".equals( state.lifecycle )
-				? new GsonHttpEntityContentProvider( state.gson, state.parts )
-				: state.provider;
-		provider.writeTo( sink );
-		return sink.result() ^ provider.getContentLength();
 	}
 
 	@Benchmark
@@ -119,18 +106,8 @@ public class JsonComparisonBenchmark {
 		return state.parsing.parse( state.json );
 	}
 
-	@Benchmark
-	public Object gsonParser(Bodies state) {
-		return state.gson.fromJson( state.json, com.google.gson.JsonObject.class );
-	}
-
 	@State(Scope.Thread)
 	public static class Accessors {
-		final org.hibernate.search.integrationtest.performance.backend.elasticsearch.legacy.gson.impl.JsonAccessor<
-				Long> gsonAccessor =
-						org.hibernate.search.integrationtest.performance.backend.elasticsearch.legacy.gson.impl.JsonAccessor
-								.root()
-								.property( "hits" ).property( "total" ).property( "value" ).asLong();
 		final org.hibernate.search.util.json.spi.JsonAccessor<Long> strict =
 				org.hibernate.search.util.json.spi.JsonAccessor.root().property( "hits" ).property( "total" )
 						.property( "value" ).asLong();
@@ -139,32 +116,16 @@ public class JsonComparisonBenchmark {
 						.property( "total" ).unwrapSingletonArrays().property( "value" ).unwrapSingletonArrays().asLong();
 		final String plain = "{\"hits\":{\"total\":{\"value\":42}}}";
 		final String arrays = "{\"hits\":[[{\"total\":[{\"value\":[[42]]}]}]]}";
-		final com.google.gson.JsonObject gsonPlain =
-				new com.google.gson.Gson().fromJson( plain, com.google.gson.JsonObject.class );
-		final com.google.gson.JsonObject gsonArrays =
-				new com.google.gson.Gson().fromJson( arrays, com.google.gson.JsonObject.class );
 		final org.hibernate.search.util.json.JsonObject searchPlain = new JsonParsing().parse( plain ).getAsJsonObject();
 		final org.hibernate.search.util.json.JsonObject searchArrays = new JsonParsing().parse( arrays ).getAsJsonObject();
 
 		@Setup
 		public void verify() {
 			JsonBenchmarkSupport.verifyAffinity();
-			if ( gsonAccessor.get( gsonPlain ).orElseThrow() != 42
-					|| gsonAccessor.get( gsonArrays ).orElseThrow() != 42
-					|| strict.get( searchPlain ).orElseThrow() != 42 || adapted.get( searchArrays ).orElseThrow() != 42 ) {
+			if ( strict.get( searchPlain ).orElseThrow() != 42 || adapted.get( searchArrays ).orElseThrow() != 42 ) {
 				throw new IllegalStateException( "Accessor mismatch" );
 			}
 		}
-	}
-
-	@Benchmark
-	public long gsonAccessor(Accessors state) {
-		return state.gsonAccessor.get( state.gsonPlain ).orElseThrow();
-	}
-
-	@Benchmark
-	public long gsonAdaptedAccessor(Accessors state) {
-		return state.gsonAccessor.get( state.gsonArrays ).orElseThrow();
 	}
 
 	@Benchmark

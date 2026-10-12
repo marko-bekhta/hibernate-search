@@ -7,16 +7,13 @@ import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import org.hibernate.search.backend.elasticsearch.client.common.json.impl.ElasticsearchJsonBody;
-import org.hibernate.search.integrationtest.performance.backend.elasticsearch.legacy.client.common.gson.entity.spi.GsonHttpEntityContentProvider;
 import org.hibernate.search.util.json.JsonElement;
 import org.hibernate.search.util.json.impl.JacksonJsonBodyWriter;
 import org.hibernate.search.util.json.spi.JsonBody;
-import org.hibernate.search.util.json.spi.JsonParsing;
 import org.hibernate.search.util.json.spi.JsonWriteCursor;
 
 import org.openjdk.jmh.infra.Blackhole;
@@ -29,16 +26,7 @@ final class JsonBenchmarkSupport {
 		void write(OutputStream output) throws Exception;
 	}
 
-	static List<JsonElement> convert(JsonBenchmarkFixtures fixture) {
-		JsonParsing parser = new JsonParsing();
-		List<JsonElement> parts = new ArrayList<>();
-		for ( var part : fixture.parts ) {
-			parts.add( parser.parse( fixture.gson.toJson( part ) ) );
-		}
-		return parts;
-	}
-
-	static void jackson(List<JsonElement> parts, OutputStream output) throws IOException {
+	static void jackson(List<? extends JsonElement> parts, OutputStream output) throws IOException {
 		for ( JsonElement part : parts ) {
 			JacksonJsonBodyWriter.write( part, output );
 			output.write( '\n' );
@@ -61,8 +49,9 @@ final class JsonBenchmarkSupport {
 		return output.toByteArray();
 	}
 
-	static void verify(JsonBenchmarkFixtures fixture, List<JsonElement> parts, JsonBoundedWorker worker) throws Exception {
-		byte[] expected = bytes( output -> new GsonHttpEntityContentProvider( fixture.gson, fixture.parts ).writeTo( output ) );
+	static void verify(JsonBenchmarkFixtures fixture, List<? extends JsonElement> parts, JsonBoundedWorker worker)
+			throws Exception {
+		byte[] expected = fixture.expectedBytes;
 		JsonBody body = ElasticsearchJsonBody.ndjson( parts );
 		List<byte[]> results = List.of( bytes( output -> jackson( parts, output ) ), bytes( body::writeTo ),
 				bytes( output -> incremental( body, output, ByteBuffer.allocate( 8192 ) ) ),

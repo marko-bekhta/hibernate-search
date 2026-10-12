@@ -36,9 +36,9 @@ public final class JsonSlowConsumerHarness {
 			JsonBenchmarkFixtures fixture = new JsonBenchmarkFixtures();
 			fixture.fixture = name;
 			fixture.setup();
-			var parts = JsonBenchmarkSupport.convert( fixture );
+			var parts = java.util.List.copyOf( fixture.parts );
 			var body = ElasticsearchJsonBody.ndjson( parts );
-			byte[] expected = JsonBenchmarkSupport.bytes( body::writeTo );
+			byte[] expected = fixture.expectedBytes;
 			try ( JsonBoundedWorker worker = new JsonBoundedWorker() ) {
 				JsonBenchmarkSupport.verify( fixture, parts, worker );
 				if ( worker.encodedCapacity() != 16384 ) {
@@ -132,7 +132,7 @@ public final class JsonSlowConsumerHarness {
 				}
 			}
 		}
-		// Lone surrogates intentionally differ from legacy UTF-8 replacement; outside byte-equivalent fixtures.
+		// Lone surrogates must be escaped to preserve valid UTF-8 output.
 		var lone = new org.hibernate.search.util.json.JsonObject();
 		lone.addProperty( "text", "\ud800" );
 		String loneOutput = new String( JsonBenchmarkSupport.bytes( JsonBodies.of( lone )::writeTo ), StandardCharsets.UTF_8 );

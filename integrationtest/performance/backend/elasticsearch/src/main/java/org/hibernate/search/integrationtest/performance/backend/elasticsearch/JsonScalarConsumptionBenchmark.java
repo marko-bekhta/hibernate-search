@@ -178,8 +178,4 @@ public class JsonScalarConsumptionBenchmark {
 		return state.parsing.parse( state.json );
 	}
 
-	@Benchmark
-	public Object gsonParser(Scalars state) {
-		return state.gson.fromJson( state.json, com.google.gson.JsonObject.class );
-	}
 }

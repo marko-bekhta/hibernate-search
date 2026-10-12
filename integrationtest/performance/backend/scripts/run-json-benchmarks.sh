@@ -31,7 +31,7 @@ HELP
 out= cores_spec= profiler= jvm_args=
 forks=3 warmup=5 iterations=5 seconds=1
 skip_build=false quick=false cold=false
-pattern='JsonComparisonBenchmark.(gson|jackson|synchronousCursor|incrementalCursor|boundedWorker)$'
+pattern='JsonComparisonBenchmark.(jackson|synchronousCursor|incrementalCursor|boundedWorker)$'
 fixtures=small,mapping,unicode,nested,scalar-1m,scalar-8m,bulk-10000
 lifecycle=fresh
 params=()

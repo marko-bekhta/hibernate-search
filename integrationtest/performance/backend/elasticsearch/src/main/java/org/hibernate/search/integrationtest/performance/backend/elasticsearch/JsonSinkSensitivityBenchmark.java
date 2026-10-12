@@ -2,7 +2,6 @@ package org.hibernate.search.integrationtest.performance.backend.elasticsearch;
 
 import java.util.concurrent.TimeUnit;
 
-import org.hibernate.search.integrationtest.performance.backend.elasticsearch.legacy.client.common.gson.entity.spi.GsonHttpEntityContentProvider;
 import org.hibernate.search.util.json.spi.JsonBody;
 
 import org.openjdk.jmh.annotations.Benchmark;
@@ -28,18 +27,6 @@ public class JsonSinkSensitivityBenchmark {
 	public static class Bodies extends JsonComparisonBenchmark.Bodies {
 		@Param({ "sampled", "opaque" })
 		public String observation;
-	}
-
-	@Benchmark
-	public long gson(Bodies state, Blackhole blackhole) throws Exception {
-		var sink = "opaque".equals( state.observation )
-				? new JsonBenchmarkSupport.OpaqueSink( blackhole )
-				: new JsonBenchmarkSupport.Sink();
-		GsonHttpEntityContentProvider provider = "fresh".equals( state.lifecycle )
-				? new GsonHttpEntityContentProvider( state.gson, state.parts )
-				: state.provider;
-		provider.writeTo( sink );
-		return sink.result() ^ provider.getContentLength();
 	}
 
 	@Benchmark

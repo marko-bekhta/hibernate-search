@@ -1,8 +1,5 @@
 package org.hibernate.search.integrationtest.performance.backend.elasticsearch;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -54,10 +51,8 @@ public class JsonUtf8IngressBenchmark {
 			};
 			try {
 				JsonElement search = parseSearch( this );
-				var gsonResult = parseGson( this );
 				byte[] searchBytes = JsonBenchmarkSupport.bytes( JsonBodies.of( search )::writeTo );
-				byte[] gsonBytes = gson.toJson( gsonResult ).getBytes( StandardCharsets.UTF_8 );
-				if ( !Arrays.equals( input, searchBytes ) || !Arrays.equals( input, gsonBytes ) ) {
+				if ( !Arrays.equals( input, searchBytes ) ) {
 					throw new IllegalStateException( "UTF-8 ingress content mismatch" );
 				}
 			}
@@ -72,11 +67,6 @@ public class JsonUtf8IngressBenchmark {
 		return parseSearch( state );
 	}
 
-	@Benchmark
-	public com.google.gson.JsonObject gsonParser(Bodies state) throws IOException {
-		return parseGson( state );
-	}
-
 	private static JsonElement parseSearch(Bodies state) {
 		try ( var session = state.parsing.createParser() ) {
 			ByteBuffer input = state.prepared == null ? ByteBuffer.wrap( state.input ) : state.prepared.duplicate();
@@ -88,28 +78,4 @@ public class JsonUtf8IngressBenchmark {
 		}
 	}
 
-	private static com.google.gson.JsonObject parseGson(Bodies state) throws IOException {
-		try ( var reader =
-				new InputStreamReader( new FragmentedInputStream( state.input, state.feedSize ), StandardCharsets.UTF_8 ) ) {
-			var result = state.gson.fromJson( reader, com.google.gson.JsonObject.class );
-			if ( reader.read() != -1 ) {
-				throw new IllegalStateException( "Incomplete UTF-8 consumption" );
-			}
-			return result;
-		}
-	}
-
-	private static final class FragmentedInputStream extends ByteArrayInputStream {
-		private final int feedSize;
-
-		private FragmentedInputStream(byte[] input, int feedSize) {
-			super( input );
-			this.feedSize = feedSize;
-		}
-
-		@Override
-		public synchronized int read(byte[] bytes, int offset, int length) {
-			return super.read( bytes, offset, Math.min( length, feedSize ) );
-		}
-	}
 }

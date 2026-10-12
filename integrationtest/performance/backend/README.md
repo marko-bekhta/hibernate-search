@@ -102,9 +102,9 @@ In particular the "run it from your IDE" approach is just meant for development 
 
 ## Server-independent JSON comparisons
 
-`JsonComparisonBenchmark` compares complete NDJSON output from the legacy Gson
-HTTP provider, direct Jackson Core 3, synchronous cursor drain, incremental cursor
-and a benchmark-only worker bridge. No Elasticsearch server is needed. The
+`JsonComparisonBenchmark` compares complete NDJSON output from direct Jackson
+Core 3, synchronous cursor drain, incremental cursor and a benchmark-only worker
+bridge. No Elasticsearch server is needed. The
 Jackson comparison accesses the JSON module's internal implementation on the JMH
 classpath; it does not add a public library API or a Jackson production dependency
 to the backend.
@@ -131,7 +131,7 @@ Defaults: one JMH thread, three independent forks, five one-second warmup and
 five one-second measurement iterations, 1 GiB fixed heap, G1,
 `ActiveProcessorCount` equal to selected logical CPUs. Every comparison uses
 these same resources, including two CPUs for worker runs. Fixture construction,
-tree conversion and exact full-byte validation run in trial setup. Primary writer
+tree construction and exact full-byte validation run in trial setup. Primary writer
 sinks use `Blackhole.consume(byte[])` on every emitted array, plus byte counts
 and boundary bytes. `JsonSinkSensitivityBenchmark` repeats the same complete
 writes with either sampled-only or opaque observation.
@@ -154,11 +154,11 @@ integrationtest/performance/backend/scripts/summarize-json-results.sh \
 Fixtures (`--fixtures`): `small`, `mapping`, `unicode`, `nested`, `scalar-1m`,
 `scalar-8m`, `bulk-10000`. The additional `numbers-10000` fixture measures
 numeric construction/storage (an object containing an array of integers 0–9999).
-Shared builders retain both trees outside timing.
-Every body part has a final newline. `--lifecycle fresh` includes provider/body
+Fixture text defines expected bytes independently of the writers; the parsed
+Search tree is prepared outside timing.
+Every body part has a final newline. `--lifecycle fresh` includes body
 construction and probing for every writer; Jackson and worker use the same
-cursor probe as the candidate body. Legacy Gson probes a complete first part
-and retains that encoding; the candidate probes at most 8 KiB and discards it.
+cursor probe as the candidate body, which probes at most 8 KiB and discards it.
 `--lifecycle reused` excludes those costs for every writer and measures complete
 serialization of an already constructed source. Reused incremental cursors also
 reuse the caller's 8 KiB destination; synchronous adapters allocate their own.
@@ -177,22 +177,22 @@ integrationtest/performance/backend/scripts/run-json-benchmarks.sh --skip-build 
 integrationtest/performance/backend/scripts/run-json-benchmarks.sh --skip-build \
   --out /tmp/json-accessors --fixtures '' \
   --pattern 'JsonComparisonBenchmark.*Accessor$'
-# Same materialized string input for both parsers:
+# Materialized string parsing:
 integrationtest/performance/backend/scripts/run-json-benchmarks.sh --skip-build \
   --out /tmp/json-parsers --fixtures small,unicode,scalar-1m \
-  --pattern 'JsonComparisonBenchmark.(gsonParser|searchParser)$'
-# Full UTF-8 ingress: decoder/reader versus bounded async feed and end-of-input:
+  --pattern 'JsonComparisonBenchmark.searchParser$'
+# Full UTF-8 ingress: bounded async feed and end-of-input:
 integrationtest/performance/backend/scripts/run-json-benchmarks.sh --skip-build \
   --out /tmp/json-utf8 --fixtures small,unicode,scalar-1m \
   --pattern 'JsonUtf8IngressBenchmark.*Parser$'
 # Opaque sink sensitivity, sampled and opaque modes in the same campaign:
 integrationtest/performance/backend/scripts/run-json-benchmarks.sh --skip-build \
   --out /tmp/json-sink-sensitivity --fixtures small,unicode,scalar-1m,bulk-10000 \
-  --pattern 'JsonSinkSensitivityBenchmark.(gson|synchronousCursor|incrementalCursor)$'
+  --pattern 'JsonSinkSensitivityBenchmark.(synchronousCursor|incrementalCursor)$'
 # Numeric-rich parsing: conversion/storage costs moved into construction:
 integrationtest/performance/backend/scripts/run-json-benchmarks.sh --skip-build \
   --out /tmp/json-numbers --fixtures numbers-10000 \
-  --pattern '(JsonComparisonBenchmark|JsonUtf8IngressBenchmark).(gsonParser|searchParser)$'
+  --pattern '(JsonComparisonBenchmark|JsonUtf8IngressBenchmark).searchParser$'
 # Portable stack sampling fallback; diagnostic timing is separate:
 integrationtest/performance/backend/scripts/run-json-benchmarks.sh --skip-build \
   --out /tmp/json-stack --fixtures scalar-1m \
@@ -218,8 +218,6 @@ Independent byte/retention/backpressure/cancellation checks and a controlled
 taskset -c 0,2 java -Djson.benchmark.cores=0,2 \
   -cp integrationtest/performance/backend/elasticsearch/target/benchmarks.jar \
   org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSlowConsumerHarness
-java -cp integrationtest/performance/backend/elasticsearch/target/benchmarks.jar \
-  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonBufferRetentionProbe
 ```
 
 The harness verifies complete bytes at capacities 1/2/5/8192 and cursor
@@ -228,8 +226,7 @@ most six bytes; the worker owns two 8 KiB arrays, including queued/in-flight
 storage. Source trees, generators, destination buffers and diagnostic capture
 are accounted separately. The slow harness deliberately captures a full body
 for correctness; production and JMH output do not. Lone-surrogate output policy
-is tested separately: Gson replaces with `?`, whereas new output uses `\\uXXXX`.
-No byte-equivalence claim covers that intentional policy difference.
+is tested separately: output uses `\\uXXXX` to preserve valid UTF-8.
 
 `--skip-build` rejects a JAR older than JSON/backend/benchmark Java sources.
 The recorded patch includes untracked benchmark source files as well as tracked
@@ -240,7 +237,7 @@ not a dependable startup confidence interval):
 ```shell
 integrationtest/performance/backend/scripts/run-json-benchmarks.sh --skip-build \
   --out /tmp/json-factories-cold --cores 0,2 --cold --fixtures '' \
-  --pattern '(JsonBaselineBenchmark.initializeProvider|JsonComparisonBenchmark.initializeParser)$'
+  --pattern 'JsonComparisonBenchmark.initializeParser$'
 ```
 
 Parser selectors compare the retained String convenience API with the same
@@ -254,12 +251,11 @@ these String API numbers. Numeric nodes retain exact lexemes and cache an
 in-range integral value; decimal/overflow narrowing still uses BigDecimal.
 Caching adds fixed tree storage, which is separate from retained encoded output.
 
-`JsonUtf8IngressBenchmark` starts with the same caller-owned UTF-8 bytes for both
-parsers. It includes creation, decoding/feed, complete consumption, root tree
-construction and close in each invocation. Gson uses an `InputStreamReader`;
-Search feeds a `ByteBuffer` repeatedly until all bytes are accepted, then calls
-`endOfInput`. Both returned trees are observed by JMH and checked for complete
-content in setup. It measures synchronous completion of the async SPI, without
+`JsonUtf8IngressBenchmark` starts with caller-owned UTF-8 bytes. It includes
+creation, feeding, complete consumption, root tree construction and close in each
+invocation. Search feeds a `ByteBuffer` repeatedly until all bytes are accepted,
+then calls `endOfInput`. Returned trees are observed by JMH and checked for
+complete content in setup. It measures synchronous completion of the async SPI, without
 a transport, network fragmentation or an event-loop latency guarantee. Parser
 benchmarks use only the first fixture part, as the parser accepts a single JSON
 root; output benchmarks drain the complete NDJSON body. The output lifecycle
@@ -267,7 +263,7 @@ parameter does not alter these parser operations.
 
 ### Follow-up isolation benchmarks
 
-`JsonScalarConsumptionBenchmark` starts with the same owned String for all three
+`JsonScalarConsumptionBenchmark` starts with the same owned String for all
 methods. Its Jackson-only method advances through every token and calls
 `getString()` for property names and scalar values, consuming each returned
 String opaquely. This forces lazy string completion and assembly. It deliberately
@@ -305,9 +301,8 @@ integrationtest/performance/backend/scripts/run-json-benchmarks.sh --skip-build 
   --pattern 'JsonUtf8IngressBenchmark.*Parser$' --param feedSize=64,1024,8192
 ```
 
-Fragmentation caps both the Gson InputStream read length and Search's offered
-ByteBuffer region. Search also retains its configured maximum internal feed
-size of 8192. Both paths parse through EOF, return complete trees and verify full
+Fragmentation caps Search's offered ByteBuffer region. Search also retains its configured maximum internal feed
+size of 8192. Each operation parses through EOF, returns a complete tree and verifies full
 bytes in trial setup for every chunk parameter. This measures CPU throughput
 under controlled in-memory fragmentation, not network arrival timing or an
 event-loop latency distribution. One-byte and escaped-name boundaries remain
@@ -324,14 +319,13 @@ names are ASCII). It is a diagnostic baseline, not a replacement SPI or a
 strictness-equivalent end-to-end tree parser.
 
 `JsonStringUtf8Benchmark` compares complete parsing of an already materialized
-String through Gson, the current Search character parser, standard bounded
+String through the current Search character parser, standard bounded
 UTF-8 encoding with a String-backed CharBuffer plus the Search async parser, and
 one experiment with fixed array-backed character staging. Encoder/session/buffer
 construction, all encoding/feeds/EOF/close and tree construction are timed;
 fixtures and factories are shared outside timing. Every complete tree is observed
 opaquely, and trial setup independently checks every fixture member and decoded
-value plus numeric lexeme/escaping invariants. Gson comparisons cover valid input;
-they do not imply matching acceptance policies.
+value plus numeric lexeme/escaping invariants.
 
 Its focused fixtures are `scalar-1m` (one large ASCII token), `unicode-1m` (large
 Unicode and escaped value), `small` (typical query) and `fields-1m` (a similarly
@@ -348,7 +342,7 @@ java -cp integrationtest/performance/backend/elasticsearch/target/benchmarks.jar
 integrationtest/performance/backend/scripts/run-json-benchmarks.sh --skip-build \
   --out /tmp/json-string-primary --cores 0,2 --forks 3 --warmup 8 --iterations 5 \
   --fixtures scalar-1m,unicode-1m,small,fields-1m \
-  --pattern 'JsonStringUtf8Benchmark.(gsonString|search.*String)$'
+  --pattern 'JsonStringUtf8Benchmark.search.*String$'
 # Separate encoding-only diagnostics; not complete-tree competitors:
 integrationtest/performance/backend/scripts/run-json-benchmarks.sh --skip-build \
   --out /tmp/json-string-encoding --cores 0,2 --warmup 8 \
@@ -386,8 +380,7 @@ from already owned immutable Strings; use `work=tree` to avoid duplicate rows.
 
 The ingress benchmark now accepts `bufferKind=heap,direct,readonly` (default
 `heap`). Direct/read-only input storage is prepared outside timing; each operation
-starts with a new view and includes feeds, EOF/tree completion and close. Gson
-still reads the identical original bytes. Its `numbers-mixed-10000` root is 82,512
+starts with a new view and includes feeds, EOF/tree completion and close. Its `numbers-mixed-10000` root is 82,512
 bytes, cycling `-0`, `-42`, `0.125`, `1.00`, `6.022e23`, `-7E-9`, an overflowing
 integer and a huge exponent. It is a construction guard, not a production mix.
 
@@ -424,10 +417,16 @@ The [numeric UTF-8 report](../../../design/elasticsearch-async-json-numeric-utf8
 records the retained heap-access optimization, rejected probes, matched controls,
 allocation and the still-open numeric regression.
 
-Task 5 moves the historical Gson provider, generated adapters, schema model and
-paged writer into the Elasticsearch benchmark module's `legacy` package. These
-are captured baseline implementations, not production backend services. The
-baseline benchmarks and buffer-retention probe use that package; Search output
-comparisons continue to use `JsonBody`/`ElasticsearchJsonBody`. This preserves
-reusable comparisons without keeping obsolete Gson processing in production.
-No new Task 5 throughput campaign or claim of universal Gson parity is implied.
+### Comparing with the pre-migration implementation
+
+Historical Gson implementations are kept in Git history instead of copied into
+this module. Run equivalent workloads in separate worktrees for the pre-migration
+revision and the current revision. If a benchmark did not exist on the older
+revision, backport its harness and adapt calls to the production APIs on that
+revision. Keep fixture text, measured work, sink observation, lifecycle, JMH
+settings, JVM, heap, GC and CPU affinity matched. Build each revision separately
+and retain its runner metadata and raw results; do not build alongside timing.
+The current benchmarks do not provide a historical Gson implementation.
+
+Historical reports under `design/` describe the code and results at their recorded
+revisions; their old benchmark selectors may require those revisions.
