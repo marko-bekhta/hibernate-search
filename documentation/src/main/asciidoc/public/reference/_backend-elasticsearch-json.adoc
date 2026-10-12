@@ -11,6 +11,8 @@ transitively. That JSON module exports its model/SPI, requires Jackson Core with
 and opens no packages. Temporary Gson callers need their own `requires com.google.gson`.
 Jackson Core is an implementation dependency; its types do not appear in these contracts.
 Hibernate Search uses minimal Core token parsing, without Databind or reflective object mapping.
+For a standalone guide to the model, accessors, parser constraints, output and codecs,
+see the https://github.com/hibernate/hibernate-search/blob/main/util/json/README.md[JSON module guide].
 The Elasticsearch REST 4 sniffer independently requires Jackson 2 Core; keep that dependency
 when using that client. There is no optional Jackson 2 parser fallback in the Search JSON module.
 
@@ -189,6 +191,13 @@ Normal Search routes avoid a complete raw response/request body copy; bounded in
 is not a constant-memory tree model.
 HTTP interceptors and signing remain synchronous. A future Vert.x adapter can choose an offload policy
 for that work; the SPI is prepared for it, but no Vert.x transport is implemented.
+
+An application-level
+https://github.com/hibernate/hibernate-search/tree/main/util/json/examples/vertx[Vert.x streaming example]
+demonstrates the same JSON SPI independently of the Elasticsearch clients.
+It feeds request buffers incrementally, validates EOF, streams the completed tree with one write in flight,
+and closes parser/cursor state on failures and disconnects.
+Its README explains buffer ownership, HTTP framing, backpressure and event-loop execution policy.
 
 [[backend-elasticsearch-json-client-limits]]
 === Client limits and diagnostics
