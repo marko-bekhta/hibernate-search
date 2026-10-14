@@ -4,16 +4,34 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hibernate.search.util.json.JsonObject;
 import org.hibernate.search.util.json.spi.JsonParsing;
+
+import tools.jackson.databind.node.ObjectNode;
 
 /** Shared server-independent JSON workloads; setup is never timed. */
 public class JsonBenchmarkFixtures {
 	public String fixture;
-	public List<JsonObject> parts;
+	public List<ObjectNode> parts;
 	public String json;
 	public byte[] expectedBytes;
 	public long encodedBytes;
+
+	boolean exactOutputBytes() {
+		return !fixture.startsWith( "numbers-mixed" );
+	}
+
+	void verifyOutput(byte[] output) {
+		if ( exactOutputBytes() ) {
+			if ( !java.util.Arrays.equals( expectedBytes, output ) ) {
+				throw new IllegalStateException( "Full byte mismatch: " + fixture );
+			}
+		}
+		else if ( output.length == 0
+				|| output[output.length - 1] != '\n'
+				|| !new JsonParsing().parse( new String( output, StandardCharsets.UTF_8 ) ).equals( parts.get( 0 ) ) ) {
+			throw new IllegalStateException( "Complete numeric value/framing mismatch: " + fixture );
+		}
+	}
 
 	public void setup() {
 		List<String> documents = new ArrayList<>();
@@ -40,14 +58,18 @@ public class JsonBenchmarkFixtures {
 				break;
 			case "numbers-10000":
 			case "numbers-mixed-10000":
+			case "numbers-mixed-supported-10000":
 				String[] mixed = { "-0", "-42", "0.125", "1.00", "6.022e23", "-7E-9", "9223372036854775808", "1e2147483648" };
 				StringBuilder numericDocument = new StringBuilder( "{\"values\":[" );
 				for ( int i = 0; i < 10_000; i++ ) {
 					if ( i != 0 ) {
 						numericDocument.append( ',' );
 					}
-					numericDocument
-							.append( "numbers-10000".equals( fixture ) ? Integer.toString( i ) : mixed[i % mixed.length] );
+					String number = "numbers-10000".equals( fixture ) ? Integer.toString( i ) : mixed[i % mixed.length];
+					if ( "numbers-mixed-supported-10000".equals( fixture ) && "1e2147483648".equals( number ) ) {
+						number = "1e1000";
+					}
+					numericDocument.append( number );
 				}
 				documents.add( numericDocument.append( "]}" ).toString() );
 				break;
@@ -67,7 +89,7 @@ public class JsonBenchmarkFixtures {
 		JsonParsing parsing = new JsonParsing();
 		parts = new ArrayList<>();
 		for ( String document : documents ) {
-			parts.add( parsing.parse( document ).getAsJsonObject() );
+			parts.add( parsing.parse( document ).asObject() );
 		}
 	}
 }

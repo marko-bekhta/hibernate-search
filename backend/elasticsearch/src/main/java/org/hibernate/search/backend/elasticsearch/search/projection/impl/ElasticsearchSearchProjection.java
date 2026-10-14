@@ -10,7 +10,8 @@ import org.hibernate.search.backend.elasticsearch.search.common.impl.Elasticsear
 import org.hibernate.search.engine.search.loading.spi.LoadingResult;
 import org.hibernate.search.engine.search.loading.spi.ProjectionHitMapper;
 import org.hibernate.search.engine.search.projection.SearchProjection;
-import org.hibernate.search.util.json.JsonObject;
+
+import tools.jackson.databind.node.ObjectNode;
 
 public interface ElasticsearchSearchProjection<P> extends SearchProjection<P> {
 
@@ -25,7 +26,7 @@ public interface ElasticsearchSearchProjection<P> extends SearchProjection<P> {
 	 * @param context An execution context for the request.
 	 * @return An {@link Extractor}, to extract the result of the projection from the Elasticsearch response.
 	 */
-	Extractor<?, P> request(JsonObject requestBody, ProjectionRequestContext context);
+	Extractor<?, P> request(ObjectNode requestBody, ProjectionRequestContext context);
 
 	/**
 	 * An object responsible for extracting data from the Elasticsearch response,
@@ -53,8 +54,8 @@ public interface ElasticsearchSearchProjection<P> extends SearchProjection<P> {
 		 * {@link ProjectionHitMapper}.
 		 * This returned object will be passed to {@link #transform(LoadingResult, Object, ProjectionTransformContext)}.
 		 */
-		E extract(ProjectionHitMapper<?> projectionHitMapper, JsonObject hit,
-				JsonObject source, ProjectionExtractContext context);
+		E extract(ProjectionHitMapper<?> projectionHitMapper, ObjectNode hit,
+				ObjectNode source, ProjectionExtractContext context);
 
 		/**
 		 * Transforms the extracted data to the actual projection result.
@@ -62,7 +63,7 @@ public interface ElasticsearchSearchProjection<P> extends SearchProjection<P> {
 		 * @param loadingResult Container containing all the entities that have been loaded by the
 		 * {@link ProjectionHitMapper}.
 		 * @param extractedData The extracted data to transform, coming from the
-		 * {@link #extract(ProjectionHitMapper, JsonObject, JsonObject, ProjectionExtractContext)} method.
+		 * {@link #extract(ProjectionHitMapper, ObjectNode, ObjectNode, ProjectionExtractContext)} method.
 		 * @param context An execution context for the transforming.
 		 * @return The final result considered as a hit.
 		 */

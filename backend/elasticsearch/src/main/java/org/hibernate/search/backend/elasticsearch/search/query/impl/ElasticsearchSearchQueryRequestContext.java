@@ -21,7 +21,8 @@ import org.hibernate.search.engine.search.loading.spi.SearchLoadingContext;
 import org.hibernate.search.engine.search.projection.ProjectionCollector;
 import org.hibernate.search.engine.search.query.spi.QueryParameters;
 import org.hibernate.search.engine.spatial.GeoPoint;
-import org.hibernate.search.util.json.JsonObject;
+
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * The context holding all the useful information pertaining to the Elasticsearch search query,
@@ -31,7 +32,7 @@ import org.hibernate.search.util.json.JsonObject;
  *     For example distance projections need to inspect distance sorts (if any) for optimization purposes.
  *     ({@link #getDistanceSortIndex(String, GeoPoint)}</li>
  *     <li>When extracting data from the response, to get an "extract" context linked to the session/loading context
- *     ({@link #createExtractContext(JsonObject)}</li>
+ *     ({@link #createExtractContext(ObjectNode)}</li>
  * </ul>
  */
 class ElasticsearchSearchQueryRequestContext implements ProjectionRequestRootContext, AggregationRequestContext {
@@ -159,7 +160,7 @@ class ElasticsearchSearchQueryRequestContext implements ProjectionRequestRootCon
 		}
 	}
 
-	ElasticsearchSearchQueryExtractContext createExtractContext(JsonObject responseBody) {
+	ElasticsearchSearchQueryExtractContext createExtractContext(ObjectNode responseBody) {
 		return new ElasticsearchSearchQueryExtractContext(
 				this,
 				sessionContext,

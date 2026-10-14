@@ -8,7 +8,8 @@ import java.util.Set;
 import org.hibernate.search.backend.elasticsearch.logging.impl.QueryLog;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexScope;
 import org.hibernate.search.engine.search.predicate.SearchPredicate;
-import org.hibernate.search.util.json.JsonObject;
+
+import tools.jackson.databind.node.ObjectNode;
 
 public interface ElasticsearchSearchPredicate extends SearchPredicate {
 
@@ -16,7 +17,7 @@ public interface ElasticsearchSearchPredicate extends SearchPredicate {
 
 	void checkNestableWithin(PredicateNestingContext context);
 
-	JsonObject toJsonQuery(PredicateRequestContext context);
+	ObjectNode toJsonQuery(PredicateRequestContext context);
 
 	static ElasticsearchSearchPredicate from(ElasticsearchSearchIndexScope<?> scope, SearchPredicate predicate) {
 		if ( !( predicate instanceof ElasticsearchSearchPredicate ) ) {

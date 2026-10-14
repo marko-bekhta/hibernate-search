@@ -39,7 +39,6 @@ import org.hibernate.search.util.impl.integrationtest.backend.elasticsearch.Elas
 import org.hibernate.search.util.impl.integrationtest.common.TestConfigurationProvider;
 import org.hibernate.search.util.impl.test.annotation.PortedFromSearch5;
 import org.hibernate.search.util.impl.test.annotation.TestForIssue;
-import org.hibernate.search.util.json.JsonObject;
 import org.hibernate.search.util.json.spi.JsonParsing;
 
 import org.junit.jupiter.api.AfterEach;
@@ -50,6 +49,8 @@ import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 
+import tools.jackson.databind.node.ObjectNode;
+
 /**
  * Test that we manage to compute the content-length of Elasticsearch
  * requests appropriately after a bounded small-body probe,
@@ -59,16 +60,18 @@ import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 @PortedFromSearch5(original = "org.hibernate.search.elasticsearch.test.client.ElasticsearchContentLengthIT")
 class ElasticsearchContentLengthIT {
 
-	private static final JsonObject BODY_PART = new JsonParsing().parse( "{ \"foo\": \"bar\" }" ).getAsJsonObject();
+	private static final ObjectNode BODY_PART = ( (ObjectNode) new JsonParsing().parse( "{ \"foo\": \"bar\" }" ) );
 
 	private static final int BODY_PART_BYTE_SIZE;
+
 	static {
 		JsonCodecService json =
 				org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.create( false ).getCodec();
 		try ( ByteArrayOutputStream out = new ByteArrayOutputStream();
 				Writer writer = new OutputStreamWriter( out, StandardCharsets.UTF_8 ) ) {
 			json.write( BODY_PART, writer );
-			writer.write( '\n' ); // Account for EOL at the end of each body part
+			// Account for EOL at the end of each body part
+			writer.write( '\n' );
 			writer.flush();
 			BODY_PART_BYTE_SIZE = out.size();
 		}
@@ -80,25 +83,21 @@ class ElasticsearchContentLengthIT {
 	private static final int BUFFER_LIMIT = org.hibernate.search.util.json.spi.JsonBodies.DEFAULT_BUFFER_SIZE;
 
 	@RegisterExtension
-	private final WireMockExtension wireMockRule = WireMockExtension.newInstance()
-			.options( wireMockConfig().dynamicPort().dynamicHttpsPort() )
-			.build();
+	private final WireMockExtension wireMockRule =
+			WireMockExtension.newInstance().options( wireMockConfig().dynamicPort().dynamicHttpsPort() ).build();
 
 	@RegisterExtension
 	public TestConfigurationProvider testConfigurationProvider = new TestConfigurationProvider();
 
 	private final ThreadPoolProviderImpl threadPoolProvider = new ThreadPoolProviderImpl(
-			BeanHolder.of( new EmbeddedThreadProvider( ElasticsearchContentLengthIT.class.getName() + ": " ) )
-	);
+			BeanHolder.of( new EmbeddedThreadProvider( ElasticsearchContentLengthIT.class.getName() + ": " ) ) );
 
-	private ScheduledExecutorService timeoutExecutorService =
-			threadPoolProvider.newScheduledExecutor( 1, "Timeout - " );
+	private ScheduledExecutorService timeoutExecutorService = threadPoolProvider.newScheduledExecutor( 1, "Timeout - " );
 
 	@AfterEach
 	void cleanup() {
 		timeoutExecutorService.shutdownNow();
 		threadPoolProvider.close();
-
 		// Avoid side-effects from one test to another
 		// Ideally WiremockRule should do that by itself, but it doesn't...
 		wireMockRule.resetAll();
@@ -106,33 +105,24 @@ class ElasticsearchContentLengthIT {
 
 	@Test
 	void tinyPayload() throws Exception {
-		wireMockRule.stubFor( post( urlPathLike( "/myIndex/myType" ) )
-				.willReturn( elasticsearchResponse().withStatus( 200 ) ) );
-
+		wireMockRule
+				.stubFor( post( urlPathLike( "/myIndex/myType" ) ).willReturn( elasticsearchResponse().withStatus( 200 ) ) );
 		try ( ElasticsearchClientImplementor client = createClient() ) {
 			doPost( client, "/myIndex/myType", produceBody( 1 ) );
-			wireMockRule.verify(
-					postRequestedFor( urlPathLike( "/myIndex/myType" ) )
-							.withoutHeader( "Transfer-Encoding" )
-							.withHeader( "Content-length", equalTo( String.valueOf( BODY_PART_BYTE_SIZE ) ) )
-			);
+			wireMockRule.verify( postRequestedFor( urlPathLike( "/myIndex/myType" ) ).withoutHeader( "Transfer-Encoding" )
+					.withHeader( "Content-length", equalTo( String.valueOf( BODY_PART_BYTE_SIZE ) ) ) );
 		}
 	}
 
 	@Test
 	void payloadJustBelowBufferSize() throws Exception {
-		wireMockRule.stubFor( post( urlPathLike( "/myIndex/myType" ) )
-				.willReturn( elasticsearchResponse().withStatus( 200 ) ) );
-
+		wireMockRule
+				.stubFor( post( urlPathLike( "/myIndex/myType" ) ).willReturn( elasticsearchResponse().withStatus( 200 ) ) );
 		int bodyPartCount = BUFFER_LIMIT / BODY_PART_BYTE_SIZE - 1;
-
 		try ( ElasticsearchClientImplementor client = createClient() ) {
 			doPost( client, "/myIndex/myType", produceBody( bodyPartCount ) );
-			wireMockRule.verify(
-					postRequestedFor( urlPathLike( "/myIndex/myType" ) )
-							.withoutHeader( "Transfer-Encoding" )
-							.withHeader( "Content-length", equalTo( String.valueOf( bodyPartCount * BODY_PART_BYTE_SIZE ) ) )
-			);
+			wireMockRule.verify( postRequestedFor( urlPathLike( "/myIndex/myType" ) ).withoutHeader( "Transfer-Encoding" )
+					.withHeader( "Content-length", equalTo( String.valueOf( bodyPartCount * BODY_PART_BYTE_SIZE ) ) ) );
 		}
 	}
 
@@ -142,25 +132,19 @@ class ElasticsearchContentLengthIT {
 	 */
 	@Test
 	void payloadJustAboveBufferSize_noRequestPostProcessing() throws Exception {
-		assumeFalse(
-				ElasticsearchTestHostConnectionConfiguration.get().isAws(),
-				"This test only is only relevant if Elasticsearch request are *NOT* post-processed." +
-						" Elasticsearch requests are post-processed by the AWS integration in particular."
-		);
-		wireMockRule.stubFor( post( urlPathLike( "/myIndex/myType" ) )
-				.willReturn( elasticsearchResponse().withStatus( 200 ) ) );
-
-		int bodyPartCount = BUFFER_LIMIT / BODY_PART_BYTE_SIZE
-				+ 1 // The last body part will require the use of a second buffer page
-				+ 1; // ... and there will still be body parts to write, so we'll give up on computing content-length
-
+		assumeFalse( ElasticsearchTestHostConnectionConfiguration.get().isAws(),
+				"This test only is only relevant if Elasticsearch request are *NOT* post-processed."
+						+ " Elasticsearch requests are post-processed by the AWS integration in particular." );
+		wireMockRule
+				.stubFor( post( urlPathLike( "/myIndex/myType" ) ).willReturn( elasticsearchResponse().withStatus( 200 ) ) );
+		// The last body part will require the use of a second buffer page
+		int // The last body part will require the use of a second buffer page
+		bodyPartCount = // ... and there will still be body parts to write, so we'll give up on computing content-length
+				BUFFER_LIMIT / BODY_PART_BYTE_SIZE + 1 + 1;
 		try ( ElasticsearchClientImplementor client = createClient() ) {
 			doPost( client, "/myIndex/myType", produceBody( bodyPartCount ) );
-			wireMockRule.verify(
-					postRequestedFor( urlPathLike( "/myIndex/myType" ) )
-							.withHeader( "Transfer-Encoding", equalTo( "chunked" ) )
-							.withoutHeader( "Content-length" )
-			);
+			wireMockRule.verify( postRequestedFor( urlPathLike( "/myIndex/myType" ) )
+					.withHeader( "Transfer-Encoding", equalTo( "chunked" ) ).withoutHeader( "Content-length" ) );
 		}
 	}
 
@@ -170,65 +154,51 @@ class ElasticsearchContentLengthIT {
 	 */
 	@Test
 	void payloadJustAboveBufferSize_requestPostProcessing() throws Exception {
-		assumeTrue(
-				ElasticsearchTestHostConnectionConfiguration.get().isAws(),
-				"This test only is only relevant if Elasticsearch request are post-processed." +
-						" Elasticsearch requests are post-processed by the AWS integration in particular."
-		);
-		wireMockRule.stubFor( post( urlPathLike( "/myIndex/myType" ) )
-				.willReturn( elasticsearchResponse().withStatus( 200 ) ) );
-
+		assumeTrue( ElasticsearchTestHostConnectionConfiguration.get().isAws(),
+				"This test only is only relevant if Elasticsearch request are post-processed."
+						+ " Elasticsearch requests are post-processed by the AWS integration in particular." );
+		wireMockRule
+				.stubFor( post( urlPathLike( "/myIndex/myType" ) ).willReturn( elasticsearchResponse().withStatus( 200 ) ) );
 		int bodyPartCount = BUFFER_LIMIT / BODY_PART_BYTE_SIZE + 1;
-
 		try ( ElasticsearchClientImplementor client = createClient() ) {
 			doPost( client, "/myIndex/myType", produceBody( bodyPartCount ) );
-			wireMockRule.verify(
-					postRequestedFor( urlPathLike( "/myIndex/myType" ) )
-							.withHeader( "Transfer-Encoding", equalTo( "chunked" ) )
-							.withoutHeader( "Content-length" )
-			);
+			wireMockRule.verify( postRequestedFor( urlPathLike( "/myIndex/myType" ) )
+					.withHeader( "Transfer-Encoding", equalTo( "chunked" ) ).withoutHeader( "Content-length" ) );
 		}
 	}
 
 	private ElasticsearchClientImplementor createClient() {
-		Map<String, ?> defaultBackendProperties =
-				new ElasticsearchTckBackendHelper().createDefaultBackendSetupStrategy()
-						.createBackendConfigurationProperties( testConfigurationProvider );
-
+		Map<String, ?> defaultBackendProperties = new ElasticsearchTckBackendHelper().createDefaultBackendSetupStrategy()
+				.createBackendConfigurationProperties( testConfigurationProvider );
 		Map<String, Object> clientProperties = new HashMap<>( defaultBackendProperties );
-
 		// We won't target the provided ES instance, but Wiremock
 		clientProperties.remove( ElasticsearchBackendSettings.HOSTS );
 		clientProperties.remove( ElasticsearchBackendSettings.PROTOCOL );
 		clientProperties.remove( ElasticsearchBackendSettings.URIS );
-
 		// Target the Wiremock server using HTTP
 		clientProperties.put( ElasticsearchBackendSettings.URIS, httpUriFor( wireMockRule ) );
-
 		ConfigurationPropertySource clientPropertySource = AllAwareConfigurationPropertySource.fromMap( clientProperties );
-
 		BeanResolver beanResolver = testConfigurationProvider.createBeanResolverForTest();
-		return getDiscoveredClientFactory( beanResolver ).get()
-				.create( beanResolver, clientPropertySource,
-						threadPoolProvider.threadProvider(), "Client",
-						new DelegatingSimpleScheduledExecutor( timeoutExecutorService, true ),
-						org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.create( true ) );
+		return getDiscoveredClientFactory( beanResolver ).get().create( beanResolver, clientPropertySource,
+				threadPoolProvider.threadProvider(), "Client",
+				new DelegatingSimpleScheduledExecutor( timeoutExecutorService, true ),
+				org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.create( true ) );
 	}
 
-	private ElasticsearchResponse doPost(ElasticsearchClient client, String path, Collection<JsonObject> bodyParts) {
+	private ElasticsearchResponse doPost(ElasticsearchClient client, String path, Collection<ObjectNode> bodyParts) {
 		return client.submit( buildRequest( ElasticsearchRequest.post(), path, bodyParts ) ).join();
 	}
 
 	private ElasticsearchRequest buildRequest(ElasticsearchRequest.Builder builder, String path,
-			Collection<JsonObject> bodyParts) {
+			Collection<ObjectNode> bodyParts) {
 		for ( String pathComponent : path.split( "/" ) ) {
 			if ( !pathComponent.isEmpty() ) {
 				URLEncodedString fromString = URLEncodedString.fromString( pathComponent );
 				builder = builder.pathComponent( fromString );
 			}
 		}
-		for ( JsonObject bodyPart : bodyParts ) {
-			builder = builder.body( bodyPart );
+		for ( ObjectNode bodyPart : bodyParts ) {
+			builder = builder.bodyJson( bodyPart );
 		}
 		return builder.build();
 	}
@@ -245,12 +215,11 @@ class ElasticsearchContentLengthIT {
 		return ResponseDefinitionBuilder.okForEmptyJson();
 	}
 
-	private static Collection<JsonObject> produceBody(int bodyPartCount) {
-		Collection<JsonObject> result = new ArrayList<>( bodyPartCount );
+	private static Collection<ObjectNode> produceBody(int bodyPartCount) {
+		Collection<ObjectNode> result = new ArrayList<>( bodyPartCount );
 		for ( int i = 0; i < bodyPartCount; i++ ) {
 			result.add( BODY_PART );
 		}
 		return result;
 	}
-
 }

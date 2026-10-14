@@ -7,19 +7,21 @@ import java.util.Set;
 import org.hibernate.search.backend.elasticsearch.common.impl.DocumentIdHelper;
 import org.hibernate.search.backend.elasticsearch.document.impl.DocumentMetadataContributor;
 import org.hibernate.search.backend.elasticsearch.document.model.dsl.impl.IndexSchemaRootContributor;
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonAccessor;
 import org.hibernate.search.backend.elasticsearch.logging.spi.ConfigurationLog;
 import org.hibernate.search.backend.elasticsearch.logging.spi.ElasticsearchClientLog;
 import org.hibernate.search.backend.elasticsearch.search.projection.impl.ProjectionExtractContext;
 import org.hibernate.search.backend.elasticsearch.search.projection.impl.ProjectionExtractionHelper;
 import org.hibernate.search.backend.elasticsearch.search.projection.impl.ProjectionRequestContext;
 import org.hibernate.search.util.common.reporting.EventContext;
-import org.hibernate.search.util.json.JsonObject;
-import org.hibernate.search.util.json.spi.JsonAccessor;
+
+import tools.jackson.databind.node.ObjectNode;
 
 public class NoMultiTenancyStrategy implements MultiTenancyStrategy {
 
 	private final NoMultiTenancyElasticsearchDocumentIdHelper documentIdHelper =
 			new NoMultiTenancyElasticsearchDocumentIdHelper();
+
 	private final NoMultiTenancyIdProjectionExtractionHelper idProjectionExtractionHelper =
 			new NoMultiTenancyIdProjectionExtractionHelper();
 
@@ -41,13 +43,13 @@ public class NoMultiTenancyStrategy implements MultiTenancyStrategy {
 	}
 
 	@Override
-	public JsonObject filterOrNull(String tenantId) {
+	public ObjectNode filterOrNull(String tenantId) {
 		// No need for a filter
 		return null;
 	}
 
 	@Override
-	public JsonObject filterOrNull(Set<String> tenantIds) {
+	public ObjectNode filterOrNull(Set<String> tenantIds) {
 		// No need for a filter
 		return null;
 	}
@@ -58,6 +60,7 @@ public class NoMultiTenancyStrategy implements MultiTenancyStrategy {
 	}
 
 	private static final class NoMultiTenancyElasticsearchDocumentIdHelper implements DocumentIdHelper {
+
 		@Override
 		public void checkTenantId(String tenantId, EventContext backendContext) {
 			if ( tenantId != null ) {
@@ -79,18 +82,18 @@ public class NoMultiTenancyStrategy implements MultiTenancyStrategy {
 		}
 	}
 
-	private static final class NoMultiTenancyIdProjectionExtractionHelper
-			implements ProjectionExtractionHelper<String> {
+	private static final class NoMultiTenancyIdProjectionExtractionHelper implements ProjectionExtractionHelper<String> {
+
 		private static final JsonAccessor<String> HIT_ID_ACCESSOR =
 				JsonAccessor.root().property( "_id" ).unwrapSingletonArrays().asString();
 
 		@Override
-		public void request(JsonObject requestBody, ProjectionRequestContext context) {
+		public void request(ObjectNode requestBody, ProjectionRequestContext context) {
 			// No need to request any additional information, Elasticsearch metadata is enough
 		}
 
 		@Override
-		public String extract(JsonObject hit, ProjectionExtractContext context) {
+		public String extract(ObjectNode hit, ProjectionExtractContext context) {
 			return HIT_ID_ACCESSOR.get( hit ).orElseThrow( ElasticsearchClientLog.INSTANCE::elasticsearchResponseMissingData );
 		}
 	}

@@ -1,5 +1,7 @@
 package org.hibernate.search.backend.elasticsearch.search.sort.impl;
 
+import org.hibernate.search.backend.elasticsearch.json.JsonHandler;
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonHandlerBridge;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexScope;
 import org.hibernate.search.engine.search.sort.SearchSort;
 import org.hibernate.search.engine.search.sort.spi.CompositeSortBuilder;
@@ -7,7 +9,7 @@ import org.hibernate.search.engine.search.sort.spi.ScoreSortBuilder;
 import org.hibernate.search.engine.search.sort.spi.SearchSortBuilderFactory;
 import org.hibernate.search.engine.search.sort.spi.WithParametersSortBuilder;
 
-import org.hibernate.search.util.json.JsonObject;
+import tools.jackson.databind.node.ObjectNode;
 
 public class ElasticsearchSearchSortBuilderFactory implements SearchSortBuilderFactory {
 
@@ -37,11 +39,15 @@ public class ElasticsearchSearchSortBuilderFactory implements SearchSortBuilderF
 		return new ElasticsearchWithParametersSort.Builder( scope );
 	}
 
-	public ElasticsearchSearchSort fromJson(JsonObject jsonObject) {
+	public <T> ElasticsearchSearchSort fromJson(JsonHandler<T> handler, T jsonObject) {
+		return fromJson( JsonHandlerBridge.importObject( handler, jsonObject, "sort import" ) );
+	}
+
+	private ElasticsearchSearchSort fromJson(ObjectNode jsonObject) {
 		return new ElasticsearchUserProvidedJsonSort( scope, jsonObject );
 	}
 
 	public ElasticsearchSearchSort fromJson(String jsonString) {
-		return fromJson( scope.userFacingCodec().decode( jsonString, JsonObject.class ) );
+		return fromJson( JsonHandlerBridge.parseObject( jsonString, "sort import" ) );
 	}
 }

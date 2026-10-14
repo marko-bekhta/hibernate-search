@@ -12,6 +12,7 @@ usage() {
 Usage: run-json-benchmarks.sh --out DIRECTORY [options]
   --cores LIST       Allowed online CPUs, e.g. 0,2 (default: two physical cores)
   --skip-build       Use an existing benchmark JAR, checking source freshness
+  --classpath FILE   Run ordinary dependency JARs listed in FILE (colon-separated)
   --forks N          Independent forks (default: 3)
   --warmup N         Warmup iterations (default: 5)
   --iterations N     Measurement iterations (default: 5)
@@ -28,7 +29,7 @@ Usage: run-json-benchmarks.sh --out DIRECTORY [options]
 Requires Linux, Bash 4+, jq, taskset, Java and GNU core utilities.
 HELP
 }
-out= cores_spec= profiler= jvm_args=
+out= cores_spec= profiler= jvm_args= classpath_file=
 forks=3 warmup=5 iterations=5 seconds=1
 skip_build=false quick=false cold=false
 pattern='JsonComparisonBenchmark.(jackson|synchronousCursor|incrementalCursor|boundedWorker)$'
@@ -41,7 +42,7 @@ while (($#)); do
         --skip-build) skip_build=true; shift; continue ;;
         --quick) quick=true; shift; continue ;;
         --cold) cold=true; shift; continue ;;
-        --out|--cores|--forks|--warmup|--iterations|--seconds|--pattern|--fixtures|--lifecycle|--param|--profiler|--jvm-args)
+        --out|--cores|--forks|--warmup|--iterations|--seconds|--pattern|--fixtures|--lifecycle|--param|--profiler|--jvm-args|--classpath)
             (($# >= 2)) || fail "$1 requires a value"
             case $1 in
                 --out) out=$2 ;; --cores) cores_spec=$2 ;;
@@ -52,6 +53,7 @@ while (($#)); do
                 --lifecycle) lifecycle=$2 ;;
                 --param) [[ $2 =~ ^[a-zA-Z_][a-zA-Z_0-9]*=.+$ ]] || fail '--param requires a nonempty name=value'; params+=("$2") ;;
                 --profiler) profiler=$2 ;; --jvm-args) jvm_args=$2 ;;
+                --classpath) classpath_file=$2 ;;
             esac
             shift 2 ;;
         *) fail "Unknown argument: $1" ;;
@@ -111,8 +113,10 @@ cd -- "$ROOT"
 if [[ $skip_build == false ]]; then
     "$ROOT/mvnw" clean install -pl integrationtest/performance/backend/elasticsearch -am -DskipTests -DskipITs -Dno-build-cache > "$out/build.log" 2>&1
 fi
-[[ -f $JAR ]] || fail 'Missing benchmark JAR; build first or omit --skip-build'
-if [[ $skip_build == true ]]; then
+if [[ -z $classpath_file ]]; then
+    [[ -f $JAR ]] || fail 'Missing benchmark JAR; build first or omit --skip-build'
+fi
+if [[ $skip_build == true && -z $classpath_file ]]; then
     newer=$(find util/json/src/main backend/elasticsearch/src/main integrationtest/performance/backend/elasticsearch/src/main -type f -name '*.java' -newer "$JAR" -print -quit)
     [[ -z $newer ]] || fail 'Benchmark JAR predates source changes; rebuild before --skip-build'
 fi
@@ -123,13 +127,29 @@ jvm="-Xms1g -Xmx1g -XX:+UseG1GC -XX:ActiveProcessorCount=$count -Djson.benchmark
 [[ -z $jvm_args ]] || jvm+=" $jvm_args"
 if [[ $quick == true ]]; then forks=1 warmup=1 iterations=1; fi
 if [[ $cold == true ]]; then warmup=0 iterations=1; fi
-command=(taskset -c "$affinity" java -jar "$JAR" "$pattern" -f "$forks" -wi "$warmup" -i "$iterations" -w "${seconds}s" -r "${seconds}s" -t 1 -jvmArgs "$jvm" -rf json -rff "$out/jmh.json")
+launch=(java -jar "$JAR")
+classpath_hashes='{}'
+if [[ -n $classpath_file ]]; then
+    [[ -f $classpath_file ]] || fail 'Missing classpath file'
+    classpath=$(cat -- "$classpath_file")
+    [[ -n $classpath && $classpath != *$'\n'* ]] || fail 'Classpath must be a nonempty single line'
+    IFS=: read -r -a entries <<< "$classpath"
+    classpath_hashes=$(
+        for entry in "${entries[@]}"; do
+            [[ -f $entry && $entry == *.jar ]] || fail "Classpath entries must be frozen JAR files: $entry"
+            digest=$(sha256sum < "$entry")
+            jq -n --arg path "$entry" --arg sha256 "${digest%% *}" '{key: $path, value: $sha256}'
+        done | jq -s from_entries
+    )
+    launch=(java -cp "$classpath" org.openjdk.jmh.Main)
+fi
+command=(taskset -c "$affinity" "${launch[@]}" "$pattern" -f "$forks" -wi "$warmup" -i "$iterations" -w "${seconds}s" -r "${seconds}s" -t 1 -jvmArgs "$jvm" -rf json -rff "$out/jmh.json")
 [[ $cold == false ]] || command+=(-bm ss)
 [[ -z $fixtures ]] || command+=(-p "fixture=$fixtures" -p "lifecycle=$lifecycle")
 for parameter in "${params[@]}"; do command+=(-p "$parameter"); done
 [[ -z $profiler ]] || command+=(-prof "$profiler")
 git diff HEAD --binary > "$out/source.patch"
-source_dirs=(integrationtest/performance/backend/elasticsearch/src integrationtest/performance/backend/scripts util/json/src)
+source_dirs=(integrationtest/performance/backend/elasticsearch/src integrationtest/performance/backend/scripts util/json/src backend/elasticsearch/src/main)
 while IFS= read -r -d '' source; do
     git diff --no-index --binary -- /dev/null "$source" >> "$out/source.patch" || [[ $? == 1 ]]
 done < <(git ls-files --others --exclude-standard -z -- "${source_dirs[@]}")
@@ -139,7 +159,7 @@ source_hashes=$(
         jq -n --arg path "$source" --arg hash "$(hash "$source")" '{key: $path, value: $hash}'
     done < <(find "${source_dirs[@]}" -type f -print0)
 )
-source_hashes=$(jq -s from_entries <<< "$source_hashes")
+jq -s from_entries <<< "$source_hashes" > "$out/source-hashes.json"
 gating=false
 if ((forks >= 3 && warmup >= 5 && iterations >= 5)) && [[ $quick == false && $cold == false && -z $profiler ]]; then gating=true; fi
 jq -n --arg timestamp "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --argjson gating "$gating" \
@@ -147,6 +167,7 @@ jq -n --arg timestamp "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --argjson gating "$gating
     --arg invocation "$invocation" --arg jvm "$jvm" --arg revision "$(git rev-parse HEAD)" \
     --arg status "$(git status --short)" --arg patch_sha256 "$(hash "$out/source.patch")" \
     --arg artifact_sha256 "$(hash "$JAR")" --arg java "$(capture java -version)" \
+    --arg classpath_file "$classpath_file" --argjson classpath_hashes "$classpath_hashes" \
     --arg uname "$(uname -a)" --arg cpu "$(capture lscpu)" --argjson topology "$topology" \
     --argjson allowed "$allowed" --argjson selected "$selected" \
     --arg cgroup "$(read_value /proc/self/cgroup)" --arg cpu_max "$(read_value /sys/fs/cgroup/cpu.max)" \
@@ -154,7 +175,8 @@ jq -n --arg timestamp "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --argjson gating "$gating
     --arg cpuset "$(read_value /sys/fs/cgroup/cpuset.cpus.effective)" --arg load_before "$(read_value /proc/loadavg)" \
     --arg pressure_before "$(read_value /proc/pressure/cpu)" --arg turbo "$(read_value /sys/devices/system/cpu/intel_pstate/no_turbo)" \
     --arg boost "$(read_value /sys/devices/system/cpu/cpufreq/boost)" --arg perf_event_paranoid "$(read_value /proc/sys/kernel/perf_event_paranoid)" \
-    --argjson exclusive_reservation false --argjson source_hashes "$source_hashes" '$ARGS.named' > "$out/environment.json"
+    --argjson exclusive_reservation false --slurpfile source_hashes "$out/source-hashes.json" \
+    '$ARGS.named + {source_hashes: $source_hashes[0]}' > "$out/environment.json"
 printf '%q ' "${command[@]}" | tee "$out/command.txt"
 printf '\n' | tee -a "$out/command.txt"
 exit_code=0

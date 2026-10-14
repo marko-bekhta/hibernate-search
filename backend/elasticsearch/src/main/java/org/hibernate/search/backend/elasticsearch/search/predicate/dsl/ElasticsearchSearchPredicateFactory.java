@@ -1,9 +1,11 @@
 package org.hibernate.search.backend.elasticsearch.search.predicate.dsl;
 
+import org.hibernate.search.backend.elasticsearch.gson.GsonJsonHandlers;
+import org.hibernate.search.backend.elasticsearch.json.JsonHandler;
 import org.hibernate.search.engine.search.predicate.dsl.ExtendedSearchPredicateFactory;
 import org.hibernate.search.engine.search.predicate.dsl.PredicateFinalStep;
 
-import org.hibernate.search.util.json.JsonObject;
+import com.google.gson.JsonObject;
 
 /**
  * A factory for search predicates with some Elasticsearch-specific methods.
@@ -31,16 +33,12 @@ public interface ElasticsearchSearchPredicateFactory<SR>
 	 * See <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl.html">the Elasticsearch documentation</a>.
 	 * @return The final step of the predicate DSL.
 	 */
-	PredicateFinalStep fromJson(JsonObject jsonObject);
-
-	/**
-	* @deprecated Use Search JSON nodes. Conversion walks and allocates a new tree.
-	* This bridge and GsonJsonConversion will be removed together in a future breaking release.
-	* A literal null argument is ambiguous; cast it to the intended input type.
-	*/
-	@Deprecated(forRemoval = true)
-	@SuppressWarnings("removal")
-	default PredicateFinalStep fromJson(com.google.gson.JsonObject jsonObject) {
-		return fromJson( org.hibernate.search.backend.elasticsearch.gson.GsonJsonConversion.fromGson( jsonObject ) );
+	@Deprecated
+	default PredicateFinalStep fromJson(JsonObject jsonObject) {
+		return fromJson( GsonJsonHandlers.object(), jsonObject );
 	}
+
+	/** Import one object through an explicit JSON-library handler. Keep the input stable while Search uses it. */
+	<T> PredicateFinalStep fromJson(JsonHandler<T> handler, T jsonObject);
+
 }

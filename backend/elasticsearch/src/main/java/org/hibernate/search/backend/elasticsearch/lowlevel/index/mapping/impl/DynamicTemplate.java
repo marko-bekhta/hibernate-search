@@ -6,7 +6,8 @@ import org.hibernate.search.backend.elasticsearch.json.impl.JsonName;
 import org.hibernate.search.backend.elasticsearch.json.impl.JsonSerializable;
 import org.hibernate.search.backend.elasticsearch.json.impl.SerializeExtraProperties;
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper;
-import org.hibernate.search.util.json.JsonElement;
+
+import tools.jackson.databind.JsonNode;
 
 /**
  * An object representing an Elasticsearch dynamic template.
@@ -26,7 +27,7 @@ public class DynamicTemplate {
 	private PropertyMapping mapping;
 
 	@SerializeExtraProperties
-	private Map<String, JsonElement> extraAttributes;
+	private Map<String, JsonNode> extraAttributes;
 
 	public String getMatchMappingType() {
 		return matchMappingType;
@@ -52,11 +53,11 @@ public class DynamicTemplate {
 		this.mapping = mapping;
 	}
 
-	public Map<String, JsonElement> getExtraAttributes() {
+	public Map<String, JsonNode> getExtraAttributes() {
 		return extraAttributes;
 	}
 
-	public void setExtraAttributes(Map<String, JsonElement> extraAttributes) {
+	public void setExtraAttributes(Map<String, JsonNode> extraAttributes) {
 		this.extraAttributes = extraAttributes;
 	}
 

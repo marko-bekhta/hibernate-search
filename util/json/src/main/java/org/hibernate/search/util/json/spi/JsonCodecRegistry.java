@@ -4,7 +4,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-import org.hibernate.search.util.json.JsonElement;
+import tools.jackson.databind.JsonNode;
 
 /** Immutable explicit registrations. Unknown classes fail; there is no reflective fallback. */
 public final class JsonCodecRegistry {
@@ -28,11 +28,11 @@ public final class JsonCodecRegistry {
 	/** Deferred direct codec lookup allows recursive model graphs without reflective mapping. */
 	public <T> JsonCodec<T> reference(Class<T> type) {
 		return new JsonCodec<>() {
-			public T decode(JsonElement value) {
+			public T decode(JsonNode value) {
 				return get( type ).decode( value );
 			}
 
-			public JsonElement encode(T value, boolean serializeNulls) {
+			public JsonNode encode(T value, boolean serializeNulls) {
 				return get( type ).encode( value, serializeNulls );
 			}
 		};

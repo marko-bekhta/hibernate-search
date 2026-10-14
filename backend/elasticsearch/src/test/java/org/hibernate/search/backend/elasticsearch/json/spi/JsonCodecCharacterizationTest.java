@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.stream.Stream;
 
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonScalarConversions;
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.aliases.impl.IndexAliasDefinition;
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.analysis.impl.AnalyzerDefinition;
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.analysis.impl.CharFilterDefinition;
@@ -57,6 +58,7 @@ class JsonCodecCharacterizationTest {
 				Arguments.of( OpenSearchVectorTypeMethod.Parameters.class, "{\"ef_construction\":100,\"m\":16,\"custom\":1}" ),
 				Arguments.of( PropertyMapping.class,
 						"{\"type\":\"date\",\"format\":\"strict_date_optional_time||epoch_millis\",\"null_value\":9007199254740993,\"doc_values\":false,\"custom\":{\"nested\":3}}" ),
+				Arguments.of( PropertyMapping.class, "{\"type\":\"scaled_float\",\"scaling_factor\":100.0}" ),
 				Arguments.of( RootTypeMapping.class,
 						"{\"dynamic\":\"strict\",\"_routing\":{\"required\":true},\"properties\":{\"name\":{\"type\":\"keyword\"}},\"dynamic_templates\":[{\"strings\":{\"match_mapping_type\":\"string\",\"mapping\":{\"type\":\"keyword\"}}}]}" ),
 				Arguments.of( NamedDynamicTemplate.class,
@@ -73,7 +75,7 @@ class JsonCodecCharacterizationTest {
 	void roundTrip(Class<?> type, String json) {
 		assertThat( codec.getCodec( type ).getClass().getName() ).doesNotContain( "ReflectiveTypeAdapter" );
 		Object value = codec.decode( json, type );
-		assertThat( codec.encode( value ) ).isEqualTo( new JsonParsing().parse( json ) );
+		assertThat( JsonScalarConversions.equivalent( codec.encode( value ), new JsonParsing().parse( json ) ) ).isTrue();
 		assertThat( codec.decode( "null", type ) ).isNull();
 		assertThat( codec.write( null ) ).isEqualTo( "null" );
 	}
@@ -98,10 +100,10 @@ class JsonCodecCharacterizationTest {
 		PropertyMapping mapping =
 				codec.decode( "{\"type\":\"date\",\"format\":\"a||b\",\"unknown\":null}", PropertyMapping.class );
 		assertThat( mapping.getFormat() ).containsExactly( "a", "b" );
-		assertThat( codec.encode( mapping ).getAsJsonObject().has( "unknown" ) ).isFalse();
+		assertThat( codec.encode( mapping ).has( "unknown" ) ).isFalse();
 		JsonCodecService withNulls = JsonProviderHelper.create( false ).getCodec();
-		assertThat( withNulls.encode( mapping ).getAsJsonObject().get( "unknown" ).isJsonNull() ).isTrue();
-		assertThat( withNulls.encode( mapping ).getAsJsonObject().get( "index" ).isJsonNull() ).isTrue();
+		assertThat( withNulls.encode( mapping ).get( "unknown" ).isNull() ).isTrue();
+		assertThat( withNulls.encode( mapping ).get( "index" ).isNull() ).isTrue();
 		assertThat( codec.decode( "{\"format\":null}", PropertyMapping.class ).getFormat() ).isNull();
 		assertThat( codec.decode( "{\"format\":\"a||b||\"}", PropertyMapping.class ).getFormat() )
 				.containsExactly( "a", "b" );
@@ -113,19 +115,19 @@ class JsonCodecCharacterizationTest {
 	void generatedMemberOrderAndExtraPropertyOrder() {
 		IndexSettings settings =
 				codec.decode( "{\"z\":1,\"max_result_window\":20,\"a\":2,\"knn\":true}", IndexSettings.class );
-		assertThat( codec.encode( settings ).getAsJsonObject().keySet() )
+		assertThat( codec.encode( settings ).propertyNames() )
 				.containsExactly( "knn", "max_result_window", "z", "a" );
 	}
 
 	@Test
-	void codecsPreserveLargeNumbersAndExtraNumberLexemes() {
+	void codecsPreserveLargeNumericValues() {
 		PropertyMapping mapping = codec.decode( "{\"null_value\":9007199254740993}", PropertyMapping.class );
-		assertThat( mapping.getNullValue().getAsLong() ).isEqualTo( 9007199254740993L );
-		assertThat( codec.encode( mapping ).getAsJsonObject().get( "null_value" ).toString() )
+		assertThat( mapping.getNullValue().longValue() ).isEqualTo( 9007199254740993L );
+		assertThat( codec.encode( mapping ).get( "null_value" ).toString() )
 				.isEqualTo( "9007199254740993" );
 		IndexSettings settings = codec.decode( "{\"extra\":1.2300e+04}", IndexSettings.class );
-		assertThat( codec.encode( settings ).getAsJsonObject().get( "extra" ).toString() )
-				.isEqualTo( "1.2300e+04" );
+		assertThat( codec.encode( settings ).get( "extra" ).decimalValue() )
+				.isEqualByComparingTo( "12300" );
 	}
 
 	@Test

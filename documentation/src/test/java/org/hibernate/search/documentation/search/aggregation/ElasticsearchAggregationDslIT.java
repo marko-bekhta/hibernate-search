@@ -9,17 +9,19 @@ import java.util.function.Consumer;
 import jakarta.persistence.EntityManagerFactory;
 
 import org.hibernate.search.backend.elasticsearch.ElasticsearchExtension;
+import org.hibernate.search.backend.elasticsearch.json.jackson.JacksonJsonHandlers;
 import org.hibernate.search.documentation.testsupport.BackendConfigurations;
 import org.hibernate.search.documentation.testsupport.DocumentationSetupHelper;
 import org.hibernate.search.engine.search.aggregation.AggregationKey;
 import org.hibernate.search.engine.search.query.SearchResult;
 import org.hibernate.search.mapper.orm.Search;
 import org.hibernate.search.mapper.orm.session.SearchSession;
-import org.hibernate.search.util.json.JsonObject;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+
+import tools.jackson.databind.node.ObjectNode;
 
 class ElasticsearchAggregationDslIT {
 
@@ -43,25 +45,24 @@ class ElasticsearchAggregationDslIT {
 	void elasticsearch() {
 		withinSearchSession( searchSession -> {
 			// tag::elasticsearch-fromJson-jsonObject[]
-			JsonObject jsonObject =
+			ObjectNode jsonObject =
 					// end::elasticsearch-fromJson-jsonObject[]
-					new org.hibernate.search.util.json.spi.JsonParsing().parse(
+					JacksonJsonHandlers.object().fromJson(
 							"{"
 									+ "    \"histogram\": {"
 									+ "        \"field\": \"price\","
 									+ "        \"interval\": 10"
 									+ "    }"
 									+ "}" )
-							.getAsJsonObject()
 			// tag::elasticsearch-fromJson-jsonObject[]
 			/* ... */;
-			AggregationKey<JsonObject> countsByPriceHistogramKey = AggregationKey.of( "countsByPriceHistogram" );
+			AggregationKey<ObjectNode> countsByPriceHistogramKey = AggregationKey.of( "countsByPriceHistogram" );
 			SearchResult<Book> result = searchSession.search( Book.class )
 					.extension( ElasticsearchExtension.get() )
 					.where( f -> f.matchAll() )
-					.aggregation( countsByPriceHistogramKey, f -> f.fromJson( jsonObject ) )
+					.aggregation( countsByPriceHistogramKey, f -> f.fromJson( JacksonJsonHandlers.object(), jsonObject ) )
 					.fetch( 20 );
-			JsonObject countsByPriceHistogram = result.aggregation( countsByPriceHistogramKey ); // <1>
+			ObjectNode countsByPriceHistogram = result.aggregation( countsByPriceHistogramKey ); // <1>
 			// end::elasticsearch-fromJson-jsonObject[]
 			assertJsonEquals(
 					"{"
@@ -86,7 +87,7 @@ class ElasticsearchAggregationDslIT {
 
 		withinSearchSession( searchSession -> {
 			// tag::elasticsearch-fromJson-string[]
-			AggregationKey<JsonObject> countsByPriceHistogramKey = AggregationKey.of( "countsByPriceHistogram" );
+			AggregationKey<ObjectNode> countsByPriceHistogramKey = AggregationKey.of( "countsByPriceHistogram" );
 			SearchResult<Book> result = searchSession.search( Book.class )
 					.extension( ElasticsearchExtension.get() )
 					.where( f -> f.matchAll() )
@@ -95,9 +96,9 @@ class ElasticsearchAggregationDslIT {
 							+ "        \"field\": \"price\","
 							+ "        \"interval\": 10"
 							+ "    }"
-							+ "}" ) )
+							+ "}", JacksonJsonHandlers.object() ) )
 					.fetch( 20 );
-			JsonObject countsByPriceHistogram = result.aggregation( countsByPriceHistogramKey ); // <1>
+			ObjectNode countsByPriceHistogram = result.aggregation( countsByPriceHistogramKey ); // <1>
 			// end::elasticsearch-fromJson-string[]
 			assertJsonEquals(
 					"{"

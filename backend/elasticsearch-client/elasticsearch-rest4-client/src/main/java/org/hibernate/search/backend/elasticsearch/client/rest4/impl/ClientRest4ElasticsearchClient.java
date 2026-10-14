@@ -22,7 +22,6 @@ import org.hibernate.search.engine.common.execution.spi.SimpleScheduledExecutor;
 import org.hibernate.search.engine.common.timing.Deadline;
 import org.hibernate.search.engine.environment.bean.BeanHolder;
 import org.hibernate.search.util.common.impl.Closer;
-import org.hibernate.search.util.json.JsonObject;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.client.config.RequestConfig;
@@ -33,6 +32,7 @@ import org.elasticsearch.client.ResponseException;
 import org.elasticsearch.client.ResponseListener;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.sniff.Sniffer;
+import tools.jackson.databind.node.ObjectNode;
 
 public class ClientRest4ElasticsearchClient implements ElasticsearchClientImplementor {
 
@@ -215,8 +215,8 @@ public class ClientRest4ElasticsearchClient implements ElasticsearchClientImplem
 
 	private ElasticsearchResponse convertResponse(Response response) {
 		try {
-			JsonObject body = parseBody( response );
-			return new ElasticsearchResponse(
+			ObjectNode body = parseBody( response );
+			return ElasticsearchResponse.withJsonBody(
 					response.getHost().toHostString(),
 					response.getStatusLine().getStatusCode(),
 					response.getStatusLine().getReasonPhrase(),
@@ -228,13 +228,13 @@ public class ClientRest4ElasticsearchClient implements ElasticsearchClientImplem
 		}
 	}
 
-	private JsonObject parseBody(Response response) throws IOException {
+	private ObjectNode parseBody(Response response) throws IOException {
 		HttpEntity entity = response.getEntity();
 		if ( entity == null ) {
 			return null;
 		}
 
-		return json.decode( ( (ClientRest4JsonResponseConsumer.Entity) entity ).body().tree(), JsonObject.class );
+		return json.decode( ( (ClientRest4JsonResponseConsumer.Entity) entity ).body().tree(), ObjectNode.class );
 	}
 
 	private void log(ElasticsearchRequest request, long start, ElasticsearchResponse response) {
@@ -247,19 +247,19 @@ public class ClientRest4ElasticsearchClient implements ElasticsearchClientImplem
 		if ( successCode ) {
 			ElasticsearchRequestLog.INSTANCE.executedRequest( request.method(), response.hostAndPort(), request.path(),
 					request.parameters(),
-					request.bodyParts().size(), executionTimeMs,
+					request.bodyPartsJson().size(), executionTimeMs,
 					response.statusCode(), response.statusMessage(),
-					jsonLogHelper.toString( request.bodyParts() ),
-					jsonLogHelper.toString( response.body() ) );
+					jsonLogHelper.toString( request.bodyPartsJson() ),
+					jsonLogHelper.toString( response.bodyJson() ) );
 		}
 		else {
 			ElasticsearchRequestLog.INSTANCE.executedRequestWithFailure( request.method(), response.hostAndPort(),
 					request.path(),
 					request.parameters(),
-					request.bodyParts().size(), executionTimeMs,
+					request.bodyPartsJson().size(), executionTimeMs,
 					response.statusCode(), response.statusMessage(),
-					jsonLogHelper.toString( request.bodyParts() ),
-					jsonLogHelper.toString( response.body() ) );
+					jsonLogHelper.toString( request.bodyPartsJson() ),
+					jsonLogHelper.toString( response.bodyJson() ) );
 		}
 	}
 

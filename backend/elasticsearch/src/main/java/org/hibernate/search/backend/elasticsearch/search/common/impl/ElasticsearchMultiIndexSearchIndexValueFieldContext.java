@@ -6,7 +6,8 @@ import java.util.Optional;
 import org.hibernate.search.backend.elasticsearch.types.codec.impl.ElasticsearchFieldCodec;
 import org.hibernate.search.engine.search.common.spi.AbstractMultiIndexSearchIndexValueFieldContext;
 import org.hibernate.search.engine.search.common.spi.SearchIndexSchemaElementContextHelper;
-import org.hibernate.search.util.json.JsonPrimitive;
+
+import tools.jackson.databind.JsonNode;
 
 public class ElasticsearchMultiIndexSearchIndexValueFieldContext<F>
 		extends AbstractMultiIndexSearchIndexValueFieldContext<
@@ -48,7 +49,7 @@ public class ElasticsearchMultiIndexSearchIndexValueFieldContext<F>
 	}
 
 	@Override
-	public JsonPrimitive elasticsearchTypeAsJson() {
+	public JsonNode elasticsearchTypeAsJson() {
 		return fromTypeIfCompatible( ElasticsearchSearchIndexValueFieldTypeContext::elasticsearchTypeAsJson, Object::equals,
 				"elasticsearchType" );
 	}

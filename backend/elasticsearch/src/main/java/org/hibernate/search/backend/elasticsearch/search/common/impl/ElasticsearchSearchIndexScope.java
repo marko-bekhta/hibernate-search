@@ -7,10 +7,12 @@ import java.util.concurrent.TimeUnit;
 import org.hibernate.search.backend.elasticsearch.common.impl.DocumentIdHelper;
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
 import org.hibernate.search.backend.elasticsearch.lowlevel.syntax.search.impl.ElasticsearchSearchSyntax;
+import org.hibernate.search.backend.elasticsearch.search.projection.impl.ProjectionExtractionHelper;
 import org.hibernate.search.engine.search.common.spi.SearchIndexCompositeNodeContext;
 import org.hibernate.search.engine.search.common.spi.SearchIndexScope;
 import org.hibernate.search.engine.search.timeout.spi.TimeoutManager;
-import org.hibernate.search.util.json.JsonObject;
+
+import tools.jackson.databind.node.ObjectNode;
 
 public interface ElasticsearchSearchIndexScope<S extends ElasticsearchSearchIndexScope<?>>
 		extends SearchIndexScope<S> {
@@ -20,13 +22,15 @@ public interface ElasticsearchSearchIndexScope<S extends ElasticsearchSearchInde
 
 	ElasticsearchSearchIndexNodeContext field(String fieldPath);
 
+	ProjectionExtractionHelper<Boolean> fieldMultiValuedExtractionHelper(String absoluteFieldPath);
+
 	JsonCodecService userFacingCodec();
 
 	ElasticsearchSearchSyntax searchSyntax();
 
 	DocumentIdHelper documentIdHelper();
 
-	JsonObject filterOrNull(String tenantId);
+	ObjectNode filterOrNull(String tenantId);
 
 	TimeoutManager createTimeoutManager(Long timeout, TimeUnit timeUnit, boolean exceptionOnTimeout);
 

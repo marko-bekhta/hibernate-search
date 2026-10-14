@@ -3,12 +3,13 @@ package org.hibernate.search.integrationtest.java.modules.pojo.standalone.elasti
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.hibernate.search.mapper.pojo.standalone.mapping.SearchMapping;
-import org.hibernate.search.util.json.JsonObject;
 import org.hibernate.search.util.json.spi.JsonParsing;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
+import tools.jackson.databind.node.ObjectNode;
 
 class JavaModulePathIT {
 
@@ -40,13 +41,29 @@ class JavaModulePathIT {
 	@Test
 	void jsonApiIsTransitiveAndImplementationIsEncapsulated() {
 		checkIsInModulePath( JsonApiExample.class );
-		checkIsInModulePath( JsonObject.class );
+		checkIsInModulePath( ObjectNode.class );
 		checkIsInModulePath( JsonParsing.class );
 		assertThat( JsonApiExample.requestValue() ).isEqualTo( 42L );
-		assertThat( JsonObject.class.getModule().isExported( "org.hibernate.search.util.json.impl",
+		assertThat( JsonApiExample.deprecatedGsonValue() ).isEqualTo( 42L );
+		ObjectNode custom = JsonApiExample.customHandlerResult();
+		assertThat( custom.get( "custom" ).booleanValue() ).isTrue();
+		assertThat( custom.get( "value" ).longValue() ).isEqualTo( 9007199254740993L );
+		assertThat( custom.get( "nil" ).isNull() ).isTrue();
+		assertThat( Double.doubleToRawLongBits( JsonApiExample.nativeScalar().doubleValue() ) )
+				.isEqualTo( Double.doubleToRawLongBits( -0.0d ) );
+		assertThat( JsonParsing.class.getModule().getDescriptor().requires() )
+				.anySatisfy( requirement -> {
+					assertThat( requirement.name() ).isEqualTo( "tools.jackson.databind" );
+					assertThat( requirement.modifiers() )
+							.contains( java.lang.module.ModuleDescriptor.Requires.Modifier.TRANSITIVE );
+				} );
+		assertThat( JsonParsing.class.getModule().isExported( "org.hibernate.search.util.json.impl",
 				JsonApiExample.class.getModule() ) ).isFalse();
-		assertThat( JsonObject.class.getModule().getDescriptor().opens() ).isEmpty();
-		assertThat( JsonObject.class.getModule().getDescriptor().requires() )
+		assertThat( JsonParsing.class.getModule().getDescriptor().opens() ).isEmpty();
+		assertThat( org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchRequest.class.getModule()
+				.isExported( "org.hibernate.search.backend.elasticsearch.json.impl", JsonApiExample.class.getModule() ) )
+				.isFalse();
+		assertThat( JsonParsing.class.getModule().getDescriptor().requires() )
 				.anySatisfy( requirement -> {
 					assertThat( requirement.name() ).isEqualTo( "tools.jackson.core" );
 					assertThat( requirement.modifiers() )

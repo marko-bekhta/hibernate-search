@@ -1,7 +1,8 @@
 package org.hibernate.search.backend.elasticsearch.types.codec.impl;
 
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
-import org.hibernate.search.util.json.JsonElement;
+
+import tools.jackson.databind.JsonNode;
 
 public abstract class AbstractElasticsearchFieldCodec<T> implements ElasticsearchFieldCodec<T> {
 
@@ -12,13 +13,13 @@ public abstract class AbstractElasticsearchFieldCodec<T> implements Elasticsearc
 	}
 
 	@Override
-	public JsonElement fromJsonStringToElement(String value) {
-		return json.decode( value, JsonElement.class );
+	public JsonNode fromJsonStringToElement(String value) {
+		return json.decode( value, JsonNode.class );
 	}
 
 	@Override
-	public String fromJsonElementToString(JsonElement value) {
-		if ( value == null || value.isJsonNull() ) {
+	public String fromJsonElementToString(JsonNode value) {
+		if ( value == null || value.isNull() ) {
 			return null;
 		}
 		return json.write( value );

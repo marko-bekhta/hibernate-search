@@ -9,10 +9,11 @@ import java.util.concurrent.Executors;
 
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.mapping.impl.RootTypeMapping;
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.settings.impl.IndexSettings;
-import org.hibernate.search.util.json.JsonObject;
 import org.hibernate.search.util.json.spi.JsonParseException;
 
 import org.junit.jupiter.api.Test;
+
+import tools.jackson.databind.node.ObjectNode;
 
 class JsonCodecServiceTest {
 	private final JsonCodecService codec = JsonProviderHelper.create( false ).getCodecNoSerializeNulls();
@@ -29,30 +30,30 @@ class JsonCodecServiceTest {
 			}
 		};
 		IndexSettings value = codec.decode( input, StandardCharsets.UTF_16LE, IndexSettings.class );
-		assertThat( value.getExtraAttributes().get( "extra" ).getAsString() ).isEqualTo( "é中".repeat( 20000 ) );
-		assertThat( codec.decode( new ByteArrayInputStream( new byte[0] ), JsonObject.class ) ).isNull();
-		assertThat( codec.decode( new ByteArrayInputStream( " \n\t".getBytes( StandardCharsets.UTF_8 ) ), JsonObject.class ) )
+		assertThat( value.getExtraAttributes().get( "extra" ).asString() ).isEqualTo( "é中".repeat( 20000 ) );
+		assertThat( codec.decode( new ByteArrayInputStream( new byte[0] ), ObjectNode.class ) ).isNull();
+		assertThat( codec.decode( new ByteArrayInputStream( " \n\t".getBytes( StandardCharsets.UTF_8 ) ), ObjectNode.class ) )
 				.isNull();
 		assertThatThrownBy( () -> codec.decode( new ByteArrayInputStream( "{\"a\":".getBytes( StandardCharsets.UTF_8 ) ),
-				JsonObject.class ) ).isInstanceOf( JsonParseException.class );
+				ObjectNode.class ) ).isInstanceOf( JsonParseException.class );
 	}
 
 	@Test
 	void existingTreesAreDecodedAndCopiedStructurallyWithRecursiveNullPolicy() {
 		var tree = codec.decode( "{\"analysis\":{\"custom\":{\"null\":null,\"array\":[null,{\"null\":null}]}},\"null\":null}",
-				JsonObject.class );
+				ObjectNode.class );
 		IndexSettings value = codec.decode( tree, IndexSettings.class );
 		var copy = codec.decode( codec.encode( value ), IndexSettings.class );
-		copy.getAnalysis().getExtraAttributes().get( "custom" ).getAsJsonObject().addProperty( "changed", true );
-		assertThat( value.getAnalysis().getExtraAttributes().get( "custom" ).getAsJsonObject().has( "changed" ) ).isFalse();
-		assertThat( codec.encode( value ).getAsJsonObject().has( "null" ) ).isFalse();
-		var extra = codec.encode( value ).getAsJsonObject().getAsJsonObject( "analysis" ).getAsJsonObject( "custom" );
+		( (ObjectNode) copy.getAnalysis().getExtraAttributes().get( "custom" ) ).put( "changed", true );
+		assertThat( value.getAnalysis().getExtraAttributes().get( "custom" ).has( "changed" ) ).isFalse();
+		assertThat( codec.encode( value ).has( "null" ) ).isFalse();
+		var extra = codec.encode( value ).get( "analysis" ).get( "custom" );
 		assertThat( extra.has( "null" ) ).isFalse();
-		assertThat( extra.getAsJsonArray( "array" ).get( 0 ).isJsonNull() ).isTrue();
-		assertThat( extra.getAsJsonArray( "array" ).get( 1 ).getAsJsonObject().has( "null" ) ).isFalse();
-		var withNulls = JsonProviderHelper.create( false ).getCodec().encode( value ).getAsJsonObject();
-		assertThat( withNulls.get( "null" ).isJsonNull() ).isTrue();
-		assertThat( withNulls.getAsJsonObject( "analysis" ).getAsJsonObject( "custom" ).get( "null" ).isJsonNull() ).isTrue();
+		assertThat( extra.get( "array" ).get( 0 ).isNull() ).isTrue();
+		assertThat( extra.get( "array" ).get( 1 ).has( "null" ) ).isFalse();
+		var withNulls = JsonProviderHelper.create( false ).getCodec().encode( value );
+		assertThat( withNulls.get( "null" ).isNull() ).isTrue();
+		assertThat( withNulls.get( "analysis" ).get( "custom" ).get( "null" ).isNull() ).isTrue();
 
 	}
 
@@ -78,8 +79,8 @@ class JsonCodecServiceTest {
 	@Test
 	void longSearchSyntaxKeepsStringSerializationAndNull() {
 		var syntax = new org.hibernate.search.backend.elasticsearch.lowlevel.syntax.search.impl.Elasticsearch7SearchSyntax();
-		assertThat( syntax.encodeLongForAggregation( 9007199254740993L ).getAsJsonPrimitive().isString() ).isTrue();
-		assertThat( syntax.encodeLongForAggregation( 9007199254740993L ).getAsString() ).isEqualTo( "9007199254740993" );
-		assertThat( syntax.encodeLongForAggregation( null ).isJsonNull() ).isTrue();
+		assertThat( syntax.encodeLongForAggregation( 9007199254740993L ).isString() ).isTrue();
+		assertThat( syntax.encodeLongForAggregation( 9007199254740993L ).asString() ).isEqualTo( "9007199254740993" );
+		assertThat( syntax.encodeLongForAggregation( null ).isNull() ).isTrue();
 	}
 }

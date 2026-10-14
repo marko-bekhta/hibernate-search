@@ -1,12 +1,14 @@
 package org.hibernate.search.backend.elasticsearch.search.projection.impl;
 
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonAccessor;
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonScalarConversions;
 import org.hibernate.search.backend.elasticsearch.reporting.impl.ElasticsearchSearchHints;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexScope;
 import org.hibernate.search.engine.search.loading.spi.LoadingResult;
 import org.hibernate.search.engine.search.loading.spi.ProjectionHitMapper;
 import org.hibernate.search.engine.search.projection.spi.ProjectionTypeKeys;
-import org.hibernate.search.util.json.JsonObject;
-import org.hibernate.search.util.json.spi.JsonAccessor;
+
+import tools.jackson.databind.node.ObjectNode;
 
 class ElasticsearchScoreProjection extends AbstractElasticsearchProjection<Float>
 		implements ElasticsearchSearchProjection.Extractor<Float, Float> {
@@ -24,7 +26,7 @@ class ElasticsearchScoreProjection extends AbstractElasticsearchProjection<Float
 	}
 
 	@Override
-	public Extractor<?, Float> request(JsonObject requestBody, ProjectionRequestContext context) {
+	public Extractor<?, Float> request(ObjectNode requestBody, ProjectionRequestContext context) {
 		context.checkNotNested(
 				ProjectionTypeKeys.SCORE,
 				ElasticsearchSearchHints.INSTANCE.scoreProjectionNestingNotSupportedHint()
@@ -34,9 +36,9 @@ class ElasticsearchScoreProjection extends AbstractElasticsearchProjection<Float
 	}
 
 	@Override
-	public Float extract(ProjectionHitMapper<?> projectionHitMapper, JsonObject hit,
-			JsonObject source, ProjectionExtractContext context) {
-		return hit.get( "_score" ).getAsFloat();
+	public Float extract(ProjectionHitMapper<?> projectionHitMapper, ObjectNode hit,
+			ObjectNode source, ProjectionExtractContext context) {
+		return JsonScalarConversions.asFloat( hit.get( "_score" ) );
 	}
 
 	@Override

@@ -32,21 +32,20 @@ import org.hibernate.search.backend.elasticsearch.work.impl.RefreshWork;
 import org.hibernate.search.backend.elasticsearch.work.impl.ScrollWork;
 import org.hibernate.search.backend.elasticsearch.work.impl.SearchWork;
 import org.hibernate.search.backend.elasticsearch.work.impl.WaitForIndexStatusWork;
-import org.hibernate.search.util.json.JsonObject;
+
+import tools.jackson.databind.node.ObjectNode;
 
 public interface ElasticsearchWorkFactory {
 
-	IndexWork.Builder index(String entityTypeName, Object entityIdentifier,
-			URLEncodedString elasticsearchIndexName,
-			String documentIdentifier, String routingKey, JsonObject document);
+	IndexWork.Builder index(String entityTypeName, Object entityIdentifier, URLEncodedString elasticsearchIndexName,
+			String documentIdentifier, String routingKey, ObjectNode document);
 
-	DeleteWork.Builder delete(String entityTypeName, Object entityIdentifier,
-			URLEncodedString elasticsearchIndexName,
+	DeleteWork.Builder delete(String entityTypeName, Object entityIdentifier, URLEncodedString elasticsearchIndexName,
 			String documentIdentifier, String routingKey);
 
 	boolean isDeleteByQuerySupported();
 
-	DeleteByQueryWork.Builder deleteByQuery(URLEncodedString indexName, JsonObject payload);
+	DeleteByQueryWork.Builder deleteByQuery(URLEncodedString indexName, ObjectNode payload);
 
 	boolean isFlushSupported();
 
@@ -62,11 +61,11 @@ public interface ElasticsearchWorkFactory {
 
 	BulkWork.Builder bulk(List<? extends BulkableWork<?>> bulkableWorks);
 
-	<T> SearchWork.Builder<T> search(JsonObject payload, ElasticsearchSearchResultExtractor<T> searchResultExtractor);
+	<T> SearchWork.Builder<T> search(ObjectNode payload, ElasticsearchSearchResultExtractor<T> searchResultExtractor);
 
 	CountWork.Builder count();
 
-	ExplainWork.Builder explain(URLEncodedString indexName, URLEncodedString id, JsonObject payload);
+	ExplainWork.Builder explain(URLEncodedString indexName, URLEncodedString id, ObjectNode payload);
 
 	<T> ScrollWork.Builder<T> scroll(String scrollId, String scrollTimeout,
 			ElasticsearchSearchResultExtractor<T> searchResultExtractor);
@@ -94,6 +93,5 @@ public interface ElasticsearchWorkFactory {
 
 	PutIndexAliasesWork.Builder putIndexAliases(URLEncodedString indexName, Map<String, IndexAliasDefinition> aliases);
 
-	AnalyzeWork.Builder analyze(URLEncodedString indexName, String text, String analyzer,
-			String normalizer);
+	AnalyzeWork.Builder analyze(URLEncodedString indexName, String text, String analyzer, String normalizer);
 }

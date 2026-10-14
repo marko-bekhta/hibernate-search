@@ -7,16 +7,16 @@ import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.List;
 
 import org.hibernate.search.backend.elasticsearch.client.common.json.impl.ElasticsearchJsonBody;
-import org.hibernate.search.util.json.JsonElement;
 import org.hibernate.search.util.json.impl.JacksonJsonBodyWriter;
 import org.hibernate.search.util.json.spi.JsonBody;
 import org.hibernate.search.util.json.spi.JsonWriteCursor;
 
 import org.openjdk.jmh.infra.Blackhole;
+
+import tools.jackson.databind.JsonNode;
 
 final class JsonBenchmarkSupport {
 	private JsonBenchmarkSupport() {
@@ -26,8 +26,8 @@ final class JsonBenchmarkSupport {
 		void write(OutputStream output) throws Exception;
 	}
 
-	static void jackson(List<? extends JsonElement> parts, OutputStream output) throws IOException {
-		for ( JsonElement part : parts ) {
+	static void jackson(List<? extends JsonNode> parts, OutputStream output) throws IOException {
+		for ( JsonNode part : parts ) {
 			JacksonJsonBodyWriter.write( part, output );
 			output.write( '\n' );
 		}
@@ -49,7 +49,7 @@ final class JsonBenchmarkSupport {
 		return output.toByteArray();
 	}
 
-	static void verify(JsonBenchmarkFixtures fixture, List<? extends JsonElement> parts, JsonBoundedWorker worker)
+	static void verify(JsonBenchmarkFixtures fixture, List<? extends JsonNode> parts, JsonBoundedWorker worker)
 			throws Exception {
 		byte[] expected = fixture.expectedBytes;
 		JsonBody body = ElasticsearchJsonBody.ndjson( parts );
@@ -57,9 +57,7 @@ final class JsonBenchmarkSupport {
 				bytes( output -> incremental( body, output, ByteBuffer.allocate( 8192 ) ) ),
 				bytes( output -> worker.write( destination -> jackson( parts, destination ), output ) ) );
 		for ( byte[] result : results ) {
-			if ( !Arrays.equals( expected, result ) ) {
-				throw new IllegalStateException( "Full byte mismatch: " + fixture.fixture );
-			}
+			fixture.verifyOutput( result );
 		}
 		if ( expected.length != fixture.encodedBytes ) {
 			throw new IllegalStateException( "Incomplete consumption" );

@@ -3,6 +3,9 @@ package org.hibernate.search.backend.elasticsearch.work.result.impl;
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper;
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.impl.IndexMetadata;
 
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
+
 /**
  * An object representing an Elasticsearch index that actually exists on the cluster.
  */
@@ -19,9 +22,9 @@ public final class ExistingIndexMetadata {
 
 	@Override
 	public String toString() {
-		var value = new org.hibernate.search.util.json.JsonObject();
-		value.addProperty( "primaryName", primaryName );
-		value.add( "metadata", JsonProviderHelper.createUserFacingCodec().encode( metadata ) );
+		var value = new ObjectNode( JsonNodeFactory.instance );
+		value.put( "primaryName", primaryName );
+		value.set( "metadata", JsonProviderHelper.createUserFacingCodec().encode( metadata ) );
 		return JsonProviderHelper.toPrettyJson( value );
 	}
 

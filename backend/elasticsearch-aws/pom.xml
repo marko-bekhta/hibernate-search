@@ -58,7 +58,6 @@
                                 <bannedDependencies>
                                     <excludes>
                                         <exclude>com.fasterxml.jackson.core:jackson-databind</exclude>
-                                        <exclude>tools.jackson.core:jackson-databind</exclude>
                                     </excludes>
                                     <searchTransitive>true</searchTransitive>
                                 </bannedDependencies>

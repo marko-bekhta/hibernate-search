@@ -1,10 +1,11 @@
 package org.hibernate.search.backend.elasticsearch.json.impl;
 
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
-import org.hibernate.search.util.json.JsonArray;
-import org.hibernate.search.util.json.JsonElement;
-import org.hibernate.search.util.json.JsonObject;
-import org.hibernate.search.util.json.spi.JsonElementTypes;
+
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 public final class JsonUtils {
 
@@ -18,7 +19,7 @@ public final class JsonUtils {
 	 * <p>The behavior is as follows:
 	 * <ul>
 	 * <li>If there is currently no value for this property, the property is simply set to {@code newValue}
-	 * using {@link JsonObject#add(String, JsonElement)}.
+	 * using {@link ObjectNode#set(String, JsonNode)}.
 	 * <li>If the current value of the property is an array, {@code newValue} is added to this array.
 	 * <li>Otherwise, the current value
 	 * is replaced by an array containing the current value followed by the {@code newValue}.
@@ -28,19 +29,20 @@ public final class JsonUtils {
 	 * @param propertyName The name of the property to set.
 	 * @param newValue The value to set.
 	 */
-	public static void setOrAppendToArray(JsonObject object, String propertyName, JsonElement newValue) {
-		JsonElement currentValue = object.get( propertyName );
-		if ( currentValue == null ) { // Do not overwrite JsonNull, because it might be there on purpose
-			object.add( propertyName, newValue );
+	public static void setOrAppendToArray(ObjectNode object, String propertyName, JsonNode newValue) {
+		JsonNode currentValue = object.get( propertyName );
+		if ( currentValue == null ) {
+			// Do not overwrite JSON null, because it might be there on purpose
+			object.set( propertyName, newValue );
 		}
 		else if ( JsonElementTypes.ARRAY.isInstance( currentValue ) ) {
 			JsonElementTypes.ARRAY.fromElement( currentValue ).add( newValue );
 		}
 		else {
-			JsonArray array = new JsonArray();
+			ArrayNode array = new ArrayNode( JsonNodeFactory.instance );
 			array.add( currentValue );
 			array.add( newValue );
-			object.add( propertyName, array );
+			object.set( propertyName, array );
 		}
 	}
 
@@ -55,5 +57,4 @@ public final class JsonUtils {
 	public static <T> T deepCopy(JsonCodecService json, Class<T> objectType, T object) {
 		return json.decode( json.encode( object ), objectType );
 	}
-
 }

@@ -40,14 +40,16 @@ for details.
 [[incremental-elasticsearch-json]]
 === Incremental Elasticsearch JSON
 
-The four Elasticsearch/OpenSearch HTTP adapters now parse response chunks into Search JSON trees
+The four Elasticsearch/OpenSearch HTTP adapters parse response chunks into Jackson 3 JSON trees
 and write replayable requests through bounded cursors.
-The public `hibernate-search-util-json` artifact exposes reusable model/accessor/streaming contracts.
-Raw results, projections, native fields and client extensions use `org.hibernate.search.util.json` nodes.
+The `hibernate-search-util-json` artifact exposes reusable Jackson-native parser, output and codec SPI.
+Application JSON inputs and results can select their representation through typed `JsonHandler<T>` overloads,
+with built-in Jackson 3 and Gson handlers. Deprecated Gson conveniences retain their result types.
+Typed native fields keep the handler's Java type for indexing, projection and runtime metadata.
 See the link:https://docs.hibernate.org/search/{hibernateSearchVersionShort}/migration/html_single/#elasticsearch-json[migration guide]
-for incompatible API changes and temporary deprecated Gson input bridges,
+for handler APIs and custom-client SPI changes,
 and the link:https://docs.hibernate.org/search/{hibernateSearchVersionShort}/reference/en-US/html_single/#backend-elasticsearch-json[reference]
-for ownership and remaining execution/client limits.
+for ownership, numeric constraints and remaining execution/client limits.
 Trees and scalar Strings remain materialized; synchronous token completion, signing and interceptors
 still prevent a fixed event-loop latency guarantee.
 

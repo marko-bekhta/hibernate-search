@@ -8,7 +8,7 @@ import org.hibernate.search.engine.backend.types.converter.runtime.FromDocumentV
 import org.hibernate.search.engine.backend.types.converter.runtime.spi.FromDocumentValueConvertContextImpl;
 import org.hibernate.search.engine.search.loading.spi.ProjectionHitMapper;
 
-import org.hibernate.search.util.json.JsonObject;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * The context holding all the useful information pertaining to the extraction of data from
@@ -20,12 +20,12 @@ public class ElasticsearchSearchQueryExtractContext implements AggregationExtrac
 	private final ProjectionHitMapper<?> projectionHitMapper;
 	private final FromDocumentValueConvertContext fromDocumentValueConvertContext;
 
-	private final JsonObject responseBody;
+	private final ObjectNode responseBody;
 
 	ElasticsearchSearchQueryExtractContext(ElasticsearchSearchQueryRequestContext requestContext,
 			BackendSessionContext sessionContext,
 			ProjectionHitMapper<?> projectionHitMapper,
-			JsonObject responseBody) {
+			ObjectNode responseBody) {
 		this.requestContext = requestContext;
 		this.projectionHitMapper = projectionHitMapper;
 		this.fromDocumentValueConvertContext = new FromDocumentValueConvertContextImpl( sessionContext );
@@ -37,7 +37,7 @@ public class ElasticsearchSearchQueryExtractContext implements AggregationExtrac
 		return fromDocumentValueConvertContext;
 	}
 
-	public JsonObject getResponseBody() {
+	public ObjectNode getResponseBody() {
 		return responseBody;
 	}
 

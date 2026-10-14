@@ -10,7 +10,7 @@
     <artifactId>hibernate-search-util-json</artifactId>
 
     <name>Hibernate Search Utils - JSON</name>
-    <description>Hibernate Search JSON model and streaming utilities</description>
+    <description>Hibernate Search Jackson JSON streaming and codec infrastructure</description>
 
     <properties>
         <!-- This is a publicly distributed module that should be published: -->
@@ -26,6 +26,10 @@
         <dependency>
             <groupId>tools.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>tools.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
         </dependency>
         <dependency>
             <groupId>org.hibernate.search</groupId>
@@ -58,10 +62,33 @@
                                         <exclude>com.google.code.gson:gson</exclude>
                                         <exclude>com.fasterxml.jackson.core:jackson-core</exclude>
                                         <exclude>com.fasterxml.jackson.core:jackson-databind</exclude>
-                                        <exclude>tools.jackson.core:jackson-databind</exclude>
                                     </excludes>
                                 </bannedDependencies>
                             </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.moditect</groupId>
+                <artifactId>moditect-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>add-module-infos</id>
+                        <configuration>
+                            <module>
+                                <moduleInfo>
+                                    <requires combine.self="override">
+                                        transitive tools.jackson.databind;
+                                        org.hibernate.*.impl;
+                                        org.hibernate.*.internal;
+                                        org.hibernate.*.impl.*;
+                                        org.hibernate.*.internal.*;
+                                        transitive org.hibernate.*;
+                                        *;
+                                    </requires>
+                                </moduleInfo>
+                            </module>
                         </configuration>
                     </execution>
                 </executions>

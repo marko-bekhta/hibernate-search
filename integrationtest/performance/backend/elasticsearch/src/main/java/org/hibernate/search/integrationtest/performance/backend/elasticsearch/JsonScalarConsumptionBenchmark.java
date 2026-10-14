@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.hibernate.search.util.json.JsonElement;
 import org.hibernate.search.util.json.spi.JsonParsingOptions;
 
 import org.openjdk.jmh.annotations.Benchmark;
@@ -26,6 +25,7 @@ import tools.jackson.core.ObjectReadContext;
 import tools.jackson.core.StreamReadConstraints;
 import tools.jackson.core.async.ByteBufferFeeder;
 import tools.jackson.core.json.JsonFactory;
+import tools.jackson.databind.JsonNode;
 
 /** Upstream String token completion versus complete tree construction; never skip lazy string completion. */
 @BenchmarkMode(Mode.Throughput)
@@ -55,11 +55,11 @@ public class JsonScalarConsumptionBenchmark {
 			List<String> expected = new ArrayList<>();
 			var tree = parts.get( 0 );
 			if ( tree.has( "text" ) ) {
-				expected.add( tree.get( "text" ).getAsString() );
+				expected.add( tree.get( "text" ).asString() );
 			}
 			else {
-				for ( var number : tree.getAsJsonArray( "values" ) ) {
-					expected.add( number.getAsString() );
+				for ( var number : tree.get( "values" ).asArray() ) {
+					expected.add( number.numberValue().toString() );
 				}
 			}
 			List<String> actual = new ArrayList<>();
@@ -73,11 +73,27 @@ public class JsonScalarConsumptionBenchmark {
 					}
 				}
 			}
-			if ( !expected.equals( actual )
-					|| !expected.equals( utf8Scalars() )
+			if ( !equivalentScalars( expected, actual )
+					|| !equivalentScalars( expected, utf8Scalars() )
 					|| !parsing.parse( json ).equals( searchParts.get( 0 ) ) ) {
 				throw new IllegalStateException( "Scalar completion mismatch" );
 			}
+		}
+
+		private boolean equivalentScalars(List<String> expected, List<String> actual) {
+			if ( exactOutputBytes() ) {
+				return expected.equals( actual );
+			}
+			if ( expected.size() != actual.size() ) {
+				return false;
+			}
+			for ( int i = 0; i < expected.size(); i++ ) {
+				if ( new java.math.BigDecimal( expected.get( i ) )
+						.compareTo( new java.math.BigDecimal( actual.get( i ) ) ) != 0 ) {
+					return false;
+				}
+			}
+			return true;
 		}
 
 		private List<String> utf8Scalars() {
@@ -174,7 +190,7 @@ public class JsonScalarConsumptionBenchmark {
 	}
 
 	@Benchmark
-	public JsonElement searchParser(Scalars state) {
+	public JsonNode searchParser(Scalars state) {
 		return state.parsing.parse( state.json );
 	}
 

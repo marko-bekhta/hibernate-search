@@ -5,7 +5,8 @@ import java.io.StringWriter;
 
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper;
-import org.hibernate.search.util.json.JsonObject;
+
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * Helpers allowing to log JSON.
@@ -31,28 +32,28 @@ public final class JsonLogHelper {
 		this.prettyPrinting = prettyPrinting;
 	}
 
-	public String toString(JsonObject object) {
+	public String toString(ObjectNode object) {
 		StringBuilder stringBuilder = new StringBuilder();
 		append( stringBuilder, object );
 		return stringBuilder.toString();
 	}
 
-	public void append(StringBuilder sb, JsonObject object) {
+	public void append(StringBuilder sb, ObjectNode object) {
 		beforeValue( sb );
 		doAppend( sb, object );
 		afterValue( sb );
 	}
 
-	public String toString(Iterable<JsonObject> objects) {
+	public String toString(Iterable<ObjectNode> objects) {
 		StringBuilder sb = new StringBuilder( 180 );
 		append( sb, objects );
 		return sb.toString();
 	}
 
-	public void append(StringBuilder sb, Iterable<JsonObject> objects) {
+	public void append(StringBuilder sb, Iterable<ObjectNode> objects) {
 		boolean first = true;
 		beforeValue( sb );
-		for ( JsonObject object : objects ) {
+		for ( ObjectNode object : objects ) {
 			if ( first ) {
 				first = false;
 			}
@@ -73,7 +74,7 @@ public final class JsonLogHelper {
 		}
 	}
 
-	private void doAppend(StringBuilder sb, JsonObject object) {
+	private void doAppend(StringBuilder sb, ObjectNode object) {
 		try {
 			sb.append( json.write( object ) );
 		}

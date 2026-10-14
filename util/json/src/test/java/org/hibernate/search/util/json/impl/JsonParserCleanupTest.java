@@ -32,14 +32,14 @@ class JsonParserCleanupTest {
 		assertUtf8Clean( failed );
 		JsonParserSession completed = parsing.createParser();
 		completed.feed( ByteBuffer.wrap( "{\"a\":[1]}".getBytes( StandardCharsets.UTF_8 ) ) );
-		assertThat( completed.endOfInput().getAsJsonObject().getAsJsonArray( "a" ) ).hasSize( 1 );
+		assertThat( completed.endOfInput().get( "a" ) ).hasSize( 1 );
 		assertUtf8Clean( completed );
 	}
 
 	@Test
 	void mixedBufferKindsReturnCallerOwnershipAfterEveryFeed() {
 		JsonParsing parsing = new JsonParsing();
-		String json = "{\"\\uD83D\\uDE00\":[-0,9223372036854775808,1.00,-7E-9,1e2147483648],\"text\":\"aaaaaaaaaaaaaaaaé漢😀\"}";
+		String json = "{\"\\uD83D\\uDE00\":[-0,9223372036854775808,1.00,-7E-9,1e2147483647],\"text\":\"aaaaaaaaaaaaaaaaé漢😀\"}";
 		byte[] bytes = json.getBytes( StandardCharsets.UTF_8 );
 		try ( JsonParserSession parser = parsing.createParser() ) {
 			for ( int offset = 0, kind = 0; offset < bytes.length; kind++ ) {

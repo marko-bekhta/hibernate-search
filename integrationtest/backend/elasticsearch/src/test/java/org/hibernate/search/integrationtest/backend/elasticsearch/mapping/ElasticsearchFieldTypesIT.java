@@ -13,10 +13,12 @@ import org.hibernate.search.integrationtest.backend.elasticsearch.testsupport.ut
 import org.hibernate.search.integrationtest.backend.tck.testsupport.util.extension.SearchSetupHelper;
 import org.hibernate.search.util.impl.integrationtest.backend.elasticsearch.dialect.ElasticsearchTestDialect;
 import org.hibernate.search.util.impl.integrationtest.mapper.stub.StubMappedIndex;
-import org.hibernate.search.util.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * Test the property types defined on Elasticsearch server
@@ -36,72 +38,49 @@ class ElasticsearchFieldTypesIT {
 	@Test
 	void test() {
 		if ( ElasticsearchTckBackendFeatures.supportsVersionCheck() ) {
-			clientSpy.expectNext(
-					ElasticsearchRequest.get().build(),
-					ElasticsearchRequestAssertionMode.STRICT
-			);
+			clientSpy.expectNext( ElasticsearchRequest.get().build(), ElasticsearchRequestAssertionMode.STRICT );
 		}
-		clientSpy.expectNext(
-				ElasticsearchRequest.get()
-						.multiValuedPathComponent( defaultAliases( index.name() ) )
-						.build(),
-				ElasticsearchRequestAssertionMode.EXTENSIBLE
-		);
-		clientSpy.expectNext(
-				ElasticsearchRequest.put()
-						.pathComponent( defaultPrimaryName( index.name() ) )
-						.body( indexCreationPayload() )
-						.build(),
-				ElasticsearchRequestAssertionMode.EXTENSIBLE
-		);
-
-		setupHelper.start()
-				.withBackendProperty(
-						ElasticsearchBackendSettings.CLIENT_FACTORY, clientSpy.factoryReference()
-				)
-				.withIndex( index )
-				.setup();
-
+		clientSpy.expectNext( ElasticsearchRequest.get().multiValuedPathComponent( defaultAliases( index.name() ) ).build(),
+				ElasticsearchRequestAssertionMode.EXTENSIBLE );
+		clientSpy.expectNext( ElasticsearchRequest.put().pathComponent( defaultPrimaryName( index.name() ) )
+				.bodyJson( indexCreationPayload() ).build(), ElasticsearchRequestAssertionMode.EXTENSIBLE );
+		setupHelper.start().withBackendProperty( ElasticsearchBackendSettings.CLIENT_FACTORY, clientSpy.factoryReference() )
+				.withIndex( index ).setup();
 		clientSpy.verifyExpectationsMet();
 	}
 
-	private JsonObject indexCreationPayload() {
-		JsonObject payload = new JsonObject();
-
-		JsonObject mappings = new JsonObject();
-		payload.add( "mappings", mappings );
-
-		JsonObject properties = new JsonObject();
-		mappings.add( "properties", properties );
-
-		properties.add( "keyword", type( "keyword" ) );
-		properties.add( "text", type( "text" ) );
-		properties.add( "integer", type( "integer" ) );
-		properties.add( "long", type( "long" ) );
-		properties.add( "boolean", type( "boolean" ) );
-		properties.add( "byte", type( "byte" ) );
-		properties.add( "short", type( "short" ) );
-		properties.add( "float", type( "float" ) );
-		properties.add( "double", type( "double" ) );
-		properties.add( "unsupportedType", type( "half_float" ) );
-
+	private ObjectNode indexCreationPayload() {
+		ObjectNode payload = new ObjectNode( JsonNodeFactory.instance );
+		ObjectNode mappings = new ObjectNode( JsonNodeFactory.instance );
+		payload.set( "mappings", mappings );
+		ObjectNode properties = new ObjectNode( JsonNodeFactory.instance );
+		mappings.set( "properties", properties );
+		properties.set( "keyword", type( "keyword" ) );
+		properties.set( "text", type( "text" ) );
+		properties.set( "integer", type( "integer" ) );
+		properties.set( "long", type( "long" ) );
+		properties.set( "boolean", type( "boolean" ) );
+		properties.set( "byte", type( "byte" ) );
+		properties.set( "short", type( "short" ) );
+		properties.set( "float", type( "float" ) );
+		properties.set( "double", type( "double" ) );
+		properties.set( "unsupportedType", type( "half_float" ) );
 		return payload;
 	}
 
-	private static JsonObject type(String type) {
-		JsonObject field = new JsonObject();
-		field.addProperty( "type", type );
+	private static ObjectNode type(String type) {
+		ObjectNode field = new ObjectNode( JsonNodeFactory.instance );
+		field.put( "type", type );
 		return field;
 	}
 
 	private static class IndexBinding {
+
 		IndexBinding(IndexSchemaElement root) {
 			// string type + not analyzed => keyword
 			root.field( "keyword", f -> f.asString() ).toReference();
-
 			// string type + analyzed => text
 			root.field( "text", f -> f.asString().analyzer( "standard" ) ).toReference();
-
 			root.field( "integer", f -> f.asInteger() ).toReference();
 			root.field( "long", f -> f.asLong() ).toReference();
 			root.field( "boolean", f -> f.asBoolean() ).toReference();
@@ -109,11 +88,10 @@ class ElasticsearchFieldTypesIT {
 			root.field( "short", f -> f.asShort() ).toReference();
 			root.field( "float", f -> f.asFloat() ).toReference();
 			root.field( "double", f -> f.asDouble() ).toReference();
-			root.field(
-					"unsupportedType",
+			root.field( "unsupportedType",
 					f -> f.extension( ElasticsearchExtension.get() )
-							.asNative().mapping( "{\"type\": \"half_float\"}" )
-			)
+							.asNative( org.hibernate.search.backend.elasticsearch.json.jackson.JacksonJsonHandlers.value() )
+							.mapping( "{\"type\": \"half_float\"}" ) )
 					.toReference();
 		}
 	}

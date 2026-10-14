@@ -29,7 +29,8 @@ import org.hibernate.search.engine.common.execution.spi.SimpleScheduledExecutor;
 import org.hibernate.search.engine.common.timing.Deadline;
 import org.hibernate.search.engine.environment.bean.BeanHolder;
 import org.hibernate.search.util.common.impl.Closer;
-import org.hibernate.search.util.json.JsonObject;
+
+import tools.jackson.databind.node.ObjectNode;
 
 public class ClientJdkElasticsearchClient implements ElasticsearchClientImplementor {
 
@@ -62,7 +63,7 @@ public class ClientJdkElasticsearchClient implements ElasticsearchClientImplemen
 
 	@Override
 	public CompletableFuture<ElasticsearchResponse> submit(ElasticsearchRequest request) {
-		CompletableFuture<HttpResponse<JsonObject>> sent;
+		CompletableFuture<HttpResponse<ObjectNode>> sent;
 		try {
 			sent = send( request );
 		}
@@ -91,9 +92,9 @@ public class ClientJdkElasticsearchClient implements ElasticsearchClientImplemen
 		throw ElasticsearchClientLog.INSTANCE.clientUnwrappingWithUnknownType( clientClass, HttpClient.class );
 	}
 
-	private ElasticsearchResponse convertResponse(HttpResponse<JsonObject> response) {
+	private ElasticsearchResponse convertResponse(HttpResponse<ObjectNode> response) {
 		try {
-			return new ElasticsearchResponse(
+			return ElasticsearchResponse.withJsonBody(
 					response.request().uri().getHost(),
 					response.statusCode(),
 					null,
@@ -116,24 +117,24 @@ public class ClientJdkElasticsearchClient implements ElasticsearchClientImplemen
 		return StandardCharsets.UTF_8;
 	}
 
-	private CompletableFuture<HttpResponse<JsonObject>> send(ElasticsearchRequest elasticsearchRequest) {
+	private CompletableFuture<HttpResponse<ObjectNode>> send(ElasticsearchRequest elasticsearchRequest) {
 		HttpRequest request;
 		try {
 			HttpRequest.BodyPublisher entity = ClientJdkJsonHttpEntity.toEntity( json, elasticsearchRequest );
 			request = toRequest( elasticsearchRequest, entity );
 		}
 		catch (IOException | RuntimeException e) {
-			CompletableFuture<HttpResponse<JsonObject>> completableFuture = new CompletableFuture<>();
+			CompletableFuture<HttpResponse<ObjectNode>> completableFuture = new CompletableFuture<>();
 			completableFuture.completeExceptionally( e );
 			return completableFuture;
 		}
 
-		JsonObjectBodyHandler handler = new JsonObjectBodyHandler();
-		CompletableFuture<HttpResponse<JsonObject>> transportFuture = restClientHolder.get().sendAsync(
+		ObjectNodeBodyHandler handler = new ObjectNodeBodyHandler();
+		CompletableFuture<HttpResponse<ObjectNode>> transportFuture = restClientHolder.get().sendAsync(
 				request,
 				handler
 		);
-		CompletableFuture<HttpResponse<JsonObject>> completableFuture = new CompletableFuture<>();
+		CompletableFuture<HttpResponse<ObjectNode>> completableFuture = new CompletableFuture<>();
 		transportFuture.whenComplete( (response, failure) -> {
 			if ( failure == null ) {
 				completableFuture.complete( response );
@@ -228,19 +229,19 @@ public class ClientJdkElasticsearchClient implements ElasticsearchClientImplemen
 		if ( successCode ) {
 			ElasticsearchRequestLog.INSTANCE.executedRequest( request.method(), response.hostAndPort(), request.path(),
 					request.parameters(),
-					request.bodyParts().size(), executionTimeMs,
+					request.bodyPartsJson().size(), executionTimeMs,
 					response.statusCode(), response.statusMessage(),
-					jsonLogHelper.toString( request.bodyParts() ),
-					jsonLogHelper.toString( response.body() ) );
+					jsonLogHelper.toString( request.bodyPartsJson() ),
+					jsonLogHelper.toString( response.bodyJson() ) );
 		}
 		else {
 			ElasticsearchRequestLog.INSTANCE.executedRequestWithFailure( request.method(), response.hostAndPort(),
 					request.path(),
 					request.parameters(),
-					request.bodyParts().size(), executionTimeMs,
+					request.bodyPartsJson().size(), executionTimeMs,
 					response.statusCode(), response.statusMessage(),
-					jsonLogHelper.toString( request.bodyParts() ),
-					jsonLogHelper.toString( response.body() ) );
+					jsonLogHelper.toString( request.bodyPartsJson() ),
+					jsonLogHelper.toString( response.bodyJson() ) );
 		}
 	}
 
@@ -259,7 +260,7 @@ public class ClientJdkElasticsearchClient implements ElasticsearchClientImplemen
 		}
 	}
 
-	private class JsonObjectBodyHandler implements HttpResponse.BodyHandler<JsonObject> {
+	private class ObjectNodeBodyHandler implements HttpResponse.BodyHandler<ObjectNode> {
 		private ClientJdkJsonBodySubscriber subscriber;
 		private boolean cancelled;
 
@@ -275,7 +276,7 @@ public class ClientJdkElasticsearchClient implements ElasticsearchClientImplemen
 		}
 
 		@Override
-		public synchronized HttpResponse.BodySubscriber<JsonObject> apply(HttpResponse.ResponseInfo responseInfo) {
+		public synchronized HttpResponse.BodySubscriber<ObjectNode> apply(HttpResponse.ResponseInfo responseInfo) {
 			try {
 				subscriber =
 						new ClientJdkJsonBodySubscriber( json, getCharset( responseInfo.headers() ), responseInfo.statusCode(),

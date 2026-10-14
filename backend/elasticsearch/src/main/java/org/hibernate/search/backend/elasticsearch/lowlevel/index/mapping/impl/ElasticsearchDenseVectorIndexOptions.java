@@ -6,7 +6,8 @@ import org.hibernate.search.backend.elasticsearch.json.impl.JsonName;
 import org.hibernate.search.backend.elasticsearch.json.impl.JsonSerializable;
 import org.hibernate.search.backend.elasticsearch.json.impl.SerializeExtraProperties;
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper;
-import org.hibernate.search.util.json.JsonElement;
+
+import tools.jackson.databind.JsonNode;
 
 /**
  * An object representing Elasticsearch dense vector-specific index options attributes.
@@ -24,7 +25,7 @@ public class ElasticsearchDenseVectorIndexOptions {
 	private Integer efConstruction;
 
 	@SerializeExtraProperties
-	private Map<String, JsonElement> extraAttributes;
+	private Map<String, JsonNode> extraAttributes;
 
 	public String getType() {
 		return type;
@@ -50,11 +51,11 @@ public class ElasticsearchDenseVectorIndexOptions {
 		this.efConstruction = efConstruction;
 	}
 
-	public Map<String, JsonElement> getExtraAttributes() {
+	public Map<String, JsonNode> getExtraAttributes() {
 		return extraAttributes;
 	}
 
-	public void setExtraAttributes(Map<String, JsonElement> extraAttributes) {
+	public void setExtraAttributes(Map<String, JsonNode> extraAttributes) {
 		this.extraAttributes = extraAttributes;
 	}
 

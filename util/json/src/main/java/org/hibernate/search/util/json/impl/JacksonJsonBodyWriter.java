@@ -5,9 +5,6 @@ import java.util.ArrayDeque;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.hibernate.search.util.json.JsonElement;
-import org.hibernate.search.util.json.JsonPrimitive;
-
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.core.ObjectWriteContext;
 import tools.jackson.core.SerializableString;
@@ -17,8 +14,9 @@ import tools.jackson.core.io.CharacterEscapes;
 import tools.jackson.core.io.SerializedString;
 import tools.jackson.core.json.JsonFactory;
 import tools.jackson.core.json.JsonWriteFeature;
+import tools.jackson.databind.JsonNode;
 
-/** Internal synchronous comparison implementation; production output drains the Search cursor. */
+/** Internal synchronous comparison implementation; production output drains the resumable cursor. */
 public final class JacksonJsonBodyWriter {
 	private static final CharacterEscapes REQUEST_ESCAPES = new CharacterEscapes() {
 		private final int[] ascii = createAscii();
@@ -52,33 +50,34 @@ public final class JacksonJsonBodyWriter {
 	private JacksonJsonBodyWriter() {
 	}
 
-	/** Write the Search tree directly without reflection, diagnostic rendering, or a materialized body. */
-	public static void write(JsonElement root, OutputStream destination) {
+	/** Write approved Jackson nodes without reflection, diagnostic rendering, or a materialized body. */
+	public static void write(JsonNode root, OutputStream destination) {
+		JsonTreeValidator.validate( root );
 		try ( JsonGenerator generator = FACTORY.createGenerator( ObjectWriteContext.empty(), destination ) ) {
 			ArrayDeque<Iterator<?>> frames = new ArrayDeque<>();
-			JsonElement value = root;
+			JsonNode value = root;
 			while ( true ) {
-				if ( value.isJsonObject() ) {
+				if ( value.isObject() ) {
 					generator.writeStartObject();
-					frames.push( value.getAsJsonObject().entrySet().iterator() );
+					frames.push( value.properties().iterator() );
 				}
-				else if ( value.isJsonArray() ) {
+				else if ( value.isArray() ) {
 					generator.writeStartArray();
-					frames.push( value.getAsJsonArray().iterator() );
+					frames.push( value.iterator() );
 				}
-				else if ( value.isJsonNull() ) {
+				else if ( value.isNull() ) {
 					generator.writeNull();
 				}
 				else {
-					JsonPrimitive primitive = value.getAsJsonPrimitive();
+					JsonNode primitive = value;
 					if ( primitive.isString() ) {
-						generator.writeString( primitive.getAsString() );
+						generator.writeString( primitive.asString() );
 					}
 					else if ( primitive.isBoolean() ) {
-						generator.writeBoolean( primitive.getAsBoolean() );
+						generator.writeBoolean( primitive.booleanValue() );
 					}
 					else {
-						generator.writeNumber( primitive.getAsString() );
+						generator.writeNumber( JsonNumbers.render( primitive ) );
 					}
 				}
 				while ( !frames.isEmpty() && !frames.peek().hasNext() ) {
@@ -97,10 +96,10 @@ public final class JacksonJsonBodyWriter {
 				if ( next instanceof Map.Entry ) {
 					Map.Entry<?, ?> member = (Map.Entry<?, ?>) next;
 					generator.writeName( (String) member.getKey() );
-					value = (JsonElement) member.getValue();
+					value = (JsonNode) member.getValue();
 				}
 				else {
-					value = (JsonElement) next;
+					value = (JsonNode) next;
 				}
 			}
 		}

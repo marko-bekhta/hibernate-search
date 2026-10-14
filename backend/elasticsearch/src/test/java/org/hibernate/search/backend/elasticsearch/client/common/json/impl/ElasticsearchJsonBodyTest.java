@@ -11,9 +11,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hibernate.search.util.json.JsonElement;
-import org.hibernate.search.util.json.JsonObject;
-import org.hibernate.search.util.json.JsonPrimitive;
 import org.hibernate.search.util.json.spi.JsonBodies;
 import org.hibernate.search.util.json.spi.JsonBody;
 import org.hibernate.search.util.json.spi.JsonWriteCursor;
@@ -25,14 +22,19 @@ import org.junit.jupiter.params.provider.ValueSource;
 import com.google.gson.Gson;
 import com.google.gson.JsonParser;
 
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.StringNode;
+
 class ElasticsearchJsonBodyTest {
 	@ParameterizedTest
 	@ValueSource(ints = { 1, 2, 5, 8192 })
 	void deterministicFinalNewlineWithZeroAndPartialSinkAcceptance(int capacity) throws IOException {
-		JsonObject metadata = new JsonObject();
-		metadata.add( "index", new JsonObject() );
-		JsonObject document = new JsonObject();
-		document.addProperty( "text", "é😀<\n" );
+		ObjectNode metadata = JsonNodeFactory.instance.objectNode();
+		metadata.set( "index", JsonNodeFactory.instance.objectNode() );
+		ObjectNode document = JsonNodeFactory.instance.objectNode();
+		document.put( "text", "é😀<\n" );
 		JsonBody body = ElasticsearchJsonBody.ndjson( List.of( metadata, document ) );
 		ByteArrayOutputStream synchronous = new ByteArrayOutputStream();
 		body.writeTo( synchronous );
@@ -81,15 +83,15 @@ class ElasticsearchJsonBodyTest {
 			assertThat( cursor.isComplete() ).isTrue();
 			assertThat( cursor.write( ByteBuffer.allocate( 0 ) ) ).isZero();
 		}
-		assertThat( drain( ElasticsearchJsonBody.ndjson( List.of( new JsonObject() ) ), 1 ) )
+		assertThat( drain( ElasticsearchJsonBody.ndjson( List.of( JsonNodeFactory.instance.objectNode() ) ), 1 ) )
 				.isEqualTo( "{}\n".getBytes( StandardCharsets.UTF_8 ) );
 	}
 
 	@Test
 	void largeBulkLengthRemainsUnknownAndIndependentCursorsInterleave() {
-		List<JsonElement> parts = new ArrayList<>();
+		List<JsonNode> parts = new ArrayList<>();
 		for ( int i = 0; i < 10_000; i++ ) {
-			parts.add( new JsonPrimitive( "é😀" ) );
+			parts.add( StringNode.valueOf( "é😀" ) );
 		}
 		JsonBody body = ElasticsearchJsonBody.ndjson( parts );
 		assertThat( body.contentLength() ).isEqualTo( -1 );
@@ -111,14 +113,14 @@ class ElasticsearchJsonBodyTest {
 	}
 
 	@Test
-	void requestEscapingAndNumbersMatchGsonBaselineForWellFormedUnicode() throws IOException {
+	void requestEscapingAndNormalizedNumericValueMatchGsonForWellFormedUnicode() throws IOException {
 		String unicode = "<>&='é中😀\n\t\b\f\r\u0000\u001f\u2028\u2029\"\\";
-		JsonObject tree = new JsonObject();
-		tree.addProperty( unicode, unicode );
-		tree.add( "number", JsonPrimitive.number( "-0.12300e+004" ) );
+		ObjectNode tree = JsonNodeFactory.instance.objectNode();
+		tree.put( unicode, unicode );
+		tree.set( "number", new org.hibernate.search.util.json.spi.JsonParsing().parse( "-0.12300e+004" ) );
 		com.google.gson.JsonObject gsonTree = new com.google.gson.JsonObject();
 		gsonTree.addProperty( unicode, unicode );
-		gsonTree.add( "number", JsonParser.parseString( "-0.12300e+004" ) );
+		gsonTree.add( "number", JsonParser.parseString( tree.get( "number" ).numberValue().toString() ) );
 		ByteArrayOutputStream baseline = new ByteArrayOutputStream();
 		OutputStreamWriter writer = new OutputStreamWriter( baseline, StandardCharsets.UTF_8 );
 		new Gson().toJson( gsonTree, writer );
@@ -129,7 +131,7 @@ class ElasticsearchJsonBodyTest {
 
 	@Test
 	void loneSurrogateIsLosslesslyEscapedWhereGsonWriterReplacesIt() throws IOException {
-		JsonPrimitive tree = new JsonPrimitive( "\ud800" );
+		StringNode tree = StringNode.valueOf( "\ud800" );
 		ByteArrayOutputStream baseline = new ByteArrayOutputStream();
 		OutputStreamWriter writer = new OutputStreamWriter( baseline, StandardCharsets.UTF_8 );
 		new Gson().toJson( new com.google.gson.JsonPrimitive( "\ud800" ), writer );

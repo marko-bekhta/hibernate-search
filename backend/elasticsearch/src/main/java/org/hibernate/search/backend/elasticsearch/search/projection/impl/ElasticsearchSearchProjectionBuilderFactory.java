@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import org.hibernate.search.backend.elasticsearch.json.JsonHandler;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexScope;
 import org.hibernate.search.engine.backend.common.DocumentReference;
 import org.hibernate.search.engine.search.common.NamedValues;
@@ -14,7 +15,6 @@ import org.hibernate.search.engine.search.projection.dsl.ProjectionFinalStep;
 import org.hibernate.search.engine.search.projection.spi.CompositeProjectionBuilder;
 import org.hibernate.search.engine.search.projection.spi.SearchProjectionBuilderFactory;
 import org.hibernate.search.util.common.SearchException;
-import org.hibernate.search.util.json.JsonObject;
 
 public class ElasticsearchSearchProjectionBuilderFactory implements SearchProjectionBuilderFactory {
 
@@ -96,16 +96,16 @@ public class ElasticsearchSearchProjectionBuilderFactory implements SearchProjec
 		return new ElasticsearchWithParametersProjection<>( scope, projectionCreator );
 	}
 
-	public SearchProjection<JsonObject> source() {
-		return new ElasticsearchSourceProjection( scope );
+	public <T> SearchProjection<T> source(JsonHandler<T> handler) {
+		return new ElasticsearchSourceProjection<>( scope, handler );
 	}
 
-	public SearchProjection<JsonObject> explanation() {
-		return new ElasticsearchExplanationProjection( scope );
+	public <T> SearchProjection<T> explanation(JsonHandler<T> handler) {
+		return new ElasticsearchExplanationProjection<>( scope, handler );
 	}
 
-	public SearchProjection<JsonObject> jsonHit() {
-		return new ElasticsearchJsonHitProjection( scope );
+	public <T> SearchProjection<T> jsonHit(JsonHandler<T> handler) {
+		return new ElasticsearchJsonHitProjection<>( scope, handler );
 	}
 
 }

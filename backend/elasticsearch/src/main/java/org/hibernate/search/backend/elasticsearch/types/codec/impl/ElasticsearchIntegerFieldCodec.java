@@ -1,11 +1,12 @@
 package org.hibernate.search.backend.elasticsearch.types.codec.impl;
 
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonElementTypes;
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonScalarConversions;
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
 import org.hibernate.search.engine.cfg.spi.NumberUtils;
-import org.hibernate.search.util.json.JsonElement;
-import org.hibernate.search.util.json.JsonNull;
-import org.hibernate.search.util.json.JsonPrimitive;
-import org.hibernate.search.util.json.spi.JsonElementTypes;
+
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.NullNode;
 
 public final class ElasticsearchIntegerFieldCodec extends AbstractElasticsearchFieldCodec<Integer> {
 
@@ -14,16 +15,16 @@ public final class ElasticsearchIntegerFieldCodec extends AbstractElasticsearchF
 	}
 
 	@Override
-	public JsonElement encode(Integer value) {
+	public JsonNode encode(Integer value) {
 		if ( value == null ) {
-			return JsonNull.INSTANCE;
+			return NullNode.instance;
 		}
-		return new JsonPrimitive( value );
+		return JsonScalarConversions.toNode( value );
 	}
 
 	@Override
-	public Integer decode(JsonElement element) {
-		if ( element == null || element.isJsonNull() ) {
+	public Integer decode(JsonNode element) {
+		if ( element == null || element.isNull() ) {
 			return null;
 		}
 		return JsonElementTypes.INTEGER.fromElement( element );

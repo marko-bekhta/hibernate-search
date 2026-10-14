@@ -12,7 +12,9 @@ import org.hibernate.search.backend.elasticsearch.lowlevel.index.aliases.impl.In
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.mapping.impl.RootTypeMapping;
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.settings.impl.IndexSettings;
 import org.hibernate.search.backend.elasticsearch.work.result.impl.CreateIndexResult;
-import org.hibernate.search.util.json.JsonObject;
+
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 public class CreateIndexWork extends AbstractNonBulkableWork<CreateIndexResult> {
 
@@ -34,11 +36,13 @@ public class CreateIndexWork extends AbstractNonBulkableWork<CreateIndexResult> 
 		}
 	}
 
-	public static class Builder
-			extends AbstractBuilder<Builder> {
+	public static class Builder extends AbstractBuilder<Builder> {
+
 		private final JsonProvider jsonProvider;
+
 		private final URLEncodedString indexName;
-		private final JsonObject payload = new JsonObject();
+
+		private final ObjectNode payload = new ObjectNode( JsonNodeFactory.instance );
 
 		public static Builder create(JsonProvider jsonProvider, URLEncodedString indexName) {
 			return new Builder( jsonProvider, indexName );
@@ -56,7 +60,7 @@ public class CreateIndexWork extends AbstractNonBulkableWork<CreateIndexResult> 
 			 * We better not include the null fields.
 			 */
 			JsonCodecService json = jsonProvider.getCodecNoSerializeNulls();
-			payload.add( "aliases", org.hibernate.search.util.json.spi.JsonCodecs
+			payload.set( "aliases", org.hibernate.search.util.json.spi.JsonCodecs
 					.map( json.getCodec( IndexAliasDefinition.class ) ).encode( aliases, false ) );
 			return this;
 		}
@@ -67,32 +71,27 @@ public class CreateIndexWork extends AbstractNonBulkableWork<CreateIndexResult> 
 			 * We better not include the null fields.
 			 */
 			JsonCodecService json = jsonProvider.getCodecNoSerializeNulls();
-			payload.add( "settings", json.encode( settings ) );
+			payload.set( "settings", json.encode( settings ) );
 			return this;
 		}
 
 		public Builder mapping(RootTypeMapping mapping) {
 			JsonCodecService json = jsonProvider.getCodecNoSerializeNulls();
-
-			payload.add( MAPPINGS_PROPERTY, json.encode( mapping ) );
-
+			payload.set( MAPPINGS_PROPERTY, json.encode( mapping ) );
 			return this;
 		}
 
 		public Builder ignoreExisting() {
-			this.resultAssessor = ElasticsearchRequestSuccessAssessor.builder()
-					.ignoreErrorTypes( "index_already_exists_exception" )
-					.build();
+			this.resultAssessor =
+					ElasticsearchRequestSuccessAssessor.builder().ignoreErrorTypes( "index_already_exists_exception" ).build();
 			return this;
 		}
 
 		@Override
 		protected ElasticsearchRequest buildRequest() {
-			ElasticsearchRequest.Builder builder =
-					ElasticsearchRequest.put()
-							.pathComponent( indexName );
+			ElasticsearchRequest.Builder builder = ElasticsearchRequest.put().pathComponent( indexName );
 			if ( payload.size() > 0 ) {
-				builder.body( payload );
+				builder.bodyJson( payload );
 			}
 			return builder.build();
 		}

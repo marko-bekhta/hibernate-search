@@ -2,7 +2,7 @@ package org.hibernate.search.util.json.spi;
 
 import java.nio.ByteBuffer;
 
-import org.hibernate.search.util.json.JsonElement;
+import tools.jackson.databind.JsonNode;
 
 /** Single-consumer incremental JSON parser. It owns no executor or input queue.
  * Each feed consumes at most the configured chunk size, advances the caller's position by the accepted slice on success,
@@ -15,7 +15,7 @@ import org.hibernate.search.util.json.JsonElement;
 public interface JsonParserSession extends AutoCloseable {
 	void feed(ByteBuffer input);
 
-	JsonElement endOfInput();
+	JsonNode endOfInput();
 
 	long inputBytes();
 

@@ -8,13 +8,17 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchRequest;
+import org.hibernate.search.backend.elasticsearch.json.jackson.JacksonJsonHandlers;
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper;
-import org.hibernate.search.util.json.JsonObject;
 import org.hibernate.search.util.json.spi.JsonParsing;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
+
+@SuppressWarnings("deprecation") // Released Gson adapter contract is intentionally covered.
 class ElasticsearchSchemaExportCharacterizationTest {
 
 	@TempDir
@@ -22,13 +26,13 @@ class ElasticsearchSchemaExportCharacterizationTest {
 
 	@Test
 	void treeBodiesRemainSharedAndCollectionsAreUnmodifiable() throws IOException {
-		JsonObject body =
-				new JsonParsing().parse( "{\"mappings\":{\"properties\":{\"name\":{\"type\":\"keyword\"}}}}" )
-						.getAsJsonObject();
+		ObjectNode body =
+				( (ObjectNode) new JsonParsing().parse( "{\"mappings\":{\"properties\":{\"name\":{\"type\":\"keyword\"}}}}" ) );
 		ElasticsearchIndexSchemaExportImpl export = export( ElasticsearchRequest.put().wholeEncodedPath( "/index" )
-				.param( "wait_for_active_shards", "1" ).body( body ).build() );
-		assertThat( export.bodyParts().get( 0 ) ).isSameAs( body );
-		assertThatThrownBy( () -> export.bodyParts().add( new JsonObject() ) )
+				.param( "wait_for_active_shards", "1" ).bodyJson( body ).build() );
+		assertThat( export.bodyParts( JacksonJsonHandlers.object() ).get( 0 ) ).isSameAs( body );
+		assertThatThrownBy(
+				() -> export.bodyParts( JacksonJsonHandlers.object() ).add( new ObjectNode( JsonNodeFactory.instance ) ) )
 				.isInstanceOf( UnsupportedOperationException.class );
 		assertThatThrownBy( () -> export.parameters().put( "key", "value" ) )
 				.isInstanceOf( UnsupportedOperationException.class );
@@ -42,13 +46,50 @@ class ElasticsearchSchemaExportCharacterizationTest {
 
 	@Test
 	void multipleAndAbsentBodiesExportAsArrays() throws IOException {
-		ElasticsearchIndexSchemaExportImpl multiple = export( ElasticsearchRequest.put().wholeEncodedPath( "/index" )
-				.body( new JsonObject() ).body( new JsonObject() ).build() );
+		ElasticsearchIndexSchemaExportImpl multiple = export(
+				ElasticsearchRequest.put().wholeEncodedPath( "/index" ).bodyJson( new ObjectNode( JsonNodeFactory.instance ) )
+						.bodyJson( new ObjectNode( JsonNodeFactory.instance ) ).build() );
 		multiple.toFiles( directory );
 		assertThat( new JsonParsing().parse( Files.readString( directory.resolve( "create-index.json" ) ) ) )
 				.isEqualTo( new JsonParsing().parse( "[{},{}]" ) );
 		export( ElasticsearchRequest.put().wholeEncodedPath( "/index" ).build() ).toFiles( directory );
 		assertThat( Files.readString( directory.resolve( "create-index.json" ) ) ).isEqualTo( "[]" );
+	}
+
+
+	@Test
+	void customObjectHandlerRunsAndDeprecatedGsonBodyIsIndependent() {
+		ObjectNode body = (ObjectNode) new JsonParsing().parse( "{\"value\":9007199254740993,\"null\":null}" );
+		ElasticsearchIndexSchemaExportImpl export = export( ElasticsearchRequest.put().wholeEncodedPath( "/index" )
+				.bodyJson( body ).build() );
+		java.util.concurrent.atomic.AtomicInteger reads = new java.util.concurrent.atomic.AtomicInteger();
+		org.hibernate.search.backend.elasticsearch.json.JsonHandler<ObjectNode> handler =
+				new org.hibernate.search.backend.elasticsearch.json.JsonHandler<>() {
+					@Override
+					public Class<ObjectNode> javaType() {
+						return ObjectNode.class;
+					}
+
+					@Override
+					public String toJson(ObjectNode value) {
+						throw new org.hibernate.search.util.common.AssertionFailure( "Output handler only" );
+					}
+
+					@Override
+					public ObjectNode fromJson(String json) {
+						reads.incrementAndGet();
+						return (ObjectNode) new JsonParsing().parse( json );
+					}
+				};
+		ObjectNode converted = export.bodyParts( handler ).get( 0 );
+		assertThat( reads.get() ).isEqualTo( 1 );
+		assertThat( converted ).isEqualTo( body ).isNotSameAs( body );
+		var gson = export.bodyParts().get( 0 );
+		assertThat( gson.get( "value" ).getAsBigInteger() ).isEqualTo( new java.math.BigInteger( "9007199254740993" ) );
+		assertThat( gson.get( "null" ).isJsonNull() ).isTrue();
+		gson.addProperty( "value", 1 );
+		assertThat( body.get( "value" ).longValue() ).isEqualTo( 9007199254740993L );
+		assertThatThrownBy( () -> export.bodyParts().clear() ).isInstanceOf( UnsupportedOperationException.class );
 	}
 
 	private static ElasticsearchIndexSchemaExportImpl export(ElasticsearchRequest request) {

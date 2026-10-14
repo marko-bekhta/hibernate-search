@@ -10,4 +10,4 @@ The syntax of this JSON may change:
 If this happens, you will need to change application code to deal with the changes.
 ====
 
-JSON objects and field values use the <<backend-elasticsearch-json,Search JSON model>>.
+JSON objects and native field values use a selected <<backend-elasticsearch-json,JSON handler>>.

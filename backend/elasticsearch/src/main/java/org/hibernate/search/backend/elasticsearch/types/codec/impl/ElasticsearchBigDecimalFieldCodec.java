@@ -4,14 +4,15 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonElementTypes;
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonScalarConversions;
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
 import org.hibernate.search.backend.elasticsearch.logging.impl.IndexingLog;
 import org.hibernate.search.engine.cfg.spi.NumberScaleConstants;
 import org.hibernate.search.engine.cfg.spi.NumberUtils;
-import org.hibernate.search.util.json.JsonElement;
-import org.hibernate.search.util.json.JsonNull;
-import org.hibernate.search.util.json.JsonPrimitive;
-import org.hibernate.search.util.json.spi.JsonElementTypes;
+
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.NullNode;
 
 public class ElasticsearchBigDecimalFieldCodec extends AbstractElasticsearchFieldCodec<BigDecimal> {
 
@@ -36,21 +37,21 @@ public class ElasticsearchBigDecimalFieldCodec extends AbstractElasticsearchFiel
 	}
 
 	@Override
-	public JsonElement encode(BigDecimal value) {
+	public JsonNode encode(BigDecimal value) {
 		if ( value == null ) {
-			return JsonNull.INSTANCE;
+			return NullNode.instance;
 		}
 
 		if ( value.compareTo( minScaledValue ) < 0 || value.compareTo( maxScaledValue ) > 0 ) {
 			throw IndexingLog.INSTANCE.scaledNumberTooLarge( value, minScaledValue, maxScaledValue );
 		}
 
-		return new JsonPrimitive( value );
+		return JsonScalarConversions.toNode( value );
 	}
 
 	@Override
-	public BigDecimal decode(JsonElement element) {
-		if ( element == null || element.isJsonNull() ) {
+	public BigDecimal decode(JsonNode element) {
+		if ( element == null || element.isNull() ) {
 			return null;
 		}
 

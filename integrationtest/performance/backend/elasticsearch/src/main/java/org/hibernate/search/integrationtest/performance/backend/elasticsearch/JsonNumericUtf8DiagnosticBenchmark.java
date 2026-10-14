@@ -1,14 +1,13 @@
 package org.hibernate.search.integrationtest.performance.backend.elasticsearch;
 
+import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.hibernate.search.util.json.JsonArray;
-import org.hibernate.search.util.json.JsonObject;
-import org.hibernate.search.util.json.impl.JsonNumber;
+import org.hibernate.search.util.json.impl.JsonNumbers;
 import org.hibernate.search.util.json.spi.JsonParsingOptions;
 
 import org.openjdk.jmh.annotations.Benchmark;
@@ -31,6 +30,8 @@ import tools.jackson.core.StreamReadConstraints;
 import tools.jackson.core.async.ByteArrayFeeder;
 import tools.jackson.core.async.ByteBufferFeeder;
 import tools.jackson.core.json.JsonFactory;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 /** Valid numeric fixtures only: upstream feeding/completion diagnostics, not strict Search SPI competitors. */
 @BenchmarkMode(Mode.Throughput)
@@ -41,7 +42,7 @@ import tools.jackson.core.json.JsonFactory;
 public class JsonNumericUtf8DiagnosticBenchmark {
 	@State(Scope.Thread)
 	public static class Input {
-		@Param({ "integers", "mixed" })
+		@Param({ "integers", "mixed-supported" })
 		public String fixture;
 		@Param({ "tokens", "numbers", "tree" })
 		public String work;
@@ -64,6 +65,9 @@ public class JsonNumericUtf8DiagnosticBenchmark {
 				lexemes[i] = switch ( fixture ) {
 					case "integers" -> Integer.toString( i );
 					case "mixed" -> mixed[i % mixed.length];
+					case "mixed-supported" -> "1e2147483648".equals( mixed[i % mixed.length] )
+							? "1e1000"
+							: mixed[i % mixed.length];
 					default -> throw new IllegalArgumentException( fixture );
 				};
 			}
@@ -97,14 +101,24 @@ public class JsonNumericUtf8DiagnosticBenchmark {
 	}
 
 	@Benchmark
-	public JsonObject treeFromOwnedLexemes(Input state) {
-		JsonObject root = new JsonObject();
-		JsonArray values = new JsonArray();
-		root.add( "values", values );
+	public ObjectNode treeFromOwnedLexemes(Input state) {
+		ObjectNode root = tools.jackson.databind.node.JsonNodeFactory.instance.objectNode();
+		ArrayNode values = tools.jackson.databind.node.JsonNodeFactory.instance.arrayNode();
+		root.set( "values", values );
 		for ( String lexeme : state.lexemes ) {
-			values.add( JsonNumber.jsonNumber( lexeme ) );
+			values.add( number( lexeme ) );
 		}
 		return root;
+	}
+
+	private static tools.jackson.databind.JsonNode number(String lexeme) {
+		// Measure the production conversion/storage policy, without a second parser per scalar.
+		return JsonNumbers.fromToken( lexeme,
+				lexeme.indexOf( '.' ) >= 0 || lexeme.indexOf( 'e' ) >= 0 || lexeme.indexOf( 'E' ) >= 0 );
+	}
+
+	private static BigDecimal decimal(tools.jackson.databind.JsonNode number) {
+		return new BigDecimal( number.numberValue().toString() );
 	}
 
 	private static long consume(Input state, String input, Blackhole blackhole, List<String> actual) {
@@ -114,12 +128,12 @@ public class JsonNumericUtf8DiagnosticBenchmark {
 			case "sync" -> state.jackson.createParser( ObjectReadContext.empty(), state.utf8 );
 			default -> throw new IllegalArgumentException( input );
 		} ) {
-			JsonObject root = null;
-			JsonArray values = null;
+			ObjectNode root = null;
+			ArrayNode values = null;
 			if ( "tree".equals( state.work ) ) {
-				root = new JsonObject();
-				values = new JsonArray();
-				root.add( "values", values );
+				root = tools.jackson.databind.node.JsonNodeFactory.instance.objectNode();
+				values = tools.jackson.databind.node.JsonNodeFactory.instance.arrayNode();
+				root.set( "values", values );
 			}
 			long count = 0;
 			if ( "sync".equals( input ) ) {
@@ -146,8 +160,8 @@ public class JsonNumericUtf8DiagnosticBenchmark {
 					throw new IllegalStateException( "Incomplete diagnostic tree" );
 				}
 				for ( int i = 0; i < values.size(); i++ ) {
-					if ( !state.lexemes[i].equals( values.get( i ).getAsString() ) ) {
-						throw new IllegalStateException( "Diagnostic tree lexeme mismatch" );
+					if ( new BigDecimal( state.lexemes[i] ).compareTo( decimal( values.get( i ) ) ) != 0 ) {
+						throw new IllegalStateException( "Diagnostic tree numeric value mismatch" );
 					}
 				}
 			}
@@ -161,7 +175,7 @@ public class JsonNumericUtf8DiagnosticBenchmark {
 		}
 	}
 
-	private static long drain(JsonParser parser, String work, JsonArray values, Blackhole blackhole,
+	private static long drain(JsonParser parser, String work, ArrayNode values, Blackhole blackhole,
 			List<String> actual, boolean ended) {
 		long count = 0;
 		while ( true ) {
@@ -187,12 +201,12 @@ public class JsonNumericUtf8DiagnosticBenchmark {
 					actual.add( lexeme );
 				}
 				if ( values != null ) {
-					values.add( JsonNumber.jsonNumber( lexeme ) );
+					values.add( number( lexeme ) );
 				}
 				else if ( "numbers".equals( work ) ) {
-					JsonNumber number = JsonNumber.jsonNumber( lexeme );
-					if ( actual != null && !lexeme.equals( number.toString() ) ) {
-						throw new IllegalStateException( "Diagnostic number lexeme mismatch" );
+					tools.jackson.databind.JsonNode number = number( lexeme );
+					if ( actual != null && new BigDecimal( lexeme ).compareTo( decimal( number ) ) != 0 ) {
+						throw new IllegalStateException( "Diagnostic number value mismatch" );
 					}
 					if ( blackhole != null ) {
 						blackhole.consume( number );

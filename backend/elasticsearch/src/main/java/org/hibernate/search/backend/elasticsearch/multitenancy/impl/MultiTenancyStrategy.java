@@ -7,7 +7,8 @@ import org.hibernate.search.backend.elasticsearch.common.impl.DocumentIdHelper;
 import org.hibernate.search.backend.elasticsearch.document.impl.DocumentMetadataContributor;
 import org.hibernate.search.backend.elasticsearch.document.model.dsl.impl.IndexSchemaRootContributor;
 import org.hibernate.search.backend.elasticsearch.search.projection.impl.ProjectionExtractionHelper;
-import org.hibernate.search.util.json.JsonObject;
+
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * Defines how the additional information required by multiTenancy are handled.
@@ -37,7 +38,7 @@ public interface MultiTenancyStrategy {
 	 * @param tenantId The tenant id.
 	 * @return The filter, or {@code null} if no filter is necessary.
 	 */
-	JsonObject filterOrNull(String tenantId);
+	ObjectNode filterOrNull(String tenantId);
 
 	/**
 	 * Generate a filter for the given tenant IDs, to be applied to search queries.
@@ -45,7 +46,7 @@ public interface MultiTenancyStrategy {
 	 * @param tenantIds The set of tenant ids.
 	 * @return The filter, or {@code null} if no filter is necessary.
 	 */
-	JsonObject filterOrNull(Set<String> tenantIds);
+	ObjectNode filterOrNull(Set<String> tenantIds);
 
 	/**
 	 * @return A helper for projections that need to extract the document id from search hits.

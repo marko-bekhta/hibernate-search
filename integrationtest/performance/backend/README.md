@@ -106,8 +106,9 @@ In particular the "run it from your IDE" approach is just meant for development 
 Core 3, synchronous cursor drain, incremental cursor and a benchmark-only worker
 bridge. No Elasticsearch server is needed. The
 Jackson comparison accesses the JSON module's internal implementation on the JMH
-classpath; it does not add a public library API or a Jackson production dependency
-to the backend.
+classpath; it does not add a public library API. The production utility and backend
+now use Jackson Databind 3 nodes directly. This harness calls their installed APIs;
+all matched fixture text and complete-consumption timing boundaries remain unchanged.
 
 ```shell
 ./mvnw clean install -pl integrationtest/performance/backend/elasticsearch -am \
@@ -126,6 +127,31 @@ affinity. Choose at least two physical cores for the worker scenario. Affinity i
 inherited by JMH forks and checked in benchmark and worker threads. Pinning is
 not an exclusive CPU reservation. The runner does not change governors, turbo,
 perf permissions, scheduler settings or any other host controls.
+
+Ordinary dependency JARs can be measured with `--classpath FILE`. The file must
+contain a single colon-separated list of JAR paths including the unshaded benchmark
+artifact and its dependencies. Freeze all JARs outside the mutable Maven repository
+before an acceptance campaign. The runner records each dependency hash and keeps
+source hashes in a separate file so a full backend source inventory fits metadata.
+For example, after building:
+
+```shell
+./mvnw -pl integrationtest/performance/backend/elasticsearch dependency:build-classpath \
+  -DincludeScope=runtime -Dmdep.outputFile=/tmp/json-runtime-dependencies.txt
+printf '%s:%s\n' "$PWD/integrationtest/performance/backend/elasticsearch/target/hibernate-search-integrationtest-performance-backend-elasticsearch-9.0.0-SNAPSHOT.jar" \
+  "$(cat /tmp/json-runtime-dependencies.txt)" > /tmp/json-runtime-classpath.txt
+# Copy these JARs to immutable evidence storage and rewrite the classpath before gating.
+integrationtest/performance/backend/scripts/run-json-benchmarks.sh --skip-build \
+  --classpath /tmp/json-runtime-classpath.txt --out /tmp/json-native-classpath --cores 0,2
+```
+
+The shaded historical controls omit `Multi-Release: true`, while ordinary Jackson
+Core 3.2.2 JARs contain newer-JDK numeric helpers. Keep shaded comparisons separate
+from matched ordinary-classpath comparisons; do not pool their scores.
+`JsonHarnessVerification` checks the five recorded baseline fixture hashes,
+complete writes, numeric read sums, actual migrated accessors and unsupported
+numeric fixture rejection outside timing. `JsonStringUtf8Verification` checks
+bounded Unicode/charset feed behavior. Short smoke scores are never acceptance data.
 
 Defaults: one JMH thread, three independent forks, five one-second warmup and
 five one-second measurement iterations, 1 GiB fixed heap, G1,
@@ -247,9 +273,10 @@ UTF-16, counts UTF-8 when a byte limit is configured, retains decoded UTF-8 name
 limits and rejects broken escaped name surrogates. It creates no secondary
 whole-body String or byte array. Network parsing still consumes bounded byte
 slices. Do not infer network throughput or large-token event-loop latency from
-these String API numbers. Numeric nodes retain exact lexemes and cache an
-in-range integral value; decimal/overflow narrowing still uses BigDecimal.
-Caching adds fixed tree storage, which is separate from retained encoded output.
+these String API numbers. Numeric nodes retain supported exact values using
+integral/BigInteger/BigDecimal storage without double rounding. Original numeric
+spelling is not guaranteed. Unsupported exponent/scale ranges fail explicitly.
+Tree storage and unencoded large-number rendering are separate from encoded output.
 
 `JsonUtf8IngressBenchmark` starts with caller-owned UTF-8 bytes. It includes
 creation, feeding, complete consumption, root tree construction and close in each
@@ -364,14 +391,14 @@ no automatic size dispatch is implied by these scores. See the
 
 `JsonNumericUtf8DiagnosticBenchmark` isolates upstream numeric token completion
 through public Core async ByteBuffer, async byte-array, and synchronous UTF-8
-parsers. `fixture=integers` uses exactly the 10,000-integer root above; `mixed`
-uses negative/decimal/exponent/overflow values. The diagnostic mixed fixture
-omits `-0` because Core normalizes it; the complete-tree `numbers-mixed-10000`
-fixture includes `-0` and independently checks lexical output. Diagnostic
-`work=tokens` consumes all numeric Strings, `numbers` additionally constructs and
-observes validated cached numbers, and `tree` constructs the known fixture shape
-with Search primitives. Setup verifies all lexemes and tree values through each
-input path, and constructs validated numbers in number mode. These paths omit
+parsers. `fixture=integers` uses exactly the 10,000-integer root above;
+`mixed-supported` uses negative/decimal/exponent/overflow values within supported
+ranges. The historical `mixed` fixture retains its unsupported `1e2147483648`
+value and is usable only for upstream token diagnostics. Diagnostic `work=tokens`
+consumes all numeric Strings, `numbers` additionally constructs and observes
+production-policy Jackson numeric nodes, and `tree` constructs the known fixture
+shape with those nodes. Setup verifies complete token Strings and mathematical
+numeric values through each input path; numeric spelling is not a tree invariant. These paths omit
 Search canonical validation, ownership handoff, escaped-name workaround and the
 general single-root builder; their deltas are not exact CPU-cost fractions or
 strictness-equivalent parser comparisons. Synchronous bytes are diagnostic only.
@@ -380,15 +407,17 @@ from already owned immutable Strings; use `work=tree` to avoid duplicate rows.
 
 The ingress benchmark now accepts `bufferKind=heap,direct,readonly` (default
 `heap`). Direct/read-only input storage is prepared outside timing; each operation
-starts with a new view and includes feeds, EOF/tree completion and close. Its `numbers-mixed-10000` root is 82,512
-bytes, cycling `-0`, `-42`, `0.125`, `1.00`, `6.022e23`, `-7E-9`, an overflowing
-integer and a huge exponent. It is a construction guard, not a production mix.
+starts with a new view and includes feeds, EOF/tree completion and close.
+`numbers-mixed-supported-10000` replaces the historical unsupported exponent with
+`1e1000`; it has a distinct name/hash and checks complete values plus framing.
+The original `numbers-mixed-10000` bytes are preserved as a rejection fixture.
+These are construction guards, not production mixes or matched historical primary rows.
 
 ```shell
-# Complete-tree primary; every setup verifies full bytes/lexemes before timing:
+# Complete-tree primary; setup verifies full bytes or supported numeric values:
 integrationtest/performance/backend/scripts/run-json-benchmarks.sh --skip-build \
   --out /tmp/json-numeric-heap --cores 0,2 --warmup 8 \
-  --fixtures numbers-10000,numbers-mixed-10000 \
+  --fixtures numbers-10000,numbers-mixed-supported-10000 \
   --pattern 'JsonUtf8IngressBenchmark.*Parser$' --param feedSize=8192 --param bufferKind=heap
 # Same upstream scalar-completion work through different feeders, diagnostic:
 integrationtest/performance/backend/scripts/run-json-benchmarks.sh --skip-build \

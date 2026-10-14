@@ -8,6 +8,7 @@ import java.lang.reflect.Modifier;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.function.BiPredicate;
 
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
@@ -19,6 +20,13 @@ public final class PublicApiDependencyTestUtils {
 	}
 
 	public static void assertNoDependencies(Path classes, List<String> forbiddenPrefixes) throws IOException {
+		assertNoDependencies( classes, forbiddenPrefixes, (type, prefix) -> false );
+	}
+
+	/** Explicit class/prefix exceptions do not exempt a class from other dependency checks. */
+	public static void assertNoDependencies(Path classes, List<String> forbiddenPrefixes,
+			BiPredicate<String, String> allowedDependency)
+			throws IOException {
 		assertThat( classes ).isDirectory();
 		int inspected = 0;
 		try ( var files = Files.walk( classes ) ) {
@@ -32,7 +40,7 @@ public final class PublicApiDependencyTestUtils {
 					indexer.index( input );
 					ClassInfo type = indexer.complete().getKnownClasses().iterator().next();
 					if ( visible( type.flags() ) || name.endsWith( "package-info.class" ) ) {
-						assertNoDependencies( type, forbiddenPrefixes );
+						assertNoDependencies( type, forbiddenPrefixes, allowedDependency );
 						++inspected;
 					}
 				}
@@ -42,6 +50,13 @@ public final class PublicApiDependencyTestUtils {
 	}
 
 	public static void assertNoDependencies(ClassInfo type, List<String> forbiddenPrefixes) {
+		assertNoDependencies( type, forbiddenPrefixes, (name, prefix) -> false );
+	}
+
+	public static void assertNoDependencies(ClassInfo type, List<String> forbiddenPrefixes,
+			BiPredicate<String, String> allowedDependency) {
+		forbiddenPrefixes = forbiddenPrefixes.stream()
+				.filter( prefix -> !allowedDependency.test( type.name().toString(), prefix ) ).toList();
 		String context = type.name().toString();
 		check( context, type.genericSignature( null ), forbiddenPrefixes );
 		check( context, type.descriptor( null ), forbiddenPrefixes );

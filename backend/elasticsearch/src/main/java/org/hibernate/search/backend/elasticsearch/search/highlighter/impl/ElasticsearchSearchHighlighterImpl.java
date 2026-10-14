@@ -7,6 +7,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonAccessor;
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonArrayAccessor;
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonObjectAccessor;
 import org.hibernate.search.backend.elasticsearch.logging.impl.QueryLog;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexScope;
 import org.hibernate.search.engine.search.highlighter.dsl.HighlighterEncoder;
@@ -16,11 +19,10 @@ import org.hibernate.search.engine.search.highlighter.spi.BoundaryScannerType;
 import org.hibernate.search.engine.search.highlighter.spi.SearchHighlighterBuilder;
 import org.hibernate.search.engine.search.highlighter.spi.SearchHighlighterType;
 import org.hibernate.search.engine.search.projection.ProjectionCollector;
-import org.hibernate.search.util.json.JsonArray;
-import org.hibernate.search.util.json.JsonObject;
-import org.hibernate.search.util.json.spi.JsonAccessor;
-import org.hibernate.search.util.json.spi.JsonArrayAccessor;
-import org.hibernate.search.util.json.spi.JsonObjectAccessor;
+
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 public class ElasticsearchSearchHighlighterImpl implements ElasticsearchSearchHighlighter {
 
@@ -123,8 +125,8 @@ public class ElasticsearchSearchHighlighterImpl implements ElasticsearchSearchHi
 	}
 
 	@Override
-	public void request(JsonObject requestBody) {
-		Optional<JsonObject> highlightOptional = REQUEST_HIGHLIGHT_ACCESSOR.get( requestBody );
+	public void request(ObjectNode requestBody) {
+		Optional<ObjectNode> highlightOptional = REQUEST_HIGHLIGHT_ACCESSOR.get( requestBody );
 		if ( highlightOptional.isPresent() ) {
 			toJson( highlightOptional.get() );
 		}
@@ -134,8 +136,8 @@ public class ElasticsearchSearchHighlighterImpl implements ElasticsearchSearchHi
 	}
 
 	@Override
-	public void applyToField(String path, JsonObject fields) {
-		fields.add( path, toJson( new JsonObject() ) );
+	public void applyToField(String path, ObjectNode fields) {
+		fields.set( path, toJson( JsonNodeFactory.instance.objectNode() ) );
 	}
 
 	@Override
@@ -154,7 +156,7 @@ public class ElasticsearchSearchHighlighterImpl implements ElasticsearchSearchHi
 				|| ( collectorProvider.isSingleValued() && ( numberOfFragments != null && numberOfFragments.equals( 1 ) ) );
 	}
 
-	private JsonObject toJson(JsonObject result) {
+	private ObjectNode toJson(ObjectNode result) {
 		setIfNotNull( TYPE, convertHighlighterType( this.type ), result );
 		setIfNotNull( BOUNDARY_CHARS, this.boundaryChars, result );
 		setIfNotNull( BOUNDARY_MAX_SCAN, this.boundaryMaxScan, result );
@@ -187,15 +189,15 @@ public class ElasticsearchSearchHighlighterImpl implements ElasticsearchSearchHi
 		}
 	}
 
-	private static <T> void setIfNotNull(JsonAccessor<T> accessor, T value, JsonObject object) {
+	private static <T> void setIfNotNull(JsonAccessor<T> accessor, T value, ObjectNode object) {
 		if ( value != null ) {
 			accessor.set( object, value );
 		}
 	}
 
-	private static void setIfNotEmpty(JsonArrayAccessor accessor, Collection<String> values, JsonObject object) {
+	private static void setIfNotEmpty(JsonArrayAccessor accessor, Collection<String> values, ObjectNode object) {
 		if ( values != null && !values.isEmpty() ) {
-			JsonArray array = new JsonArray();
+			ArrayNode array = JsonNodeFactory.instance.arrayNode();
 			values.forEach( array::add );
 			accessor.set( object, array );
 		}

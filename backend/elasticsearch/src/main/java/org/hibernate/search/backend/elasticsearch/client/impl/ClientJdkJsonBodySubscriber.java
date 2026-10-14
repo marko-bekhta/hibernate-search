@@ -12,11 +12,12 @@ import org.hibernate.search.backend.elasticsearch.client.common.json.impl.JsonGz
 import org.hibernate.search.backend.elasticsearch.client.common.json.impl.JsonResponseBody;
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
 import org.hibernate.search.backend.elasticsearch.logging.spi.ElasticsearchClientLog;
-import org.hibernate.search.util.json.JsonObject;
+
+import tools.jackson.databind.node.ObjectNode;
 
 /** Parses on the HTTP client's callback thread, requesting one consumed batch at a time. */
-final class ClientJdkJsonBodySubscriber implements HttpResponse.BodySubscriber<JsonObject> {
-	private final CompletableFuture<JsonObject> result = new CompletableFuture<>();
+final class ClientJdkJsonBodySubscriber implements HttpResponse.BodySubscriber<ObjectNode> {
+	private final CompletableFuture<ObjectNode> result = new CompletableFuture<>();
 	private final JsonResponseBody body;
 	private JsonGzipDecoder gzip;
 	private final JsonCodecService json;
@@ -43,7 +44,7 @@ final class ClientJdkJsonBodySubscriber implements HttpResponse.BodySubscriber<J
 	}
 
 	@Override
-	public CompletionStage<JsonObject> getBody() {
+	public CompletionStage<ObjectNode> getBody() {
 		return result;
 	}
 
@@ -100,7 +101,7 @@ final class ClientJdkJsonBodySubscriber implements HttpResponse.BodySubscriber<J
 				gzip.endOfInput();
 			}
 			body.complete();
-			JsonObject tree = json.decode( body.tree(), JsonObject.class );
+			ObjectNode tree = json.decode( body.tree(), ObjectNode.class );
 			terminated = true;
 			close();
 			result.complete( tree );

@@ -17,6 +17,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.NullNode;
+
 class JsonParserTest {
 	private final JsonParsing parsing = new JsonParsing();
 
@@ -43,13 +46,13 @@ class JsonParserTest {
 			"{\"a\":null,\"a\":[1,{},[true]],\"b\":\"é\"} \r\n" })
 	void allSplitPointsAndBufferKinds(String json) {
 		byte[] bytes = json.getBytes( StandardCharsets.UTF_8 );
-		JsonElement expected = parsing.parse( json );
+		JsonNode expected = parsing.parse( json );
 		for ( int kind = 0; kind < 4; kind++ ) {
 			for ( int split = 0; split <= bytes.length; split++ ) {
 				try ( JsonParserSession parser = parsing.createParser() ) {
 					consume( parser, buffer( bytes, 0, split, kind ) );
 					consume( parser, buffer( bytes, split, bytes.length - split, kind ) );
-					JsonElement actual = parser.endOfInput();
+					JsonNode actual = parser.endOfInput();
 					assertThat( actual ).isEqualTo( expected );
 					assertThat( actual.toString() ).isEqualTo( expected.toString() );
 					assertThat( parser.inputBytes() ).isEqualTo( bytes.length );
@@ -63,7 +66,7 @@ class JsonParserTest {
 		String json = "{\"" + "é中😀".repeat( 200 ) + "\":\"" + "é中😀\\n\\u0041".repeat( 20_000 )
 				+ "\",\"n\":123456789012345678901234567890.23000e+042}";
 		byte[] bytes = json.getBytes( StandardCharsets.UTF_8 );
-		JsonElement expected = parsing.parse( json );
+		JsonNode expected = parsing.parse( json );
 		Random random = new Random( 357919 );
 		try ( JsonParserSession parser = parsing.createParser() ) {
 			for ( int offset = 0; offset < bytes.length; ) {
@@ -197,7 +200,7 @@ class JsonParserTest {
 		}
 		JsonParserSession completed = parsing.createParser();
 		consume( completed, ByteBuffer.wrap( "null".getBytes( StandardCharsets.UTF_8 ) ) );
-		assertThat( completed.endOfInput() ).isSameAs( JsonNull.INSTANCE );
+		assertThat( completed.endOfInput() ).isSameAs( NullNode.instance );
 		assertThatThrownBy( completed::endOfInput ).isInstanceOf( IllegalStateException.class );
 	}
 
@@ -215,7 +218,7 @@ class JsonParserTest {
 			input.put( 1, (byte) '!' );
 			input.put( 2, (byte) '!' );
 			consume( parser, input );
-			assertThat( parser.endOfInput().getAsJsonObject().get( "a" ).getAsString() ).isEqualTo( "value" );
+			assertThat( parser.endOfInput().get( "a" ).asString() ).isEqualTo( "value" );
 		}
 	}
 
@@ -237,7 +240,7 @@ class JsonParserTest {
 			assertThatThrownBy( () -> constrained.parse( json ) ).isInstanceOf( JsonParseException.class );
 		}
 		JsonParsing byteLimited = new JsonParsing( JsonParsingOptions.DEFAULT.withMaxInputBytes( 4 ) );
-		assertThat( byteLimited.parse( "null" ) ).isSameAs( JsonNull.INSTANCE );
+		assertThat( byteLimited.parse( "null" ) ).isSameAs( NullNode.instance );
 		assertThatThrownBy( () -> byteLimited.parse( "false" ) ).isInstanceOf( JsonParseException.class )
 				.hasMessageContaining( "byte limit" );
 		assertThat( JsonParsingOptions.DEFAULT.maxInputBytes() ).isZero();
@@ -251,7 +254,7 @@ class JsonParserTest {
 		Charset charset = Charset.forName( charsetName );
 		String json = charsetName.startsWith( "UTF" ) ? "{\"é中😀\":\"é中😀\"}" : "{\"value\":\"é日本\"}";
 		byte[] bytes = json.getBytes( charset );
-		JsonElement expected = parsing.parse( new String( bytes, charset ) );
+		JsonNode expected = parsing.parse( new String( bytes, charset ) );
 		for ( int split = 0; split <= bytes.length; split++ ) {
 			try ( JsonParserSession parser = parsing.createParser( charset ) ) {
 				consume( parser, buffer( bytes, 0, split, 1 ) );
@@ -269,7 +272,7 @@ class JsonParserTest {
 		JsonParsing originalByteLimit = new JsonParsing( JsonParsingOptions.DEFAULT.withMaxInputBytes( bytes.length ) );
 		try ( JsonParserSession parser = originalByteLimit.createParser( StandardCharsets.ISO_8859_1 ) ) {
 			consume( parser, ByteBuffer.wrap( bytes ) );
-			assertThat( parser.endOfInput().getAsString() ).isEqualTo( "é" );
+			assertThat( parser.endOfInput().asString() ).isEqualTo( "é" );
 		}
 		assertThatThrownBy( () -> {
 			try ( JsonParserSession parser = originalByteLimit.createParser( StandardCharsets.UTF_16LE ) ) {

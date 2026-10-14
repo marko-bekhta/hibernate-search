@@ -9,12 +9,17 @@ import java.util.List;
 import java.util.Map;
 
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchRequest;
+import org.hibernate.search.backend.elasticsearch.gson.GsonJsonHandlers;
+import org.hibernate.search.backend.elasticsearch.json.JsonHandler;
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonHandlerBridge;
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
 import org.hibernate.search.backend.elasticsearch.logging.impl.ElasticsearchMiscLog;
 import org.hibernate.search.backend.elasticsearch.schema.management.ElasticsearchIndexSchemaExport;
-import org.hibernate.search.util.json.JsonArray;
-import org.hibernate.search.util.json.JsonElement;
-import org.hibernate.search.util.json.JsonObject;
+
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 public class ElasticsearchIndexSchemaExportImpl implements ElasticsearchIndexSchemaExport {
 
@@ -31,20 +36,20 @@ public class ElasticsearchIndexSchemaExportImpl implements ElasticsearchIndexSch
 
 	@Override
 	public void toFiles(Path targetDirectory) {
-		JsonObject queryParams = new JsonObject();
+		ObjectNode queryParams = new ObjectNode( JsonNodeFactory.instance );
 		for ( Map.Entry<String, String> entry : request.parameters().entrySet() ) {
-			queryParams.addProperty( entry.getKey(), entry.getValue() );
+			queryParams.put( entry.getKey(), entry.getValue() );
 		}
-		List<JsonObject> parts = request.bodyParts();
-		JsonElement body = parts.size() == 1
+		List<ObjectNode> parts = request.bodyPartsJson();
+		JsonNode body = parts.size() == 1
 				? parts.get( 0 )
-				: parts.stream().collect( JsonArray::new, JsonArray::add, JsonArray::addAll );
+				: parts.stream().collect( () -> new ArrayNode( JsonNodeFactory.instance ), ArrayNode::add, ArrayNode::addAll );
 
 		write( targetDirectory, "create-index.json", body );
 		write( targetDirectory, "create-index-query-params.json", queryParams );
 	}
 
-	private void write(Path path, String filename, JsonElement data) {
+	private void write(Path path, String filename, JsonNode data) {
 		try ( OutputStream outputStream = Files.newOutputStream( Files.createDirectories( path ).resolve( filename ) ) ) {
 			userFacingCodec.writeCompact( data, outputStream );
 		}
@@ -59,8 +64,17 @@ public class ElasticsearchIndexSchemaExportImpl implements ElasticsearchIndexSch
 	}
 
 	@Override
-	public List<JsonObject> bodyParts() {
-		return Collections.unmodifiableList( request.bodyParts() );
+	@Deprecated
+	public List<com.google.gson.JsonObject> bodyParts() {
+		return bodyParts( GsonJsonHandlers.object() );
+	}
+
+	@Override
+	public <T> List<T> bodyParts(JsonHandler<T> handler) {
+		java.util.Objects.requireNonNull( java.util.Objects.requireNonNull( handler ).javaType() );
+		return request.bodyPartsJson().stream()
+				.map( part -> JsonHandlerBridge.exportObject( handler, part, "schema export" ) )
+				.toList();
 	}
 
 }

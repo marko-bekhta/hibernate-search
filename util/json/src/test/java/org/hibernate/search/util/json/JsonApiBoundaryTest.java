@@ -10,6 +10,7 @@ import java.lang.annotation.Target;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Set;
 
 import org.hibernate.search.util.impl.test.jar.PublicApiDependencyTestUtils;
 
@@ -24,18 +25,24 @@ import tools.jackson.core.JsonParser;
 
 class JsonApiBoundaryTest {
 	@Test
-	void everyModelAndSpiSignatureIsLibraryNeutral() throws Exception {
+	void onlyApprovedNativeSpiSignaturesExposeJackson() throws Exception {
 		PublicApiDependencyTestUtils.assertNoDependencies( Path.of( "target/classes" ),
 				List.of( "com.google.gson", "com.fasterxml.jackson", "tools.jackson",
-						"org.hibernate.search.util.json.impl" ) );
+						"org.hibernate.search.util.json.impl" ),
+				(type, prefix) -> "tools.jackson".equals( prefix )
+						&& Set.of(
+								"JsonCodec", "JsonCodecs", "JsonParserSession", "JsonParsing", "JsonBodies", "JsonNumbers",
+								"JsonTreeValidation" ).stream()
+								.anyMatch( name -> type.equals( "org.hibernate.search.util.json.spi." + name )
+										|| type.startsWith( "org.hibernate.search.util.json.spi." + name + "$" ) ) );
 	}
 
 	@Test
-	void productionHasNoGsonDatabindOrReflectiveMapping() throws Exception {
+	void productionHasNoGsonOrReflectiveDtoMapping() throws Exception {
 		try ( var files = Files.walk( Path.of( "src/main/java" ) ) ) {
 			for ( Path file : files.filter( path -> path.toString().endsWith( ".java" ) ).toList() ) {
 				assertThat( Files.readString( file ) ).as( file.toString() )
-						.doesNotContain( "com.google.gson", "com.fasterxml.jackson.databind", "tools.jackson.databind",
+						.doesNotContain( "com.google.gson", "com.fasterxml.jackson.databind", "ObjectMapper", "JsonMapper",
 								"java.lang.reflect",
 								"getDeclaredField", "getDeclaredMethod" );
 			}
@@ -53,6 +60,20 @@ class JsonApiBoundaryTest {
 			var type = indexer.complete().getKnownClasses().iterator().next();
 			assertThatThrownBy( () -> PublicApiDependencyTestUtils.assertNoDependencies( type, List.of( "tools.jackson" ) ) )
 					.isInstanceOf( AssertionError.class ).hasMessageContaining( "tools.jackson" );
+		}
+	}
+
+	@Test
+	void explicitExceptionDoesNotDisableOtherPrefixes() throws Exception {
+		try ( var input = GenericReturn.class.getResourceAsStream(
+				"/" + GenericReturn.class.getName().replace( '.', '/' ) + ".class" ) ) {
+			Indexer indexer = new Indexer();
+			indexer.index( input );
+			var type = indexer.complete().getKnownClasses().iterator().next();
+			assertThatThrownBy( () -> PublicApiDependencyTestUtils.assertNoDependencies( type,
+					List.of( "tools.jackson", "java.util" ),
+					(name, prefix) -> name.equals( GenericReturn.class.getName() ) && prefix.equals( "tools.jackson" ) ) )
+					.isInstanceOf( AssertionError.class ).hasMessageContaining( "java.util" );
 		}
 	}
 

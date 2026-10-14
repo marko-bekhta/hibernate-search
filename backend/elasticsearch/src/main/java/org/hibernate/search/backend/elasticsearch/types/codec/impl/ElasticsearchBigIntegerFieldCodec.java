@@ -5,14 +5,15 @@ import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
 
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonElementTypes;
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonScalarConversions;
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
 import org.hibernate.search.backend.elasticsearch.logging.impl.IndexingLog;
 import org.hibernate.search.engine.cfg.spi.NumberScaleConstants;
 import org.hibernate.search.engine.cfg.spi.NumberUtils;
-import org.hibernate.search.util.json.JsonElement;
-import org.hibernate.search.util.json.JsonNull;
-import org.hibernate.search.util.json.JsonPrimitive;
-import org.hibernate.search.util.json.spi.JsonElementTypes;
+
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.NullNode;
 
 public class ElasticsearchBigIntegerFieldCodec extends AbstractElasticsearchFieldCodec<BigInteger> {
 
@@ -37,9 +38,9 @@ public class ElasticsearchBigIntegerFieldCodec extends AbstractElasticsearchFiel
 	}
 
 	@Override
-	public JsonElement encode(BigInteger value) {
+	public JsonNode encode(BigInteger value) {
 		if ( value == null ) {
-			return JsonNull.INSTANCE;
+			return NullNode.instance;
 		}
 
 		BigDecimal decimal = new BigDecimal( value );
@@ -47,12 +48,12 @@ public class ElasticsearchBigIntegerFieldCodec extends AbstractElasticsearchFiel
 			throw IndexingLog.INSTANCE.scaledNumberTooLarge( value, minScaledValue, maxScaledValue );
 		}
 
-		return new JsonPrimitive( value );
+		return JsonScalarConversions.toNode( value );
 	}
 
 	@Override
-	public BigInteger decode(JsonElement element) {
-		if ( element == null || element.isJsonNull() ) {
+	public BigInteger decode(JsonNode element) {
+		if ( element == null || element.isNull() ) {
 			return null;
 		}
 
@@ -65,13 +66,14 @@ public class ElasticsearchBigIntegerFieldCodec extends AbstractElasticsearchFiel
 	}
 
 	@Override
-	public BigInteger decodeAggregationKey(JsonElement key, JsonElement keyAsString) {
-		if ( key == null || key.isJsonNull() ) {
+	public BigInteger decodeAggregationKey(JsonNode key, JsonNode keyAsString) {
+		if ( key == null || key.isNull() ) {
 			return null;
 		}
 
 		// scaled_float aggregations format keys in double format, e.g. 1.514843E8
-		return JsonElementTypes.BIG_DECIMAL.fromElement( key ).toBigInteger();
+		return org.hibernate.search.util.json.spi.JsonNumbers
+				.truncateToBigInteger( JsonElementTypes.BIG_DECIMAL.fromElement( key ) );
 	}
 
 	@Override

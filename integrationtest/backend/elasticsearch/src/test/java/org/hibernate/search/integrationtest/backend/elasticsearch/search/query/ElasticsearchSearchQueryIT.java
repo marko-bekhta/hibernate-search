@@ -20,12 +20,14 @@ import org.hibernate.search.integrationtest.backend.elasticsearch.testsupport.ut
 import org.hibernate.search.integrationtest.backend.tck.testsupport.util.extension.SearchSetupHelper;
 import org.hibernate.search.util.impl.integrationtest.mapper.stub.SimpleMappedIndex;
 import org.hibernate.search.util.impl.integrationtest.mapper.stub.StubMappingScope;
-import org.hibernate.search.util.json.JsonObject;
 
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * Test the content of generated Elasticsearch search queries.
@@ -35,11 +37,9 @@ class ElasticsearchSearchQueryIT {
 	private static final SimpleMappedIndex<IndexBinding> index = SimpleMappedIndex.of( IndexBinding::new );
 
 	public static List<? extends Arguments> params() {
-		return Arrays.asList(
-				Arguments.of( null, defaultReadAlias( index.name() ) ),
-				Arguments.of( "no-alias", encodeName( index.name() ) ),
-				Arguments.of( new StubSingleIndexLayoutStrategy( "custom-write", "custom-read" ), encodeName( "custom-read" ) )
-		);
+		return Arrays.asList( Arguments.of( null, defaultReadAlias( index.name() ) ),
+				Arguments.of( "no-alias", encodeName( index.name() ) ), Arguments.of(
+						new StubSingleIndexLayoutStrategy( "custom-write", "custom-read" ), encodeName( "custom-read" ) ) );
 	}
 
 	@RegisterExtension
@@ -49,15 +49,8 @@ class ElasticsearchSearchQueryIT {
 	public ElasticsearchClientSpy clientSpy = ElasticsearchClientSpy.create();
 
 	public void init(Object layoutStrategy, URLEncodedString readName) {
-		setupHelper.start()
-				.withBackendProperty(
-						ElasticsearchBackendSettings.CLIENT_FACTORY, clientSpy.factoryReference()
-				)
-				.withBackendProperty(
-						ElasticsearchBackendSettings.LAYOUT_STRATEGY, layoutStrategy
-				)
-				.withIndex( index )
-				.setup();
+		setupHelper.start().withBackendProperty( ElasticsearchBackendSettings.CLIENT_FACTORY, clientSpy.factoryReference() )
+				.withBackendProperty( ElasticsearchBackendSettings.LAYOUT_STRATEGY, layoutStrategy ).withIndex( index ).setup();
 	}
 
 	@ParameterizedTest(name = "IndexLayoutStrategy = {0}")
@@ -65,20 +58,13 @@ class ElasticsearchSearchQueryIT {
 	void simple(Object layoutStrategy, URLEncodedString readName) {
 		init( layoutStrategy, readName );
 		StubMappingScope scope = index.createScope();
-
-		SearchQuery<?> query = scope.query()
-				.where( f -> f.matchAll() )
-				.toQuery();
-
-		clientSpy.expectNext(
-				ElasticsearchRequest.post()
-						.pathComponent( readName )
-						.pathComponent( Paths._SEARCH )
-						.body( new JsonObject() ) // We don't care about the payload
-						.build(),
-				ElasticsearchRequestAssertionMode.EXTENSIBLE
-		);
-
+		SearchQuery<?> query = scope.query().where( f -> f.matchAll() ).toQuery();
+		// We don't care about the payload
+		clientSpy.// We don't care about the payload
+				expectNext( // We don't care about the payload
+						ElasticsearchRequest.post().pathComponent( readName ).pathComponent( Paths._SEARCH )
+								.bodyJson( new ObjectNode( JsonNodeFactory.instance ) ).build(),
+						ElasticsearchRequestAssertionMode.EXTENSIBLE );
 		query.fetchAll();
 	}
 
@@ -87,21 +73,13 @@ class ElasticsearchSearchQueryIT {
 	void defaultSourceFiltering(Object layoutStrategy, URLEncodedString readName) {
 		init( layoutStrategy, readName );
 		StubMappingScope scope = index.createScope();
-
-		SearchQuery<?> query = scope.query()
-				.where( f -> f.matchAll() )
-				.toQuery();
-
+		SearchQuery<?> query = scope.query().where( f -> f.matchAll() ).toQuery();
 		clientSpy.expectNext(
-				ElasticsearchRequest.post()
-						.pathComponent( readName )
-						.pathComponent( Paths._SEARCH )
-						.body( org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.create( false ).getCodec()
-								.decode( "{\"_source\":false}", JsonObject.class ) )
+				ElasticsearchRequest.post().pathComponent( readName ).pathComponent( Paths._SEARCH )
+						.bodyJson( org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.create( false )
+								.getCodec().decode( "{\"_source\":false}", ObjectNode.class ) )
 						.build(),
-				ElasticsearchRequestAssertionMode.EXTENSIBLE
-		);
-
+				ElasticsearchRequestAssertionMode.EXTENSIBLE );
 		query.fetchAll();
 	}
 
@@ -110,22 +88,13 @@ class ElasticsearchSearchQueryIT {
 	void projection_sourceFiltering(Object layoutStrategy, URLEncodedString readName) {
 		init( layoutStrategy, readName );
 		StubMappingScope scope = index.createScope();
-
-		SearchQuery<Object> query = scope.query()
-				.select( f -> f.field( "string" ) )
-				.where( f -> f.matchAll() )
-				.toQuery();
-
+		SearchQuery<Object> query = scope.query().select( f -> f.field( "string" ) ).where( f -> f.matchAll() ).toQuery();
 		clientSpy.expectNext(
-				ElasticsearchRequest.post()
-						.pathComponent( readName )
-						.pathComponent( Paths._SEARCH )
-						.body( org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.create( false ).getCodec()
-								.decode( "{\"_source\":[\"string\"]}", JsonObject.class ) )
+				ElasticsearchRequest.post().pathComponent( readName ).pathComponent( Paths._SEARCH )
+						.bodyJson( org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.create( false )
+								.getCodec().decode( "{\"_source\":[\"string\"]}", ObjectNode.class ) )
 						.build(),
-				ElasticsearchRequestAssertionMode.EXTENSIBLE
-		);
-
+				ElasticsearchRequestAssertionMode.EXTENSIBLE );
 		query.fetchAll();
 	}
 
@@ -134,24 +103,14 @@ class ElasticsearchSearchQueryIT {
 	void routing(Object layoutStrategy, URLEncodedString readName) {
 		init( layoutStrategy, readName );
 		StubMappingScope scope = index.createScope();
-
 		String routingKey = "someRoutingKey";
-
-		SearchQuery<?> query = scope.query()
-				.where( f -> f.matchAll() )
-				.routing( routingKey )
-				.toQuery();
-
-		clientSpy.expectNext(
-				ElasticsearchRequest.post()
-						.pathComponent( readName )
-						.pathComponent( Paths._SEARCH )
-						.body( new JsonObject() ) // We don't care about the payload
-						.param( "routing", routingKey )
-						.build(),
-				ElasticsearchRequestAssertionMode.EXTENSIBLE
-		);
-
+		SearchQuery<?> query = scope.query().where( f -> f.matchAll() ).routing( routingKey ).toQuery();
+		// We don't care about the payload
+		clientSpy.// We don't care about the payload
+				expectNext( // We don't care about the payload
+						ElasticsearchRequest.post().pathComponent( readName ).pathComponent( Paths._SEARCH )
+								.bodyJson( new ObjectNode( JsonNodeFactory.instance ) ).param( "routing", routingKey ).build(),
+						ElasticsearchRequestAssertionMode.EXTENSIBLE );
 		query.fetchAll();
 	}
 
@@ -159,23 +118,14 @@ class ElasticsearchSearchQueryIT {
 	@MethodSource("params")
 	void trackTotalHits_fetch(Object layoutStrategy, URLEncodedString readName) {
 		init( layoutStrategy, readName );
-
 		StubMappingScope scope = index.createScope();
-
-		SearchQuery<?> query = scope.query()
-				.where( f -> f.matchAll() )
-				.toQuery();
-
-		clientSpy.expectNext(
-				ElasticsearchRequest.post()
-						.param( "track_total_hits", true )
-						.pathComponent( readName )
-						.pathComponent( Paths._SEARCH )
-						.body( new JsonObject() ) // We don't care about the payload
-						.build(),
-				ElasticsearchRequestAssertionMode.EXTENSIBLE
-		);
-
+		SearchQuery<?> query = scope.query().where( f -> f.matchAll() ).toQuery();
+		// We don't care about the payload
+		clientSpy.// We don't care about the payload
+				expectNext( // We don't care about the payload
+						ElasticsearchRequest.post().param( "track_total_hits", true ).pathComponent( readName )
+								.pathComponent( Paths._SEARCH ).bodyJson( new ObjectNode( JsonNodeFactory.instance ) ).build(),
+						ElasticsearchRequestAssertionMode.EXTENSIBLE );
 		query.fetch( 30 );
 	}
 
@@ -183,44 +133,27 @@ class ElasticsearchSearchQueryIT {
 	@MethodSource("params")
 	void trackTotalHits_fetchHits(Object layoutStrategy, URLEncodedString readName) {
 		init( layoutStrategy, readName );
-
 		StubMappingScope scope = index.createScope();
-
-		SearchQuery<?> query = scope.query()
-				.where( f -> f.matchAll() )
-				.toQuery();
-
-		clientSpy.expectNext(
-				ElasticsearchRequest.post()
-						.param( "track_total_hits", false )
-						.pathComponent( readName )
-						.pathComponent( Paths._SEARCH )
-						.body( new JsonObject() ) // We don't care about the payload
-						.build(),
-				ElasticsearchRequestAssertionMode.EXTENSIBLE
-		);
-
+		SearchQuery<?> query = scope.query().where( f -> f.matchAll() ).toQuery();
+		// We don't care about the payload
+		clientSpy.// We don't care about the payload
+				expectNext( // We don't care about the payload
+						ElasticsearchRequest.post().param( "track_total_hits", false ).pathComponent( readName )
+								.pathComponent( Paths._SEARCH ).bodyJson( new ObjectNode( JsonNodeFactory.instance ) ).build(),
+						ElasticsearchRequestAssertionMode.EXTENSIBLE );
 		query.fetchHits( 30 );
 	}
 
 	@SuppressWarnings("unused")
 	private static class IndexBinding {
+
 		final IndexFieldReference<Integer> integer;
+
 		final IndexFieldReference<String> string;
 
 		IndexBinding(IndexSchemaElement root) {
-			integer = root.field(
-					"integer",
-					f -> f.asInteger().projectable( Projectable.YES )
-			)
-					.toReference();
-			string = root.field(
-					"string",
-					f -> f.asString().projectable( Projectable.YES )
-			)
-					.toReference();
+			integer = root.field( "integer", f -> f.asInteger().projectable( Projectable.YES ) ).toReference();
+			string = root.field( "string", f -> f.asString().projectable( Projectable.YES ) ).toReference();
 		}
 	}
-
-
 }

@@ -1,5 +1,6 @@
 package org.hibernate.search.backend.elasticsearch.search.projection.dsl.impl;
 
+import org.hibernate.search.backend.elasticsearch.json.JsonHandler;
 import org.hibernate.search.backend.elasticsearch.search.projection.dsl.ElasticsearchSearchProjectionFactory;
 import org.hibernate.search.backend.elasticsearch.search.projection.impl.ElasticsearchSearchProjectionIndexScope;
 import org.hibernate.search.engine.search.projection.dsl.ExtendedSearchProjectionFactory;
@@ -7,8 +8,6 @@ import org.hibernate.search.engine.search.projection.dsl.ProjectionFinalStep;
 import org.hibernate.search.engine.search.projection.dsl.spi.AbstractSearchProjectionFactory;
 import org.hibernate.search.engine.search.projection.dsl.spi.SearchProjectionDslContext;
 import org.hibernate.search.engine.search.projection.dsl.spi.StaticProjectionFinalStep;
-
-import org.hibernate.search.util.json.JsonObject;
 
 public class ElasticsearchSearchProjectionFactoryImpl<SR, R, E>
 		extends AbstractSearchProjectionFactory<
@@ -36,17 +35,17 @@ public class ElasticsearchSearchProjectionFactoryImpl<SR, R, E>
 	}
 
 	@Override
-	public ProjectionFinalStep<JsonObject> source() {
-		return new StaticProjectionFinalStep<>( dslContext.scope().projectionBuilders().source() );
+	public <T> ProjectionFinalStep<T> source(JsonHandler<T> handler) {
+		return new StaticProjectionFinalStep<>( dslContext.scope().projectionBuilders().source( handler ) );
 	}
 
 	@Override
-	public ProjectionFinalStep<JsonObject> explanation() {
-		return new StaticProjectionFinalStep<>( dslContext.scope().projectionBuilders().explanation() );
+	public <T> ProjectionFinalStep<T> explanation(JsonHandler<T> handler) {
+		return new StaticProjectionFinalStep<>( dslContext.scope().projectionBuilders().explanation( handler ) );
 	}
 
 	@Override
-	public ProjectionFinalStep<JsonObject> jsonHit() {
-		return new StaticProjectionFinalStep<>( dslContext.scope().projectionBuilders().jsonHit() );
+	public <T> ProjectionFinalStep<T> jsonHit(JsonHandler<T> handler) {
+		return new StaticProjectionFinalStep<>( dslContext.scope().projectionBuilders().jsonHit( handler ) );
 	}
 }

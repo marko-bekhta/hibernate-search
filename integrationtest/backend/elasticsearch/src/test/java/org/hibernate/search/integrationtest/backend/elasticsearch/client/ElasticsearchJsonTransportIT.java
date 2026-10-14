@@ -22,26 +22,33 @@ import org.hibernate.search.backend.elasticsearch.client.common.spi.Elasticsearc
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchRequest;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchResponse;
 import org.hibernate.search.backend.elasticsearch.client.common.util.spi.URLEncodedString;
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonScalarConversions;
 import org.hibernate.search.engine.cfg.spi.AllAwareConfigurationPropertySource;
 import org.hibernate.search.engine.common.execution.spi.DelegatingSimpleScheduledExecutor;
 import org.hibernate.search.engine.environment.bean.BeanHolder;
 import org.hibernate.search.engine.environment.thread.impl.EmbeddedThreadProvider;
 import org.hibernate.search.engine.environment.thread.impl.ThreadPoolProviderImpl;
-import org.hibernate.search.integrationtest.backend.elasticsearch.testsupport.util.ElasticsearchTckBackendHelper;
 import org.hibernate.search.util.impl.integrationtest.common.TestConfigurationProvider;
 import org.hibernate.search.util.impl.test.http.StreamingHttpServer;
-import org.hibernate.search.util.json.JsonObject;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-/** Runs unchanged in all four client executions; transfers use latches instead of timing sleeps. */
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
+
+/**
+ * Runs unchanged in all four client executions; transfers use latches instead of timing sleeps.
+ */
 class ElasticsearchJsonTransportIT {
+
 	@RegisterExtension
 	private final TestConfigurationProvider configuration = new TestConfigurationProvider();
+
 	private final ThreadPoolProviderImpl threads = new ThreadPoolProviderImpl(
 			BeanHolder.of( new EmbeddedThreadProvider( ElasticsearchJsonTransportIT.class.getName() ) ) );
+
 	private final ScheduledExecutorService timeouts = threads.newScheduledExecutor( 1, "Timeout" );
 
 	@AfterEach
@@ -73,7 +80,8 @@ class ElasticsearchJsonTransportIT {
 				exchange.chunk( "{}".getBytes( StandardCharsets.UTF_8 ) );
 			}
 			exchange.end();
-		} ); var client = client( List.of( server.uri() ), Map.of() ) ) {
+		} );
+				var client = client( List.of( server.uri() ), Map.of() ) ) {
 			var response = client.submit( request( "download" ) );
 			try {
 				assertThat( prefixSent.await( 10, TimeUnit.SECONDS ) ).isTrue();
@@ -82,7 +90,8 @@ class ElasticsearchJsonTransportIT {
 			finally {
 				finish.countDown();
 			}
-			assertThat( response.get( 10, TimeUnit.SECONDS ).body().get( "value" ).getAsString() ).isEqualTo( scalar );
+			assertThat( JsonScalarConversions.asString( response.get( 10, TimeUnit.SECONDS ).bodyJson().get( "value" ) ) )
+					.isEqualTo( scalar );
 			assertThat( client.submit( request( "reuse" ) ).get( 10, TimeUnit.SECONDS ).statusCode() ).isEqualTo( 200 );
 			assertThat( secondConnection ).hasValue( firstConnection.get() );
 			server.checkFailure();
@@ -103,8 +112,10 @@ class ElasticsearchJsonTransportIT {
 				exchange.chunk( Arrays.copyOfRange( compressed, offset, Math.min( offset + 5, compressed.length ) ) );
 			}
 			exchange.end();
-		} ); var client = client( List.of( server.uri() ), Map.of() ) ) {
-			assertThat( client.submit( request( "gzip" ) ).get( 10, TimeUnit.SECONDS ).body().get( "value" ).getAsString() )
+		} );
+				var client = client( List.of( server.uri() ), Map.of() ) ) {
+			assertThat( JsonScalarConversions
+					.asString( client.submit( request( "gzip" ) ).get( 10, TimeUnit.SECONDS ).bodyJson().get( "value" ) ) )
 					.isEqualTo( scalar );
 		}
 	}
@@ -113,8 +124,8 @@ class ElasticsearchJsonTransportIT {
 	void malformedErrorRetryPolicyAndLargeBodyReplay() throws Exception {
 		for ( String retryBody : List.of( "<proxy>unavailable", "{\"truncated\":" ) ) {
 			AtomicInteger attempts = new AtomicInteger();
-			JsonObject document = new JsonObject();
-			document.addProperty( "value", "é😀".repeat( 100_000 ) );
+			ObjectNode document = new ObjectNode( JsonNodeFactory.instance );
+			document.put( "value", "é😀".repeat( 100_000 ) );
 			String expected = org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.create( true ).getCodec()
 					.write( document ) + "\n";
 			StreamingHttpServer.Handler handler = exchange -> {
@@ -126,11 +137,11 @@ class ElasticsearchJsonTransportIT {
 				exchange.chunk( ( first ? retryBody : "{\"retried\":true}" ).getBytes( StandardCharsets.UTF_8 ) );
 				exchange.end();
 			};
-			try ( var first = new StreamingHttpServer( handler ); var second = new StreamingHttpServer( handler );
+			try ( var first = new StreamingHttpServer( handler );
+					var second = new StreamingHttpServer( handler );
 					var client = client( List.of( first.uri(), second.uri() ), Map.of() ) ) {
-				var request =
-						ElasticsearchRequest.post().pathComponent( URLEncodedString.fromString( "retry" ) ).body( document )
-								.build();
+				var request = ElasticsearchRequest.post().pathComponent( URLEncodedString.fromString( "retry" ) )
+						.bodyJson( document ).build();
 				if ( isJdk() ) {
 					// The existing JDK client does not implement status-based host failover.
 					assertThatThrownBy( () -> client.submit( request ).get( 10, TimeUnit.SECONDS ) )
@@ -138,7 +149,8 @@ class ElasticsearchJsonTransportIT {
 					assertThat( attempts ).hasValue( 1 );
 				}
 				else {
-					assertThat( client.submit( request ).get( 10, TimeUnit.SECONDS ).body().get( "retried" ).getAsBoolean() )
+					assertThat( JsonScalarConversions
+							.asBoolean( client.submit( request ).get( 10, TimeUnit.SECONDS ).bodyJson().get( "retried" ) ) )
 							.isTrue();
 					assertThat( attempts ).hasValue( 2 );
 				}
@@ -151,8 +163,8 @@ class ElasticsearchJsonTransportIT {
 	@Test
 	void retryAfterPartialUploadReplaysFromTheBeginning() throws Exception {
 		AtomicInteger attempts = new AtomicInteger();
-		JsonObject document = new JsonObject();
-		document.addProperty( "value", "é😀".repeat( 1_000_000 ) );
+		ObjectNode document = new ObjectNode( JsonNodeFactory.instance );
+		document.put( "value", "é😀".repeat( 1_000_000 ) );
 		long expectedLength = 6_000_013;
 		StreamingHttpServer.Handler handler = exchange -> {
 			boolean first = attempts.incrementAndGet() == 1;
@@ -175,10 +187,11 @@ class ElasticsearchJsonTransportIT {
 			exchange.chunk( "{}".getBytes( StandardCharsets.UTF_8 ) );
 			exchange.end();
 		};
-		try ( var first = new StreamingHttpServer( handler ); var second = new StreamingHttpServer( handler );
+		try ( var first = new StreamingHttpServer( handler );
+				var second = new StreamingHttpServer( handler );
 				var client = client( List.of( first.uri(), second.uri() ), Map.of() ) ) {
 			var request = ElasticsearchRequest.post().pathComponent( URLEncodedString.fromString( "partial" ) )
-					.body( document ).build();
+					.bodyJson( document ).build();
 			if ( isJdk() ) {
 				assertThatThrownBy( () -> client.submit( request ).get( 10, TimeUnit.SECONDS ) )
 						.hasRootCauseInstanceOf( java.io.IOException.class );
@@ -203,7 +216,8 @@ class ElasticsearchJsonTransportIT {
 			exchange.headers( first ? 400 : 200, "application/json", "" );
 			exchange.chunk( ( first ? "{\"truncated\":" : "{}" ).getBytes( StandardCharsets.UTF_8 ) );
 			exchange.end();
-		} ); var client = client( List.of( server.uri() ), Map.of() ) ) {
+		} );
+				var client = client( List.of( server.uri() ), Map.of() ) ) {
 			assertThatThrownBy( () -> client.submit( request( "malformed" ) ).get( 10, TimeUnit.SECONDS ) )
 					.hasMessageContaining( "400" );
 			assertThat( client.submit( request( "next" ) ).get( 10, TimeUnit.SECONDS ).statusCode() ).isEqualTo( 200 );
@@ -240,7 +254,8 @@ class ElasticsearchJsonTransportIT {
 				else {
 					exchange.end();
 				}
-			} ); var client = client( List.of( server.uri() ), timeout ? Map.of( "request_timeout", 500 ) : Map.of() ) ) {
+			} );
+					var client = client( List.of( server.uri() ), timeout ? Map.of( "request_timeout", 500 ) : Map.of() ) ) {
 				var response = client.submit( request( "pause" ) );
 				assertThat( prefix.await( 10, TimeUnit.SECONDS ) ).isTrue();
 				if ( timeout ) {
@@ -273,10 +288,11 @@ class ElasticsearchJsonTransportIT {
 				exchange.chunk( whitespace );
 			}
 			exchange.end();
-		} ); var client = client( List.of( server.uri() ), Map.of() ) ) {
+		} );
+				var client = client( List.of( server.uri() ), Map.of() ) ) {
 			CompletableFuture<ElasticsearchResponse> response = client.submit( request( "limit" ) );
 			if ( isJdk() ) {
-				assertThat( response.get( 30, TimeUnit.SECONDS ).body() ).isNull();
+				assertThat( response.get( 30, TimeUnit.SECONDS ).bodyJson() ).isNull();
 			}
 			else {
 				assertThatThrownBy( () -> response.get( 30, TimeUnit.SECONDS ) ).hasMessageContaining( "byte limit 104857600" );
@@ -286,8 +302,8 @@ class ElasticsearchJsonTransportIT {
 
 	@Test
 	void slowUploadAndEarlyRejection() throws Exception {
-		JsonObject document = new JsonObject();
-		document.addProperty( "value", "é😀".repeat( 1_000_000 ) );
+		ObjectNode document = new ObjectNode( JsonNodeFactory.instance );
+		document.put( "value", "é😀".repeat( 1_000_000 ) );
 		for ( boolean reject : List.of( false, true ) ) {
 			CountDownLatch started = new CountDownLatch( 1 );
 			CountDownLatch continueUpload = new CountDownLatch( 1 );
@@ -311,10 +327,10 @@ class ElasticsearchJsonTransportIT {
 					exchange.chunk( "{}".getBytes( StandardCharsets.UTF_8 ) );
 					exchange.end();
 				}
-			} ); var client = client( List.of( server.uri() ), Map.of() ) ) {
-				var response =
-						client.submit( ElasticsearchRequest.post().pathComponent( URLEncodedString.fromString( "upload" ) )
-								.body( document ).build() );
+			} );
+					var client = client( List.of( server.uri() ), Map.of() ) ) {
+				var response = client.submit( ElasticsearchRequest.post()
+						.pathComponent( URLEncodedString.fromString( "upload" ) ).bodyJson( document ).build() );
 				try {
 					assertThat( started.await( 10, TimeUnit.SECONDS ) ).isTrue();
 					if ( !reject ) {
@@ -353,17 +369,14 @@ class ElasticsearchJsonTransportIT {
 	}
 
 	private ElasticsearchClientImplementor client(List<String> uris, Map<String, ?> overrides) {
-		Map<String, ?> defaults = new ElasticsearchTckBackendHelper().createDefaultBackendSetupStrategy()
-				.createBackendConfigurationProperties( configuration );
-		Map<String, Object> properties = new HashMap<>( defaults );
-		properties.remove( ElasticsearchBackendSettings.HOSTS );
-		properties.remove( ElasticsearchBackendSettings.PROTOCOL );
+		// These transport fixtures talk exclusively to their local HTTP server, so no cluster discovery/setup is needed.
+		Map<String, Object> properties = new HashMap<>();
 		properties.put( ElasticsearchBackendSettings.URIS, String.join( ",", uris ) );
 		properties.putAll( overrides );
 		var resolver = configuration.createBeanResolverForTest();
 		return getDiscoveredClientFactory( resolver ).get().create( resolver,
-				AllAwareConfigurationPropertySource.fromMap( properties ),
-				threads.threadProvider(), "Transport", new DelegatingSimpleScheduledExecutor( timeouts, true ),
+				AllAwareConfigurationPropertySource.fromMap( properties ), threads.threadProvider(), "Transport",
+				new DelegatingSimpleScheduledExecutor( timeouts, true ),
 				org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.create( true ) );
 	}
 

@@ -3,6 +3,7 @@ package org.hibernate.search.backend.elasticsearch.types.impl;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonScalarConversions;
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.mapping.impl.DataTypes;
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.mapping.impl.PropertyMapping;
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.settings.impl.PropertyMappingIndexSettingsContributor;
@@ -17,23 +18,24 @@ import org.hibernate.search.engine.backend.types.converter.runtime.ToDocumentVal
 import org.hibernate.search.engine.backend.types.converter.spi.DslConverter;
 import org.hibernate.search.engine.backend.types.converter.spi.ProjectionConverter;
 import org.hibernate.search.engine.backend.types.spi.AbstractIndexValueFieldType;
-import org.hibernate.search.util.json.JsonElement;
-import org.hibernate.search.util.json.JsonPrimitive;
+
+import tools.jackson.databind.JsonNode;
 
 public class ElasticsearchIndexValueFieldType<F>
-		extends AbstractIndexValueFieldType<
-				ElasticsearchSearchIndexScope<?>,
-				ElasticsearchSearchIndexValueFieldContext<F>,
-				F>
+		extends AbstractIndexValueFieldType<ElasticsearchSearchIndexScope<?>, ElasticsearchSearchIndexValueFieldContext<F>, F>
 		implements ElasticsearchSearchIndexValueFieldTypeContext<F> {
-	private final JsonPrimitive elasticsearchTypeAsJson;
+
+	private final JsonNode elasticsearchTypeAsJson;
+
 	private final ElasticsearchFieldCodec<F> codec;
+
 	private final PropertyMapping mapping;
 
 	private final Consumer<PropertyMappingIndexSettingsContributor> indexSettingsContributor;
-	private final ProjectionConverter<?, ?> rawProjectionConverter;
-	private final DslConverter<?, ?> rawDslConverter;
 
+	private final ProjectionConverter<?, ?> rawProjectionConverter;
+
+	private final DslConverter<?, ?> rawDslConverter;
 
 	public ElasticsearchIndexValueFieldType(Builder<F> builder) {
 		super( builder );
@@ -41,13 +43,12 @@ public class ElasticsearchIndexValueFieldType<F>
 		this.codec = builder.codec;
 		this.mapping = builder.mapping;
 		this.indexSettingsContributor = builder.indexSettingsContributor;
-
 		this.rawProjectionConverter = new ProjectionConverter<>( String.class, new RawProjectionConverter<>( codec ) );
 		this.rawDslConverter = new DslConverter<>( String.class, new RawDslConverter<>( codec ) );
 	}
 
 	@Override
-	public JsonPrimitive elasticsearchTypeAsJson() {
+	public JsonNode elasticsearchTypeAsJson() {
 		return elasticsearchTypeAsJson;
 	}
 
@@ -80,13 +81,15 @@ public class ElasticsearchIndexValueFieldType<F>
 	}
 
 	public static class Builder<F>
-			extends AbstractIndexValueFieldType.Builder<
-					ElasticsearchSearchIndexScope<?>,
+			extends
+			AbstractIndexValueFieldType.Builder<ElasticsearchSearchIndexScope<?>,
 					ElasticsearchSearchIndexValueFieldContext<F>,
 					F> {
 
 		private ElasticsearchFieldCodec<F> codec;
+
 		private final PropertyMapping mapping;
+
 		private Consumer<PropertyMappingIndexSettingsContributor> indexSettingsContributor;
 
 		public Builder(Class<F> valueType, PropertyMapping mapping) {
@@ -116,17 +119,17 @@ public class ElasticsearchIndexValueFieldType<F>
 			return new ElasticsearchIndexValueFieldType<>( this );
 		}
 
-		private JsonPrimitive elasticsearchTypeAsJson() {
+		private JsonNode elasticsearchTypeAsJson() {
 			String typeName = mapping.getType();
 			if ( typeName == null ) {
 				// Can happen with user-provided mappings
 				typeName = DataTypes.OBJECT;
 			}
-			return new JsonPrimitive( typeName );
+			return JsonScalarConversions.toNode( typeName );
 		}
 	}
 
-	private static class RawDslConverter<F> implements ToDocumentValueConverter<String, JsonElement> {
+	private static class RawDslConverter<F> implements ToDocumentValueConverter<String, JsonNode> {
 
 		private final ElasticsearchFieldCodec<F> codec;
 
@@ -135,7 +138,7 @@ public class ElasticsearchIndexValueFieldType<F>
 		}
 
 		@Override
-		public JsonElement toDocumentValue(String value, ToDocumentValueConvertContext context) {
+		public JsonNode toDocumentValue(String value, ToDocumentValueConvertContext context) {
 			return codec.fromJsonStringToElement( value );
 		}
 
@@ -148,7 +151,8 @@ public class ElasticsearchIndexValueFieldType<F>
 		}
 	}
 
-	private static class RawProjectionConverter<F> implements FromDocumentValueConverter<JsonElement, String> {
+	private static class RawProjectionConverter<F> implements FromDocumentValueConverter<JsonNode, String> {
+
 		private final ElasticsearchFieldCodec<F> codec;
 
 		private RawProjectionConverter(ElasticsearchFieldCodec<F> codec) {
@@ -156,7 +160,7 @@ public class ElasticsearchIndexValueFieldType<F>
 		}
 
 		@Override
-		public String fromDocumentValue(JsonElement value, FromDocumentValueConvertContext context) {
+		public String fromDocumentValue(JsonNode value, FromDocumentValueConvertContext context) {
 			return codec.fromJsonElementToString( value );
 		}
 

@@ -4,7 +4,8 @@ import java.util.Map;
 
 import org.hibernate.search.backend.elasticsearch.json.impl.SerializeExtraProperties;
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper;
-import org.hibernate.search.util.json.JsonElement;
+
+import tools.jackson.databind.JsonNode;
 
 /**
  * An abstract base class for analysis-related definitions.
@@ -15,7 +16,7 @@ public abstract class AnalysisDefinition {
 	private String type;
 
 	@SerializeExtraProperties
-	private Map<String, JsonElement> parameters;
+	private Map<String, JsonNode> parameters;
 
 	public String getType() {
 		return type;
@@ -25,11 +26,11 @@ public abstract class AnalysisDefinition {
 		this.type = type;
 	}
 
-	public Map<String, JsonElement> getParameters() {
+	public Map<String, JsonNode> getParameters() {
 		return parameters;
 	}
 
-	public void setParameters(Map<String, JsonElement> parameters) {
+	public void setParameters(Map<String, JsonNode> parameters) {
 		this.parameters = parameters;
 	}
 

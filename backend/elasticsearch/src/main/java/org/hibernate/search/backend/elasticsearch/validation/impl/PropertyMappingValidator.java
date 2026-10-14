@@ -12,7 +12,8 @@ import org.hibernate.search.backend.elasticsearch.lowlevel.index.mapping.impl.Pr
 import org.hibernate.search.backend.elasticsearch.reporting.impl.ElasticsearchValidationMessages;
 import org.hibernate.search.engine.backend.analysis.AnalyzerNames;
 import org.hibernate.search.util.common.impl.CollectionHelper;
-import org.hibernate.search.util.json.JsonElement;
+
+import tools.jackson.databind.JsonNode;
 
 abstract class PropertyMappingValidator extends AbstractTypeMappingValidator<PropertyMapping> {
 
@@ -241,12 +242,12 @@ abstract class PropertyMappingValidator extends AbstractTypeMappingValidator<Pro
 		}
 
 		@Override
-		protected Map<String, JsonElement> expectedMappingExtraAttributes(ElasticsearchDenseVectorIndexOptions expected) {
+		protected Map<String, JsonNode> expectedMappingExtraAttributes(ElasticsearchDenseVectorIndexOptions expected) {
 			return expected.getExtraAttributes();
 		}
 
 		@Override
-		protected Map<String, JsonElement> actualMappingExtraAttributes(ElasticsearchDenseVectorIndexOptions actual) {
+		protected Map<String, JsonNode> actualMappingExtraAttributes(ElasticsearchDenseVectorIndexOptions actual) {
 			return actual.getExtraAttributes();
 		}
 	}
@@ -288,12 +289,12 @@ abstract class PropertyMappingValidator extends AbstractTypeMappingValidator<Pro
 		}
 
 		@Override
-		protected Map<String, JsonElement> expectedMappingExtraAttributes(OpenSearchVectorTypeMethod expected) {
+		protected Map<String, JsonNode> expectedMappingExtraAttributes(OpenSearchVectorTypeMethod expected) {
 			return expected.getExtraAttributes();
 		}
 
 		@Override
-		protected Map<String, JsonElement> actualMappingExtraAttributes(OpenSearchVectorTypeMethod actual) {
+		protected Map<String, JsonNode> actualMappingExtraAttributes(OpenSearchVectorTypeMethod actual) {
 			return actual.getExtraAttributes();
 		}
 	}
@@ -321,18 +322,18 @@ abstract class PropertyMappingValidator extends AbstractTypeMappingValidator<Pro
 		}
 
 		@Override
-		protected Map<String, JsonElement> expectedMappingExtraAttributes(OpenSearchVectorTypeMethod.Parameters expected) {
+		protected Map<String, JsonNode> expectedMappingExtraAttributes(OpenSearchVectorTypeMethod.Parameters expected) {
 			return expected.getExtraAttributes();
 		}
 
 		@Override
-		protected Map<String, JsonElement> actualMappingExtraAttributes(OpenSearchVectorTypeMethod.Parameters actual) {
+		protected Map<String, JsonNode> actualMappingExtraAttributes(OpenSearchVectorTypeMethod.Parameters actual) {
 			return actual.getExtraAttributes();
 		}
 	}
 
 	abstract static class AbstractVectorAttributesValidator<T> implements Validator<T> {
-		private final Validator<JsonElement> extraAttributeValidator = new JsonElementValidator( new JsonElementEquivalence() );
+		private final Validator<JsonNode> extraAttributeValidator = new JsonElementValidator( new JsonElementEquivalence() );
 
 		@Override
 		public final void validate(ValidationErrorCollector errorCollector, T expected, T actual) {
@@ -355,8 +356,8 @@ abstract class PropertyMappingValidator extends AbstractTypeMappingValidator<Pro
 
 		protected abstract void doValidate(ValidationErrorCollector errorCollector, T expected, T actual);
 
-		protected abstract Map<String, JsonElement> expectedMappingExtraAttributes(T expected);
+		protected abstract Map<String, JsonNode> expectedMappingExtraAttributes(T expected);
 
-		protected abstract Map<String, JsonElement> actualMappingExtraAttributes(T actual);
+		protected abstract Map<String, JsonNode> actualMappingExtraAttributes(T actual);
 	}
 }

@@ -2,6 +2,9 @@ package org.hibernate.search.backend.elasticsearch.search.predicate.impl;
 
 import java.lang.reflect.Array;
 
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonAccessor;
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonArrayAccessor;
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonObjectAccessor;
 import org.hibernate.search.backend.elasticsearch.logging.impl.QueryLog;
 import org.hibernate.search.backend.elasticsearch.lowlevel.query.impl.Queries;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.AbstractElasticsearchCodecAwareSearchQueryElementFactory;
@@ -12,17 +15,16 @@ import org.hibernate.search.backend.elasticsearch.types.codec.impl.Elasticsearch
 import org.hibernate.search.engine.search.predicate.SearchPredicate;
 import org.hibernate.search.engine.search.predicate.spi.KnnPredicateBuilder;
 import org.hibernate.search.util.common.AssertionFailure;
-import org.hibernate.search.util.json.JsonArray;
-import org.hibernate.search.util.json.JsonObject;
-import org.hibernate.search.util.json.spi.JsonAccessor;
-import org.hibernate.search.util.json.spi.JsonArrayAccessor;
-import org.hibernate.search.util.json.spi.JsonObjectAccessor;
+
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 public abstract class ElasticsearchKnnPredicate extends AbstractElasticsearchSingleFieldPredicate {
 
 	protected final ElasticsearchSearchPredicate filter;
 	protected final int k;
-	protected final JsonArray vector;
+	protected final ArrayNode vector;
 	protected final Float similarity;
 
 	private ElasticsearchKnnPredicate(AbstractKnnBuilder<?> builder) {
@@ -35,9 +37,9 @@ public abstract class ElasticsearchKnnPredicate extends AbstractElasticsearchSin
 		builder.vector = null;
 	}
 
-	protected JsonObject prepareFilter(PredicateRequestContext context) {
-		JsonObject mainFilter = filter == null ? null : filter.toJsonQuery( context );
-		JsonArray filters = context.tenantAndRoutingFilters();
+	protected ObjectNode prepareFilter(PredicateRequestContext context) {
+		ObjectNode mainFilter = filter == null ? null : filter.toJsonQuery( context );
+		ArrayNode filters = context.tenantAndRoutingFilters();
 		if ( context.getNestedPath() == null ) {
 			return Queries.boolCombineMust( mainFilter, filters );
 		}
@@ -92,7 +94,7 @@ public abstract class ElasticsearchKnnPredicate extends AbstractElasticsearchSin
 		private final int indexedVectorsDimension;
 		protected final ElasticsearchVectorFieldCodec<F> codec;
 		private int k;
-		private JsonArray vector;
+		private ArrayNode vector;
 		private ElasticsearchSearchPredicate filter;
 		protected Float similarity;
 
@@ -142,10 +144,10 @@ public abstract class ElasticsearchKnnPredicate extends AbstractElasticsearchSin
 
 	}
 
-	private static JsonArray vectorToJsonArray(Object vector, Class<?> vectorElementsType) {
+	private static ArrayNode vectorToJsonArray(Object vector, Class<?> vectorElementsType) {
 		// we know it is an array since we've checked it when we got the vector
 		int length = Array.getLength( vector );
-		JsonArray array = new JsonArray( length );
+		ArrayNode array = JsonNodeFactory.instance.arrayNode( length );
 		for ( int i = 0; i < length; i++ ) {
 			if ( byte.class.equals( vectorElementsType ) ) {
 				array.add( Array.getByte( vector, i ) );
@@ -177,14 +179,14 @@ public abstract class ElasticsearchKnnPredicate extends AbstractElasticsearchSin
 		}
 
 		@Override
-		protected JsonObject doToJsonQuery(PredicateRequestContext context, JsonObject outerObject, JsonObject innerObject) {
+		protected ObjectNode doToJsonQuery(PredicateRequestContext context, ObjectNode outerObject, ObjectNode innerObject) {
 			KNN_ACCESSOR.set( outerObject, innerObject );
 
 			FIELD_ACCESSOR.set( innerObject, absoluteFieldPath );
 			NUM_CANDIDATES_ACCESSOR.set( innerObject, k );
 			VECTOR_ACCESSOR.set( innerObject, vector );
 
-			JsonObject filter = prepareFilter( context );
+			ObjectNode filter = prepareFilter( context );
 			if ( filter != null ) {
 				FILTER_ACCESSOR.set( innerObject, filter );
 			}
@@ -229,7 +231,7 @@ public abstract class ElasticsearchKnnPredicate extends AbstractElasticsearchSin
 		}
 
 		@Override
-		protected void addVersionSpecificFields(JsonObject innerObject) {
+		protected void addVersionSpecificFields(ObjectNode innerObject) {
 			if ( similarity != null ) {
 				MAX_DISTANCE.set( innerObject, similarity );
 			}
@@ -274,7 +276,7 @@ public abstract class ElasticsearchKnnPredicate extends AbstractElasticsearchSin
 		}
 
 		@Override
-		protected void addVersionSpecificFields(JsonObject innerObject) {
+		protected void addVersionSpecificFields(ObjectNode innerObject) {
 			K_ACCESSOR.set( innerObject, k );
 		}
 
@@ -321,13 +323,13 @@ public abstract class ElasticsearchKnnPredicate extends AbstractElasticsearchSin
 		}
 
 		@Override
-		protected final JsonObject doToJsonQuery(PredicateRequestContext context, JsonObject outerObject,
-				JsonObject innerObject) {
-			JsonObject field = new JsonObject();
+		protected final ObjectNode doToJsonQuery(PredicateRequestContext context, ObjectNode outerObject,
+				ObjectNode innerObject) {
+			ObjectNode field = JsonNodeFactory.instance.objectNode();
 			KNN_ACCESSOR.set( outerObject, field );
 
-			field.add( absoluteFieldPath, innerObject );
-			JsonObject filter = prepareFilter( context );
+			field.set( absoluteFieldPath, innerObject );
+			ObjectNode filter = prepareFilter( context );
 			if ( filter != null ) {
 				FILTER_ACCESSOR.set( innerObject, filter );
 			}
@@ -337,6 +339,6 @@ public abstract class ElasticsearchKnnPredicate extends AbstractElasticsearchSin
 			return outerObject;
 		}
 
-		protected abstract void addVersionSpecificFields(JsonObject innerObject);
+		protected abstract void addVersionSpecificFields(ObjectNode innerObject);
 	}
 }

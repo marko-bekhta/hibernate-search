@@ -4,6 +4,8 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
 
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonAccessor;
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonObjectAccessor;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexScope;
 import org.hibernate.search.backend.elasticsearch.types.predicate.impl.ElasticsearchCommonQueryStringPredicateBuilderFieldState;
 import org.hibernate.search.engine.search.common.spi.SearchQueryElementTypeKey;
@@ -11,9 +13,8 @@ import org.hibernate.search.engine.search.predicate.SearchPredicate;
 import org.hibernate.search.engine.search.predicate.dsl.SimpleQueryFlag;
 import org.hibernate.search.engine.search.predicate.spi.SimpleQueryStringPredicateBuilder;
 import org.hibernate.search.util.common.AssertionFailure;
-import org.hibernate.search.util.json.JsonObject;
-import org.hibernate.search.util.json.spi.JsonAccessor;
-import org.hibernate.search.util.json.spi.JsonObjectAccessor;
+
+import tools.jackson.databind.node.ObjectNode;
 
 public class ElasticsearchSimpleQueryStringPredicate extends ElasticsearchCommonQueryStringPredicate {
 
@@ -30,7 +31,7 @@ public class ElasticsearchSimpleQueryStringPredicate extends ElasticsearchCommon
 	}
 
 	@Override
-	protected void addSpecificProperties(PredicateRequestContext context, JsonObject outerObject, JsonObject innerObject) {
+	protected void addSpecificProperties(PredicateRequestContext context, ObjectNode outerObject, ObjectNode innerObject) {
 		if ( flags != null ) {
 			FLAGS_ACCESSOR.set( innerObject, toFlagsMask( flags ) );
 		}

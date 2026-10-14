@@ -8,12 +8,13 @@ import java.nio.charset.CoderResult;
 import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
 
-import org.hibernate.search.util.json.JsonElement;
 import org.hibernate.search.util.json.spi.JsonParseException;
 import org.hibernate.search.util.json.spi.JsonParserSession;
 import org.hibernate.search.util.json.spi.JsonParsing;
 
 import org.openjdk.jmh.infra.Blackhole;
+
+import tools.jackson.databind.JsonNode;
 
 /** Experiment only: standard UTF-8 encoding with fixed scratch, never an encoded whole body. */
 final class JsonStringUtf8Encoding {
@@ -23,14 +24,14 @@ final class JsonStringUtf8Encoding {
 	private JsonStringUtf8Encoding() {
 	}
 
-	static JsonElement parse(JsonParsing parsing, String json, int byteCapacity) {
+	static JsonNode parse(JsonParsing parsing, String json, int byteCapacity) {
 		try ( JsonParserSession parser = parsing.createParser() ) {
 			encode( json, parser, byteCapacity );
 			return parser.endOfInput();
 		}
 	}
 
-	static JsonElement parseStaged(JsonParsing parsing, String json, int byteCapacity, int charCapacity) {
+	static JsonNode parseStaged(JsonParsing parsing, String json, int byteCapacity, int charCapacity) {
 		try ( JsonParserSession parser = parsing.createParser() ) {
 			encodeStaged( json, parser, byteCapacity, charCapacity, null );
 			return parser.endOfInput();

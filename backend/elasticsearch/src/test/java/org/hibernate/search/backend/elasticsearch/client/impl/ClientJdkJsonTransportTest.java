@@ -14,11 +14,13 @@ import java.util.concurrent.TimeUnit;
 
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper;
-import org.hibernate.search.util.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 class ClientJdkJsonTransportTest {
 	private final JsonCodecService json = JsonProviderHelper.create( true ).getCodec();
@@ -54,8 +56,8 @@ class ClientJdkJsonTransportTest {
 
 	@Test
 	void demandRetainedStorageAndReplay() throws Exception {
-		JsonObject tree = new JsonObject();
-		tree.addProperty( "text", "é".repeat( 50_000 ) );
+		ObjectNode tree = JsonNodeFactory.instance.objectNode();
+		tree.put( "text", "é".repeat( 50_000 ) );
 		var publisher = new ClientJdkJsonHttpEntity( json, List.of( tree, tree ) );
 		assertThat( publisher.contentLength() ).isEqualTo( -1 );
 		RecordingSubscriber cancelled = new RecordingSubscriber();
@@ -89,8 +91,8 @@ class ClientJdkJsonTransportTest {
 
 	@Test
 	void reentrantDemandAndInvalidDemand() throws Exception {
-		JsonObject tree = new JsonObject();
-		tree.addProperty( "value", "x".repeat( 100_000 ) );
+		ObjectNode tree = JsonNodeFactory.instance.objectNode();
+		tree.put( "value", "x".repeat( 100_000 ) );
 		var publisher = new ClientJdkJsonHttpEntity( json, List.of( tree ) );
 		RecordingSubscriber subscriber = new RecordingSubscriber() {
 			@Override
@@ -124,8 +126,8 @@ class ClientJdkJsonTransportTest {
 
 	@Test
 	void concurrentCancellationDuringCallback() throws Exception {
-		JsonObject tree = new JsonObject();
-		tree.addProperty( "value", "x".repeat( 1_000_000 ) );
+		ObjectNode tree = JsonNodeFactory.instance.objectNode();
+		tree.put( "value", "x".repeat( 1_000_000 ) );
 		var publisher = new ClientJdkJsonHttpEntity( json, List.of( tree ) );
 		CountDownLatch entered = new CountDownLatch( 1 );
 		CountDownLatch release = new CountDownLatch( 1 );
@@ -185,7 +187,7 @@ class ClientJdkJsonTransportTest {
 			assertThat( demand.requested ).isEqualTo( batches + 1 );
 			assertThat( subscriber.getBody().toCompletableFuture() ).isNotDone();
 			subscriber.onComplete();
-			assertThat( subscriber.getBody().toCompletableFuture().join().get( "é😀" ).getAsString() )
+			assertThat( subscriber.getBody().toCompletableFuture().join().get( "é😀" ).asString() )
 					.isEqualTo( "😀é".repeat( 9000 ) );
 		}
 	}

@@ -6,7 +6,8 @@ import java.util.TreeMap;
 
 import org.hibernate.search.backend.elasticsearch.json.impl.SerializeExtraProperties;
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper;
-import org.hibernate.search.util.json.JsonElement;
+
+import tools.jackson.databind.JsonNode;
 
 /**
  * An object representing Elasticsearch type mappings.
@@ -23,7 +24,7 @@ public abstract class AbstractTypeMapping {
 	protected Map<String, PropertyMapping> properties;
 
 	@SerializeExtraProperties
-	private Map<String, JsonElement> extraAttributes;
+	private Map<String, JsonNode> extraAttributes;
 
 	public DynamicType getDynamic() {
 		return dynamic;
@@ -56,11 +57,11 @@ public abstract class AbstractTypeMapping {
 		getInitializedProperties().remove( name );
 	}
 
-	public Map<String, JsonElement> getExtraAttributes() {
+	public Map<String, JsonNode> getExtraAttributes() {
 		return extraAttributes;
 	}
 
-	public void setExtraAttributes(Map<String, JsonElement> extraAttributes) {
+	public void setExtraAttributes(Map<String, JsonNode> extraAttributes) {
 		this.extraAttributes = extraAttributes;
 	}
 

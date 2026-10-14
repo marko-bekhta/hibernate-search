@@ -11,9 +11,10 @@ import java.util.Set;
 
 import org.hibernate.search.backend.elasticsearch.client.common.json.impl.ElasticsearchJsonBody;
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
-import org.hibernate.search.util.json.JsonObject;
 import org.hibernate.search.util.json.spi.JsonBody;
 import org.hibernate.search.util.json.spi.JsonWriteCursor;
+
+import tools.jackson.databind.node.ObjectNode;
 
 /** Bounded cursor adapter preserving the existing synchronous entity lifecycle. */
 public class JsonHttpEntityContentProvider implements ContentProducer {
@@ -24,7 +25,7 @@ public class JsonHttpEntityContentProvider implements ContentProducer {
 	private volatile boolean cancelled;
 	private final Set<InputStream> streams = new HashSet<>();
 
-	public JsonHttpEntityContentProvider(JsonCodecService codec, List<JsonObject> bodyParts) throws IOException {
+	public JsonHttpEntityContentProvider(JsonCodecService codec, List<ObjectNode> bodyParts) throws IOException {
 		java.util.Objects.requireNonNull( codec );
 		body = ElasticsearchJsonBody.ndjson( bodyParts );
 	}

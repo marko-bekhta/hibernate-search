@@ -6,10 +6,10 @@ import org.hibernate.search.backend.elasticsearch.ElasticsearchVersion;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchClient;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchRequest;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchResponse;
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonAccessor;
 import org.hibernate.search.backend.elasticsearch.logging.spi.ElasticsearchClientLog;
 import org.hibernate.search.util.common.AssertionFailure;
 import org.hibernate.search.util.common.impl.Futures;
-import org.hibernate.search.util.json.spi.JsonAccessor;
 
 public final class ElasticsearchClientUtils {
 
@@ -42,11 +42,11 @@ public final class ElasticsearchClientUtils {
 				throw ElasticsearchClientLog.INSTANCE.elasticsearchResponseIndicatesFailure();
 			}
 
-			ElasticsearchDistributionName distributionOptional = DISTRIBUTION_ACCESSOR.get( response.body() )
+			ElasticsearchDistributionName distributionOptional = DISTRIBUTION_ACCESSOR.get( response.bodyJson() )
 					.map( ElasticsearchDistributionName::fromServerResponseRepresentation )
 					// Only the Elastic distribution doesn't mention what it is.
 					.orElse( ElasticsearchDistributionName.ELASTIC );
-			String version = VERSION_ACCESSOR.get( response.body() )
+			String version = VERSION_ACCESSOR.get( response.bodyJson() )
 					.orElseThrow( () -> new AssertionFailure( "Missing version number in JSON response" ) );
 
 			return ElasticsearchVersion.of( distributionOptional, version );

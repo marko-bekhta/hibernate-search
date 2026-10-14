@@ -20,12 +20,12 @@ import org.hibernate.search.integrationtest.backend.elasticsearch.testsupport.ut
 import org.hibernate.search.integrationtest.backend.tck.testsupport.util.extension.SearchSetupHelper;
 import org.hibernate.search.util.impl.integrationtest.mapper.stub.SimpleMappedIndex;
 import org.hibernate.search.util.impl.integrationtest.mapper.stub.StubMappingScope;
-import org.hibernate.search.util.json.JsonElement;
-import org.hibernate.search.util.json.JsonObject;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * Test the content of generated Elasticsearch search queries when the
@@ -41,126 +41,88 @@ class ElasticsearchSearchQueryRequestTransformerIT {
 	public ElasticsearchClientSpy clientSpy = ElasticsearchClientSpy.create();
 
 	private final SimpleMappedIndex<IndexBinding> mainIndex = SimpleMappedIndex.of( IndexBinding::new ).name( "main" );
+
 	private final SimpleMappedIndex<IndexBinding> otherIndex = SimpleMappedIndex.of( IndexBinding::new ).name( "other" );
 
 	@BeforeEach
 	void setup() {
-		setupHelper.start()
-				.withBackendProperty(
-						ElasticsearchBackendSettings.CLIENT_FACTORY, clientSpy.factoryReference()
-				)
-				.withIndexes( mainIndex, otherIndex )
-				.setup();
+		setupHelper.start().withBackendProperty( ElasticsearchBackendSettings.CLIENT_FACTORY, clientSpy.factoryReference() )
+				.withIndexes( mainIndex, otherIndex ).setup();
 	}
 
 	@Test
 	void path() {
 		StubMappingScope scope = mainIndex.createScope();
-
 		SearchQuery<DocumentReference> query = scope.query().extension( ElasticsearchExtension.get() )
-				.where( f -> f.matchAll() )
-				.requestTransformer( context -> {
+				.where( f -> f.matchAll() ).requestTransformer( context -> {
 					assertThat( context.path() ).isEqualTo( "/" + defaultReadAlias( mainIndex.name() ).original + "/_search" );
 					String newPath = "/" + defaultReadAlias( otherIndex.name() ).original + "/_search";
 					context.path( newPath );
 					// Changes should be visible immediately
 					assertThat( context.path() ).isEqualTo( newPath );
-				} )
-				.toQuery();
-
+				} ).toQuery();
 		clientSpy.expectNext(
-				ElasticsearchRequest.post()
-						.pathComponent( defaultReadAlias( otherIndex.name() ) )
+				ElasticsearchRequest.post().pathComponent( defaultReadAlias( otherIndex.name() ) )
 						.pathComponent( URLEncodedString.fromString( "_search" ) )
-						.body( org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.create( false ).getCodec()
-								.decode( "{}", JsonObject.class ) )
+						.bodyJson( org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.create( false )
+								.getCodec().decode( "{}", ObjectNode.class ) )
 						.build(),
-				ElasticsearchRequestAssertionMode.EXTENSIBLE
-		);
-
+				ElasticsearchRequestAssertionMode.EXTENSIBLE );
 		query.fetchAll();
 	}
 
 	@Test
 	void queryParameters() {
 		StubMappingScope scope = mainIndex.createScope();
-
 		SearchQuery<DocumentReference> query = scope.query().extension( ElasticsearchExtension.get() )
-				.where( f -> f.matchAll() )
-				.requestTransformer( context -> {
-					assertThat( context.parametersMap() )
-							.doesNotContainKeys( "search_type" );
+				.where( f -> f.matchAll() ).requestTransformer( context -> {
+					assertThat( context.parametersMap() ).doesNotContainKeys( "search_type" );
 					context.parametersMap().put( "search_type", "dfs_query_then_fetch" );
 					// Changes should be visible immediately
-					assertThat( context.parametersMap() )
-							.contains( entry( "search_type", "dfs_query_then_fetch" ) );
-				} )
-				.toQuery();
-
-		clientSpy.expectNext(
-				ElasticsearchRequest.post()
-						.pathComponent( defaultReadAlias( mainIndex.name() ) )
-						.pathComponent( Paths._SEARCH )
-						.body( org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.create( false ).getCodec()
-								.decode( "{}", JsonObject.class ) )
-						.param( "search_type", "dfs_query_then_fetch" )
-						.build(),
-				ElasticsearchRequestAssertionMode.EXTENSIBLE
-		);
-
+					assertThat( context.parametersMap() ).contains( entry( "search_type", "dfs_query_then_fetch" ) );
+				} ).toQuery();
+		clientSpy
+				.expectNext(
+						ElasticsearchRequest.post().pathComponent( defaultReadAlias( mainIndex.name() ) )
+								.pathComponent( Paths._SEARCH )
+								.bodyJson( org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper
+										.create( false ).getCodec().decode( "{}", ObjectNode.class ) )
+								.param( "search_type", "dfs_query_then_fetch" ).build(),
+						ElasticsearchRequestAssertionMode.EXTENSIBLE );
 		query.fetchAll();
 	}
 
 	@Test
 	void body() {
 		StubMappingScope scope = mainIndex.createScope();
-
 		SearchQuery<DocumentReference> query = scope.query().extension( ElasticsearchExtension.get() )
-				.where( f -> f.matchAll() )
-				.requestTransformer( context -> {
-					assertThat( context.body() )
-							.isNotNull()
-							.extracting( body -> body.get( "min_score" ) ).isNull();
-					context.body().addProperty( "min_score", 0.5f );
-					// Changes should be visible immediately
-					assertThat( context.body() )
-							.isNotNull()
-							.extracting( body -> body.get( "min_score" ) )
-							.extracting( JsonElement::getAsFloat ).isEqualTo( 0.5f );
-				} )
+				.where( f -> f.matchAll() ).requestTransformer( context -> context.transformBody(
+						org.hibernate.search.backend.elasticsearch.json.jackson.JacksonJsonHandlers.object(), body -> {
+							assertThat( body.get( "min_score" ) ).isNull();
+							body.put( "min_score", 0.5f );
+							assertThat( body.get( "min_score" ).floatValue() ).isEqualTo( 0.5f );
+							return body;
+						} ) )
 				.toQuery();
-
 		clientSpy.expectNext(
-				ElasticsearchRequest.post()
-						.pathComponent( defaultReadAlias( mainIndex.name() ) )
-						.pathComponent( Paths._SEARCH )
-						.body( org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.create( false ).getCodec()
-								.decode( "{\"min_score\":0.5}", JsonObject.class ) )
+				ElasticsearchRequest.post().pathComponent( defaultReadAlias( mainIndex.name() ) ).pathComponent( Paths._SEARCH )
+						.bodyJson( org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.create( false )
+								.getCodec().decode( "{\"min_score\":0.5}", ObjectNode.class ) )
 						.build(),
-				ElasticsearchRequestAssertionMode.EXTENSIBLE
-		);
-
+				ElasticsearchRequestAssertionMode.EXTENSIBLE );
 		query.fetchAll();
 	}
 
 	@SuppressWarnings("unused")
 	private static class IndexBinding {
+
 		final IndexFieldReference<Integer> integer;
+
 		final IndexFieldReference<String> string;
 
 		IndexBinding(IndexSchemaElement root) {
-			integer = root.field(
-					"integer",
-					f -> f.asInteger().projectable( Projectable.YES )
-			)
-					.toReference();
-			string = root.field(
-					"string",
-					f -> f.asString().projectable( Projectable.YES )
-			)
-					.toReference();
+			integer = root.field( "integer", f -> f.asInteger().projectable( Projectable.YES ) ).toReference();
+			string = root.field( "string", f -> f.asString().projectable( Projectable.YES ) ).toReference();
 		}
 	}
-
-
 }

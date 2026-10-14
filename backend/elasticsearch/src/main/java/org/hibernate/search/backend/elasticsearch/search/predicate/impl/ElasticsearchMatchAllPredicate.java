@@ -1,11 +1,12 @@
 package org.hibernate.search.backend.elasticsearch.search.predicate.impl;
 
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonAccessor;
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonObjectAccessor;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexScope;
 import org.hibernate.search.engine.search.predicate.SearchPredicate;
 import org.hibernate.search.engine.search.predicate.spi.MatchAllPredicateBuilder;
-import org.hibernate.search.util.json.JsonObject;
-import org.hibernate.search.util.json.spi.JsonAccessor;
-import org.hibernate.search.util.json.spi.JsonObjectAccessor;
+
+import tools.jackson.databind.node.ObjectNode;
 
 class ElasticsearchMatchAllPredicate extends AbstractElasticsearchPredicate {
 
@@ -22,8 +23,8 @@ class ElasticsearchMatchAllPredicate extends AbstractElasticsearchPredicate {
 	}
 
 	@Override
-	protected JsonObject doToJsonQuery(PredicateRequestContext context,
-			JsonObject outerObject, JsonObject innerObject) {
+	protected ObjectNode doToJsonQuery(PredicateRequestContext context,
+			ObjectNode outerObject, ObjectNode innerObject) {
 		MATCH_ALL_ACCESSOR.set( outerObject, innerObject );
 		return outerObject;
 	}

@@ -6,7 +6,8 @@ import org.hibernate.search.backend.elasticsearch.json.impl.JsonName;
 import org.hibernate.search.backend.elasticsearch.json.impl.JsonSerializable;
 import org.hibernate.search.backend.elasticsearch.json.impl.SerializeExtraProperties;
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper;
-import org.hibernate.search.util.json.JsonElement;
+
+import tools.jackson.databind.JsonNode;
 
 /**
  * An object representing OpenSearch K-NN vector Method attributes.
@@ -26,7 +27,7 @@ public class OpenSearchVectorTypeMethod {
 	private Parameters parameters;
 
 	@SerializeExtraProperties
-	private Map<String, JsonElement> extraAttributes;
+	private Map<String, JsonNode> extraAttributes;
 
 	public String getName() {
 		return name;
@@ -60,11 +61,11 @@ public class OpenSearchVectorTypeMethod {
 		this.parameters = parameters;
 	}
 
-	public Map<String, JsonElement> getExtraAttributes() {
+	public Map<String, JsonNode> getExtraAttributes() {
 		return extraAttributes;
 	}
 
-	public void setExtraAttributes(Map<String, JsonElement> extraAttributes) {
+	public void setExtraAttributes(Map<String, JsonNode> extraAttributes) {
 		this.extraAttributes = extraAttributes;
 	}
 
@@ -81,7 +82,7 @@ public class OpenSearchVectorTypeMethod {
 		private Integer m;
 
 		@SerializeExtraProperties
-		private Map<String, JsonElement> extraAttributes;
+		private Map<String, JsonNode> extraAttributes;
 
 		public Integer getEfConstruction() {
 			return efConstruction;
@@ -99,11 +100,11 @@ public class OpenSearchVectorTypeMethod {
 			this.m = m;
 		}
 
-		public Map<String, JsonElement> getExtraAttributes() {
+		public Map<String, JsonNode> getExtraAttributes() {
 			return extraAttributes;
 		}
 
-		public void setExtraAttributes(Map<String, JsonElement> extraAttributes) {
+		public void setExtraAttributes(Map<String, JsonNode> extraAttributes) {
 			this.extraAttributes = extraAttributes;
 		}
 

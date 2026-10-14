@@ -1,5 +1,11 @@
 # Async JSON handling and a reusable Search JSON SPI
 
+> Historical implementation plan. The [Jackson trees and typed JSON handlers
+> plan](elasticsearch-json-handlers.md) records the revised direction agreed on
+> 2026-10-13. Its decisions supersede this document's Search-owned public tree,
+> Databind exclusion, and exact numeric-lexeme requirements. The reports below
+> remain evidence for the implementation and measurements at their recorded revisions.
+
 ## 1. Outcome, scope, and decisions
 
 Create a published `hibernate-search-util-json` module containing a Search-owned JSON model, reusable accessor SPI, streaming SPI, and Jackson Core implementation. Migrate Elasticsearch backend processing to that model while preserving reflection-free codecs.

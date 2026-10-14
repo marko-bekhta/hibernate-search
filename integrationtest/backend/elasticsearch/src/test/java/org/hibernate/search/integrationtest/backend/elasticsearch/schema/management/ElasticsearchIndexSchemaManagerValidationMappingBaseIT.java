@@ -262,11 +262,13 @@ class ElasticsearchIndexSchemaManagerValidationMappingBaseIT {
 		StubMappedIndex index = StubMappedIndex.ofNonRetrievable( root -> {
 			root.field( "float", f -> f
 					.extension( ElasticsearchExtension.get() )
-					.asNative().mapping( "{\"type\": \"float\", \"null_value\": \"AAA\" }" )
+					.asNative( org.hibernate.search.backend.elasticsearch.json.jackson.JacksonJsonHandlers.value() )
+					.mapping( "{\"type\": \"float\", \"null_value\": \"AAA\" }" )
 			).toReference();
 			root.field( "double", f -> f
 					.extension( ElasticsearchExtension.get() )
-					.asNative().mapping( "{\"type\": \"double\", \"null_value\": \"BBB\" }" )
+					.asNative( org.hibernate.search.backend.elasticsearch.json.jackson.JacksonJsonHandlers.value() )
+					.mapping( "{\"type\": \"double\", \"null_value\": \"BBB\" }" )
 			).toReference();
 		} );
 

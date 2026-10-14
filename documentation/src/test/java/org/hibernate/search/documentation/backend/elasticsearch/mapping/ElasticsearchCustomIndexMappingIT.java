@@ -63,7 +63,7 @@ class ElasticsearchCustomIndexMappingIT {
 				.getResourceAsStream( "custom/index-mapping-merged.json" ) ) {
 
 			return org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.createUserFacingCodec()
-					.decode( in, org.hibernate.search.util.json.JsonElement.class ).toString();
+					.decode( in, tools.jackson.databind.JsonNode.class ).toString();
 		}
 	}
 }

@@ -3,7 +3,7 @@ package org.hibernate.search.backend.elasticsearch.client.common.json.spi;
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
 import org.hibernate.search.util.json.spi.JsonCodecRegistry;
 
-/** Library-neutral JSON services supplied to client extensions. */
+/** Fixed Jackson parsing, bounded output and generated-codec services supplied to client extensions. */
 public final class JsonProvider {
 	private final JsonCodecService codec, codecNoSerializeNulls;
 	private final JsonLogHelper logHelper;

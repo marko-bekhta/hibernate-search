@@ -1,23 +1,24 @@
 package org.hibernate.search.backend.elasticsearch.lowlevel.index.mapping.impl;
 
-import org.hibernate.search.util.json.JsonElement;
-import org.hibernate.search.util.json.JsonNull;
-import org.hibernate.search.util.json.JsonPrimitive;
 import org.hibernate.search.util.json.spi.JsonCodec;
 import org.hibernate.search.util.json.spi.JsonCodecs;
 
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.NullNode;
+import tools.jackson.databind.node.StringNode;
+
 public final class FormatJsonCodec implements JsonCodec<java.util.List<String>> {
-	public java.util.List<String> decode(JsonElement value) {
+	public java.util.List<String> decode(JsonNode value) {
 		if ( JsonCodecs.isNull( value ) ) {
 			return null;
 		}
-		if ( !value.isJsonPrimitive() || value.getAsJsonPrimitive().isBoolean() ) {
+		if ( !( value.isString() || value.isNumber() ) ) {
 			throw new IllegalArgumentException( "Expected format string" );
 		}
-		return java.util.Arrays.asList( value.getAsString().split( "\\|\\|" ) );
+		return java.util.Arrays.asList( JsonCodecs.STRING.decode( value ).split( "\\|\\|" ) );
 	}
 
-	public JsonElement encode(java.util.List<String> value, boolean serializeNulls) {
-		return value == null ? JsonNull.INSTANCE : new JsonPrimitive( String.join( "||", value ) );
+	public JsonNode encode(java.util.List<String> value, boolean serializeNulls) {
+		return value == null ? NullNode.instance : StringNode.valueOf( String.join( "||", value ) );
 	}
 }

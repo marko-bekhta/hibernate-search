@@ -2,19 +2,20 @@ package org.hibernate.search.backend.elasticsearch.search.predicate.impl;
 
 import java.util.Set;
 
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonAccessor;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.AbstractElasticsearchCompositeNodeSearchQueryElementFactory;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexCompositeNodeContext;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexScope;
 import org.hibernate.search.engine.search.predicate.SearchPredicate;
 import org.hibernate.search.engine.search.predicate.spi.NestedPredicateBuilder;
-import org.hibernate.search.util.json.JsonObject;
-import org.hibernate.search.util.json.spi.JsonAccessor;
+
+import tools.jackson.databind.node.ObjectNode;
 
 public class ElasticsearchNestedPredicate extends AbstractElasticsearchSingleFieldPredicate {
 
 	private static final JsonAccessor<String> PATH_ACCESSOR =
 			JsonAccessor.root().property( "path" ).unwrapSingletonArrays().asString();
-	private static final JsonAccessor<JsonObject> QUERY_ACCESSOR =
+	private static final JsonAccessor<ObjectNode> QUERY_ACCESSOR =
 			JsonAccessor.root().property( "query" ).unwrapSingletonArrays().asObject();
 	private static final JsonAccessor<Boolean> IGNORE_UNMAPPED_ACCESSOR =
 			JsonAccessor.root().property( "ignore_unmapped" ).unwrapSingletonArrays().asBoolean();
@@ -27,8 +28,8 @@ public class ElasticsearchNestedPredicate extends AbstractElasticsearchSingleFie
 	}
 
 	@Override
-	protected JsonObject doToJsonQuery(PredicateRequestContext context, JsonObject outerObject,
-			JsonObject innerObject) {
+	protected ObjectNode doToJsonQuery(PredicateRequestContext context, ObjectNode outerObject,
+			ObjectNode innerObject) {
 		PredicateRequestContext nestedContext = context.withNestedPath( absoluteFieldPath );
 
 		wrap( indexNames(), absoluteFieldPath, outerObject, innerObject,
@@ -39,7 +40,7 @@ public class ElasticsearchNestedPredicate extends AbstractElasticsearchSingleFie
 	}
 
 	static void wrap(Set<String> indexNames, String absoluteFieldPath,
-			JsonObject outerObject, JsonObject innerObject, JsonObject toWrap) {
+			ObjectNode outerObject, ObjectNode innerObject, ObjectNode toWrap) {
 		PATH_ACCESSOR.set( innerObject, absoluteFieldPath );
 		QUERY_ACCESSOR.set( innerObject, toWrap );
 		if ( indexNames.size() > 1 ) {
@@ -47,7 +48,7 @@ public class ElasticsearchNestedPredicate extends AbstractElasticsearchSingleFie
 			// Instruct ES to behave as if the nested field had no value in that case.
 			IGNORE_UNMAPPED_ACCESSOR.set( innerObject, true );
 		}
-		outerObject.add( "nested", innerObject );
+		outerObject.set( "nested", innerObject );
 	}
 
 	public static class Factory

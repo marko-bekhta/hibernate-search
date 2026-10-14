@@ -1,8 +1,9 @@
 package org.hibernate.search.backend.elasticsearch.lowlevel.syntax.search.impl;
 
-import org.hibernate.search.util.json.JsonElement;
-import org.hibernate.search.util.json.JsonNull;
-import org.hibernate.search.util.json.JsonPrimitive;
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonScalarConversions;
+
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.NullNode;
 
 /**
  * The search syntax for ES7.0 to ES8.0.
@@ -10,8 +11,8 @@ import org.hibernate.search.util.json.JsonPrimitive;
 public class Elasticsearch7SearchSyntax extends Elasticsearch81SearchSyntax {
 
 	@Override
-	public JsonElement encodeLongForAggregation(Long value) {
+	public JsonNode encodeLongForAggregation(Long value) {
 		// Workaround for https://github.com/elastic/elasticsearch/issues/81529
-		return value == null ? JsonNull.INSTANCE : new JsonPrimitive( value.toString() );
+		return value == null ? NullNode.instance : JsonScalarConversions.toNode( value.toString() );
 	}
 }

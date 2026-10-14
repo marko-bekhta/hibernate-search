@@ -2,7 +2,6 @@ package org.hibernate.search.build.json;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-
 import javax.annotation.processing.Filer;
 import javax.lang.model.element.TypeElement;
 
@@ -21,7 +20,7 @@ final class JsonCodecWriter {
 		try ( PrintWriter w = new PrintWriter( filer.createSourceFile( m.codecQualifiedName, element ).openWriter() ) ) {
 			w.println( "package " + m.packageName + ";" );
 			w.println(
-					"import org.hibernate.search.util.json.JsonElement; import org.hibernate.search.util.json.JsonObject; import org.hibernate.search.util.json.JsonNull;" );
+					"import tools.jackson.databind.JsonNode; import tools.jackson.databind.node.ObjectNode; import tools.jackson.databind.node.NullNode; import tools.jackson.databind.node.JsonNodeFactory;" );
 			w.println(
 					"import org.hibernate.search.util.json.spi.JsonCodec; import org.hibernate.search.util.json.spi.JsonCodecs; import org.hibernate.search.util.json.spi.JsonCodecRegistry;" );
 			w.println( "@javax.annotation.processing.Generated(\"" + processorClassName + "\")" );
@@ -34,10 +33,10 @@ final class JsonCodecWriter {
 				w.println( "this." + f.javaName + "Codec = " + f.codecExpression() + ";" );
 			}
 			w.println( "}" );
-			w.println( "public " + m.qualifiedName + " decode(JsonElement value) {" );
+			w.println( "public " + m.qualifiedName + " decode(JsonNode value) {" );
 			w.println( "if (JsonCodecs.isNull(value)) { return null; }" );
 			w.println( m.qualifiedName + " instance = new " + m.qualifiedName + "();" );
-			w.println( "for (var entry : value.getAsJsonObject().entrySet()) { switch(entry.getKey()) {" );
+			w.println( "for (var entry : ((ObjectNode) value).properties()) { switch(entry.getKey()) {" );
 			for ( FieldModel f : m.fields ) {
 				w.println( "case \"" + f.jsonName + "\":" );
 				for ( String alt : f.alternateNames ) {
@@ -52,8 +51,8 @@ final class JsonCodecWriter {
 				w.println( "instance." + m.extraPropsGetter + "().put(entry.getKey(),entry.getValue());" );
 			}
 			w.println( "break; } } return instance; }" );
-			w.println( "public JsonElement encode(" + m.qualifiedName + " instance, boolean serializeNulls) {" );
-			w.println( "if(instance == null) { return JsonNull.INSTANCE; } JsonObject result = new JsonObject();" );
+			w.println( "public JsonNode encode(" + m.qualifiedName + " instance, boolean serializeNulls) {" );
+			w.println( "if(instance == null) { return NullNode.instance; } ObjectNode result = JsonNodeFactory.instance.objectNode();" );
 			for ( FieldModel f : m.fields ) {
 				w.println( "JsonCodecs.put(result,\"" + f.jsonName + "\"," + f.javaName + "Codec.encode(instance." + f.getter
 						+ "(), serializeNulls), serializeNulls);" );

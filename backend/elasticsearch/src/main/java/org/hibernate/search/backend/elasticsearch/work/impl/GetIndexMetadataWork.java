@@ -17,8 +17,9 @@ import org.hibernate.search.backend.elasticsearch.lowlevel.index.mapping.impl.Ro
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.settings.impl.IndexSettings;
 import org.hibernate.search.backend.elasticsearch.work.result.impl.ExistingIndexMetadata;
 import org.hibernate.search.util.common.AssertionFailure;
-import org.hibernate.search.util.json.JsonElement;
-import org.hibernate.search.util.json.JsonObject;
+
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 public class GetIndexMetadataWork extends AbstractNonBulkableWork<List<ExistingIndexMetadata>> {
 
@@ -29,31 +30,28 @@ public class GetIndexMetadataWork extends AbstractNonBulkableWork<List<ExistingI
 	@Override
 	protected List<ExistingIndexMetadata> generateResult(ElasticsearchWorkExecutionContext context,
 			ElasticsearchResponse response) {
-		JsonObject body = response.body();
+		ObjectNode body = response.bodyJson();
 		List<ExistingIndexMetadata> result = new ArrayList<>();
-		for ( Map.Entry<String, JsonElement> entry : body.entrySet() ) {
-			JsonObject indexAsObject = entry.getValue().getAsJsonObject();
-
+		for ( Map.Entry<String, JsonNode> entry : body.properties() ) {
+			ObjectNode indexAsObject = ( (ObjectNode) entry.getValue() );
 			IndexMetadata metadata = new IndexMetadata();
 			metadata.setAliases( getAliases( context, indexAsObject ) );
 			metadata.setSettings( getSettings( context, indexAsObject ) );
 			metadata.setMapping( getMapping( context, indexAsObject ) );
-
 			result.add( new ExistingIndexMetadata( entry.getKey(), metadata ) );
 		}
 		return result;
 	}
 
-	private Map<String, IndexAliasDefinition> getAliases(ElasticsearchWorkExecutionContext context, JsonObject index) {
-		JsonElement aliases = index.get( "aliases" );
-		if ( aliases == null || !aliases.isJsonObject() ) {
+	private Map<String, IndexAliasDefinition> getAliases(ElasticsearchWorkExecutionContext context, ObjectNode index) {
+		JsonNode aliases = index.get( "aliases" );
+		if ( aliases == null || !aliases.isObject() ) {
 			throw new AssertionFailure(
 					"Elasticsearch API call succeeded, but the aliases weren't mentioned in the result: " + index );
 		}
-
 		JsonProvider jsonProvider = context.getJsonProvider();
 		Map<String, IndexAliasDefinition> result = new LinkedHashMap<>();
-		for ( Map.Entry<String, JsonElement> entry : aliases.getAsJsonObject().entrySet() ) {
+		for ( Map.Entry<String, JsonNode> entry : ( (ObjectNode) aliases ).properties() ) {
 			IndexAliasDefinition aliasDefinition =
 					jsonProvider.getCodec().decode( entry.getValue(), IndexAliasDefinition.class );
 			result.put( entry.getKey(), aliasDefinition );
@@ -61,14 +59,13 @@ public class GetIndexMetadataWork extends AbstractNonBulkableWork<List<ExistingI
 		return result;
 	}
 
-	private IndexSettings getSettings(ElasticsearchWorkExecutionContext context, JsonObject index) {
-		JsonElement settings = index.get( "settings" );
-		if ( settings == null || !settings.isJsonObject() ) {
+	private IndexSettings getSettings(ElasticsearchWorkExecutionContext context, ObjectNode index) {
+		JsonNode settings = index.get( "settings" );
+		if ( settings == null || !settings.isObject() ) {
 			throw new AssertionFailure(
 					"Elasticsearch API call succeeded, but the requested settings weren't mentioned in the result: " + index );
 		}
-
-		JsonElement indexSettings = settings.getAsJsonObject().get( "index" );
+		JsonNode indexSettings = ( (ObjectNode) settings ).get( "index" );
 		if ( indexSettings != null ) {
 			JsonProvider jsonProvider = context.getJsonProvider();
 			return jsonProvider.getCodec().decode( indexSettings, IndexSettings.class );
@@ -79,9 +76,8 @@ public class GetIndexMetadataWork extends AbstractNonBulkableWork<List<ExistingI
 		}
 	}
 
-	private RootTypeMapping getMapping(ElasticsearchWorkExecutionContext context, JsonObject index) {
-		JsonElement mappings = index.get( "mappings" );
-
+	private RootTypeMapping getMapping(ElasticsearchWorkExecutionContext context, ObjectNode index) {
+		JsonNode mappings = index.get( "mappings" );
 		if ( mappings != null ) {
 			JsonProvider jsonProvider = context.getJsonProvider();
 			return jsonProvider.getCodec().decode( mappings, RootTypeMapping.class );
@@ -110,9 +106,7 @@ public class GetIndexMetadataWork extends AbstractNonBulkableWork<List<ExistingI
 
 		@Override
 		protected ElasticsearchRequest buildRequest() {
-			ElasticsearchRequest.Builder builder =
-					ElasticsearchRequest.get()
-							.multiValuedPathComponent( indexNames );
+			ElasticsearchRequest.Builder builder = ElasticsearchRequest.get().multiValuedPathComponent( indexNames );
 			// This prevents the request from failing if the given index name does not match anything
 			builder.param( "ignore_unavailable", true );
 			// According to the documentation, this should prevent the request from failing

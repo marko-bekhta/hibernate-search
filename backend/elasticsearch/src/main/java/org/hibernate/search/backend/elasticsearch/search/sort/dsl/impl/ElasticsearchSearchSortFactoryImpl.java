@@ -1,5 +1,6 @@
 package org.hibernate.search.backend.elasticsearch.search.sort.dsl.impl;
 
+import org.hibernate.search.backend.elasticsearch.json.JsonHandler;
 import org.hibernate.search.backend.elasticsearch.search.predicate.dsl.ElasticsearchSearchPredicateFactory;
 import org.hibernate.search.backend.elasticsearch.search.sort.dsl.ElasticsearchSearchSortFactory;
 import org.hibernate.search.backend.elasticsearch.search.sort.impl.ElasticsearchSearchSort;
@@ -8,8 +9,6 @@ import org.hibernate.search.engine.search.sort.dsl.SortThenStep;
 import org.hibernate.search.engine.search.sort.dsl.spi.AbstractSearchSortFactory;
 import org.hibernate.search.engine.search.sort.dsl.spi.SearchSortDslContext;
 import org.hibernate.search.engine.search.sort.dsl.spi.StaticSortThenStep;
-
-import org.hibernate.search.util.json.JsonObject;
 
 public class ElasticsearchSearchSortFactoryImpl<SR>
 		extends AbstractSearchSortFactory<
@@ -34,8 +33,8 @@ public class ElasticsearchSearchSortFactoryImpl<SR>
 	}
 
 	@Override
-	public SortThenStep<SR> fromJson(JsonObject jsonObject) {
-		return staticThenStep( dslContext.scope().sortBuilders().fromJson( jsonObject ) );
+	public <T> SortThenStep<SR> fromJson(JsonHandler<T> handler, T jsonObject) {
+		return staticThenStep( dslContext.scope().sortBuilders().fromJson( handler, jsonObject ) );
 	}
 
 	@Override

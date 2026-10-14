@@ -7,8 +7,10 @@ import org.hibernate.search.backend.elasticsearch.search.common.impl.Elasticsear
 import org.hibernate.search.engine.backend.session.spi.BackendSessionContext;
 import org.hibernate.search.engine.search.common.NamedValues;
 import org.hibernate.search.engine.search.query.spi.QueryParameters;
-import org.hibernate.search.util.json.JsonArray;
-import org.hibernate.search.util.json.JsonObject;
+
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 public class PredicateRequestContext {
 
@@ -42,9 +44,9 @@ public class PredicateRequestContext {
 		return sessionContext.tenantIdentifier();
 	}
 
-	public JsonArray tenantAndRoutingFilters() {
-		JsonArray filters = new JsonArray();
-		JsonObject filter = searchIndexScope.filterOrNull( sessionContext.tenantIdentifier() );
+	public ArrayNode tenantAndRoutingFilters() {
+		ArrayNode filters = JsonNodeFactory.instance.arrayNode();
+		ObjectNode filter = searchIndexScope.filterOrNull( sessionContext.tenantIdentifier() );
 		if ( filter != null ) {
 			filters.add( filter );
 		}

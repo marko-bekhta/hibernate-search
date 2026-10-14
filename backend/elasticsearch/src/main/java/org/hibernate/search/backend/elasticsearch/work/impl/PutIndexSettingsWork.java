@@ -7,7 +7,8 @@ import org.hibernate.search.backend.elasticsearch.client.common.util.spi.URLEnco
 import org.hibernate.search.backend.elasticsearch.client.impl.Paths;
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.settings.impl.IndexSettings;
-import org.hibernate.search.util.json.JsonObject;
+
+import tools.jackson.databind.node.ObjectNode;
 
 public class PutIndexSettingsWork extends AbstractNonBulkableWork<Void> {
 
@@ -20,14 +21,13 @@ public class PutIndexSettingsWork extends AbstractNonBulkableWork<Void> {
 		return null;
 	}
 
-	public static class Builder
-			extends AbstractBuilder<Builder> {
-		private final URLEncodedString indexName;
-		private final JsonObject payload;
+	public static class Builder extends AbstractBuilder<Builder> {
 
-		public Builder(
-				JsonProvider jsonProvider,
-				URLEncodedString indexName, IndexSettings settings) {
+		private final URLEncodedString indexName;
+
+		private final ObjectNode payload;
+
+		public Builder(JsonProvider jsonProvider, URLEncodedString indexName, IndexSettings settings) {
 			super( ElasticsearchRequestSuccessAssessor.DEFAULT_INSTANCE );
 			this.indexName = indexName;
 			/*
@@ -35,16 +35,13 @@ public class PutIndexSettingsWork extends AbstractNonBulkableWork<Void> {
 			 * We better not include the null fields.
 			 */
 			JsonCodecService json = jsonProvider.getCodecNoSerializeNulls();
-			this.payload = json.encode( settings ).getAsJsonObject();
+			this.payload = ( (ObjectNode) json.encode( settings ) );
 		}
 
 		@Override
 		protected ElasticsearchRequest buildRequest() {
 			ElasticsearchRequest.Builder builder =
-					ElasticsearchRequest.put()
-							.pathComponent( indexName )
-							.pathComponent( Paths._SETTINGS )
-							.body( payload );
+					ElasticsearchRequest.put().pathComponent( indexName ).pathComponent( Paths._SETTINGS ).bodyJson( payload );
 			return builder.build();
 		}
 

@@ -3,9 +3,6 @@ package org.hibernate.search.util.json.impl;
 import java.nio.ByteBuffer;
 import java.util.Objects;
 
-import org.hibernate.search.util.json.JsonElement;
-import org.hibernate.search.util.json.JsonNull;
-import org.hibernate.search.util.json.JsonPrimitive;
 import org.hibernate.search.util.json.spi.JsonParseException;
 import org.hibernate.search.util.json.spi.JsonParserSession;
 import org.hibernate.search.util.json.spi.JsonParsingOptions;
@@ -13,6 +10,10 @@ import org.hibernate.search.util.json.spi.JsonParsingOptions;
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonToken;
 import tools.jackson.core.async.ByteBufferFeeder;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.BooleanNode;
+import tools.jackson.databind.node.NullNode;
+import tools.jackson.databind.node.StringNode;
 
 final class JacksonJsonParserSession implements JsonParserSession {
 	private static final ByteBuffer EMPTY = ByteBuffer.allocate( 0 ).asReadOnlyBuffer();
@@ -61,13 +62,13 @@ final class JacksonJsonParserSession implements JsonParserSession {
 	}
 
 	@Override
-	public JsonElement endOfInput() {
+	public JsonNode endOfInput() {
 		requireOpen();
 		try {
 			utf8.endOfInput();
 			feeder.endOfInput();
 			drain( true );
-			JsonElement result = builder.finish();
+			JsonNode result = builder.finish();
 			close();
 			return result;
 		}
@@ -104,28 +105,20 @@ final class JacksonJsonParserSession implements JsonParserSession {
 					builder.name( parser.currentName() );
 					break;
 				case VALUE_STRING:
-					builder.add( new JsonPrimitive( parser.getString() ) );
+					builder.add( StringNode.valueOf( parser.getString() ) );
 					break;
 				case VALUE_NUMBER_INT:
 				case VALUE_NUMBER_FLOAT:
-					String number = parser.getString();
-					// Jackson normalizes integer -0 to 0. Async token offsets start after the first byte;
-					// the remaining span is one for -0, and zero for 0 (also at EOF).
-					if ( "0".equals( number )
-							&& parser.currentLocation().getByteOffset()
-									- parser.currentTokenLocation().getByteOffset() == 1 ) {
-						number = "-0";
-					}
-					builder.add( new JsonPrimitive( JsonNumber.fromParser( number ) ) );
+					builder.add( JsonNumbers.fromToken( parser.getString(), token == JsonToken.VALUE_NUMBER_FLOAT ) );
 					break;
 				case VALUE_TRUE:
-					builder.add( new JsonPrimitive( true ) );
+					builder.add( BooleanNode.TRUE );
 					break;
 				case VALUE_FALSE:
-					builder.add( new JsonPrimitive( false ) );
+					builder.add( BooleanNode.FALSE );
 					break;
 				case VALUE_NULL:
-					builder.add( JsonNull.INSTANCE );
+					builder.add( NullNode.instance );
 					break;
 				default:
 					throw new JsonParseException( "Unexpected JSON token " + token );

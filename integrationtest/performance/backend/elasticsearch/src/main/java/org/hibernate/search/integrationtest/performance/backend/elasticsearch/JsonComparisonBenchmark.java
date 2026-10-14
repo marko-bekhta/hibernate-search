@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.hibernate.search.backend.elasticsearch.client.common.json.impl.ElasticsearchJsonBody;
-import org.hibernate.search.util.json.JsonElement;
 import org.hibernate.search.util.json.spi.JsonBody;
 import org.hibernate.search.util.json.spi.JsonParsing;
 
@@ -23,6 +22,8 @@ import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.infra.Blackhole;
 
+import tools.jackson.databind.JsonNode;
+
 /** Complete NDJSON writes. Fresh includes construction/probe; reused excludes them for every writer. */
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.SECONDS)
@@ -36,7 +37,7 @@ public class JsonComparisonBenchmark {
 		public String fixture;
 		@Param({ "fresh", "reused" })
 		public String lifecycle;
-		List<JsonElement> searchParts;
+		List<JsonNode> searchParts;
 		JsonBody body;
 		JsonBoundedWorker worker;
 		final ByteBuffer buffer = ByteBuffer.allocate( 8192 );
@@ -102,22 +103,23 @@ public class JsonComparisonBenchmark {
 	}
 
 	@Benchmark
-	public JsonElement searchParser(Bodies state) {
+	public JsonNode searchParser(Bodies state) {
 		return state.parsing.parse( state.json );
 	}
 
 	@State(Scope.Thread)
 	public static class Accessors {
-		final org.hibernate.search.util.json.spi.JsonAccessor<Long> strict =
-				org.hibernate.search.util.json.spi.JsonAccessor.root().property( "hits" ).property( "total" )
+		final org.hibernate.search.backend.elasticsearch.json.impl.JsonAccessor<Long> strict =
+				org.hibernate.search.backend.elasticsearch.json.impl.JsonAccessor.root().property( "hits" ).property( "total" )
 						.property( "value" ).asLong();
-		final org.hibernate.search.util.json.spi.JsonAccessor<Long> adapted =
-				org.hibernate.search.util.json.spi.JsonAccessor.root().property( "hits" ).unwrapSingletonArrays()
+		final org.hibernate.search.backend.elasticsearch.json.impl.JsonAccessor<Long> adapted =
+				org.hibernate.search.backend.elasticsearch.json.impl.JsonAccessor.root().property( "hits" )
+						.unwrapSingletonArrays()
 						.property( "total" ).unwrapSingletonArrays().property( "value" ).unwrapSingletonArrays().asLong();
 		final String plain = "{\"hits\":{\"total\":{\"value\":42}}}";
 		final String arrays = "{\"hits\":[[{\"total\":[{\"value\":[[42]]}]}]]}";
-		final org.hibernate.search.util.json.JsonObject searchPlain = new JsonParsing().parse( plain ).getAsJsonObject();
-		final org.hibernate.search.util.json.JsonObject searchArrays = new JsonParsing().parse( arrays ).getAsJsonObject();
+		final tools.jackson.databind.node.ObjectNode searchPlain = new JsonParsing().parse( plain ).asObject();
+		final tools.jackson.databind.node.ObjectNode searchArrays = new JsonParsing().parse( arrays ).asObject();
 
 		@Setup
 		public void verify() {

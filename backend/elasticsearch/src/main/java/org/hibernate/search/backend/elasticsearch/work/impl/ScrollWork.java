@@ -5,12 +5,15 @@ import org.hibernate.search.backend.elasticsearch.client.common.spi.Elasticsearc
 import org.hibernate.search.backend.elasticsearch.client.impl.Paths;
 import org.hibernate.search.engine.common.timing.Deadline;
 
-import org.hibernate.search.util.json.JsonObject;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 public class ScrollWork<R> extends AbstractNonBulkableWork<R> {
 
 	private final ElasticsearchSearchResultExtractor<R> resultExtractor;
+
 	private final Deadline deadline;
+
 	private final boolean failOnDeadline;
 
 	protected ScrollWork(Builder<R> builder) {
@@ -22,16 +25,20 @@ public class ScrollWork<R> extends AbstractNonBulkableWork<R> {
 
 	@Override
 	protected R generateResult(ElasticsearchWorkExecutionContext context, ElasticsearchResponse response) {
-		JsonObject body = response.body();
+		ObjectNode body = response.bodyJson();
 		return resultExtractor.extract( body, failOnDeadline ? deadline : null );
 	}
 
-	public static class Builder<R>
-			extends AbstractBuilder<Builder<R>> {
+	public static class Builder<R> extends AbstractBuilder<Builder<R>> {
+
 		private final String scrollId;
+
 		private final String scrollTimeout;
+
 		private final ElasticsearchSearchResultExtractor<R> resultExtractor;
+
 		private Deadline deadline;
+
 		private boolean failOnDeadline;
 
 		public Builder(String scrollId, String scrollTimeout, ElasticsearchSearchResultExtractor<R> resultExtractor) {
@@ -49,16 +56,11 @@ public class ScrollWork<R> extends AbstractNonBulkableWork<R> {
 
 		@Override
 		protected ElasticsearchRequest buildRequest() {
-			JsonObject body = new JsonObject();
-			body.addProperty( "scroll_id", scrollId );
-			body.addProperty( "scroll", scrollTimeout );
-
+			ObjectNode body = new ObjectNode( JsonNodeFactory.instance );
+			body.put( "scroll_id", scrollId );
+			body.put( "scroll", scrollTimeout );
 			ElasticsearchRequest.Builder builder =
-					ElasticsearchRequest.post()
-							.pathComponent( Paths._SEARCH )
-							.pathComponent( Paths.SCROLL )
-							.body( body );
-
+					ElasticsearchRequest.post().pathComponent( Paths._SEARCH ).pathComponent( Paths.SCROLL ).bodyJson( body );
 			return builder.build();
 		}
 

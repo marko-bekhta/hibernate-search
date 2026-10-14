@@ -2,6 +2,7 @@ package org.hibernate.search.util.json;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.hibernate.search.util.json.JsonTestNodes.scalar;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -21,11 +22,16 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
+
 class JsonOutputTest {
 	@ParameterizedTest
 	@ValueSource(ints = { 1, 2, 3, 4, 5, 6, 7, 11, 8192 })
 	void fragmentedOutputAndBufferBoundaries(int capacity) throws IOException {
-		JsonObject tree = fixture();
+		ObjectNode tree = fixture();
 		JsonBody body = JsonBodies.of( tree );
 		byte[] expected = jackson( tree );
 		assertThat( synchronous( body ) ).isEqualTo( expected );
@@ -73,10 +79,10 @@ class JsonOutputTest {
 			value.append( (char) c );
 		}
 		value.append( "😀\ud800x\udfff\ud800\ud800\udfff" );
-		JsonObject tree = new JsonObject();
-		tree.addProperty( value.toString(), value.toString() );
+		ObjectNode tree = new ObjectNode( JsonNodeFactory.instance );
+		tree.put( value.toString(), value.toString() );
 		assertThat( synchronous( JsonBodies.of( tree ) ) ).isEqualTo( jackson( tree ) );
-		JsonPrimitive exact = new JsonPrimitive( "<>&='\u2028\u2029é中😀\ud800x\udfff" );
+		JsonNode exact = scalar( "<>&='\u2028\u2029é中😀\ud800x\udfff" );
 		assertThat( new String( synchronous( JsonBodies.of( exact ) ), StandardCharsets.UTF_8 ) )
 				.isEqualTo( "\"\\u003c\\u003e\\u0026\\u003d\\u0027\\u2028\\u2029é中😀\\ud800x\\udfff\"" );
 	}
@@ -84,10 +90,10 @@ class JsonOutputTest {
 	@Test
 	void directUnicodeRunsYieldAtEveryEncodedUnitBoundary() throws IOException {
 		String text = "aé中😀\"\\\b\f\n\r\t\u0000<>&='\u2028\u2029\ud800x\udfff";
-		JsonObject tree = new JsonObject();
+		ObjectNode tree = new ObjectNode( JsonNodeFactory.instance );
 		// Vary the prefix to exercise each remaining destination size for both names and values.
 		for ( int prefix = 0; prefix < 12; prefix++ ) {
-			tree.addProperty( "x".repeat( prefix ) + text, text.repeat( 4 ) );
+			tree.put( "x".repeat( prefix ) + text, text.repeat( 4 ) );
 		}
 		byte[] expected = jackson( tree );
 		for ( int capacity = 1; capacity <= 32; capacity++ ) {
@@ -98,13 +104,13 @@ class JsonOutputTest {
 	@Test
 	void stableBoundedContentLengthAndExactLimit() throws IOException {
 		for ( int length : new int[] { 1, 8191, 8192, 8193, 1_000_000 } ) {
-			JsonPrimitive tree = JsonPrimitive.number( "1" + "0".repeat( length - 1 ) );
+			JsonNode tree = length == 1 ? scalar( 0 ) : scalar( "a".repeat( length - 2 ) );
 			JsonBody body = JsonBodies.of( tree );
 			assertThat( body.contentLength() ).isEqualTo( length <= 8192 ? length : -1 );
 			body.writeTo( OutputStream.nullOutputStream() );
 			assertThat( body.contentLength() ).isEqualTo( length <= 8192 ? length : -1 );
 		}
-		JsonBody body = JsonBodies.of( new JsonPrimitive( "abc" ) );
+		JsonBody body = JsonBodies.of( scalar( "abc" ) );
 		assertThat( JsonBodies.withContentLengthProbe( body, 0 ).contentLength() ).isEqualTo( -1 );
 		assertThat( JsonBodies.withContentLengthProbe( body, 4 ).contentLength() ).isEqualTo( -1 );
 		assertThat( JsonBodies.withContentLengthProbe( body, 5 ).contentLength() ).isEqualTo( 5 );
@@ -194,32 +200,35 @@ class JsonOutputTest {
 	}
 
 	@Test
-	void exactScalarLexemesAndEmptyContainers() throws IOException {
+	void exactScalarValuesAndEmptyContainers() throws IOException {
 		for ( String lexeme : new String[] { "-0", "0.000", "1.2300e+04", "1.0E-04", "9007199254740993", "-1e+0003" } ) {
-			assertThat( new String( drain( JsonBodies.of( JsonPrimitive.number( lexeme ) ), 1 ), StandardCharsets.UTF_8 ) )
-					.isEqualTo( lexeme );
+			assertThat( new String(
+					drain( JsonBodies.of( new org.hibernate.search.util.json.spi.JsonParsing().parse( lexeme ) ), 1 ),
+					StandardCharsets.UTF_8 ) )
+					.isEqualTo( new String( jackson( new org.hibernate.search.util.json.spi.JsonParsing().parse( lexeme ) ),
+							StandardCharsets.UTF_8 ) );
 		}
-		JsonArray tree = new JsonArray();
-		tree.add( new JsonObject() );
-		tree.add( new JsonArray() );
+		ArrayNode tree = new ArrayNode( JsonNodeFactory.instance );
+		tree.add( new ObjectNode( JsonNodeFactory.instance ) );
+		tree.add( new ArrayNode( JsonNodeFactory.instance ) );
 		tree.add( "" );
 		tree.add( true );
 		tree.add( false );
-		tree.add( (JsonElement) null );
+		tree.add( (JsonNode) null );
 		assertThat( new String( synchronous( JsonBodies.of( tree ) ), StandardCharsets.UTF_8 ) )
 				.isEqualTo( "[{},[],\"\",true,false,null]" );
 	}
 
-	static JsonObject fixture() {
-		JsonObject tree = new JsonObject();
-		tree.addProperty( "nameé😀\"\\\n", "a<>&='é中😀\b\f\n\r\t\u0000\u2028\u2029\ud800x\udfff" );
-		JsonArray values = new JsonArray();
-		values.add( (JsonElement) null );
+	static ObjectNode fixture() {
+		ObjectNode tree = new ObjectNode( JsonNodeFactory.instance );
+		tree.put( "nameé😀\"\\\n", "a<>&='é中😀\b\f\n\r\t\u0000\u2028\u2029\ud800x\udfff" );
+		ArrayNode values = new ArrayNode( JsonNodeFactory.instance );
+		values.add( (JsonNode) null );
 		values.add( true );
-		values.add( JsonPrimitive.number( "-0.12300e+004" ) );
-		values.add( new JsonArray() );
-		values.add( new JsonObject() );
-		tree.add( "values", values );
+		values.add( new org.hibernate.search.util.json.spi.JsonParsing().parse( "-0.12300e+004" ) );
+		values.add( new ArrayNode( JsonNodeFactory.instance ) );
+		values.add( new ObjectNode( JsonNodeFactory.instance ) );
+		tree.set( "values", values );
 		return tree;
 	}
 
@@ -229,7 +238,7 @@ class JsonOutputTest {
 		return output.toByteArray();
 	}
 
-	static byte[] jackson(JsonElement tree) {
+	static byte[] jackson(JsonNode tree) {
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		JacksonJsonBodyWriter.write( tree, output );
 		return output.toByteArray();

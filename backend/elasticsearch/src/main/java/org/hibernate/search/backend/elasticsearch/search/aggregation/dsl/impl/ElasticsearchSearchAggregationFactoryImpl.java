@@ -1,13 +1,12 @@
 package org.hibernate.search.backend.elasticsearch.search.aggregation.dsl.impl;
 
+import org.hibernate.search.backend.elasticsearch.json.JsonHandler;
 import org.hibernate.search.backend.elasticsearch.search.aggregation.dsl.ElasticsearchSearchAggregationFactory;
 import org.hibernate.search.backend.elasticsearch.search.aggregation.impl.ElasticsearchSearchAggregationIndexScope;
 import org.hibernate.search.backend.elasticsearch.search.predicate.dsl.ElasticsearchSearchPredicateFactory;
 import org.hibernate.search.engine.search.aggregation.dsl.AggregationFinalStep;
 import org.hibernate.search.engine.search.aggregation.dsl.spi.AbstractSearchAggregationFactory;
 import org.hibernate.search.engine.search.aggregation.dsl.spi.SearchAggregationDslContext;
-
-import org.hibernate.search.util.json.JsonObject;
 
 public class ElasticsearchSearchAggregationFactoryImpl<SR>
 		extends AbstractSearchAggregationFactory<
@@ -32,16 +31,16 @@ public class ElasticsearchSearchAggregationFactoryImpl<SR>
 	}
 
 	@Override
-	public AggregationFinalStep<JsonObject> fromJson(JsonObject jsonObject) {
-		return new ElasticsearchJsonAggregationFinalStep(
-				dslContext.scope().aggregationBuilders().fromJson( jsonObject )
+	public <T> AggregationFinalStep<T> fromJson(JsonHandler<T> handler, T jsonObject) {
+		return new ElasticsearchJsonAggregationFinalStep<>(
+				dslContext.scope().aggregationBuilders().fromJson( handler, jsonObject )
 		);
 	}
 
 	@Override
-	public AggregationFinalStep<JsonObject> fromJson(String jsonString) {
-		return new ElasticsearchJsonAggregationFinalStep(
-				dslContext.scope().aggregationBuilders().fromJson( jsonString )
+	public <T> AggregationFinalStep<T> fromJson(String jsonString, JsonHandler<T> resultHandler) {
+		return new ElasticsearchJsonAggregationFinalStep<>(
+				dslContext.scope().aggregationBuilders().fromJson( jsonString, resultHandler )
 		);
 	}
 

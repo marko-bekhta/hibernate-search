@@ -1,13 +1,15 @@
 package org.hibernate.search.backend.elasticsearch.types.codec.impl;
 
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonAccessor;
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonElementTypes;
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
 import org.hibernate.search.backend.elasticsearch.logging.spi.ElasticsearchClientLog;
 import org.hibernate.search.engine.spatial.GeoPoint;
-import org.hibernate.search.util.json.JsonElement;
-import org.hibernate.search.util.json.JsonNull;
-import org.hibernate.search.util.json.JsonObject;
-import org.hibernate.search.util.json.spi.JsonAccessor;
-import org.hibernate.search.util.json.spi.JsonElementTypes;
+
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.NullNode;
+import tools.jackson.databind.node.ObjectNode;
 
 public final class ElasticsearchGeoPointFieldCodec extends AbstractElasticsearchFieldCodec<GeoPoint> {
 
@@ -21,22 +23,22 @@ public final class ElasticsearchGeoPointFieldCodec extends AbstractElasticsearch
 	}
 
 	@Override
-	public JsonElement encode(GeoPoint value) {
+	public JsonNode encode(GeoPoint value) {
 		if ( value == null ) {
-			return JsonNull.INSTANCE;
+			return NullNode.instance;
 		}
-		JsonObject result = new JsonObject();
+		ObjectNode result = JsonNodeFactory.instance.objectNode();
 		LATITUDE_ACCESSOR.set( result, value.latitude() );
 		LONGITUDE_ACCESSOR.set( result, value.longitude() );
 		return result;
 	}
 
 	@Override
-	public GeoPoint decode(JsonElement element) {
-		if ( element == null || element.isJsonNull() ) {
+	public GeoPoint decode(JsonNode element) {
+		if ( element == null || element.isNull() ) {
 			return null;
 		}
-		JsonObject object = JsonElementTypes.OBJECT.fromElement( element );
+		ObjectNode object = JsonElementTypes.OBJECT.fromElement( element );
 		double latitude =
 				LATITUDE_ACCESSOR.get( object )
 						.orElseThrow( ElasticsearchClientLog.INSTANCE::elasticsearchResponseMissingData );

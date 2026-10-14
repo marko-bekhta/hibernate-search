@@ -22,7 +22,6 @@ import org.hibernate.search.engine.common.execution.spi.SimpleScheduledExecutor;
 import org.hibernate.search.engine.common.timing.Deadline;
 import org.hibernate.search.engine.environment.bean.BeanHolder;
 import org.hibernate.search.util.common.impl.Closer;
-import org.hibernate.search.util.json.JsonObject;
 
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.core5.http.HttpEntity;
@@ -34,6 +33,7 @@ import org.opensearch.client.ResponseException;
 import org.opensearch.client.ResponseListener;
 import org.opensearch.client.RestClient;
 import org.opensearch.client.sniff.Sniffer;
+import tools.jackson.databind.node.ObjectNode;
 
 @SuppressWarnings("deprecation")
 public class ClientOpenSearchElasticsearchClient implements ElasticsearchClientImplementor {
@@ -214,8 +214,8 @@ public class ClientOpenSearchElasticsearchClient implements ElasticsearchClientI
 
 	private ElasticsearchResponse convertResponse(Response response) {
 		try {
-			JsonObject body = parseBody( response );
-			return new ElasticsearchResponse(
+			ObjectNode body = parseBody( response );
+			return ElasticsearchResponse.withJsonBody(
 					response.getHost().toHostString(),
 					response.getStatusLine().getStatusCode(),
 					response.getStatusLine().getReasonPhrase(),
@@ -227,13 +227,13 @@ public class ClientOpenSearchElasticsearchClient implements ElasticsearchClientI
 		}
 	}
 
-	private JsonObject parseBody(Response response) throws IOException {
+	private ObjectNode parseBody(Response response) throws IOException {
 		HttpEntity entity = response.getEntity();
 		if ( entity == null ) {
 			return null;
 		}
 
-		return json.decode( ( (ClientOpenSearchJsonResponseConsumer.Entity) entity ).body().tree(), JsonObject.class );
+		return json.decode( ( (ClientOpenSearchJsonResponseConsumer.Entity) entity ).body().tree(), ObjectNode.class );
 	}
 
 	private void log(ElasticsearchRequest request, long start, ElasticsearchResponse response) {
@@ -246,19 +246,19 @@ public class ClientOpenSearchElasticsearchClient implements ElasticsearchClientI
 		if ( successCode ) {
 			ElasticsearchRequestLog.INSTANCE.executedRequest( request.method(), response.hostAndPort(), request.path(),
 					request.parameters(),
-					request.bodyParts().size(), executionTimeMs,
+					request.bodyPartsJson().size(), executionTimeMs,
 					response.statusCode(), response.statusMessage(),
-					jsonLogHelper.toString( request.bodyParts() ),
-					jsonLogHelper.toString( response.body() ) );
+					jsonLogHelper.toString( request.bodyPartsJson() ),
+					jsonLogHelper.toString( response.bodyJson() ) );
 		}
 		else {
 			ElasticsearchRequestLog.INSTANCE.executedRequestWithFailure( request.method(), response.hostAndPort(),
 					request.path(),
 					request.parameters(),
-					request.bodyParts().size(), executionTimeMs,
+					request.bodyPartsJson().size(), executionTimeMs,
 					response.statusCode(), response.statusMessage(),
-					jsonLogHelper.toString( request.bodyParts() ),
-					jsonLogHelper.toString( response.body() ) );
+					jsonLogHelper.toString( request.bodyPartsJson() ),
+					jsonLogHelper.toString( response.bodyJson() ) );
 		}
 	}
 

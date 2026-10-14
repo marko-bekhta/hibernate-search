@@ -1,17 +1,22 @@
 package org.hibernate.search.backend.elasticsearch.search.projection.impl;
 
+import org.hibernate.search.backend.elasticsearch.json.JsonHandler;
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonHandlerBridge;
 import org.hibernate.search.backend.elasticsearch.reporting.impl.ElasticsearchSearchHints;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexScope;
 import org.hibernate.search.engine.search.loading.spi.LoadingResult;
 import org.hibernate.search.engine.search.loading.spi.ProjectionHitMapper;
 
-import org.hibernate.search.util.json.JsonObject;
+import tools.jackson.databind.node.ObjectNode;
 
-class ElasticsearchJsonHitProjection extends AbstractElasticsearchProjection<JsonObject>
-		implements ElasticsearchSearchProjection.Extractor<JsonObject, JsonObject> {
+class ElasticsearchJsonHitProjection<T> extends AbstractElasticsearchProjection<T>
+		implements ElasticsearchSearchProjection.Extractor<ObjectNode, T> {
 
-	ElasticsearchJsonHitProjection(ElasticsearchSearchIndexScope<?> scope) {
+	private final JsonHandler<T> handler;
+
+	ElasticsearchJsonHitProjection(ElasticsearchSearchIndexScope<?> scope, JsonHandler<T> handler) {
 		super( scope );
+		this.handler = java.util.Objects.requireNonNull( handler );
 	}
 
 	@Override
@@ -20,7 +25,7 @@ class ElasticsearchJsonHitProjection extends AbstractElasticsearchProjection<Jso
 	}
 
 	@Override
-	public Extractor<?, JsonObject> request(JsonObject requestBody, ProjectionRequestContext context) {
+	public Extractor<?, T> request(ObjectNode requestBody, ProjectionRequestContext context) {
 		context.checkNotNested(
 				ElasticsearchProjectionTypeKeys.JSON_HIT,
 				ElasticsearchSearchHints.INSTANCE.jsonHitProjectionNestingNotSupportedHint()
@@ -29,14 +34,14 @@ class ElasticsearchJsonHitProjection extends AbstractElasticsearchProjection<Jso
 	}
 
 	@Override
-	public JsonObject extract(ProjectionHitMapper<?> projectionHitMapper, JsonObject hit,
-			JsonObject source, ProjectionExtractContext context) {
+	public ObjectNode extract(ProjectionHitMapper<?> projectionHitMapper, ObjectNode hit,
+			ObjectNode source, ProjectionExtractContext context) {
 		return hit;
 	}
 
 	@Override
-	public JsonObject transform(LoadingResult<?> loadingResult, JsonObject extractedData,
+	public T transform(LoadingResult<?> loadingResult, ObjectNode extractedData,
 			ProjectionTransformContext context) {
-		return extractedData;
+		return JsonHandlerBridge.exportObject( handler, extractedData, "JSON hit projection" );
 	}
 }

@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.zip.GZIPOutputStream;
 
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper;
-import org.hibernate.search.util.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -24,6 +23,8 @@ import org.apache.http.nio.ContentDecoder;
 import org.apache.http.nio.ContentEncoder;
 import org.apache.http.nio.IOControl;
 import org.apache.http.protocol.BasicHttpContext;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 class ClientRest4JsonTransportTest {
 	@ParameterizedTest
@@ -64,7 +65,7 @@ class ClientRest4JsonTransportTest {
 				assertThat( completed.getFirstHeader( "Content-Encoding" ) ).isNull();
 			}
 			var entity = (ClientRest4JsonResponseConsumer.Entity) completed.getEntity();
-			assertThat( entity.body().tree().getAsJsonObject().get( "é😀" ).getAsString() ).isEqualTo( "é😀".repeat( 5000 ) );
+			assertThat( entity.body().tree().asObject().get( "é😀" ).asString() ).isEqualTo( "é😀".repeat( 5000 ) );
 			for ( int attempt = 0; attempt < 2; ++attempt ) {
 				try ( var stream = entity.getContent() ) {
 					assertThat( new String( stream.readAllBytes(), StandardCharsets.UTF_8 ) ).isEqualTo( text );
@@ -76,7 +77,7 @@ class ClientRest4JsonTransportTest {
 	@Test
 	void completionCanReleaseTheRequestProducerImmediately() throws Exception {
 		var entity = new ClientRest4JsonHttpEntity( JsonProviderHelper.create( true ).getCodec(),
-				List.of( new JsonObject() ) );
+				List.of( JsonNodeFactory.instance.objectNode() ) );
 		var output = new ByteArrayOutputStream();
 		entity.produceContent( new org.hibernate.search.backend.elasticsearch.client.common.json.entity.spi.ContentEncoder() {
 			@Override
@@ -106,8 +107,8 @@ class ClientRest4JsonTransportTest {
 
 	@Test
 	void cancellationClosesIndependentClientOwnedRequestStreams() throws Exception {
-		JsonObject document = new JsonObject();
-		document.addProperty( "value", "é😀".repeat( 10_000 ) );
+		ObjectNode document = JsonNodeFactory.instance.objectNode();
+		document.put( "value", "é😀".repeat( 10_000 ) );
 		var entity = new ClientRest4JsonHttpEntity( JsonProviderHelper.create( true ).getCodec(), List.of( document ) );
 		try ( var first = entity.getContent(); var second = entity.getContent() ) {
 			assertThat( first.read() ).isEqualTo( '{' );
@@ -196,8 +197,8 @@ class ClientRest4JsonTransportTest {
 						.getDeclaredField( "cursor" );
 		cursor.setAccessible( true );
 		for ( int size : new int[] { 100, 100_000, 1_000_000 } ) {
-			JsonObject document = new JsonObject();
-			document.addProperty( "value", "x".repeat( size ) );
+			ObjectNode document = JsonNodeFactory.instance.objectNode();
+			document.put( "value", "x".repeat( size ) );
 			var entity = new ClientRest4JsonHttpEntity( JsonProviderHelper.create( true ).getCodec(), List.of( document ) );
 			Sink sink = new Sink();
 			for ( int step = 0; step < 3 && !sink.ended; ++step ) {
@@ -247,7 +248,7 @@ class ClientRest4JsonTransportTest {
 					StubIOControl.INSTANCE );
 			consumer.responseCompleted( new BasicHttpContext() );
 			var entity = (ClientRest4JsonResponseConsumer.Entity) consumer.getResult().getEntity();
-			assertThat( JsonProviderHelper.create( true ).getCodec().decode( entity.body().tree(), JsonObject.class ) )
+			assertThat( JsonProviderHelper.create( true ).getCodec().decode( entity.body().tree(), ObjectNode.class ) )
 					.isNull();
 		}
 		var consumer = new ClientRest4JsonResponseConsumer( 100 );
@@ -266,8 +267,8 @@ class ClientRest4JsonTransportTest {
 	@ValueSource(ints = { 1, 2, 5, 8192 })
 	void partialZeroWritesWakeupsAndRetry(int capacity) throws Exception {
 		var json = JsonProviderHelper.create( true ).getCodec();
-		JsonObject object = new JsonObject();
-		object.addProperty( "value", "é😀".repeat( 5000 ) );
+		ObjectNode object = JsonNodeFactory.instance.objectNode();
+		object.put( "value", "é😀".repeat( 5000 ) );
 		var entity = new ClientRest4JsonHttpEntity( json, List.of( object ) );
 		Sink sink = new Sink();
 		entity.produceContent( sink, sink );
@@ -290,8 +291,8 @@ class ClientRest4JsonTransportTest {
 	@Test
 	void pinnedRequestCompressionBuffersAndPropagatesFailure() throws Exception {
 		var json = JsonProviderHelper.create( true ).getCodec();
-		JsonObject document = new JsonObject();
-		document.addProperty( "value", "é😀".repeat( 10_000 ) );
+		ObjectNode document = JsonNodeFactory.instance.objectNode();
+		document.put( "value", "é😀".repeat( 10_000 ) );
 		var entity = new ClientRest4JsonHttpEntity( json, List.of( document ) );
 		var compressed = new org.elasticsearch.client.RestClient.ContentCompressingEntity( entity );
 		for ( int attempt = 0; attempt < 2; ++attempt ) {

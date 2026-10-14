@@ -37,7 +37,7 @@ public final class ElasticsearchResponseFormatter {
 				.append( "' from '" )
 				.append( response.hostAndPort() )
 				.append( "' with body " )
-				.append( helper.toString( response.body() ) );
+				.append( helper.toString( response.bodyJson() ) );
 
 		return sb.toString();
 	}

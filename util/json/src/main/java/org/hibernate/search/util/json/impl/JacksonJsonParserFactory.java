@@ -4,9 +4,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
-import org.hibernate.search.util.json.JsonElement;
-import org.hibernate.search.util.json.JsonNull;
-import org.hibernate.search.util.json.JsonPrimitive;
 import org.hibernate.search.util.json.spi.JsonParseException;
 import org.hibernate.search.util.json.spi.JsonParserSession;
 import org.hibernate.search.util.json.spi.JsonParsingOptions;
@@ -16,10 +13,18 @@ import tools.jackson.core.JsonToken;
 import tools.jackson.core.ObjectReadContext;
 import tools.jackson.core.StreamReadConstraints;
 import tools.jackson.core.json.JsonFactory;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.BooleanNode;
+import tools.jackson.databind.node.NullNode;
+import tools.jackson.databind.node.StringNode;
 
 public final class JacksonJsonParserFactory {
 	private final ResumableJsonFactory factory;
 	private final JsonParsingOptions options;
+
+	public JacksonJsonParserFactory() {
+		this( JsonParsingOptions.DEFAULT );
+	}
 
 	public JacksonJsonParserFactory(JsonParsingOptions options) {
 		this.options = Objects.requireNonNull( options );
@@ -30,7 +35,7 @@ public final class JacksonJsonParserFactory {
 	}
 
 	/** Character input is already owned/materialized; Core retains it only for this synchronous call. */
-	public JsonElement parse(String json) {
+	public JsonNode parse(String json) {
 		if ( options.maxInputBytes() == 0 ) {
 			validateUtf16( json );
 		}
@@ -63,25 +68,20 @@ public final class JacksonJsonParserFactory {
 					case VALUE_STRING:
 						String value = parser.getString();
 						factory.streamReadConstraints().validateStringLength( value.length() );
-						builder.add( new JsonPrimitive( value ) );
+						builder.add( StringNode.valueOf( value ) );
 						break;
 					case VALUE_NUMBER_INT:
 					case VALUE_NUMBER_FLOAT:
-						String number = parser.getString();
-						long offset = parser.currentTokenLocation().getCharOffset();
-						if ( "0".equals( number ) && offset >= 0 && json.charAt( (int) offset ) == '-' ) {
-							number = "-0";
-						}
-						builder.add( new JsonPrimitive( JsonNumber.fromParser( number ) ) );
+						builder.add( JsonNumbers.fromToken( parser.getString(), token == JsonToken.VALUE_NUMBER_FLOAT ) );
 						break;
 					case VALUE_TRUE:
-						builder.add( new JsonPrimitive( true ) );
+						builder.add( BooleanNode.TRUE );
 						break;
 					case VALUE_FALSE:
-						builder.add( new JsonPrimitive( false ) );
+						builder.add( BooleanNode.FALSE );
 						break;
 					case VALUE_NULL:
-						builder.add( JsonNull.INSTANCE );
+						builder.add( NullNode.instance );
 						break;
 					default:
 						throw new JsonParseException( "Unexpected JSON token " + token );

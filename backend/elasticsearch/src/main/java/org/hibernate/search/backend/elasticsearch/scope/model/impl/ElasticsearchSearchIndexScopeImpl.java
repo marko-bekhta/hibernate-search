@@ -29,6 +29,9 @@ import org.hibernate.search.backend.elasticsearch.search.projection.dsl.Elastics
 import org.hibernate.search.backend.elasticsearch.search.projection.dsl.impl.ElasticsearchSearchProjectionFactoryImpl;
 import org.hibernate.search.backend.elasticsearch.search.projection.impl.ElasticsearchSearchProjection;
 import org.hibernate.search.backend.elasticsearch.search.projection.impl.ElasticsearchSearchProjectionBuilderFactory;
+import org.hibernate.search.backend.elasticsearch.search.projection.impl.ProjectionExtractContext;
+import org.hibernate.search.backend.elasticsearch.search.projection.impl.ProjectionExtractionHelper;
+import org.hibernate.search.backend.elasticsearch.search.projection.impl.ProjectionRequestContext;
 import org.hibernate.search.backend.elasticsearch.search.query.impl.ElasticsearchSearchQueryBuilder;
 import org.hibernate.search.backend.elasticsearch.search.query.impl.ElasticsearchSearchQueryIndexScope;
 import org.hibernate.search.backend.elasticsearch.search.query.impl.SearchBackendContext;
@@ -47,11 +50,12 @@ import org.hibernate.search.engine.search.projection.SearchProjection;
 import org.hibernate.search.engine.search.projection.dsl.spi.SearchProjectionDslContext;
 import org.hibernate.search.engine.search.sort.dsl.spi.SearchSortDslContext;
 import org.hibernate.search.engine.search.timeout.spi.TimeoutManager;
-import org.hibernate.search.util.json.JsonObject;
+
+import tools.jackson.databind.node.ObjectNode;
 
 public final class ElasticsearchSearchIndexScopeImpl<SR>
-		extends AbstractSearchIndexScope<
-				SR,
+		extends
+		AbstractSearchIndexScope<SR,
 				ElasticsearchSearchIndexScopeImpl<SR>,
 				ElasticsearchIndexModel,
 				ElasticsearchSearchIndexNodeContext,
@@ -61,41 +65,43 @@ public final class ElasticsearchSearchIndexScopeImpl<SR>
 
 	// Backend context
 	private final SearchBackendContext backendContext;
+
 	private final JsonCodecService userFacingCodec;
+
 	private final ElasticsearchSearchSyntax searchSyntax;
+
 	private final MultiTenancyStrategy multiTenancyStrategy;
+
 	private final TimingSource timingSource;
 
 	// Targeted indexes
 	private final Map<String, ElasticsearchSearchIndexContext> mappedTypeNameToIndex;
+
 	private final int maxResultWindow;
 
 	// Query support
 	private final ElasticsearchSearchPredicateBuilderFactory predicateBuilderFactory;
+
 	private final ElasticsearchSearchSortBuilderFactory sortBuilderFactory;
+
 	private final ElasticsearchSearchProjectionBuilderFactory projectionBuilderFactory;
+
 	private final ElasticsearchSearchAggregationBuilderFactory aggregationFactory;
 
-	public ElasticsearchSearchIndexScopeImpl(BackendMappingContext mappingContext,
-			Class<SR> rootScopeType,
-			SearchBackendContext backendContext,
-			JsonCodecService userFacingCodec, ElasticsearchSearchSyntax searchSyntax,
-			MultiTenancyStrategy multiTenancyStrategy,
-			TimingSource timingSource,
-			Set<ElasticsearchIndexModel> indexModels) {
+	public ElasticsearchSearchIndexScopeImpl(BackendMappingContext mappingContext, Class<SR> rootScopeType,
+			SearchBackendContext backendContext, JsonCodecService userFacingCodec, ElasticsearchSearchSyntax searchSyntax,
+			MultiTenancyStrategy multiTenancyStrategy, TimingSource timingSource, Set<ElasticsearchIndexModel> indexModels) {
 		super( mappingContext, rootScopeType, indexModels );
 		this.backendContext = backendContext;
 		this.userFacingCodec = userFacingCodec;
 		this.searchSyntax = searchSyntax;
 		this.multiTenancyStrategy = multiTenancyStrategy;
 		this.timingSource = timingSource;
-
 		// Use LinkedHashMap/LinkedHashSet to ensure stable order when generating requests
 		this.mappedTypeNameToIndex = new LinkedHashMap<>();
 		for ( ElasticsearchIndexModel model : indexModels ) {
 			mappedTypeNameToIndex.put( model.mappedTypeName(), model );
 		}
-
 		int currentMaxResultWindow = Integer.MAX_VALUE;
 		for ( ElasticsearchIndexModel index : indexModels ) {
 			if ( index.maxResultWindow() < currentMaxResultWindow ) {
@@ -104,11 +110,10 @@ public final class ElasticsearchSearchIndexScopeImpl<SR>
 			}
 		}
 		this.maxResultWindow = currentMaxResultWindow;
-
 		this.predicateBuilderFactory = new ElasticsearchSearchPredicateBuilderFactory( this );
 		this.sortBuilderFactory = new ElasticsearchSearchSortBuilderFactory( this );
-		this.projectionBuilderFactory = new ElasticsearchSearchProjectionBuilderFactory(
-				backendContext.getSearchProjectionBackendContext(), this );
+		this.projectionBuilderFactory =
+				new ElasticsearchSearchProjectionBuilderFactory( backendContext.getSearchProjectionBackendContext(), this );
 		this.aggregationFactory = new ElasticsearchSearchAggregationBuilderFactory( this );
 	}
 
@@ -122,11 +127,10 @@ public final class ElasticsearchSearchIndexScopeImpl<SR>
 		this.timingSource = parentScope.timingSource;
 		this.mappedTypeNameToIndex = parentScope.mappedTypeNameToIndex;
 		this.maxResultWindow = parentScope.maxResultWindow;
-
 		this.predicateBuilderFactory = new ElasticsearchSearchPredicateBuilderFactory( this );
 		this.sortBuilderFactory = new ElasticsearchSearchSortBuilderFactory( this );
-		this.projectionBuilderFactory = new ElasticsearchSearchProjectionBuilderFactory(
-				backendContext.getSearchProjectionBackendContext(), this );
+		this.projectionBuilderFactory =
+				new ElasticsearchSearchProjectionBuilderFactory( backendContext.getSearchProjectionBackendContext(), this );
 		this.aggregationFactory = new ElasticsearchSearchAggregationBuilderFactory( this );
 	}
 
@@ -174,8 +178,8 @@ public final class ElasticsearchSearchIndexScopeImpl<SR>
 
 	@Override
 	public ElasticsearchSearchSortFactory<SR> sortFactory() {
-		return new ElasticsearchSearchSortFactoryImpl<>( SearchSortDslContext
-				.root( this, ElasticsearchSearchSortFactoryImpl::new, predicateFactory() ) );
+		return new ElasticsearchSearchSortFactoryImpl<>(
+				SearchSortDslContext.root( this, ElasticsearchSearchSortFactoryImpl::new, predicateFactory() ) );
 	}
 
 	@Override
@@ -185,8 +189,7 @@ public final class ElasticsearchSearchIndexScopeImpl<SR>
 
 	@Override
 	public ElasticsearchSearchAggregationFactory<SR> aggregationFactory() {
-		return new ElasticsearchSearchAggregationFactoryImpl<>(
-				SearchAggregationDslContext.root( this, predicateFactory() ) );
+		return new ElasticsearchSearchAggregationFactoryImpl<>( SearchAggregationDslContext.root( this, predicateFactory() ) );
 	}
 
 	@Override
@@ -197,6 +200,38 @@ public final class ElasticsearchSearchIndexScopeImpl<SR>
 	@Override
 	public ElasticsearchSearchIndexNodeContext field(String fieldPath) {
 		return super.field( fieldPath );
+	}
+
+	@Override
+	public ProjectionExtractionHelper<Boolean> fieldMultiValuedExtractionHelper(String absoluteFieldPath) {
+		Map<String, Boolean> multiValuedByType = new LinkedHashMap<>();
+		for ( var entry : mappedTypeNameToIndex.entrySet() ) {
+			ElasticsearchIndexModel model = (ElasticsearchIndexModel) entry.getValue();
+			var field = model.fieldOrNull( absoluteFieldPath );
+			if ( field != null ) {
+				multiValuedByType.put( entry.getKey(), field.multiValued() );
+			}
+		}
+		// Resolve the hit's type only when the targeted schemas disagree about cardinality.
+		ProjectionExtractionHelper<String> typeNameHelper =
+				multiValuedByType.containsValue( true ) && multiValuedByType.containsValue( false )
+						? backendContext.getSearchProjectionBackendContext().createMappedTypeNameExtractionHelper( this )
+						: null;
+		return new ProjectionExtractionHelper<>() {
+			@Override
+			public void request(ObjectNode requestBody, ProjectionRequestContext context) {
+				if ( typeNameHelper != null ) {
+					typeNameHelper.request( requestBody, context );
+				}
+			}
+
+			@Override
+			public Boolean extract(ObjectNode hit, ProjectionExtractContext context) {
+				return typeNameHelper == null
+						? multiValuedByType.containsValue( true )
+						: Boolean.TRUE.equals( multiValuedByType.get( typeNameHelper.extract( hit, context ) ) );
+			}
+		};
 	}
 
 	@Override
@@ -215,13 +250,12 @@ public final class ElasticsearchSearchIndexScopeImpl<SR>
 	}
 
 	@Override
-	public JsonObject filterOrNull(String tenantId) {
+	public ObjectNode filterOrNull(String tenantId) {
 		return multiTenancyStrategy.filterOrNull( tenantId );
 	}
 
 	@Override
-	public TimeoutManager createTimeoutManager(Long timeout,
-			TimeUnit timeUnit, boolean exceptionOnTimeout) {
+	public TimeoutManager createTimeoutManager(Long timeout, TimeUnit timeUnit, boolean exceptionOnTimeout) {
 		if ( timeout != null && timeUnit != null ) {
 			if ( exceptionOnTimeout ) {
 				return TimeoutManager.hardTimeout( timingSource, timeout, timeUnit );
@@ -251,24 +285,20 @@ public final class ElasticsearchSearchIndexScopeImpl<SR>
 	@Override
 	protected ElasticsearchSearchIndexCompositeNodeContext createMultiIndexSearchRootContext(
 			List<ElasticsearchSearchIndexCompositeNodeContext> rootForEachIndex) {
-		return new ElasticsearchMultiIndexSearchIndexCompositeNodeContext( this, null,
-				rootForEachIndex );
+		return new ElasticsearchMultiIndexSearchIndexCompositeNodeContext( this, null, rootForEachIndex );
 	}
 
 	@Override
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	protected ElasticsearchSearchIndexNodeContext createMultiIndexSearchValueFieldContext(String absolutePath,
 			List<ElasticsearchSearchIndexNodeContext> fieldForEachIndex) {
-		return new ElasticsearchMultiIndexSearchIndexValueFieldContext<>( this, absolutePath,
-				(List) fieldForEachIndex );
+		return new ElasticsearchMultiIndexSearchIndexValueFieldContext<>( this, absolutePath, (List) fieldForEachIndex );
 	}
 
 	@Override
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	protected ElasticsearchSearchIndexNodeContext createMultiIndexSearchObjectFieldContext(String absolutePath,
 			List<ElasticsearchSearchIndexNodeContext> fieldForEachIndex) {
-		return new ElasticsearchMultiIndexSearchIndexCompositeNodeContext( this, absolutePath,
-				(List) fieldForEachIndex );
+		return new ElasticsearchMultiIndexSearchIndexCompositeNodeContext( this, absolutePath, (List) fieldForEachIndex );
 	}
-
 }

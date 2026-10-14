@@ -1,5 +1,6 @@
 package org.hibernate.search.backend.elasticsearch.search.aggregation.impl;
 
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonAccessor;
 import org.hibernate.search.backend.elasticsearch.logging.impl.QueryLog;
 import org.hibernate.search.backend.elasticsearch.logging.spi.ElasticsearchClientLog;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexNodeContext;
@@ -8,8 +9,8 @@ import org.hibernate.search.backend.elasticsearch.search.query.impl.Elasticsearc
 import org.hibernate.search.engine.search.aggregation.AggregationKey;
 import org.hibernate.search.engine.search.aggregation.spi.CountDocumentAggregationBuilder;
 import org.hibernate.search.engine.search.common.spi.SearchQueryElementFactory;
-import org.hibernate.search.util.json.JsonObject;
-import org.hibernate.search.util.json.spi.JsonAccessor;
+
+import tools.jackson.databind.node.ObjectNode;
 
 public class ElasticsearchCountDocumentAggregation extends AbstractElasticsearchAggregation<Long> {
 
@@ -74,7 +75,7 @@ public class ElasticsearchCountDocumentAggregation extends AbstractElasticsearch
 	}
 
 	@Override
-	public Extractor<Long> request(AggregationRequestContext context, AggregationKey<?> key, JsonObject jsonAggregations) {
+	public Extractor<Long> request(AggregationRequestContext context, AggregationKey<?> key, ObjectNode jsonAggregations) {
 		return new CountDocumentsExtractor( key, isNested, context.isRootContext() );
 	}
 
@@ -82,7 +83,7 @@ public class ElasticsearchCountDocumentAggregation extends AbstractElasticsearch
 			implements Extractor<Long> {
 
 		@Override
-		public Long extract(JsonObject aggregationResult, AggregationExtractContext context) {
+		public Long extract(ObjectNode aggregationResult, AggregationExtractContext context) {
 			if ( rootContext ) {
 				if ( context instanceof ElasticsearchSearchQueryExtractContext c ) {
 					return TOTAL_HITS_VALUE_PROPERTY_ACCESSOR.get( c.getResponseBody() )

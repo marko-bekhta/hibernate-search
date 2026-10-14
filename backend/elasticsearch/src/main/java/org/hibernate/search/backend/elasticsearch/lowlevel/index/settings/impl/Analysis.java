@@ -12,7 +12,8 @@ import org.hibernate.search.backend.elasticsearch.lowlevel.index.analysis.impl.C
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.analysis.impl.NormalizerDefinition;
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.analysis.impl.TokenFilterDefinition;
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.analysis.impl.TokenizerDefinition;
-import org.hibernate.search.util.json.JsonElement;
+
+import tools.jackson.databind.JsonNode;
 
 @JsonSerializable
 public class Analysis {
@@ -33,7 +34,7 @@ public class Analysis {
 	private Map<String, CharFilterDefinition> charFilters;
 
 	@SerializeExtraProperties
-	private Map<String, JsonElement> extraAttributes;
+	private Map<String, JsonNode> extraAttributes;
 
 	public boolean isEmpty() {
 		return !hasContent( analyzers, normalizers, tokenizers, tokenFilters, charFilters );
@@ -88,11 +89,11 @@ public class Analysis {
 		this.charFilters = charFilters;
 	}
 
-	public Map<String, JsonElement> getExtraAttributes() {
+	public Map<String, JsonNode> getExtraAttributes() {
 		return extraAttributes;
 	}
 
-	public void setExtraAttributes(Map<String, JsonElement> extraAttributes) {
+	public void setExtraAttributes(Map<String, JsonNode> extraAttributes) {
 		this.extraAttributes = extraAttributes;
 	}
 

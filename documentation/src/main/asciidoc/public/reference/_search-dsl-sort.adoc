@@ -327,7 +327,7 @@ include::{sourcedir}/org/hibernate/search/documentation/search/sort/LuceneSortDs
 
 include::../components/_elasticsearch-json-warning.adoc[]
 
-.Sorting by a native Elasticsearch JSON sort provided as a `JsonObject`
+.Sorting by a native Elasticsearch JSON sort provided as an `ObjectNode`
 ====
 [source, java, indent=0, subs="+callouts"]
 ----

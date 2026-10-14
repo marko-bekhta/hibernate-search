@@ -6,7 +6,8 @@ import org.hibernate.search.backend.elasticsearch.json.impl.JsonName;
 import org.hibernate.search.backend.elasticsearch.json.impl.JsonSerializable;
 import org.hibernate.search.backend.elasticsearch.json.impl.SerializeExtraProperties;
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper;
-import org.hibernate.search.util.json.JsonElement;
+
+import tools.jackson.databind.JsonNode;
 
 /**
  * An alias definition for an Elasticsearch index.
@@ -18,7 +19,7 @@ public class IndexAliasDefinition {
 	private Boolean isWriteIndex;
 
 	@SerializeExtraProperties
-	private Map<String, JsonElement> extraAttributes;
+	private Map<String, JsonNode> extraAttributes;
 
 	public Boolean getWriteIndex() {
 		return isWriteIndex;
@@ -28,11 +29,11 @@ public class IndexAliasDefinition {
 		isWriteIndex = writeIndex;
 	}
 
-	public Map<String, JsonElement> getExtraAttributes() {
+	public Map<String, JsonNode> getExtraAttributes() {
 		return extraAttributes;
 	}
 
-	public void setExtraAttributes(Map<String, JsonElement> extraAttributes) {
+	public void setExtraAttributes(Map<String, JsonNode> extraAttributes) {
 		this.extraAttributes = extraAttributes;
 	}
 

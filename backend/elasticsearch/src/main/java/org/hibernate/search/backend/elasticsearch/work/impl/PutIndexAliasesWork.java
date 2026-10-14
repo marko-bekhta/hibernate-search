@@ -9,8 +9,10 @@ import org.hibernate.search.backend.elasticsearch.client.common.util.spi.URLEnco
 import org.hibernate.search.backend.elasticsearch.client.impl.Paths;
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.aliases.impl.IndexAliasDefinition;
-import org.hibernate.search.util.json.JsonArray;
-import org.hibernate.search.util.json.JsonObject;
+
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 public class PutIndexAliasesWork extends AbstractNonBulkableWork<Void> {
 
@@ -23,12 +25,11 @@ public class PutIndexAliasesWork extends AbstractNonBulkableWork<Void> {
 		return null;
 	}
 
-	public static class Builder
-			extends AbstractBuilder<Builder> {
-		private final JsonObject payload;
+	public static class Builder extends AbstractBuilder<Builder> {
 
-		public Builder(JsonProvider jsonProvider, URLEncodedString indexName,
-				Map<String, IndexAliasDefinition> aliases) {
+		private final ObjectNode payload;
+
+		public Builder(JsonProvider jsonProvider, URLEncodedString indexName, Map<String, IndexAliasDefinition> aliases) {
 			super( ElasticsearchRequestSuccessAssessor.DEFAULT_INSTANCE );
 			this.payload = createPayload( jsonProvider, indexName.original, aliases );
 		}
@@ -36,9 +37,7 @@ public class PutIndexAliasesWork extends AbstractNonBulkableWork<Void> {
 		@Override
 		protected ElasticsearchRequest buildRequest() {
 			ElasticsearchRequest.Builder builder =
-					ElasticsearchRequest.post()
-							.pathComponent( Paths._ALIASES )
-							.body( payload );
+					ElasticsearchRequest.post().pathComponent( Paths._ALIASES ).bodyJson( payload );
 			return builder.build();
 		}
 
@@ -47,28 +46,24 @@ public class PutIndexAliasesWork extends AbstractNonBulkableWork<Void> {
 			return new PutIndexAliasesWork( this );
 		}
 
-		private static JsonObject createPayload(JsonProvider jsonProvider, String indexName,
+		private static ObjectNode createPayload(JsonProvider jsonProvider, String indexName,
 				Map<String, IndexAliasDefinition> aliases) {
 			/*
 			 * Serializing nulls is really not a good idea here, it triggers NPEs in Elasticsearch
 			 * We better not include the null fields.
 			 */
 			JsonCodecService json = jsonProvider.getCodecNoSerializeNulls();
-
-			JsonObject payload = new JsonObject();
-			JsonArray actions = new JsonArray();
-			payload.add( "actions", actions );
-
+			ObjectNode payload = new ObjectNode( JsonNodeFactory.instance );
+			ArrayNode actions = new ArrayNode( JsonNodeFactory.instance );
+			payload.set( "actions", actions );
 			for ( Map.Entry<String, IndexAliasDefinition> entry : aliases.entrySet() ) {
-				JsonObject action = new JsonObject();
-				JsonObject aliasDefinition = json.encode( entry.getValue() ).getAsJsonObject();
-				action.add( "add", aliasDefinition );
-				aliasDefinition.addProperty( "index", indexName );
-				aliasDefinition.addProperty( "alias", entry.getKey() );
-
+				ObjectNode action = new ObjectNode( JsonNodeFactory.instance );
+				ObjectNode aliasDefinition = ( (ObjectNode) json.encode( entry.getValue() ) );
+				action.set( "add", aliasDefinition );
+				aliasDefinition.put( "index", indexName );
+				aliasDefinition.put( "alias", entry.getKey() );
 				actions.add( action );
 			}
-
 			return payload;
 		}
 	}

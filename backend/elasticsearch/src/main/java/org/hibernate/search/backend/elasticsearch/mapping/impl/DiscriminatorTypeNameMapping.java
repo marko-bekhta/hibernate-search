@@ -7,6 +7,8 @@ import org.hibernate.search.backend.elasticsearch.document.model.dsl.impl.Elasti
 import org.hibernate.search.backend.elasticsearch.document.model.dsl.impl.IndexSchemaRootContributor;
 import org.hibernate.search.backend.elasticsearch.index.layout.IndexLayoutStrategy;
 import org.hibernate.search.backend.elasticsearch.index.layout.impl.IndexNames;
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonAccessor;
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonScalarConversions;
 import org.hibernate.search.backend.elasticsearch.logging.impl.QueryLog;
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.mapping.impl.DataTypes;
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.mapping.impl.MetadataFields;
@@ -16,9 +18,9 @@ import org.hibernate.search.backend.elasticsearch.search.projection.impl.Project
 import org.hibernate.search.backend.elasticsearch.search.projection.impl.ProjectionExtractionHelper;
 import org.hibernate.search.backend.elasticsearch.search.projection.impl.ProjectionRequestContext;
 import org.hibernate.search.engine.backend.document.model.dsl.spi.ImplicitFieldContributor;
-import org.hibernate.search.util.json.JsonObject;
-import org.hibernate.search.util.json.JsonPrimitive;
-import org.hibernate.search.util.json.spi.JsonAccessor;
+
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * Rely on a discriminator field added to each document to resolve the type name.
@@ -60,8 +62,8 @@ public class DiscriminatorTypeNameMapping implements TypeNameMapping {
 		// Nothing to do
 	}
 
-	private static final class TypeNameDiscriminatorSchemaRootContributor
-			implements IndexSchemaRootContributor {
+	private static final class TypeNameDiscriminatorSchemaRootContributor implements IndexSchemaRootContributor {
+
 		@Override
 		public void contribute(RootTypeMapping rootTypeMapping) {
 			PropertyMapping mappedTypePropertyMapping = new PropertyMapping();
@@ -72,8 +74,8 @@ public class DiscriminatorTypeNameMapping implements TypeNameMapping {
 		}
 	}
 
-	private static final class TypeNameDiscriminatorContributor
-			implements DocumentMetadataContributor {
+	private static final class TypeNameDiscriminatorContributor implements DocumentMetadataContributor {
+
 		private static final JsonAccessor<String> DOCUMENT_MAPPED_TYPE_FIELD_ACCESSOR =
 				JsonAccessor.root().property( MAPPED_TYPE_FIELD_NAME ).unwrapSingletonArrays().asString();
 
@@ -84,7 +86,7 @@ public class DiscriminatorTypeNameMapping implements TypeNameMapping {
 		}
 
 		@Override
-		public void contribute(JsonObject document, String tenantId, String id) {
+		public void contribute(ObjectNode document, String tenantId, String id) {
 			DOCUMENT_MAPPED_TYPE_FIELD_ACCESSOR.set( document, mappedTypeName );
 		}
 	}
@@ -95,15 +97,15 @@ public class DiscriminatorTypeNameMapping implements TypeNameMapping {
 				JsonAccessor.root().property( "fields" ).unwrapSingletonArrays().asObject().property( MAPPED_TYPE_FIELD_NAME )
 						.asArray().element( 0 ).unwrapSingletonArrays().asString();
 
-		private static final JsonPrimitive MAPPED_TYPE_FIELD_NAME_JSON = new JsonPrimitive( MAPPED_TYPE_FIELD_NAME );
+		private static final JsonNode MAPPED_TYPE_FIELD_NAME_JSON = JsonScalarConversions.toNode( MAPPED_TYPE_FIELD_NAME );
 
 		@Override
-		public void request(JsonObject requestBody, ProjectionRequestContext context) {
+		public void request(ObjectNode requestBody, ProjectionRequestContext context) {
 			context.root().getSearchSyntax().requestDocValues( requestBody, MAPPED_TYPE_FIELD_NAME_JSON );
 		}
 
 		@Override
-		public String extract(JsonObject hit, ProjectionExtractContext context) {
+		public String extract(ObjectNode hit, ProjectionExtractContext context) {
 			return HIT_MAPPED_TYPE_NAME_ACCESSOR.get( hit )
 					.orElseThrow( () -> QueryLog.INSTANCE.missingTypeFieldInDocument( MAPPED_TYPE_FIELD_NAME ) );
 		}

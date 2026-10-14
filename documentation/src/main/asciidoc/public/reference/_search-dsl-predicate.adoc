@@ -2047,16 +2047,16 @@ but using the Lucene extension so that Lucene-specific options are available.
 
 include::../components/_elasticsearch-json-warning.adoc[]
 
-.Matching a native Elasticsearch JSON query provided as a `JsonObject`
+.Matching a native Elasticsearch JSON query provided as an `ObjectNode`
 ====
 [source, java, indent=0, subs="+callouts"]
 ----
 include::{sourcedir}/org/hibernate/search/documentation/search/predicate/ElasticsearchPredicateDslIT.java[tags=elasticsearch-fromJson-jsonObject]
 ----
-<1> Build a Search JSON object using `org.hibernate.search.util.json`.
+<1> Build a Jackson 3 `ObjectNode`.
 <2> Build the query as usual,
-but using the Lucene extension so that Lucene-specific options are available.
-<3> Add a predicate defined by a given `JsonObject`.
+but using the Elasticsearch extension so that Elasticsearch-specific options are available.
+<3> Select `JacksonJsonHandlers.object()` and add the predicate defined by the object.
 ====
 
 .Matching a native Elasticsearch JSON query provided as a JSON-formatted string
@@ -2066,8 +2066,17 @@ but using the Lucene extension so that Lucene-specific options are available.
 include::{sourcedir}/org/hibernate/search/documentation/search/predicate/ElasticsearchPredicateDslIT.java[tags=elasticsearch-fromJson-string]
 ----
 <1> Build the query as usual,
-but using the Lucene extension so that Lucene-specific options are available.
+but using the Elasticsearch extension so that Elasticsearch-specific options are available.
 <2> Add a predicate defined by a given JSON-formatted string.
+====
+
+.Using the deprecated Gson convenience
+====
+[source, java, indent=0]
+----
+include::{sourcedir}/org/hibernate/search/documentation/search/predicate/ElasticsearchPredicateDslIT.java[tags=elasticsearch-fromJson-gson]
+----
+New code can select `GsonJsonHandlers.object()` explicitly with `fromJson(handler, json)`.
 ====
 
 [[search-dsl-predicate-common]]

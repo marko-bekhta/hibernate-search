@@ -2,8 +2,6 @@ package org.hibernate.search.integrationtest.performance.backend.elasticsearch;
 
 import java.util.concurrent.TimeUnit;
 
-import org.hibernate.search.util.json.JsonElement;
-
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -15,6 +13,8 @@ import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.infra.Blackhole;
+
+import tools.jackson.databind.JsonNode;
 
 /** Complete numeric-tree construction, with no reads, selected reads, or ten reads of every value. */
 @BenchmarkMode(Mode.Throughput)
@@ -54,17 +54,17 @@ public class JsonNumericConsumptionBenchmark {
 		return readSearch( tree, state.reads );
 	}
 
-	private static long readSearch(JsonElement tree, String reads) {
+	private static long readSearch(JsonNode tree, String reads) {
 		if ( "none".equals( reads ) ) {
 			return 0;
 		}
-		var values = tree.getAsJsonObject().getAsJsonArray( "values" );
+		var values = tree.asObject().get( "values" ).asArray();
 		int step = "selected".equals( reads ) ? 100 : 1;
 		int repetitions = "selected".equals( reads ) ? 1 : 10;
 		long sum = 0;
 		for ( int pass = 0; pass < repetitions; pass++ ) {
 			for ( int index = 0; index < values.size(); index += step ) {
-				sum += values.get( index ).getAsLong();
+				sum += values.get( index ).longValue();
 			}
 		}
 		return sum;

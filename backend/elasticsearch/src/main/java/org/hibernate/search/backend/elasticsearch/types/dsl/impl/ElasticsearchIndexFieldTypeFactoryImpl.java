@@ -13,10 +13,12 @@ import java.time.Year;
 import java.time.YearMonth;
 import java.time.ZonedDateTime;
 
+import org.hibernate.search.backend.elasticsearch.json.JsonHandler;
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
 import org.hibernate.search.backend.elasticsearch.logging.impl.MappingLog;
 import org.hibernate.search.backend.elasticsearch.types.dsl.ElasticsearchIndexFieldTypeFactory;
 import org.hibernate.search.backend.elasticsearch.types.dsl.ElasticsearchNativeIndexFieldTypeMappingStep;
+import org.hibernate.search.backend.elasticsearch.types.dsl.ElasticsearchNativeIndexFieldTypeTypedMappingStep;
 import org.hibernate.search.backend.elasticsearch.types.format.impl.ElasticsearchDefaultFieldFormatProvider;
 import org.hibernate.search.backend.elasticsearch.types.mapping.impl.ElasticsearchVectorFieldTypeMappingContributor;
 import org.hibernate.search.engine.backend.mapping.spi.BackendMapperContext;
@@ -253,8 +255,14 @@ public class ElasticsearchIndexFieldTypeFactoryImpl
 	}
 
 	@Override
+	@Deprecated
 	public ElasticsearchNativeIndexFieldTypeMappingStep asNative() {
 		return new ElasticsearchNativeIndexFieldTypeMappingStepImpl( this );
+	}
+
+	@Override
+	public <T> ElasticsearchNativeIndexFieldTypeTypedMappingStep<T> asNative(JsonHandler<T> handler) {
+		return new ElasticsearchNativeIndexFieldTypeTypedMappingStepImpl<>( this, handler );
 	}
 
 	@Override

@@ -3,14 +3,15 @@ package org.hibernate.search.backend.elasticsearch.lowlevel.index.settings.impl;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.hibernate.search.backend.elasticsearch.json.impl.JsonName;
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonScalarConversions;
 import org.hibernate.search.backend.elasticsearch.json.impl.JsonSerializable;
 import org.hibernate.search.backend.elasticsearch.json.impl.SerializeExtraProperties;
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper;
-import org.hibernate.search.util.json.JsonElement;
+
+import tools.jackson.databind.JsonNode;
 
 /**
  * Settings for an Elasticsearch index.
@@ -31,18 +32,18 @@ public class IndexSettings {
 	private Boolean knn;
 
 	@SerializeExtraProperties
-	private Map<String, JsonElement> extraAttributes;
+	private Map<String, JsonNode> extraAttributes;
 
 	public IndexSettings() {
 	}
 
-	public IndexSettings(Analysis analysis, Integer maxResultWindow, Map<String, JsonElement> extraAttributes) {
+	public IndexSettings(Analysis analysis, Integer maxResultWindow, Map<String, JsonNode> extraAttributes) {
 		this.analysis = analysis;
 		this.maxResultWindow = maxResultWindow;
 		this.extraAttributes = extraAttributes;
 	}
 
-	public IndexSettings(Analysis analysis, Integer maxResultWindow, Boolean knn, Map<String, JsonElement> extraAttributes) {
+	public IndexSettings(Analysis analysis, Integer maxResultWindow, Boolean knn, Map<String, JsonNode> extraAttributes) {
 		this.analysis = analysis;
 		this.maxResultWindow = maxResultWindow;
 		this.knn = knn;
@@ -73,11 +74,11 @@ public class IndexSettings {
 		this.knn = knn;
 	}
 
-	public Map<String, JsonElement> getExtraAttributes() {
+	public Map<String, JsonNode> getExtraAttributes() {
 		return extraAttributes;
 	}
 
-	public void setExtraAttributes(Map<String, JsonElement> extraAttributes) {
+	public void setExtraAttributes(Map<String, JsonNode> extraAttributes) {
 		this.extraAttributes = extraAttributes;
 	}
 
@@ -120,20 +121,20 @@ public class IndexSettings {
 	 *
 	 * @param extraAttributesToRemove Other index settings extra attributes
 	 */
-	public IndexSettings diff(Map<String, JsonElement> extraAttributesToRemove) {
+	public IndexSettings diff(Map<String, JsonNode> extraAttributesToRemove) {
 		if ( extraAttributes == null || extraAttributes.isEmpty() ) {
 			// nothing to do
 			return this;
 		}
 
 		Set<String> keysToRemove = new HashSet<>();
-		for ( Map.Entry<String, JsonElement> extraAttribute : extraAttributes.entrySet() ) {
+		for ( Map.Entry<String, JsonNode> extraAttribute : extraAttributes.entrySet() ) {
 			String key = extraAttribute.getKey();
 			if ( !extraAttributesToRemove.containsKey( key ) ) {
 				continue;
 			}
 
-			if ( Objects.equals( extraAttributesToRemove.get( key ), extraAttribute.getValue() ) ) {
+			if ( JsonScalarConversions.equivalent( extraAttributesToRemove.get( key ), extraAttribute.getValue() ) ) {
 				keysToRemove.add( key );
 			}
 		}
@@ -143,7 +144,7 @@ public class IndexSettings {
 			return this;
 		}
 
-		Map<String, JsonElement> newExtraAttributes = new HashMap<>( extraAttributes );
+		Map<String, JsonNode> newExtraAttributes = new HashMap<>( extraAttributes );
 		for ( String key : keysToRemove ) {
 			newExtraAttributes.remove( key );
 		}

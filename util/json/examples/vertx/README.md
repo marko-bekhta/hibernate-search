@@ -2,7 +2,7 @@
 
 This standalone example uses the [Hibernate Search JSON module](../../README.md)
 with Vert.x Core. It receives UTF-8 JSON incrementally and streams the completed
-tree back, with one output write in flight. It is an application-level HTTP echo
+Jackson tree back, with one output write in flight. It is an application-level HTTP echo
 server, independent of Hibernate Search's Elasticsearch transports.
 
 The complete code is in
@@ -35,7 +35,7 @@ curl -i http://127.0.0.1:8080/ --data-binary '{"unfinished":'
 curl -i http://127.0.0.1:8080/ --data-binary '{} {}'
 ```
 
-The echo preserves tree values and numeric lexemes, rather than original whitespace.
+The echo preserves supported numeric values. Numeric spelling and original whitespace can change.
 JSON null is a valid root; empty input is rejected. The server expects uncompressed
 UTF-8 bodies and applies a 1 MiB parser input cap. It does not implement content-type
 negotiation, authentication, compression or Elasticsearch retry/error semantics.

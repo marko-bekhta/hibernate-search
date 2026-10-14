@@ -2,10 +2,11 @@ package org.hibernate.search.util.json.spi;
 
 import java.nio.charset.Charset;
 
-import org.hibernate.search.util.json.JsonElement;
 import org.hibernate.search.util.json.impl.JacksonJsonParserFactory;
 
-/** Shareable parser factory with immutable constraints and library-neutral signatures. */
+import tools.jackson.databind.JsonNode;
+
+/** Shareable parser factory with immutable constraints and Jackson-native signatures. */
 public final class JsonParsing {
 	private final JacksonJsonParserFactory implementation;
 
@@ -27,7 +28,7 @@ public final class JsonParsing {
 	}
 
 	/** Parse an already materialized string without creating a secondary encoded body. */
-	public JsonElement parse(String json) {
+	public JsonNode parse(String json) {
 		return implementation.parse( json );
 	}
 }

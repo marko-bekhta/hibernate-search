@@ -12,7 +12,7 @@ import org.hibernate.search.backend.elasticsearch.work.impl.OpenIndexWork;
 import org.hibernate.search.backend.elasticsearch.work.impl.RefreshWork;
 import org.hibernate.search.backend.elasticsearch.work.impl.WaitForIndexStatusWork;
 
-import org.hibernate.search.util.json.JsonObject;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * A work builder factory for Amazon OpenSearch Serverless.
@@ -34,7 +34,7 @@ public class AmazonOpenSearchServerlessWorkFactory extends Elasticsearch7WorkFac
 	}
 
 	@Override
-	public DeleteByQueryWork.Builder deleteByQuery(URLEncodedString indexName, JsonObject payload) {
+	public DeleteByQueryWork.Builder deleteByQuery(URLEncodedString indexName, ObjectNode payload) {
 		throw ElasticsearchMiscLog.INSTANCE.cannotExecuteOperationOnAmazonOpenSearchServerless( "deleteByQuery" );
 	}
 

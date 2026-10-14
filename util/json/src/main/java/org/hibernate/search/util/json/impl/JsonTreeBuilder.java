@@ -2,18 +2,19 @@ package org.hibernate.search.util.json.impl;
 
 import java.util.ArrayDeque;
 
-import org.hibernate.search.util.json.JsonArray;
-import org.hibernate.search.util.json.JsonElement;
-import org.hibernate.search.util.json.JsonObject;
 import org.hibernate.search.util.json.spi.JsonEmptyInputException;
 import org.hibernate.search.util.json.spi.JsonParseException;
+
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 /** Stack-based tree construction; never uses accessor chains. */
 final class JsonTreeBuilder {
 	private final ArrayDeque<Frame> frames = new ArrayDeque<>();
-	private JsonElement root;
+	private JsonNode root;
 
-	void add(JsonElement value) {
+	void add(JsonNode value) {
 		if ( frames.isEmpty() ) {
 			if ( root != null ) {
 				throw new JsonParseException( "Expected one JSON root; found trailing content" );
@@ -22,27 +23,27 @@ final class JsonTreeBuilder {
 		}
 		else {
 			Frame frame = frames.peek();
-			if ( frame.container.isJsonArray() ) {
-				frame.container.getAsJsonArray().add( value );
+			if ( frame.container.isArray() ) {
+				( (ArrayNode) frame.container ).add( value );
 			}
 			else {
 				if ( frame.name == null ) {
 					throw new JsonParseException( "Missing JSON member name" );
 				}
-				frame.container.getAsJsonObject().add( frame.name, value );
+				( (ObjectNode) frame.container ).set( frame.name, value );
 				frame.name = null;
 			}
 		}
 	}
 
 	void startObject() {
-		JsonObject object = new JsonObject();
+		ObjectNode object = new ObjectNode( tools.jackson.databind.node.JsonNodeFactory.instance );
 		add( object );
 		frames.push( new Frame( object ) );
 	}
 
 	void startArray() {
-		JsonArray array = new JsonArray();
+		ArrayNode array = new ArrayNode( tools.jackson.databind.node.JsonNodeFactory.instance );
 		add( array );
 		frames.push( new Frame( array ) );
 	}
@@ -55,7 +56,7 @@ final class JsonTreeBuilder {
 		frames.pop();
 	}
 
-	JsonElement finish() {
+	JsonNode finish() {
 		if ( root == null ) {
 			throw new JsonEmptyInputException();
 		}
@@ -71,10 +72,10 @@ final class JsonTreeBuilder {
 	}
 
 	private static final class Frame {
-		private final JsonElement container;
+		private final JsonNode container;
 		private String name;
 
-		private Frame(JsonElement container) {
+		private Frame(JsonNode container) {
 			this.container = container;
 		}
 	}

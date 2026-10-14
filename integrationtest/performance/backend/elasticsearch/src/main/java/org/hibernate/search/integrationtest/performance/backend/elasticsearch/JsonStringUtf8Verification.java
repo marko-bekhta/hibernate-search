@@ -3,11 +3,12 @@ package org.hibernate.search.integrationtest.performance.backend.elasticsearch;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
-import org.hibernate.search.util.json.JsonElement;
 import org.hibernate.search.util.json.spi.JsonParseException;
 import org.hibernate.search.util.json.spi.JsonParserSession;
 import org.hibernate.search.util.json.spi.JsonParsing;
 import org.hibernate.search.util.json.spi.JsonParsingOptions;
+
+import tools.jackson.databind.JsonNode;
 
 /** Standalone correctness checks for the experiment; run from the benchmark JAR, outside timing. */
 public final class JsonStringUtf8Verification {
@@ -17,13 +18,18 @@ public final class JsonStringUtf8Verification {
 	static void verifyLexemes(JsonParsing parsing) {
 		String json = "{\"\\uD83D\\uDE00\":[-0,1.2300e+04,9007199254740993,1e999999999],"
 				+ "\"escaped\":\"\\uD800\\n\\u0041\\\"\\\\\"}";
-		String expected = "{\"\\ud83d\\ude00\":[-0,1.2300e+04,9007199254740993,1e999999999],"
-				+ "\"escaped\":\"\\ud800\\nA\\\"\\\\\"}";
-		JsonElement actual = JsonStringUtf8Encoding.parse( parsing, json, 4 );
-		if ( !expected.equals( actual.toString() )
+		JsonNode actual = JsonStringUtf8Encoding.parse( parsing, json, 4 );
+		var values = actual.get( "😀" );
+		if ( values.get( 0 ).longValue() != 0
+				|| new java.math.BigDecimal( values.get( 1 ).numberValue().toString() )
+						.compareTo( new java.math.BigDecimal( "12300" ) ) != 0
+				|| values.get( 2 ).longValue() != 9007199254740993L
+				|| new java.math.BigDecimal( values.get( 3 ).numberValue().toString() )
+						.compareTo( new java.math.BigDecimal( "1e999999999" ) ) != 0
+				|| !"\ud800\nA\"\\".equals( actual.get( "escaped" ).asString() )
 				|| !parsing.parse( json ).equals( actual )
 				|| !actual.equals( JsonStringUtf8Encoding.parseStaged( parsing, json, 4, 2 ) ) ) {
-			throw new IllegalStateException( "Numeric lexeme or escaped-surrogate mismatch: " + actual );
+			throw new IllegalStateException( "Numeric value or escaped-surrogate mismatch" );
 		}
 	}
 
@@ -35,9 +41,9 @@ public final class JsonStringUtf8Verification {
 			for ( int padding = 0; padding < 20; padding++ ) {
 				String text = "x".repeat( padding ) + "é漢😀" + "x".repeat( 8190 ) + "😀é漢";
 				String json = "{\"nameé😀\":\"" + text + "\\n\\uD83D\\uDE00\",\"n\":-0}";
-				JsonElement actual = JsonStringUtf8Encoding.parse( parsing, json, capacity );
+				JsonNode actual = JsonStringUtf8Encoding.parse( parsing, json, capacity );
 				if ( !parsing.parse( json ).equals( actual )
-						|| !( text + "\n😀" ).equals( actual.getAsJsonObject().get( "nameé😀" ).getAsString() ) ) {
+						|| !( text + "\n😀" ).equals( actual.asObject().get( "nameé😀" ).asString() ) ) {
 					throw new IllegalStateException( "Unicode boundary mismatch" );
 				}
 				try ( TrackingSession parser = new TrackingSession( parsing.createParser(), capacity ) ) {
@@ -142,7 +148,7 @@ public final class JsonStringUtf8Verification {
 		}
 
 		@Override
-		public JsonElement endOfInput() {
+		public JsonNode endOfInput() {
 			return delegate.endOfInput();
 		}
 

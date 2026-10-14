@@ -10,20 +10,23 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
-import org.hibernate.search.util.json.JsonArray;
-import org.hibernate.search.util.json.JsonElement;
-import org.hibernate.search.util.json.JsonNull;
-import org.hibernate.search.util.json.JsonObject;
-import org.hibernate.search.util.json.JsonPrimitive;
 import org.hibernate.search.util.json.spi.JsonCodec;
 import org.hibernate.search.util.json.spi.JsonCodecRegistry;
 import org.hibernate.search.util.json.spi.JsonCodecs;
 import org.hibernate.search.util.json.spi.JsonEmptyInputException;
+import org.hibernate.search.util.json.spi.JsonNumbers;
 import org.hibernate.search.util.json.spi.JsonParseException;
 import org.hibernate.search.util.json.spi.JsonParserSession;
 import org.hibernate.search.util.json.spi.JsonParsing;
 
-/** Library-neutral backend JSON services, using explicit known-type codecs and bounded byte input. */
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.BooleanNode;
+import tools.jackson.databind.node.NullNode;
+import tools.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.StringNode;
+
+/** Backend JSON services over Jackson nodes, using explicit known-type codecs and bounded byte input. */
 public final class JsonCodecService {
 	private final JsonCodecRegistry registry;
 	private final boolean serializeNulls;
@@ -75,23 +78,23 @@ public final class JsonCodecService {
 		}
 	}
 
-	public <T> T decode(JsonElement value, Class<T> type) {
+	public <T> T decode(JsonNode value, Class<T> type) {
 		if ( value == null ) {
 			return null;
 		}
-		if ( type == JsonElement.class ) {
+		if ( type == JsonNode.class ) {
 			return type.cast( value );
 		}
-		if ( value.isJsonNull() ) {
+		if ( value.isNull() ) {
 			return null;
 		}
-		JsonCodec<T> codec = type == JsonObject.class || type == JsonArray.class ? null : registry.get( type );
+		JsonCodec<T> codec = type == ObjectNode.class || type == ArrayNode.class ? null : registry.get( type );
 		try {
-			if ( type == JsonObject.class ) {
-				return type.cast( value.getAsJsonObject() );
+			if ( type == ObjectNode.class ) {
+				return type.cast( (ObjectNode) value );
 			}
-			if ( type == JsonArray.class ) {
-				return type.cast( value.getAsJsonArray() );
+			if ( type == ArrayNode.class ) {
+				return type.cast( (ArrayNode) value );
 			}
 			return codec.decode( value );
 		}
@@ -104,24 +107,24 @@ public final class JsonCodecService {
 	}
 
 	@SuppressWarnings("unchecked")
-	public JsonElement encode(Object value) {
+	public JsonNode encode(Object value) {
 		if ( value == null ) {
-			return JsonNull.INSTANCE;
+			return NullNode.instance;
 		}
-		if ( value instanceof JsonElement element ) {
+		if ( value instanceof JsonNode element ) {
 			return serializeNulls ? element : JsonCodecs.copy( element, false );
 		}
 		if ( value instanceof String string ) {
-			return new JsonPrimitive( string );
+			return StringNode.valueOf( string );
 		}
 		if ( value instanceof Character character ) {
-			return new JsonPrimitive( character );
+			return StringNode.valueOf( character.toString() );
 		}
 		if ( value instanceof Boolean bool ) {
-			return new JsonPrimitive( bool );
+			return BooleanNode.valueOf( bool );
 		}
 		if ( value instanceof Number number ) {
-			return new JsonPrimitive( number );
+			return JsonNumbers.fromNumber( number );
 		}
 		return ( (JsonCodec<Object>) registry.get( value.getClass() ) ).encode( value, serializeNulls );
 	}
@@ -140,7 +143,7 @@ public final class JsonCodecService {
 
 	/** Streaming formatted output used by schema exports. */
 	public void write(Object value, Writer writer) throws IOException {
-		JsonElement tree = encode( value );
+		JsonNode tree = encode( value );
 		if ( pretty ) {
 			render( tree, writer, 0 );
 		}
@@ -154,16 +157,16 @@ public final class JsonCodecService {
 		org.hibernate.search.util.json.spi.JsonBodies.of( encode( value ) ).writeTo( output );
 	}
 
-	private void render(JsonElement value, Writer writer, int depth) throws IOException {
-		if ( value.isJsonObject() ) {
+	private void render(JsonNode value, Writer writer, int depth) throws IOException {
+		if ( value instanceof ObjectNode object ) {
 			writer.write( '{' );
 			int i = 0;
-			for ( var e : value.getAsJsonObject().entrySet() ) {
+			for ( var e : object.properties() ) {
 				if ( i++ > 0 ) {
 					writer.write( ',' );
 				}
 				indent( writer, depth + 1 );
-				compact( new JsonPrimitive( e.getKey() ), writer );
+				compact( StringNode.valueOf( e.getKey() ), writer );
 				writer.write( pretty ? ": " : ":" );
 				render( e.getValue(), writer, depth + 1 );
 			}
@@ -172,10 +175,10 @@ public final class JsonCodecService {
 			}
 			writer.write( '}' );
 		}
-		else if ( value.isJsonArray() ) {
+		else if ( value instanceof ArrayNode array ) {
 			writer.write( '[' );
 			int i = 0;
-			for ( var e : value.getAsJsonArray() ) {
+			for ( var e : array ) {
 				if ( i++ > 0 ) {
 					writer.write( ',' );
 				}
@@ -192,7 +195,7 @@ public final class JsonCodecService {
 		}
 	}
 
-	private void compact(JsonElement value, Writer writer) throws IOException {
+	private void compact(JsonNode value, Writer writer) throws IOException {
 		try ( var input = org.hibernate.search.util.json.spi.JsonBodies.of( value ).openStream();
 				var reader = new InputStreamReader( input, StandardCharsets.UTF_8 ) ) {
 			char[] buffer = new char[8192];

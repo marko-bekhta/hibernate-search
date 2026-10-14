@@ -2,8 +2,6 @@ package org.hibernate.search.integrationtest.performance.backend.elasticsearch;
 
 import java.util.concurrent.TimeUnit;
 
-import org.hibernate.search.util.json.JsonElement;
-import org.hibernate.search.util.json.JsonObject;
 import org.hibernate.search.util.json.spi.JsonParsing;
 
 import org.openjdk.jmh.annotations.Benchmark;
@@ -18,6 +16,9 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.infra.Blackhole;
+
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 /** Already materialized String to complete tree through character and UTF-8 parser paths. */
 @BenchmarkMode(Mode.Throughput)
@@ -36,26 +37,26 @@ public class JsonStringUtf8Benchmark {
 		@Setup
 		public void setup() {
 			JsonBenchmarkSupport.verifyAffinity();
-			JsonObject expected = new JsonObject();
+			ObjectNode expected = tools.jackson.databind.node.JsonNodeFactory.instance.objectNode();
 			switch ( fixture ) {
 				case "scalar-1m":
 					String ascii = "x".repeat( 1024 * 1024 );
 					json = "{\"text\":\"" + ascii + "\"}";
-					expected.addProperty( "text", ascii );
+					expected.put( "text", ascii );
 					break;
 				case "unicode-1m":
 					String unit = "é漢😀\n\"\\";
 					json = "{\"text\":\"" + "é漢😀\\n\\\"\\\\".repeat( 100_000 ) + "\"}";
-					expected.addProperty( "text", unit.repeat( 100_000 ) );
+					expected.put( "text", unit.repeat( 100_000 ) );
 					break;
 				case "small":
 					json = "{\"query\":{\"term\":{\"name\":\"test\"}},\"size\":10}";
-					JsonObject query = new JsonObject();
-					JsonObject term = new JsonObject();
-					term.addProperty( "name", "test" );
-					query.add( "term", term );
-					expected.add( "query", query );
-					expected.addProperty( "size", 10 );
+					ObjectNode query = tools.jackson.databind.node.JsonNodeFactory.instance.objectNode();
+					ObjectNode term = tools.jackson.databind.node.JsonNodeFactory.instance.objectNode();
+					term.put( "name", "test" );
+					query.set( "term", term );
+					expected.set( "query", query );
+					expected.put( "size", 10 );
 					break;
 				case "fields-1m":
 					StringBuilder document = new StringBuilder( "{" );
@@ -66,7 +67,7 @@ public class JsonStringUtf8Benchmark {
 						}
 						String name = "field" + i;
 						document.append( '"' ).append( name ).append( "\":\"" ).append( value ).append( '"' );
-						expected.addProperty( name, value );
+						expected.put( name, value );
 					}
 					json = document.append( '}' ).toString();
 					break;
@@ -81,7 +82,7 @@ public class JsonStringUtf8Benchmark {
 			JsonStringUtf8Verification.verifyLexemes( parsing );
 		}
 
-		private static void verify(JsonElement expected, JsonElement actual) {
+		private static void verify(JsonNode expected, JsonNode actual) {
 			if ( !expected.equals( actual ) || !expected.toString().equals( actual.toString() ) ) {
 				throw new IllegalStateException( "Complete String fixture mismatch" );
 			}

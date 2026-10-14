@@ -3,6 +3,10 @@ package org.hibernate.search.backend.elasticsearch.search.projection.impl;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonAccessor;
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonArrayAccessor;
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonObjectAccessor;
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonScalarConversions;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.AbstractElasticsearchValueFieldSearchQueryElementFactory;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexScope;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexValueFieldContext;
@@ -16,11 +20,10 @@ import org.hibernate.search.engine.search.projection.SearchProjection;
 import org.hibernate.search.engine.search.projection.spi.DistanceToFieldProjectionBuilder;
 import org.hibernate.search.engine.spatial.DistanceUnit;
 import org.hibernate.search.engine.spatial.GeoPoint;
-import org.hibernate.search.util.json.JsonElement;
-import org.hibernate.search.util.json.JsonObject;
-import org.hibernate.search.util.json.spi.JsonAccessor;
-import org.hibernate.search.util.json.spi.JsonArrayAccessor;
-import org.hibernate.search.util.json.spi.JsonObjectAccessor;
+
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * A projection on the distance from a given center to the GeoPoint defined in an index field.
@@ -101,7 +104,7 @@ public class ElasticsearchDistanceToFieldProjection<A, P> extends AbstractElasti
 	}
 
 	@Override
-	public Extractor<?, P> request(JsonObject requestBody, ProjectionRequestContext context) {
+	public Extractor<?, P> request(ObjectNode requestBody, ProjectionRequestContext context) {
 		context.checkValidField( absoluteFieldPath );
 		if ( singleValuedInRoot && context.root().getDistanceSortIndex( absoluteFieldPath, center ) != null ) {
 			// Nothing to do, we'll rely on the sort key
@@ -121,8 +124,8 @@ public class ElasticsearchDistanceToFieldProjection<A, P> extends AbstractElasti
 	}
 
 	@Override
-	public A extract(ProjectionHitMapper<?> projectionHitMapper, JsonObject hit,
-			JsonObject source, ProjectionExtractContext context) {
+	public A extract(ProjectionHitMapper<?> projectionHitMapper, ObjectNode hit,
+			ObjectNode source, ProjectionExtractContext context) {
 		Integer distanceSortIndex = singleValuedInRoot ? context.getDistanceSortIndex( absoluteFieldPath, center ) : null;
 
 		if ( distanceSortIndex != null ) {
@@ -144,41 +147,41 @@ public class ElasticsearchDistanceToFieldProjection<A, P> extends AbstractElasti
 		return collector.finish( extractedData );
 	}
 
-	private Double extractDistanceFromScriptField(JsonObject hit) {
-		Optional<JsonElement> projectedFieldElement =
+	private Double extractDistanceFromScriptField(ObjectNode hit) {
+		Optional<JsonNode> projectedFieldElement =
 				FIELDS_ACCESSOR.property( scriptFieldName ).asArray().element( 0 ).get( hit );
-		if ( !projectedFieldElement.isPresent() || projectedFieldElement.get().isJsonNull() ) {
+		if ( !projectedFieldElement.isPresent() || projectedFieldElement.get().isNull() ) {
 			return null;
 		}
 
-		if ( projectedFieldElement.get().isJsonPrimitive() ) {
-			return unit.fromMeters( projectedFieldElement.get().getAsDouble() );
+		if ( projectedFieldElement.get().isValueNode() ) {
+			return unit.fromMeters( JsonScalarConversions.asDouble( projectedFieldElement.get() ) );
 		}
 		else {
-			JsonObject geoPoint = projectedFieldElement.get().getAsJsonObject();
+			ObjectNode geoPoint = ( (ObjectNode) projectedFieldElement.get() );
 			return computeDistanceWithUnit( geoPoint );
 		}
 	}
 
-	private Double extractDistanceFromSortKey(JsonObject hit, int distanceSortIndex) {
+	private Double extractDistanceFromSortKey(ObjectNode hit, int distanceSortIndex) {
 		// we extract the value from the sort key
-		Optional<JsonElement> sortKeyDistanceElement = SORT_ACCESSOR.element( distanceSortIndex ).get( hit );
+		Optional<JsonNode> sortKeyDistanceElement = SORT_ACCESSOR.element( distanceSortIndex ).get( hit );
 
 		if ( !sortKeyDistanceElement.isPresent() ) {
 			return null;
 		}
-		else if ( !sortKeyDistanceElement.get().getAsJsonPrimitive().isNumber() ) {
+		else if ( !( sortKeyDistanceElement.get() ).isNumber() ) {
 			// Elasticsearch will return "Infinity" if the distance has not been computed.
 			// Usually, it's because the indexed object doesn't have a location defined for this field.
 			return null;
 		}
 
-		double distanceInMeters = sortKeyDistanceElement.get().getAsJsonPrimitive().getAsDouble();
+		double distanceInMeters = JsonScalarConversions.asDouble( ( sortKeyDistanceElement.get() ) );
 
 		return unit.fromMeters( distanceInMeters );
 	}
 
-	private Double computeDistanceWithUnit(JsonElement geoPoint) {
+	private Double computeDistanceWithUnit(JsonNode geoPoint) {
 		GeoPoint decoded = codec.decode( geoPoint );
 		if ( decoded == null ) {
 			return null;
@@ -201,16 +204,16 @@ public class ElasticsearchDistanceToFieldProjection<A, P> extends AbstractElasti
 		return sb.toString();
 	}
 
-	private static JsonObject createScript(String absoluteFieldPath, GeoPoint center) {
-		JsonObject params = new JsonObject();
-		params.addProperty( "lat", center.latitude() );
-		params.addProperty( "lon", center.longitude() );
-		params.addProperty( "fieldPath", absoluteFieldPath );
+	private static ObjectNode createScript(String absoluteFieldPath, GeoPoint center) {
+		ObjectNode params = JsonNodeFactory.instance.objectNode();
+		params.put( "lat", center.latitude() );
+		params.put( "lon", center.longitude() );
+		params.put( "fieldPath", absoluteFieldPath );
 
-		JsonObject scriptContent = new JsonObject();
-		scriptContent.addProperty( "lang", "painless" );
-		scriptContent.add( "params", params );
-		scriptContent.addProperty( "source", DISTANCE_PROJECTION_SCRIPT );
+		ObjectNode scriptContent = JsonNodeFactory.instance.objectNode();
+		scriptContent.put( "lang", "painless" );
+		scriptContent.set( "params", params );
+		scriptContent.put( "source", DISTANCE_PROJECTION_SCRIPT );
 
 		return scriptContent;
 	}

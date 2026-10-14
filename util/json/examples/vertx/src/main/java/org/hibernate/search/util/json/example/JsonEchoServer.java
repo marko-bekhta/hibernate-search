@@ -6,7 +6,7 @@ package org.hibernate.search.util.json.example;
 
 import java.nio.ByteBuffer;
 
-import org.hibernate.search.util.json.JsonElement;
+import tools.jackson.databind.JsonNode;
 import org.hibernate.search.util.json.spi.JsonBodies;
 import org.hibernate.search.util.json.spi.JsonBody;
 import org.hibernate.search.util.json.spi.JsonParseException;
@@ -92,7 +92,7 @@ public final class JsonEchoServer {
 				return;
 			}
 			try {
-				JsonElement root = parser.endOfInput();
+				JsonNode root = parser.endOfInput();
 				closeParser();
 				// This tree remains unchanged until the response completes.
 				JsonBody body = JsonBodies.of( root );

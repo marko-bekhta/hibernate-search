@@ -1048,17 +1048,21 @@ or a <<binding-propertybridge,property binder>>
 would work as well.
 <2> Get the context's type factory.
 <3> Apply the Elasticsearch extension to the type factory.
-<4> Call `asNative` to start defining a native type.
-<5> Pass the Elasticsearch mapping as JSON.
-<6> Values of native fields are represented as a `JsonElement` in Hibernate Search.
-`JsonElement` is a type from `org.hibernate.search.util.json`.
-Do not forget to format them correctly before you pass them to the backend.
-Here we are creating a `JsonPrimitive` (a subtype of `JsonElement`) from a `String`
-because we just need a JSON string,
-but it's completely possible to handle more complex objects,
-Applications using Gson can migrate their inputs with the deprecated `GsonJsonConversion` utility; conversion walks and allocates an independent tree.
-<7> For nicer projections, you can also implement this method to convert
-from `JsonElement` to the mapped type (here, `String`).
+<4> Call `asNative(JacksonJsonHandlers.value())` to bind Jackson 3 `JsonNode` values
+for both indexing and projection.
+<5> Pass the Elasticsearch mapping as JSON. A mapping handler can be selected independently
+with `mapping(mappingHandler, mappingObject)`.
+<6> Construct a `StringNode`, a subtype of `JsonNode`, because this mapping accepts JSON strings.
+General handlers can also represent objects, arrays, other scalars and JSON null,
+subject to the Elasticsearch mapping.
+<7> Convert the projected `JsonNode` back to the mapped type (here, `String`).
+A missing or JSON-null field reaches this bridge as Java null; nested nulls remain in non-null trees.
+
+Typed native fields treat a root array as one JSON value.
+The deprecated `asNative()` convenience instead binds Gson `JsonElement` and retains
+historical field-projection array splitting.
+Explicit `asNative(GsonJsonHandlers.value())` selects typed array semantics even though its values use Gson.
+
 
 [source, java, indent=0, subs="+callouts"]
 ----

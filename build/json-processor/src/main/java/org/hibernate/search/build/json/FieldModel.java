@@ -1,7 +1,6 @@
 package org.hibernate.search.build.json;
 
 import java.util.List;
-
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
@@ -34,7 +33,7 @@ final class FieldModel {
 			case "java.lang.Long" -> "LONG";
 			case "java.lang.Double" -> "DOUBLE";
 			case "java.lang.Float" -> "FLOAT";
-			case "org.hibernate.search.util.json.JsonElement" -> "ELEMENT";
+			case "tools.jackson.databind.JsonNode" -> "ELEMENT";
 			default -> null;
 		};
 		if ( scalar != null ) {

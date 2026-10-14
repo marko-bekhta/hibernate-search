@@ -1,10 +1,10 @@
 package org.hibernate.search.util.json.spi;
 
-import org.hibernate.search.util.json.JsonElement;
+import tools.jackson.databind.JsonNode;
 
 /** Explicit tree codec. Implementations construct known types without runtime field inspection. */
 public interface JsonCodec<T> {
-	T decode(JsonElement value);
+	T decode(JsonNode value);
 
-	JsonElement encode(T value, boolean serializeNulls);
+	JsonNode encode(T value, boolean serializeNulls);
 }

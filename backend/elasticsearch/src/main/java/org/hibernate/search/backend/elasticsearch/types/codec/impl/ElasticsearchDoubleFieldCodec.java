@@ -1,10 +1,11 @@
 package org.hibernate.search.backend.elasticsearch.types.codec.impl;
 
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonElementTypes;
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonScalarConversions;
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
-import org.hibernate.search.util.json.JsonElement;
-import org.hibernate.search.util.json.JsonNull;
-import org.hibernate.search.util.json.JsonPrimitive;
-import org.hibernate.search.util.json.spi.JsonElementTypes;
+
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.NullNode;
 
 public final class ElasticsearchDoubleFieldCodec extends AbstractElasticsearchFieldCodec<Double> {
 
@@ -13,16 +14,16 @@ public final class ElasticsearchDoubleFieldCodec extends AbstractElasticsearchFi
 	}
 
 	@Override
-	public JsonElement encode(Double value) {
+	public JsonNode encode(Double value) {
 		if ( value == null ) {
-			return JsonNull.INSTANCE;
+			return NullNode.instance;
 		}
-		return new JsonPrimitive( value );
+		return JsonScalarConversions.toNode( value );
 	}
 
 	@Override
-	public Double decode(JsonElement element) {
-		if ( element == null || element.isJsonNull() ) {
+	public Double decode(JsonNode element) {
+		if ( element == null || element.isNull() ) {
 			return null;
 		}
 		return JsonElementTypes.DOUBLE.fromElement( element );

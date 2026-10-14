@@ -10,10 +10,11 @@ import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
-import org.hibernate.search.util.json.JsonElement;
 import org.hibernate.search.util.json.spi.JsonParseException;
 import org.hibernate.search.util.json.spi.JsonParserSession;
 import org.hibernate.search.util.json.spi.JsonParsingOptions;
+
+import tools.jackson.databind.JsonNode;
 
 /** Bounded incremental charset decoding and UTF-8 encoding. */
 final class TranscodingJsonParserSession implements JsonParserSession {
@@ -102,7 +103,7 @@ final class TranscodingJsonParserSession implements JsonParserSession {
 	}
 
 	@Override
-	public JsonElement endOfInput() {
+	public JsonNode endOfInput() {
 		requireOpen();
 		try {
 			pending.flip();
@@ -124,7 +125,7 @@ final class TranscodingJsonParserSession implements JsonParserSession {
 					break;
 				}
 			}
-			JsonElement result = delegate.endOfInput();
+			JsonNode result = delegate.endOfInput();
 			close();
 			return result;
 		}

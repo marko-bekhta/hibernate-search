@@ -1,122 +1,152 @@
 [[backend-elasticsearch-json]]
-== JSON trees and streaming
+== JSON handlers and streaming
 
-Hibernate Search exposes its own JSON nodes from `org.hibernate.search.util.json`:
-`JsonElement`, `JsonObject`, `JsonArray`, `JsonPrimitive` and `JsonNull`.
-They are the actual mutable trees used by the backend.
-The published `org.hibernate.search:hibernate-search-util-json` artifact provides the model
-and reusable accessor, parser, output and codec contracts in `org.hibernate.search.util.json.spi`.
-On the module path, `org.hibernate.search.backend.elasticsearch` requires `org.hibernate.search.util.json`
-transitively. That JSON module exports its model/SPI, requires Jackson Core without a transitive read,
-and opens no packages. Temporary Gson callers need their own `requires com.google.gson`.
-Jackson Core is an implementation dependency; its types do not appear in these contracts.
-Hibernate Search uses minimal Core token parsing, without Databind or reflective object mapping.
-For a standalone guide to the model, accessors, parser constraints, output and codecs,
-see the https://github.com/hibernate/hibernate-search/blob/main/util/json/README.md[JSON module guide].
-The Elasticsearch REST 4 sniffer independently requires Jackson 2 Core; keep that dependency
-when using that client. There is no optional Jackson 2 parser fallback in the Search JSON module.
+Hibernate Search uses Jackson 3 `JsonNode` trees internally.
+Application-facing Elasticsearch JSON APIs select a representation through
+`org.hibernate.search.backend.elasticsearch.json.JsonHandler<T>`.
+`T` is a JSON library's tree/value type, not an entity or application DTO.
+A handler supplies a stable `Class<T> javaType()`, `toJson(T)` and `fromJson(String)`.
+Implementations must support concurrent use, preserve arbitrary members and nested nulls,
+and parse one strict JSON value into an independent representation.
+There is no automatic reflective object mapper or handler inference from a runtime class.
 
-Objects preserve insertion order. Missing members are distinct from `JsonNull.INSTANCE`;
-`JsonObject.get(name)` returns Java `null` for a missing member.
-Adding Java `null` stores JSON null. Parsed numbers retain their original valid JSON lexemes.
-Trees returned by raw search results must not be modified: use `deepCopy()` before editing them.
-Request builders and transformers may mutate their own trees before submission.
-Once a tree is submitted, leave it unchanged until consumption, signing and all retries finish.
-Trees used for output must be acyclic. The streaming body keeps references to the tree;
-it does not freeze it automatically or make a defensive copy.
+Two factory pairs are provided:
+
+* `org.hibernate.search.backend.elasticsearch.json.jackson.JacksonJsonHandlers.object()`
+  and `.value()` handle Jackson 3 `ObjectNode` and `JsonNode` respectively.
+* `org.hibernate.search.backend.elasticsearch.gson.GsonJsonHandlers.object()`
+  and `.value()` handle Gson `JsonObject` and `JsonElement` respectively.
+
+The built-in Jackson factories return stable, recognized instances.
+Search transfers their trees directly after validating ordinary JSON nodes;
+validation traverses the tree, so direct transfer is not a constant-time operation.
+The Gson factories and custom handlers use explicit JSON text conversion at the application boundary.
+A custom handler returning Jackson nodes still has its methods invoked.
+Selecting `ObjectNode.class` as a type token does not enable the built-in direct path.
+
+The `org.hibernate.search:hibernate-search-util-json` artifact provides Jackson-native
+parser, output, validation and explicit codec contracts in `org.hibernate.search.util.json.spi`.
+It provides no separate Search tree model or application accessor API.
+Backend accessors are implementation details; applications navigate their selected JSON library's trees.
+On the module path, the JSON utility module exposes its SPI and requires Jackson 3 Databind transitively.
+The backend module exposes Jackson and its deprecated Gson API types through transitive module reads.
+The Elasticsearch REST 4 sniffer independently requires Jackson 2 Core;
+that dependency does not select a different Search parser or handler.
+See the https://github.com/hibernate/hibernate-search/blob/main/util/json/README.md[JSON utility guide]
+for standalone parser/output use.
 
 [[backend-elasticsearch-json-api]]
-=== Native inputs and raw results
+=== Inputs and raw results
 
-Use Search `JsonObject` with native predicate, sort and aggregation `fromJson(...)`,
-and native field `mapping(...)`. The primary method names remain the same.
-The `String` overloads remain available and parse the supplied characters directly,
+Select an object handler for predicates, sorts, aggregation requests and mappings.
+The `String` overloads remain available and parse the original characters directly,
 using strict JSON grammar: property names and string values require double quotes.
 Single quotes, comments, non-finite numbers and trailing content are rejected.
 There is no preliminary whole-String UTF-8 encoding.
-
-The following signatures use Search nodes:
+Every object-valued endpoint validates an object root, including when a general value handler is selected.
+An absent optional source or explanation returns Java `null`;
+a present JSON null, array or scalar is not an object result.
 
 [cols="2,3",options="header"]
 |===
-|Surface |Result or value type
-|`ElasticsearchSearchResult.responseBody()` |`JsonObject`
-|`ElasticsearchSearchQuery.explain(Object)` and `explain(String, Object)` |`JsonObject`
-|Projection factory `source()`, `explanation()` and `jsonHit()` |`ProjectionFinalStep<JsonObject>`
-|Aggregation factory `fromJson(JsonObject)` and `fromJson(String)` |`AggregationFinalStep<JsonObject>`
-|`ElasticsearchSearchRequestTransformerContext.body()` |Mutable `JsonObject`; retains copy-on-first-body-access isolation
-|Native index field values |`JsonElement`; update bridge types and field references accordingly
-|`ElasticsearchIndexSchemaExport.bodyParts()` |`List<JsonObject>`
-|Client `ElasticsearchRequest.bodyParts()` and builder `body(JsonObject)` |`List<JsonObject>` and Search input respectively
-|Client `ElasticsearchResponse.body()` |`JsonObject`
+|Surface |Handler-based operation
+|Predicate/sort input |`fromJson(handler, jsonObject)`
+|Aggregation input and result |`fromJson(handler, jsonObject)` or `fromJson(jsonString, resultHandler)`; result is `T`
+|Raw source, explanation or hit projection |`source(handler)`, `explanation(handler)`, `jsonHit(handler)`; result is `T`
+|Search response |`responseBody(handler)`; result is `T`
+|Score explanation |`explain(handler, id)` or `explain(handler, typeName, id)`; result is `T`
+|Schema export |`bodyParts(handler)`; result is `List<T>`
+|Request transformation |`transformBody(handler, transformation)`
+|Native field type |`asNative(handler)` binds `T` for indexing, projection and runtime metadata
 |===
 
-String projections and explicit diagnostic formatting still serialize whole trees when requested.
-Changing imports alone may be insufficient: update generic declarations, bridge conversions,
-custom clients and any callers compiled against the previous return types.
-The return-type, generic and client SPI changes are source and binary incompatible; recompile applications and extensions.
+No-handler application methods retain their deprecated Gson result types.
+Deprecated Gson predicate/sort/aggregation/mapping inputs delegate to a Gson handler.
+New code can use an explicit Gson handler without using deprecated conveniences.
+For aggregation text input, the result handler is the second argument:
+`fromJson(jsonString, JacksonJsonHandlers.object())`.
 
-For a gradual migration, the native predicate, sort, aggregation and mapping factories retain
-**deprecated Gson input overloads**. Even the Gson aggregation input bridge returns a Search `JsonObject` result.
-The deprecated public `org.hibernate.search.backend.elasticsearch.gson.GsonJsonConversion`
-offers `fromGson` and `toGson` overloads for elements, objects and arrays.
-It walks the tree directly, preserving valid number lexemes, member order and nulls,
-without serialization and reparsing. It allocates independent containers and costs a full traversal;
-avoid repeatedly converting trees in ordinary processing.
-Java null remains Java null. Literal null arguments to overloaded APIs may need an explicit type cast;
-for example `GsonJsonConversion.fromGson((com.google.gson.JsonObject) null)`.
-Casting selects the overload and does not relax that API's input validation.
-All Gson input bridges and the converter will be removed together in a future breaking release.
-
-.Migrating an application tree
+.Copying a tree and selecting an exported representation
 [source, JAVA, indent=0]
 ----
 include::{sourcedir}/org/hibernate/search/documentation/backend/elasticsearch/json/JsonMigrationExamplesTest.java[tags=migration]
 ----
 
-Import the Search node classes in new code. The example's Gson types and converter
-are only for the temporary compatibility boundary.
-
-[[backend-elasticsearch-json-accessors]]
-=== Accessors and explicit coercion
-
-`JsonAccessor` definitions are immutable and reusable across independent trees.
-They navigate completed response trees or request trees under construction.
-They are backend consumers of the completed tree: the incremental parser builds its tree
-with its own stack and does not use accessors.
-
-Typed access checks the JSON value type by default. It does not implicitly traverse singleton arrays.
-Select `unwrapSingletonArrays()` at each required intermediate or terminal location:
-
-.Opting into array adaptation at both locations
+.Deprecated Gson carrier conveniences
 [source, JAVA, indent=0]
 ----
-include::{sourcedir}/org/hibernate/search/documentation/backend/elasticsearch/json/JsonMigrationExamplesTest.java[tags=accessors]
+include::{sourcedir}/org/hibernate/search/documentation/backend/elasticsearch/json/JsonMigrationExamplesTest.java[tags=legacy-gson]
 ----
 
-The strict accessor rejects arrays at either `parent` or `value`.
-The tolerant accessor repeatedly unwraps singleton arrays at the selected location,
-treats an empty array as absent for reads, and rejects arrays with multiple members.
-Non-array values still undergo the subsequent type check.
-`asArray()` retains the selected container; it does not flatten nested arrays unless adaptation is explicitly selected.
-Array indexing retains its normal container behavior.
-Typed scalar/object reads return an empty `Optional` for missing or JSON-null values;
-untyped reads can return `JsonNull.INSTANCE` for an explicit null.
-Numeric narrowing remains independent of array adaptation: `asLong()` can narrow a number such as `1.9` to `1`,
-and integer conversions can overflow. Strict typing does not promise exact-integer conversion.
+Keep submitted input trees unchanged until execution, signing and retries finish.
+Returned application trees are borrowed/read-only; copy them before editing.
+The built-in Jackson route can return the actual internal tree, while Gson conversion allocates an independent tree.
+Objects preserve insertion order, and nested JSON nulls remain present.
+Jackson `get(name)` returns Java `null` for an absent member;
+`path(name)` instead returns a missing node, distinct from a JSON null node.
+Trees must be acyclic. Shared children in an otherwise acyclic tree are supported.
+External trees containing POJO, raw, binary, custom or missing nodes, non-finite numbers,
+invalid member names or invalid raw container values are rejected without reflective mapping.
 
-Writes through an existing adapted parent preserve its singleton containers.
-Setting the selected terminal value replaces that location, including its terminal array wrapper;
-setting Java null writes JSON null.
-Missing or raw JSON-null parents can be created during traversal.
-`getOrCreate` bases creation on raw missing/JSON-null presence:
-an existing empty array or singleton containing null adapts to absence but is not replaced,
-and the method returns Java null without calling the supplier.
-Traversal for a write or creation through such an absent adapted parent throws a contextual `IllegalStateException`.
-This explicit error replaces incidental failures from the old implicit adaptation.
-Other intentional model/parser corrections include strict JSON grammar and consistent numeric equality/hashing.
+.Navigating a Jackson tree explicitly
+[source, JAVA, indent=0]
+----
+include::{sourcedir}/org/hibernate/search/documentation/backend/elasticsearch/json/JsonMigrationExamplesTest.java[tags=tree-navigation]
+----
 
-`JsonParsingOptions` centralizes configurable parser constraints, independently of application-wide Jackson defaults.
+`transformBody` gives the callback an independent editable representation.
+For a built-in Jackson handler, Search makes exactly one copy before the callback and no copy afterward.
+After returning a tree, do not mutate it or any subtree shared with it.
+A callback or conversion failure leaves the original request unchanged.
+The deprecated mutable Gson `body()` creates one lazy representation per context;
+repeated calls return that representation. Do not mix `body()` and `transformBody()` in one context.
+
+[[backend-elasticsearch-json-native-values]]
+=== Native field values and numbers
+
+`asNative(handler)` uses the same `T` for indexing and projection.
+Its mapping can independently use `mapping(mappingHandler, mappingObject)` or `mapping(jsonString)`.
+A general value handler supports objects, arrays, scalars and JSON null;
+a typed root array is one JSON field value, including its nested nulls.
+For a field declared `multiValued()`, Search stores an outer array of separately indexed values
+and projects each of those values independently. An array supplied as one value stays nested
+inside that outer array and projects as one value, even when it is empty.
+An absent multi-valued field projects as an empty collection; a present JSON-null value
+adds one Java null to the projected collection.
+Java null is indexed as JSON null without calling the handler.
+A missing or JSON-null field projects as Java null without calling the handler.
+This field-level convention also applies when an explicit JSON null node was supplied for indexing.
+The Elasticsearch mapping still determines which JSON shapes Elasticsearch accepts.
+
+The deprecated `asNative()` binds Gson `JsonElement` and retains historical array splitting:
+field projection treats each root array element as a field value.
+It differs from typed `asNative(GsonJsonHandlers.value())`, which retains the root array as one value.
+The two field definitions are not compatible across indexes because their array interpretation differs.
+
+Integer parsing constructs exact standard integer nodes, using `BigInteger` when needed.
+Decimal parsing uses exact `BigDecimal` values, without conversion through `double`.
+Negative floating zero is represented as `DoubleNode(-0.0)`; finite supplied floating negative zero retains its sign.
+Integer `-0` may normalize. Number spelling, decimal scale and numeric node class are not round-trip guarantees.
+Explicit floating conversions can still lose precision, and ordinary numeric field narrowing can truncate or wrap.
+
+.Exact large integers and decimals
+[source, JAVA, indent=0]
+----
+include::{sourcedir}/org/hibernate/search/documentation/backend/elasticsearch/json/JsonMigrationExamplesTest.java[tags=numeric-values]
+----
+
+Current decimal exponent, scale and canonical scientific exponent constraints are
+`[-2147483647, 2147483647]`; `Integer.MIN_VALUE` scale is rejected.
+The default number-token limit of 1000 applies to parsed text, not the precision of supplied in-memory nodes.
+A trusted Jackson handler can therefore import a supplied exact number with more than 1000 digits.
+A Gson or custom-handler fallback import renders and reparses the value, and can reject that same number
+because its text exceeds the input limit; it does not round or truncate the number.
+Exact decimal storage does not expand powers of ten.
+Converting decimals to `BigInteger` has a separate negative-scale expansion limit of 100000,
+consistent with Jackson's conversion constraint; storage can accept numbers that this conversion rejects.
+These parser and conversion constraints do not promise that every JSON library accepts the same numeric range.
+
+`JsonParsingOptions` centralizes configurable parser constraints independently of application-wide Jackson settings.
 Defaults limit nesting to 1000, decoded strings to 20,000,000 characters,
 field names to 50,000 UTF-8 bytes and number tokens to Core's 1000-length counting,
 with at most 8192 input bytes accepted per feed.
@@ -130,10 +160,17 @@ escaped isolated surrogates remain representable in string values.
 Custom `ElasticsearchClientFactory.create(...)` implementations now receive
 `org.hibernate.search.backend.elasticsearch.client.common.json.spi.JsonProvider`
 instead of Gson services. It supplies `getCodec()`, `getCodecNoSerializeNulls()` and `getLogHelper()`.
-`JsonCodecService` decodes existing Search trees directly and parses original String or byte-stream inputs as appropriate.
+`JsonCodecService` decodes existing Jackson trees directly and parses original String or byte-stream inputs as appropriate.
 Known Java types use explicit `JsonCodecRegistry` registrations and generated direct field operations.
 Unknown/unsupported types fail explicitly; no reflective mapper is selected as a fallback.
 Registered codecs decode completed trees, after parsing finishes.
+
+Native client carriers use `ElasticsearchRequest.bodyPartsJson()`,
+`ElasticsearchRequest.Builder.bodyJson(ObjectNode)`, `ElasticsearchResponse.bodyJson()`
+and `ElasticsearchResponse.withJsonBody(...)`. Their native trees are borrowed.
+Handler-based `bodyParts(handler)` and `body(handler)` perform explicit application conversion;
+deprecated Gson carrier methods remain available.
+Custom client SPI implementations must recompile against `JsonProvider` and Jackson 3 tree signatures.
 
 Parser factories are shareable. Each `JsonParserSession` is a single-consumer state machine
 owned by one input/response. `feed(ByteBuffer)` processes a bounded slice synchronously
@@ -175,7 +212,7 @@ Here `consumeFully` represents the application's synchronous sink.
 An asynchronous sink must wait for consumption before reusing storage.
 The default content-length probe traverses at most 8 KiB without retaining the bytes.
 A body fitting the probe gets a known length; a larger body keeps `-1` even after signing or full output.
-The Elasticsearch framing helper keeps NDJSON separators/trailing newlines outside the reusable JSON SPI.
+`JsonBodies.ndjson` streams multiple trees with their NDJSON separators and trailing newlines through one reusable writer workspace.
 
 The JDK adapter processes incoming batches synchronously and requests another after consuming them.
 Its publisher emits only on demand and gives each emission fresh read-only storage.

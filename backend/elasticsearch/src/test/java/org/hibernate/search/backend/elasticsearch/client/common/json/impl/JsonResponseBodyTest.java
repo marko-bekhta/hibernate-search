@@ -39,7 +39,7 @@ class JsonResponseBodyTest {
 			decoder.endOfInput();
 			assertThat( body.inputBytes() ).isEqualTo( bytes.length );
 			body.complete();
-			assertThat( body.tree().getAsJsonObject().get( "value" ).getAsString() ).isEqualTo( "é😀".repeat( 100_000 ) );
+			assertThat( body.tree().asObject().get( "value" ).asString() ).isEqualTo( "é😀".repeat( 100_000 ) );
 			try ( var diagnostic = body.openDiagnosticStream() ) {
 				assertThat( new String( diagnostic.readAllBytes(), StandardCharsets.UTF_8 ) ).isEqualTo( input );
 			}
@@ -63,7 +63,7 @@ class JsonResponseBodyTest {
 				}
 				body.feed( ByteBuffer.wrap( "\"}".getBytes( StandardCharsets.UTF_8 ) ) );
 				body.complete();
-				assertThat( body.tree().getAsJsonObject().get( "value" ).getAsString() ).hasSize( size );
+				assertThat( body.tree().asObject().get( "value" ).asString() ).hasSize( size );
 				assertThat( prefix.get( body ) ).isNull();
 				assertThat( parser.get( body ) ).isNull();
 			}
@@ -131,7 +131,7 @@ class JsonResponseBodyTest {
 		try ( var body = new JsonResponseBody( charset, bytes.length ) ) {
 			body.feed( ByteBuffer.wrap( bytes ) );
 			body.complete();
-			assertThat( body.tree().getAsJsonObject().get( "value" ).getAsString() ).isEqualTo( "é" );
+			assertThat( body.tree().asObject().get( "value" ).asString() ).isEqualTo( "é" );
 		}
 		try ( var body = new JsonResponseBody( charset, bytes.length - 1 ) ) {
 			assertThatThrownBy( () -> body.feed( ByteBuffer.wrap( bytes ) ) ).hasMessageContaining( "byte limit" );

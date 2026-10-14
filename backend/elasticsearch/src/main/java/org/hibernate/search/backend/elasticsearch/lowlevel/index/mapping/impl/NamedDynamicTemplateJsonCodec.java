@@ -1,11 +1,12 @@
 package org.hibernate.search.backend.elasticsearch.lowlevel.index.mapping.impl;
 
-import org.hibernate.search.util.json.JsonElement;
-import org.hibernate.search.util.json.JsonNull;
-import org.hibernate.search.util.json.JsonObject;
 import org.hibernate.search.util.json.spi.JsonCodec;
 import org.hibernate.search.util.json.spi.JsonCodecRegistry;
 import org.hibernate.search.util.json.spi.JsonCodecs;
+
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.NullNode;
+import tools.jackson.databind.node.ObjectNode;
 
 public final class NamedDynamicTemplateJsonCodec implements JsonCodec<NamedDynamicTemplate> {
 	private final JsonCodec<DynamicTemplate> template;
@@ -14,23 +15,23 @@ public final class NamedDynamicTemplateJsonCodec implements JsonCodec<NamedDynam
 		template = registry.reference( DynamicTemplate.class );
 	}
 
-	public NamedDynamicTemplate decode(JsonElement value) {
+	public NamedDynamicTemplate decode(JsonNode value) {
 		if ( JsonCodecs.isNull( value ) ) {
 			return null;
 		}
-		JsonObject object = value.getAsJsonObject();
+		ObjectNode object = (ObjectNode) value;
 		if ( object.size() != 1 ) {
 			throw new IllegalArgumentException( "Expected exactly one named dynamic template" );
 		}
-		var e = object.entrySet().iterator().next();
+		var e = object.properties().iterator().next();
 		return new NamedDynamicTemplate( e.getKey(), template.decode( e.getValue() ) );
 	}
 
-	public JsonElement encode(NamedDynamicTemplate value, boolean serializeNulls) {
+	public JsonNode encode(NamedDynamicTemplate value, boolean serializeNulls) {
 		if ( value == null ) {
-			return JsonNull.INSTANCE;
+			return NullNode.instance;
 		}
-		JsonObject result = new JsonObject();
+		ObjectNode result = tools.jackson.databind.node.JsonNodeFactory.instance.objectNode();
 		JsonCodecs.put( result, value.name, template.encode( value.template, serializeNulls ), serializeNulls );
 		return result;
 	}

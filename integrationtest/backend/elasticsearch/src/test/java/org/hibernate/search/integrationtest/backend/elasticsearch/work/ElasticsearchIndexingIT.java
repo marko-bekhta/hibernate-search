@@ -22,12 +22,14 @@ import org.hibernate.search.integrationtest.backend.elasticsearch.testsupport.ut
 import org.hibernate.search.integrationtest.backend.tck.testsupport.util.extension.SearchSetupHelper;
 import org.hibernate.search.util.impl.integrationtest.backend.elasticsearch.dialect.ElasticsearchTestDialect;
 import org.hibernate.search.util.impl.integrationtest.mapper.stub.SimpleMappedIndex;
-import org.hibernate.search.util.json.JsonObject;
 
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * Test the content of generated Elasticsearch indexing requests.
@@ -37,11 +39,9 @@ class ElasticsearchIndexingIT {
 	private static final SimpleMappedIndex<IndexBinding> index = SimpleMappedIndex.of( IndexBinding::new );
 
 	public static List<? extends Arguments> params() {
-		return Arrays.asList(
-				Arguments.of( null, defaultWriteAlias( index.name() ) ),
-				Arguments.of( "no-alias", encodeName( index.name() ) ),
-				Arguments.of( new StubSingleIndexLayoutStrategy( "custom-write", "custom-read" ), encodeName( "custom-write" ) )
-		);
+		return Arrays.asList( Arguments.of( null, defaultWriteAlias( index.name() ) ),
+				Arguments.of( "no-alias", encodeName( index.name() ) ), Arguments.of(
+						new StubSingleIndexLayoutStrategy( "custom-write", "custom-read" ), encodeName( "custom-write" ) ) );
 	}
 
 	private final ElasticsearchTestDialect dialect = ElasticsearchTestDialect.get();
@@ -53,15 +53,8 @@ class ElasticsearchIndexingIT {
 	public ElasticsearchClientSpy clientSpy = ElasticsearchClientSpy.create();
 
 	public void init(Object layoutStrategy, URLEncodedString writeName) {
-		setupHelper.start()
-				.withBackendProperty(
-						ElasticsearchBackendSettings.CLIENT_FACTORY, clientSpy.factoryReference()
-				)
-				.withBackendProperty(
-						ElasticsearchBackendSettings.LAYOUT_STRATEGY, layoutStrategy
-				)
-				.withIndex( index )
-				.setup();
+		setupHelper.start().withBackendProperty( ElasticsearchBackendSettings.CLIENT_FACTORY, clientSpy.factoryReference() )
+				.withBackendProperty( ElasticsearchBackendSettings.LAYOUT_STRATEGY, layoutStrategy ).withIndex( index ).setup();
 	}
 
 	@ParameterizedTest(name = "IndexLayoutStrategy = {0}")
@@ -70,48 +63,37 @@ class ElasticsearchIndexingIT {
 		init( layoutStrategy, writeName );
 		JsonCodecService json =
 				org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.create( false ).getCodec();
-
 		IndexIndexingPlan plan = index.createIndexingPlan();
-
 		plan.add( referenceProvider( "1" ), document -> {
 			document.addValue( index.binding().string, "text1" );
 		} );
-		clientSpy.expectNext(
-				ElasticsearchRequest.post()
-						.pathComponent( Paths._BULK )
-						.body( json.decode( "{\"index\":{\"_index\": \"" + writeName + "\",\"_id\": \"1\"}}",
-								JsonObject.class ) )
-						.body( new JsonObject() ) // We don't care about the document
-						.build(),
-				ElasticsearchRequestAssertionMode.EXTENSIBLE
-		);
+		// We don't care about the document
+		clientSpy.// We don't care about the document
+				expectNext( // We don't care about the document
+						ElasticsearchRequest.post().pathComponent( Paths._BULK )
+								.bodyJson( json.decode( "{\"index\":{\"_index\": \"" + writeName + "\",\"_id\": \"1\"}}",
+										ObjectNode.class ) )
+								.bodyJson( new ObjectNode( JsonNodeFactory.instance ) ).build(),
+						ElasticsearchRequestAssertionMode.EXTENSIBLE );
 		plan.execute( OperationSubmitter.blocking() ).join();
 		clientSpy.verifyExpectationsMet();
-
 		plan.addOrUpdate( referenceProvider( "1" ), document -> {
 			document.addValue( index.binding().string, "text2" );
 		} );
-		clientSpy.expectNext(
-				ElasticsearchRequest.post()
-						.pathComponent( Paths._BULK )
-						.body( json.decode( "{\"index\":{\"_index\": \"" + writeName + "\",\"_id\": \"1\"}}",
-								JsonObject.class ) )
-						.body( new JsonObject() ) // We don't care about the document
-						.build(),
-				ElasticsearchRequestAssertionMode.EXTENSIBLE
-		);
+		// We don't care about the document
+		clientSpy.// We don't care about the document
+				expectNext( // We don't care about the document
+						ElasticsearchRequest.post().pathComponent( Paths._BULK )
+								.bodyJson( json.decode( "{\"index\":{\"_index\": \"" + writeName + "\",\"_id\": \"1\"}}",
+										ObjectNode.class ) )
+								.bodyJson( new ObjectNode( JsonNodeFactory.instance ) ).build(),
+						ElasticsearchRequestAssertionMode.EXTENSIBLE );
 		plan.execute( OperationSubmitter.blocking() ).join();
 		clientSpy.verifyExpectationsMet();
-
 		plan.delete( referenceProvider( "1" ) );
-		clientSpy.expectNext(
-				ElasticsearchRequest.post()
-						.pathComponent( Paths._BULK )
-						.body( json.decode( "{\"delete\":{\"_index\": \"" + writeName + "\",\"_id\": \"1\"}}",
-								JsonObject.class ) )
-						.build(),
-				ElasticsearchRequestAssertionMode.EXTENSIBLE
-		);
+		clientSpy.expectNext( ElasticsearchRequest.post().pathComponent( Paths._BULK )
+				.bodyJson( json.decode( "{\"delete\":{\"_index\": \"" + writeName + "\",\"_id\": \"1\"}}", ObjectNode.class ) )
+				.build(), ElasticsearchRequestAssertionMode.EXTENSIBLE );
 		plan.execute( OperationSubmitter.blocking() ).join();
 		clientSpy.verifyExpectationsMet();
 	}
@@ -122,62 +104,51 @@ class ElasticsearchIndexingIT {
 		init( layoutStrategy, writeName );
 		JsonCodecService json =
 				org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.create( false ).getCodec();
-
 		String routingKey = "someRoutingKey";
 		IndexIndexingPlan plan = index.createIndexingPlan();
-
 		plan.add( referenceProvider( "1", routingKey ), document -> {
 			document.addValue( index.binding().string, "text1" );
 		} );
-		clientSpy.expectNext(
-				ElasticsearchRequest.post()
-						.pathComponent( Paths._BULK )
-						.body( json.decode( "{\"index\":{\"_index\": \"" + writeName + "\",\"routing\": \"" + routingKey + "\","
-								+ "\"_id\": \"1\"}}", JsonObject.class ) )
-						.body( new JsonObject() ) // We don't care about the document
-						.build(),
-				ElasticsearchRequestAssertionMode.EXTENSIBLE
-		);
+		// We don't care about the document
+		clientSpy.// We don't care about the document
+				expectNext( // We don't care about the document
+						ElasticsearchRequest.post().pathComponent( Paths._BULK )
+								.bodyJson( json.decode( "{\"index\":{\"_index\": \"" + writeName + "\",\"routing\": \""
+										+ routingKey + "\"," + "\"_id\": \"1\"}}", ObjectNode.class ) )
+								.bodyJson( new ObjectNode( JsonNodeFactory.instance ) ).build(),
+						ElasticsearchRequestAssertionMode.EXTENSIBLE );
 		plan.execute( OperationSubmitter.blocking() ).join();
 		clientSpy.verifyExpectationsMet();
-
 		plan.addOrUpdate( referenceProvider( "1", routingKey ), document -> {
 			document.addValue( index.binding().string, "text2" );
 		} );
-		clientSpy.expectNext(
-				ElasticsearchRequest.post()
-						.pathComponent( Paths._BULK )
-						.body( json.decode( "{\"index\":{\"_index\": \"" + writeName + "\",\"routing\": \"" + routingKey + "\","
-								+ "\"_id\": \"1\"}}", JsonObject.class ) )
-						.body( new JsonObject() ) // We don't care about the document
-						.build(),
-				ElasticsearchRequestAssertionMode.EXTENSIBLE
-		);
+		// We don't care about the document
+		clientSpy.// We don't care about the document
+				expectNext( // We don't care about the document
+						ElasticsearchRequest.post().pathComponent( Paths._BULK )
+								.bodyJson( json.decode( "{\"index\":{\"_index\": \"" + writeName + "\",\"routing\": \""
+										+ routingKey + "\"," + "\"_id\": \"1\"}}", ObjectNode.class ) )
+								.bodyJson( new ObjectNode( JsonNodeFactory.instance ) ).build(),
+						ElasticsearchRequestAssertionMode.EXTENSIBLE );
 		plan.execute( OperationSubmitter.blocking() ).join();
 		clientSpy.verifyExpectationsMet();
-
 		plan.delete( referenceProvider( "1", routingKey ) );
 		clientSpy.expectNext(
-				ElasticsearchRequest.post()
-						.pathComponent( Paths._BULK )
-						.body( json
-								.decode( "{\"delete\":{\"_index\": \"" + writeName + "\",\"routing\": \"" + routingKey + "\","
-										+ "\"_id\": \"1\"}}", JsonObject.class ) )
+				ElasticsearchRequest.post().pathComponent( Paths._BULK )
+						.bodyJson( json.decode( "{\"delete\":{\"_index\": \"" + writeName + "\",\"routing\": \"" + routingKey
+								+ "\"," + "\"_id\": \"1\"}}", ObjectNode.class ) )
 						.build(),
-				ElasticsearchRequestAssertionMode.EXTENSIBLE
-		);
+				ElasticsearchRequestAssertionMode.EXTENSIBLE );
 		plan.execute( OperationSubmitter.blocking() ).join();
 		clientSpy.verifyExpectationsMet();
 	}
 
 	private static class IndexBinding {
+
 		final IndexFieldReference<String> string;
 
 		IndexBinding(IndexSchemaElement root) {
-			string = root.field( "string", f -> f.asString() )
-					.toReference();
+			string = root.field( "string", f -> f.asString() ).toReference();
 		}
 	}
-
-
 }

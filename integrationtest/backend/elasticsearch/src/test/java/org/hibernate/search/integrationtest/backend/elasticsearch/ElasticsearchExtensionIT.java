@@ -17,8 +17,8 @@ import java.util.stream.Collectors;
 
 import org.hibernate.search.backend.elasticsearch.ElasticsearchBackend;
 import org.hibernate.search.backend.elasticsearch.ElasticsearchExtension;
+import org.hibernate.search.backend.elasticsearch.gson.GsonJsonHandlers;
 import org.hibernate.search.backend.elasticsearch.index.ElasticsearchIndexManager;
-import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
 import org.hibernate.search.backend.elasticsearch.search.query.ElasticsearchSearchQuery;
 import org.hibernate.search.backend.elasticsearch.search.query.ElasticsearchSearchResult;
 import org.hibernate.search.backend.elasticsearch.search.query.ElasticsearchSearchScroll;
@@ -55,42 +55,47 @@ import org.hibernate.search.util.impl.integrationtest.mapper.stub.SimpleMappedIn
 import org.hibernate.search.util.impl.integrationtest.mapper.stub.StubLoadingOptionsStep;
 import org.hibernate.search.util.impl.integrationtest.mapper.stub.StubMappingScope;
 import org.hibernate.search.util.impl.test.annotation.TestForIssue;
-import org.hibernate.search.util.json.JsonElement;
-import org.hibernate.search.util.json.JsonObject;
-import org.hibernate.search.util.json.JsonPrimitive;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.json.JSONException;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 
+// Explicit coverage of the released Gson compatibility APIs.
+@SuppressWarnings("deprecation")
 class ElasticsearchExtensionIT {
 
 	private static final String FIRST_ID = "1";
+
 	private static final String SECOND_ID = "2";
+
 	private static final String THIRD_ID = "3";
+
 	private static final String FOURTH_ID = "4";
+
 	private static final String FIFTH_ID = "5";
+
 	private static final String EMPTY_ID = "empty";
 
 	@RegisterExtension
 	public final SearchSetupHelper setupHelper = SearchSetupHelper.create();
 
 	private final SimpleMappedIndex<IndexBinding> mainIndex = SimpleMappedIndex.of( IndexBinding::new ).name( "main" );
-	private final SimpleMappedIndex<IndexBinding> otherIndex = SimpleMappedIndex.of( IndexBinding::new ).name( "other" );
 
-	private final JsonCodecService json =
-			org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.create( false ).getCodec();
+	private final SimpleMappedIndex<IndexBinding> otherIndex = SimpleMappedIndex.of( IndexBinding::new ).name( "other" );
 
 	private SearchIntegration integration;
 
 	@BeforeEach
 	void setup() {
 		this.integration = setupHelper.start().withIndexes( mainIndex, otherIndex ).setup().integration();
-
 		initData();
 	}
 
@@ -98,31 +103,24 @@ class ElasticsearchExtensionIT {
 	@SuppressWarnings("unused")
 	void queryContext() {
 		StubMappingScope scope = mainIndex.createScope();
-
 		// Put intermediary contexts into variables to check they have the right type
 		ElasticsearchSearchQuerySelectStep<?, EntityReference, DocumentReference, StubLoadingOptionsStep> context1 =
 				scope.query().extension( ElasticsearchExtension.get() );
-		ElasticsearchSearchQueryWhereStep<?, DocumentReference, StubLoadingOptionsStep> context2 = context1.select(
-				f -> f.composite()
-						.from( f.documentReference(), f.source() )
-						// We don't care about the source, it's just to test that the factory context allows ES-specific projection
-						.as( (docRef, source) -> docRef )
-		);
+		ElasticsearchSearchQueryWhereStep<?, DocumentReference, StubLoadingOptionsStep> context2 =
+				context1.select( f -> f.composite().from( f.documentReference(), f.source() ).// We don't care about the source, it's just to test that the factory context allows ES-specific projection
+						as( (docRef, source) -> docRef ) );
 		// Note we can use Elasticsearch-specific predicates immediately
 		ElasticsearchSearchQueryOptionsStep<?, DocumentReference, StubLoadingOptionsStep> context3 =
 				context2.where( f -> f.fromJson( "{\"match_all\": {}}" ) );
 		// Note we can use Elasticsearch-specific sorts immediately
 		ElasticsearchSearchQueryOptionsStep<?, DocumentReference, StubLoadingOptionsStep> context4 =
 				context3.sort( f -> f.fromJson( "{\"nativeField_sort1\": \"asc\"}" ) );
-
 		// Put the query and result into variables to check they have the right type
 		ElasticsearchSearchQuery<DocumentReference> query = context4.toQuery();
 		ElasticsearchSearchResult<DocumentReference> result = query.fetchAll();
-
 		assertThatResult( result ).fromQuery( query )
 				.hasDocRefHitsAnyOrder( mainIndex.typeName(), FIRST_ID, SECOND_ID, THIRD_ID, FOURTH_ID, FIFTH_ID, EMPTY_ID )
 				.hasTotalHitCount( 6 );
-
 		// Also check (at compile time) the context type for other asXXX() methods, since we need to override each method explicitly
 		ElasticsearchSearchQueryWhereStep<?, EntityReference, StubLoadingOptionsStep> selectEntityReferenceContext =
 				scope.query().extension( ElasticsearchExtension.get() ).selectEntityReference();
@@ -134,170 +132,111 @@ class ElasticsearchExtensionIT {
 		ElasticsearchSearchQueryWhereStep<?, List<?>, StubLoadingOptionsStep> selectProjectionsContext =
 				scope.query().extension( ElasticsearchExtension.get() ).select( projection, projection );
 		ElasticsearchSearchQueryOptionsStep<?, DocumentReference, StubLoadingOptionsStep> defaultResultContext =
-				scope.query().extension( ElasticsearchExtension.get() )
-						.where( f -> f.fromJson( "{\"match_all\": {}}" ) );
+				scope.query().extension( ElasticsearchExtension.get() ).where( f -> f.fromJson( "{\"match_all\": {}}" ) );
 	}
 
-	@SuppressWarnings("unused") // For EJC and lambda arg
+	// For EJC and lambda arg
+	@SuppressWarnings("unused")
 	@Test
 	void query() {
 		StubMappingScope scope = mainIndex.createScope();
-
-		SearchQuery<DocumentReference> genericQuery = scope.query()
-				.where( f -> f.matchAll() )
-				.toQuery();
-
+		SearchQuery<DocumentReference> genericQuery = scope.query().where( f -> f.matchAll() ).toQuery();
 		// Put the query and result into variables to check they have the right type
 		ElasticsearchSearchQuery<DocumentReference> query = genericQuery.extension( ElasticsearchExtension.get() );
 		ElasticsearchSearchResult<DocumentReference> result = query.fetchAll();
 		assertThatResult( result ).fromQuery( query )
 				.hasDocRefHitsAnyOrder( mainIndex.typeName(), FIRST_ID, SECOND_ID, THIRD_ID, FOURTH_ID, FIFTH_ID, EMPTY_ID )
 				.hasTotalHitCount( 6 );
-
 		// Unsupported extension
-		assertThatThrownBy(
-				() -> query.extension(
-						(SearchQuery<DocumentReference> original, SearchLoadingContext<?> loadingContext) -> Optional.empty() )
-		)
+		assertThatThrownBy( () -> query.extension(
+				(SearchQuery<DocumentReference> original, SearchLoadingContext<?> loadingContext) -> Optional.empty() ) )
 				.isInstanceOf( SearchException.class );
 	}
 
 	@Test
 	void query_gsonResponseBody() {
 		StubMappingScope scope = mainIndex.createScope();
-
-		ElasticsearchSearchResult<DocumentReference> result = scope.query().extension( ElasticsearchExtension.get() )
-				.where( f -> f.matchAll() )
-				.fetchAll();
-
-		assertThat( result.responseBody() )
-				.isNotNull()
-				.extracting( body -> body.get( "_shards" ) ).isInstanceOf( JsonObject.class );
+		ElasticsearchSearchResult<DocumentReference> result =
+				scope.query().extension( ElasticsearchExtension.get() ).where( f -> f.matchAll() ).fetchAll();
+		assertThat( result.responseBody() ).isNotNull().extracting( body -> body.get( "_shards" ) )
+				.isInstanceOf( JsonObject.class );
 	}
 
 	@Test
 	void query_explain_singleIndex() {
 		StubMappingScope scope = mainIndex.createScope();
-
-		ElasticsearchSearchQuery<DocumentReference> query = scope.query().extension( ElasticsearchExtension.get() )
-				.where( f -> f.id().matching( FIRST_ID ) )
-				.toQuery();
-
+		ElasticsearchSearchQuery<DocumentReference> query =
+				scope.query().extension( ElasticsearchExtension.get() ).where( f -> f.id().matching( FIRST_ID ) ).toQuery();
 		// Matching document
-		assertThat( query.explain( FIRST_ID ) )
-				.asString()
-				.contains( "\"description\":" )
-				.contains( "\"details\":" );
-
+		assertThat( query.explain( FIRST_ID ) ).asString().contains( "\"description\":" ).contains( "\"details\":" );
 		// Non-matching document
-		assertThat( query.explain( FIFTH_ID ) )
-				.asString()
-				.contains( "\"description\":" )
-				.contains( "\"details\":" );
+		assertThat( query.explain( FIFTH_ID ) ).asString().contains( "\"description\":" ).contains( "\"details\":" );
 	}
 
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-3783")
 	void query_explain_projection() {
 		StubMappingScope scope = mainIndex.createScope();
-
 		ElasticsearchSearchQuery<String> query = scope.query().extension( ElasticsearchExtension.get() )
-				.select( f -> f.field( "string", String.class ) )
-				.where( f -> f.id().matching( FIRST_ID ) )
-				.toQuery();
-
+				.select( f -> f.field( "string", String.class ) ).where( f -> f.id().matching( FIRST_ID ) ).toQuery();
 		// Matching document
-		assertThat( query.explain( FIRST_ID ) )
-				.asString()
-				.contains( "\"description\":" )
-				.contains( "\"details\":" );
-
+		assertThat( query.explain( FIRST_ID ) ).asString().contains( "\"description\":" ).contains( "\"details\":" );
 		// Non-matching document
-		assertThat( query.explain( FIFTH_ID ) )
-				.asString()
-				.contains( "\"description\":" )
-				.contains( "\"details\":" );
+		assertThat( query.explain( FIFTH_ID ) ).asString().contains( "\"description\":" ).contains( "\"details\":" );
 	}
 
 	@Test
 	void query_explain_singleIndex_invalidId() {
 		StubMappingScope scope = mainIndex.createScope();
-
-		ElasticsearchSearchQuery<DocumentReference> query = scope.query().extension( ElasticsearchExtension.get() )
-				.where( f -> f.id().matching( FIRST_ID ) )
-				.toQuery();
-
+		ElasticsearchSearchQuery<DocumentReference> query =
+				scope.query().extension( ElasticsearchExtension.get() ).where( f -> f.id().matching( FIRST_ID ) ).toQuery();
 		// Non-existing document
-		assertThatThrownBy( () -> query.explain( "InvalidId" ) )
-				.isInstanceOf( SearchException.class )
-				.extracting( Throwable::getCause, InstanceOfAssertFactories.THROWABLE )
-				.isInstanceOf( SearchException.class )
-				.hasMessageContainingAll( "Invalid document identifier: 'InvalidId'",
-						"No such document in index 'main-read'" );
+		assertThatThrownBy( () -> query.explain( "InvalidId" ) ).isInstanceOf( SearchException.class )
+				.extracting( Throwable::getCause, InstanceOfAssertFactories.THROWABLE ).isInstanceOf( SearchException.class )
+				.hasMessageContainingAll( "Invalid document identifier: 'InvalidId'", "No such document in index 'main-read'" );
 	}
 
 	@Test
 	void query_explain_multipleIndexes() {
 		StubMappingScope scope = mainIndex.createScope( otherIndex );
-
-		ElasticsearchSearchQuery<DocumentReference> query = scope.query().extension( ElasticsearchExtension.get() )
-				.where( f -> f.id().matching( FIRST_ID ) )
-				.toQuery();
-
+		ElasticsearchSearchQuery<DocumentReference> query =
+				scope.query().extension( ElasticsearchExtension.get() ).where( f -> f.id().matching( FIRST_ID ) ).toQuery();
 		// Matching document
-		assertThat( query.explain( mainIndex.typeName(), FIRST_ID ) )
-				.asString()
-				.contains( "\"description\":" )
+		assertThat( query.explain( mainIndex.typeName(), FIRST_ID ) ).asString().contains( "\"description\":" )
 				.contains( "\"details\":" );
-
 		// Non-matching document
-		assertThat( query.explain( mainIndex.typeName(), FIFTH_ID ) )
-				.asString()
-				.contains( "\"description\":" )
+		assertThat( query.explain( mainIndex.typeName(), FIFTH_ID ) ).asString().contains( "\"description\":" )
 				.contains( "\"details\":" );
 	}
 
 	@Test
 	void query_explain_multipleIndexes_missingTypeName() {
 		StubMappingScope scope = mainIndex.createScope( otherIndex );
-
-		ElasticsearchSearchQuery<DocumentReference> query = scope.query().extension( ElasticsearchExtension.get() )
-				.where( f -> f.id().matching( FIRST_ID ) )
-				.toQuery();
-
-		assertThatThrownBy(
-				() -> query.explain( FIRST_ID )
-		)
-				.isInstanceOf( SearchException.class )
-				.hasMessageContainingAll( "Invalid use of explain(Object id) on a query targeting multiple types",
-						"pass one of [" + mainIndex.typeName() + ", " + otherIndex.typeName() + "]" );
+		ElasticsearchSearchQuery<DocumentReference> query =
+				scope.query().extension( ElasticsearchExtension.get() ).where( f -> f.id().matching( FIRST_ID ) ).toQuery();
+		assertThatThrownBy( () -> query.explain( FIRST_ID ) ).isInstanceOf( SearchException.class ).hasMessageContainingAll(
+				"Invalid use of explain(Object id) on a query targeting multiple types",
+				"pass one of [" + mainIndex.typeName() + ", " + otherIndex.typeName() + "]" );
 	}
 
 	@Test
 	void query_explain_multipleIndexes_invalidIndexName() {
 		StubMappingScope scope = mainIndex.createScope( otherIndex );
-
-		ElasticsearchSearchQuery<DocumentReference> query = scope.query().extension( ElasticsearchExtension.get() )
-				.where( f -> f.id().matching( FIRST_ID ) )
-				.toQuery();
-
-		assertThatThrownBy(
-				() -> query.explain( "NotAMappedName", FIRST_ID )
-		)
-				.isInstanceOf( SearchException.class )
+		ElasticsearchSearchQuery<DocumentReference> query =
+				scope.query().extension( ElasticsearchExtension.get() ).where( f -> f.id().matching( FIRST_ID ) ).toQuery();
+		assertThatThrownBy( () -> query.explain( "NotAMappedName", FIRST_ID ) ).isInstanceOf( SearchException.class )
 				.hasMessageContainingAll( "Invalid mapped type name: 'NotAMappedName'",
-						"This type is not among the mapped types targeted by this query: ["
-								+ mainIndex.typeName() + ", " + otherIndex.typeName() + "]" );
+						"This type is not among the mapped types targeted by this query: [" + mainIndex.typeName() + ", "
+								+ otherIndex.typeName() + "]" );
 	}
 
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-3974")
 	void scroll_onFetchable() {
 		// Check the scroll has the extended type and works correctly
-		try ( ElasticsearchSearchScroll<DocumentReference> scroll = mainIndex.query()
-				.extension( ElasticsearchExtension.get() ) // Call extension() on the DSL step
-				.where( f -> f.matchAll() )
-				.scroll( 20 ) ) { // Call scroll() on the fetchable
+		try ( ElasticsearchSearchScroll<DocumentReference> scroll = mainIndex.query().extension( // Call extension() on the DSL step
+				ElasticsearchExtension.get() ).where( f -> f.matchAll() ).scroll( 20 ) ) {
+			// Call scroll() on the fetchable
 			List<DocumentReference> hits = new ArrayList<>();
 			// Check the scroll result has the extended type and works correctly
 			for ( ElasticsearchSearchScrollResult<DocumentReference> chunk = scroll.next(); chunk.hasHits();
@@ -305,9 +244,8 @@ class ElasticsearchExtensionIT {
 				hits.addAll( chunk.hits() );
 				assertThat( chunk.total().hitCount() ).isEqualTo( 6 );
 			}
-			assertThatHits( hits )
-					.hasDocRefHitsAnyOrder( mainIndex.typeName(),
-							FIRST_ID, SECOND_ID, THIRD_ID, FOURTH_ID, FIFTH_ID, EMPTY_ID );
+			assertThatHits( hits ).hasDocRefHitsAnyOrder( mainIndex.typeName(), FIRST_ID, SECOND_ID, THIRD_ID, FOURTH_ID,
+					FIFTH_ID, EMPTY_ID );
 		}
 	}
 
@@ -315,11 +253,10 @@ class ElasticsearchExtensionIT {
 	@TestForIssue(jiraKey = "HSEARCH-3974")
 	void scroll_onQuery() {
 		// Check the scroll has the extended type and works correctly
-		try ( ElasticsearchSearchScroll<DocumentReference> scroll = mainIndex.query()
-				.where( f -> f.matchAll() )
-				.toQuery()
-				.extension( ElasticsearchExtension.get() ) // Call extension() on the query
-				.scroll( 20 ) ) { // Call scroll() on the query
+		try ( ElasticsearchSearchScroll<DocumentReference> scroll =
+				mainIndex.query().where( f -> f.matchAll() ).toQuery().extension( // Call extension() on the query
+						ElasticsearchExtension.get() ).scroll( 20 ) ) {
+			// Call scroll() on the query
 			List<DocumentReference> hits = new ArrayList<>();
 			// Check the scroll result has the extended type and works correctly
 			for ( ElasticsearchSearchScrollResult<DocumentReference> chunk = scroll.next(); chunk.hasHits();
@@ -327,479 +264,292 @@ class ElasticsearchExtensionIT {
 				hits.addAll( chunk.hits() );
 				assertThat( chunk.total().hitCount() ).isEqualTo( 6 );
 			}
-			assertThatHits( hits )
-					.hasDocRefHitsAnyOrder( mainIndex.typeName(),
-							FIRST_ID, SECOND_ID, THIRD_ID, FOURTH_ID, FIFTH_ID, EMPTY_ID );
+			assertThatHits( hits ).hasDocRefHitsAnyOrder( mainIndex.typeName(), FIRST_ID, SECOND_ID, THIRD_ID, FOURTH_ID,
+					FIFTH_ID, EMPTY_ID );
 		}
 	}
 
 	@Test
 	void predicate_nativeField() {
 		StubMappingScope scope = mainIndex.createScope();
-
 		SearchQuery<DocumentReference> query = scope.query()
-				.where( f -> f.match().field( "nativeField_dateWithColons" )
-						.matching( new JsonPrimitive( "2018:01:12" ) ) )
+				.where( f -> f.match().field( "nativeField_dateWithColons" ).matching( new JsonPrimitive( "2018:01:12" ) ) )
 				.toQuery();
-		assertThatQuery( query )
-				.hasDocRefHitsAnyOrder( mainIndex.typeName(), FOURTH_ID )
-				.hasTotalHitCount( 1 );
+		assertThatQuery( query ).hasDocRefHitsAnyOrder( mainIndex.typeName(), FOURTH_ID ).hasTotalHitCount( 1 );
 	}
 
 	@Test
 	void predicate_nativeField_withDslConverter_enabled() {
 		StubMappingScope scope = mainIndex.createScope();
-
-		SearchQuery<DocumentReference> query = scope.query()
-				.where( f -> f.match().field( "nativeField_integer_converted" )
-						.matching( new ValueWrapper<>( new JsonPrimitive( 2 ) ) ) )
-				.toQuery();
-		assertThatQuery( query )
-				.hasDocRefHitsAnyOrder( mainIndex.typeName(), SECOND_ID )
-				.hasTotalHitCount( 1 );
+		SearchQuery<DocumentReference> query = scope.query().where( f -> f.match().field( "nativeField_integer_converted" )
+				.matching( new ValueWrapper<>( new JsonPrimitive( 2 ) ) ) ).toQuery();
+		assertThatQuery( query ).hasDocRefHitsAnyOrder( mainIndex.typeName(), SECOND_ID ).hasTotalHitCount( 1 );
 	}
 
 	@Test
 	void predicate_nativeField_withDslConverter_disabled() {
 		StubMappingScope scope = mainIndex.createScope();
-
-		SearchQuery<DocumentReference> query = scope.query()
-				.where( f -> f.match().field( "nativeField_integer_converted" )
-						.matching( new JsonPrimitive( 2 ), ValueModel.INDEX ) )
+		SearchQuery<DocumentReference> query = scope.query().where(
+				f -> f.match().field( "nativeField_integer_converted" ).matching( new JsonPrimitive( 2 ), ValueModel.INDEX ) )
 				.toQuery();
-		assertThatQuery( query )
-				.hasDocRefHitsAnyOrder( mainIndex.typeName(), SECOND_ID )
-				.hasTotalHitCount( 1 );
+		assertThatQuery( query ).hasDocRefHitsAnyOrder( mainIndex.typeName(), SECOND_ID ).hasTotalHitCount( 1 );
 	}
 
 	@Test
 	void predicate_nativeField_fromJson_jsonObject() {
 		StubMappingScope scope = mainIndex.createScope();
-
-		SearchQuery<DocumentReference> query = scope.query()
-				.where( f -> f.or(
-						f.extension( ElasticsearchExtension.get() )
-								.fromJson(
-										json.decode( "{\"match\": {\"nativeField_string\": \"text 1\"}}", JsonObject.class ) ),
-						f.extension( ElasticsearchExtension.get() )
-								.fromJson( json.decode( "{\"match\": {\"nativeField_integer\": 2}}", JsonObject.class ) ),
-						f.extension( ElasticsearchExtension.get() )
-								.fromJson( json.decode(
-										"{"
-												+ " \"geo_distance\": {"
-												+ "  \"distance\": \"200km\","
-												+ "  \"nativeField_geoPoint\": {"
-												+ "   \"lat\": 40,"
-												+ "   \"lon\": -70"
-												+ "  }"
-												+ " }"
-												+ "}",
-										JsonObject.class
-								)
-								)
-				)
-				)
-				.toQuery();
-		assertThatQuery( query )
-				.hasDocRefHitsAnyOrder( mainIndex.typeName(), FIRST_ID, SECOND_ID, THIRD_ID )
+		SearchQuery<DocumentReference> query =
+				scope.query()
+						.where( f -> f.or(
+								f.extension( ElasticsearchExtension.get() )
+										.fromJson( GsonJsonHandlers.object()
+												.fromJson( "{\"match\": {\"nativeField_string\": \"text 1\"}}" ) ),
+								f.extension( ElasticsearchExtension.get() ).fromJson(
+										GsonJsonHandlers.object().fromJson( "{\"match\": {\"nativeField_integer\": 2}}" ) ),
+								f.extension( ElasticsearchExtension.get() )
+										.fromJson( GsonJsonHandlers.object()
+												.fromJson( "{" + " \"geo_distance\": {" + "  \"distance\": \"200km\","
+														+ "  \"nativeField_geoPoint\": {" + "   \"lat\": 40,"
+														+ "   \"lon\": -70" + "  }" + " }" + "}" ) ) ) )
+						.toQuery();
+		assertThatQuery( query ).hasDocRefHitsAnyOrder( mainIndex.typeName(), FIRST_ID, SECOND_ID, THIRD_ID )
 				.hasTotalHitCount( 3 );
 	}
 
 	@Test
 	void predicate_nativeField_fromJson_jsonObject_separatePredicate() {
 		StubMappingScope scope = mainIndex.createScope();
-
 		SearchPredicate predicate1 = scope.predicate().extension( ElasticsearchExtension.get() )
-				.fromJson( json.decode( "{\"match\": {\"nativeField_string\": \"text 1\"}}", JsonObject.class ) ).toPredicate();
-		SearchPredicate predicate2 = scope.predicate().extension( ElasticsearchExtension.get() )
-				.fromJson( json.decode( "{\"match\": {\"nativeField_integer\": 2}}", JsonObject.class ) ).toPredicate();
-		SearchPredicate predicate3 = scope.predicate().extension( ElasticsearchExtension.get() )
-				.fromJson( json.decode(
-						"{"
-								+ " \"geo_distance\": {"
-								+ "  \"distance\": \"200km\","
-								+ "  \"nativeField_geoPoint\": {"
-								+ "   \"lat\": 40,"
-								+ "   \"lon\": -70"
-								+ "  }"
-								+ " }"
-								+ "}",
-						JsonObject.class
-				) )
+				.fromJson( GsonJsonHandlers.object().fromJson( "{\"match\": {\"nativeField_string\": \"text 1\"}}" ) )
 				.toPredicate();
-		SearchPredicate booleanPredicate = scope.predicate().or(
-				predicate1,
-				predicate2,
-				predicate3
-		).toPredicate();
-
-		SearchQuery<DocumentReference> query = scope.query()
-				.where( booleanPredicate )
-				.toQuery();
-		assertThatQuery( query )
-				.hasDocRefHitsAnyOrder( mainIndex.typeName(), FIRST_ID, SECOND_ID, THIRD_ID )
+		SearchPredicate predicate2 = scope.predicate().extension( ElasticsearchExtension.get() )
+				.fromJson( GsonJsonHandlers.object().fromJson( "{\"match\": {\"nativeField_integer\": 2}}" ) ).toPredicate();
+		SearchPredicate predicate3 = scope.predicate().extension( ElasticsearchExtension.get() )
+				.fromJson( GsonJsonHandlers.object().fromJson( "{" + " \"geo_distance\": {" + "  \"distance\": \"200km\","
+						+ "  \"nativeField_geoPoint\": {" + "   \"lat\": 40," + "   \"lon\": -70" + "  }" + " }" + "}" ) )
+				.toPredicate();
+		SearchPredicate booleanPredicate = scope.predicate().or( predicate1, predicate2, predicate3 ).toPredicate();
+		SearchQuery<DocumentReference> query = scope.query().where( booleanPredicate ).toQuery();
+		assertThatQuery( query ).hasDocRefHitsAnyOrder( mainIndex.typeName(), FIRST_ID, SECOND_ID, THIRD_ID )
 				.hasTotalHitCount( 3 );
 	}
 
 	@Test
 	void predicate_nativeField_fromJson_string() {
 		StubMappingScope scope = mainIndex.createScope();
-
 		SearchQuery<DocumentReference> query = scope.query()
 				.where( f -> f.or(
 						f.extension( ElasticsearchExtension.get() )
 								.fromJson( "{\"match\": {\"nativeField_string\": \"text 1\"}}" ),
+						f.extension( ElasticsearchExtension.get() ).fromJson( "{\"match\": {\"nativeField_integer\": 2}}" ),
 						f.extension( ElasticsearchExtension.get() )
-								.fromJson( "{\"match\": {\"nativeField_integer\": 2}}" ),
-						f.extension( ElasticsearchExtension.get() )
-								.fromJson(
-										"{"
-												+ " \"geo_distance\": {"
-												+ "  \"distance\": \"200km\","
-												+ "  \"nativeField_geoPoint\": {"
-												+ "   \"lat\": 40,"
-												+ "   \"lon\": -70"
-												+ "  }"
-												+ " }"
-												+ "}"
-								)
-				)
-				)
+								.fromJson( "{" + " \"geo_distance\": {" + "  \"distance\": \"200km\","
+										+ "  \"nativeField_geoPoint\": {" + "   \"lat\": 40," + "   \"lon\": -70" + "  }" + " }"
+										+ "}" ) ) )
 				.toQuery();
-		assertThatQuery( query )
-				.hasDocRefHitsAnyOrder( mainIndex.typeName(), FIRST_ID, SECOND_ID, THIRD_ID )
+		assertThatQuery( query ).hasDocRefHitsAnyOrder( mainIndex.typeName(), FIRST_ID, SECOND_ID, THIRD_ID )
 				.hasTotalHitCount( 3 );
 	}
 
 	@Test
 	void predicate_nativeField_fromJson_string_separatePredicate() {
 		StubMappingScope scope = mainIndex.createScope();
-
 		SearchPredicate predicate1 = scope.predicate().extension( ElasticsearchExtension.get() )
 				.fromJson( "{\"match\": {\"nativeField_string\": \"text 1\"}}" ).toPredicate();
 		SearchPredicate predicate2 = scope.predicate().extension( ElasticsearchExtension.get() )
 				.fromJson( "{\"match\": {\"nativeField_integer\": 2}}" ).toPredicate();
 		SearchPredicate predicate3 = scope.predicate().extension( ElasticsearchExtension.get() )
-				.fromJson(
-						"{"
-								+ " \"geo_distance\": {"
-								+ "  \"distance\": \"200km\","
-								+ "  \"nativeField_geoPoint\": {"
-								+ "   \"lat\": 40,"
-								+ "   \"lon\": -70"
-								+ "  }"
-								+ " }"
-								+ "}"
-				)
+				.fromJson( "{" + " \"geo_distance\": {" + "  \"distance\": \"200km\"," + "  \"nativeField_geoPoint\": {"
+						+ "   \"lat\": 40," + "   \"lon\": -70" + "  }" + " }" + "}" )
 				.toPredicate();
-		SearchPredicate booleanPredicate = scope.predicate().or(
-				predicate1,
-				predicate2,
-				predicate3
-		).toPredicate();
-
-		SearchQuery<DocumentReference> query = scope.query()
-				.where( booleanPredicate )
-				.toQuery();
-		assertThatQuery( query )
-				.hasDocRefHitsAnyOrder( mainIndex.typeName(), FIRST_ID, SECOND_ID, THIRD_ID )
+		SearchPredicate booleanPredicate = scope.predicate().or( predicate1, predicate2, predicate3 ).toPredicate();
+		SearchQuery<DocumentReference> query = scope.query().where( booleanPredicate ).toQuery();
+		assertThatQuery( query ).hasDocRefHitsAnyOrder( mainIndex.typeName(), FIRST_ID, SECOND_ID, THIRD_ID )
 				.hasTotalHitCount( 3 );
 	}
 
 	@Test
 	void sort_nativeField() {
 		StubMappingScope scope = mainIndex.createScope();
-
-		SearchQuery<DocumentReference> query = scope.query()
-				.where( f -> f.matchAll() )
-				.sort( f -> f.field( "nativeField_sort1" )
-						.then().field( "nativeField_sort2" ).asc()
-						.then().field( "nativeField_sort3" )
-						.then().field( "nativeField_sort4" ).asc().missing().last()
-						.then().field( "nativeField_sort5" ).asc().missing().first()
-				)
+		SearchQuery<DocumentReference> query = scope.query().where( f -> f.matchAll() )
+				.sort( f -> f.field( "nativeField_sort1" ).then().field( "nativeField_sort2" ).asc().then()
+						.field( "nativeField_sort3" ).then().field( "nativeField_sort4" ).asc().missing().last().then()
+						.field( "nativeField_sort5" ).asc().missing().first() )
 				.toQuery();
-		assertThatQuery( query ).hasDocRefHitsExactOrder(
-				mainIndex.typeName(),
-				FIRST_ID, SECOND_ID, THIRD_ID, FOURTH_ID, EMPTY_ID, FIFTH_ID
-		);
-
-		query = scope.query()
-				.where( f -> f.matchAll() )
-				.sort( f -> f.field( "nativeField_sort1" ).desc()
-						.then().field( "nativeField_sort2" ).desc()
-						.then().field( "nativeField_sort3" ).desc()
-						.then().field( "nativeField_sort4" ).desc().missing().last()
-						.then().field( "nativeField_sort5" ).asc().missing().first()
-				)
+		assertThatQuery( query ).hasDocRefHitsExactOrder( mainIndex.typeName(), FIRST_ID, SECOND_ID, THIRD_ID, FOURTH_ID,
+				EMPTY_ID, FIFTH_ID );
+		query = scope.query().where( f -> f.matchAll() )
+				.sort( f -> f.field( "nativeField_sort1" ).desc().then().field( "nativeField_sort2" ).desc().then()
+						.field( "nativeField_sort3" ).desc().then().field( "nativeField_sort4" ).desc().missing().last().then()
+						.field( "nativeField_sort5" ).asc().missing().first() )
 				.toQuery();
-		assertThatQuery( query ).hasDocRefHitsExactOrder(
-				mainIndex.typeName(),
-				FOURTH_ID, THIRD_ID, SECOND_ID, FIRST_ID, EMPTY_ID, FIFTH_ID
-		);
+		assertThatQuery( query ).hasDocRefHitsExactOrder( mainIndex.typeName(), FOURTH_ID, THIRD_ID, SECOND_ID, FIRST_ID,
+				EMPTY_ID, FIFTH_ID );
 	}
 
 	@Test
 	void sort_nativeField_jsonObject() {
 		StubMappingScope scope = mainIndex.createScope();
-
-		SearchQuery<DocumentReference> query = scope.query()
-				.where( f -> f.matchAll() )
-				.sort( f -> f
-						.extension( ElasticsearchExtension.get() ).fromJson( json.decode(
-								"{\"nativeField_sort1\": \"asc\"}", JsonObject.class
-						) )
-						.then().extension( ElasticsearchExtension.get() ).fromJson( json.decode(
-								"{\"nativeField_sort2\": \"asc\"}", JsonObject.class
-						) )
-						.then().extension( ElasticsearchExtension.get() ).fromJson( json.decode(
-								"{\"nativeField_sort3\": \"asc\"}", JsonObject.class
-						) )
-						.then().extension( ElasticsearchExtension.get() ).fromJson( json.decode(
-								"{\"nativeField_sort4\": {\"order\": \"asc\", \"missing\": \"_last\"}}", JsonObject.class
-						) )
-						.then().extension( ElasticsearchExtension.get() ).fromJson( json.decode(
-								"{\"nativeField_sort5\": {\"order\": \"asc\", \"missing\": \"_first\"}}", JsonObject.class
-						) )
-				)
+		SearchQuery<DocumentReference> query = scope.query().where( f -> f.matchAll() )
+				.sort( f -> f.extension( ElasticsearchExtension.get() )
+						.fromJson( GsonJsonHandlers.object().fromJson( "{\"nativeField_sort1\": \"asc\"}" ) ).then()
+						.extension( ElasticsearchExtension.get() )
+						.fromJson( GsonJsonHandlers.object().fromJson( "{\"nativeField_sort2\": \"asc\"}" ) ).then()
+						.extension( ElasticsearchExtension.get() )
+						.fromJson( GsonJsonHandlers.object().fromJson( "{\"nativeField_sort3\": \"asc\"}" ) ).then()
+						.extension( ElasticsearchExtension.get() )
+						.fromJson( GsonJsonHandlers.object()
+								.fromJson( "{\"nativeField_sort4\": {\"order\": \"asc\", \"missing\": \"_last\"}}" ) )
+						.then().extension( ElasticsearchExtension.get() )
+						.fromJson( GsonJsonHandlers.object()
+								.fromJson( "{\"nativeField_sort5\": {\"order\": \"asc\", \"missing\": \"_first\"}}" ) ) )
 				.toQuery();
-		assertThatQuery( query ).hasDocRefHitsExactOrder(
-				mainIndex.typeName(),
-				FIRST_ID, SECOND_ID, THIRD_ID, FOURTH_ID, EMPTY_ID, FIFTH_ID
-		);
-
-		query = scope.query()
-				.where( f -> f.matchAll() )
-				.sort( f -> f
-						.extension( ElasticsearchExtension.get() ).fromJson( json.decode(
-								"{\"nativeField_sort1\": \"desc\"}", JsonObject.class
-						) )
-						.then().extension( ElasticsearchExtension.get() ).fromJson( json.decode(
-								"{\"nativeField_sort2\": \"desc\"}", JsonObject.class
-						) )
-						.then().extension( ElasticsearchExtension.get() ).fromJson( json.decode(
-								"{\"nativeField_sort3\": \"desc\"}", JsonObject.class
-						) )
-						.then().extension( ElasticsearchExtension.get() ).fromJson( json.decode(
-								"{\"nativeField_sort4\": {\"order\": \"desc\", \"missing\": \"_last\"}}", JsonObject.class
-						) )
-						.then().extension( ElasticsearchExtension.get() ).fromJson( json.decode(
-								"{\"nativeField_sort5\": {\"order\": \"asc\", \"missing\": \"_first\"}}", JsonObject.class
-						) )
-				)
+		assertThatQuery( query ).hasDocRefHitsExactOrder( mainIndex.typeName(), FIRST_ID, SECOND_ID, THIRD_ID, FOURTH_ID,
+				EMPTY_ID, FIFTH_ID );
+		query = scope.query().where( f -> f.matchAll() )
+				.sort( f -> f.extension( ElasticsearchExtension.get() )
+						.fromJson( GsonJsonHandlers.object().fromJson( "{\"nativeField_sort1\": \"desc\"}" ) ).then()
+						.extension( ElasticsearchExtension.get() )
+						.fromJson( GsonJsonHandlers.object().fromJson( "{\"nativeField_sort2\": \"desc\"}" ) ).then()
+						.extension( ElasticsearchExtension.get() )
+						.fromJson( GsonJsonHandlers.object().fromJson( "{\"nativeField_sort3\": \"desc\"}" ) ).then()
+						.extension( ElasticsearchExtension.get() )
+						.fromJson( GsonJsonHandlers.object()
+								.fromJson( "{\"nativeField_sort4\": {\"order\": \"desc\", \"missing\": \"_last\"}}" ) )
+						.then().extension( ElasticsearchExtension.get() )
+						.fromJson( GsonJsonHandlers.object()
+								.fromJson( "{\"nativeField_sort5\": {\"order\": \"asc\", \"missing\": \"_first\"}}" ) ) )
 				.toQuery();
-		assertThatQuery( query ).hasDocRefHitsExactOrder(
-				mainIndex.typeName(),
-				FOURTH_ID, THIRD_ID, SECOND_ID, FIRST_ID, EMPTY_ID, FIFTH_ID
-		);
+		assertThatQuery( query ).hasDocRefHitsExactOrder( mainIndex.typeName(), FOURTH_ID, THIRD_ID, SECOND_ID, FIRST_ID,
+				EMPTY_ID, FIFTH_ID );
 	}
 
 	@Test
 	void sort_nativeField_fromJson_jsonObject_separateSort() {
 		StubMappingScope scope = mainIndex.createScope();
-
-		SearchSort sort1Asc = scope.sort().extension( ElasticsearchExtension.get() ).fromJson( json.decode(
-				"{\"nativeField_sort1\": \"asc\"}", JsonObject.class
-		) )
-				.toSort();
-		SearchSort sort2Asc = scope.sort().extension( ElasticsearchExtension.get() ).fromJson( json.decode(
-				"{\"nativeField_sort2\": \"asc\"}", JsonObject.class
-		) )
-				.toSort();
-		SearchSort sort3Asc = scope.sort().extension( ElasticsearchExtension.get() ).fromJson( json.decode(
-				"{\"nativeField_sort3\": \"asc\"}", JsonObject.class
-		) )
-				.toSort();
-		SearchSort sort4Asc = scope.sort()
-				.extension( ElasticsearchExtension.get() ).fromJson( json.decode(
-						"{\"nativeField_sort4\": {\"order\": \"asc\", \"missing\": \"_last\"}}", JsonObject.class
-				) )
-				.then().extension( ElasticsearchExtension.get() ).fromJson( json.decode(
-						"{\"nativeField_sort5\": {\"order\": \"asc\", \"missing\": \"_first\"}}", JsonObject.class
-				) )
-				.toSort();
-
-		SearchQuery<DocumentReference> query = scope.query()
-				.where( f -> f.matchAll() )
-				.sort( f -> f.composite().add( sort1Asc ).add( sort2Asc ).add( sort3Asc ).add( sort4Asc ) )
-				.toQuery();
-		assertThatQuery( query )
-				.hasDocRefHitsExactOrder( mainIndex.typeName(), FIRST_ID, SECOND_ID, THIRD_ID, FOURTH_ID, EMPTY_ID, FIFTH_ID );
-
-		SearchSort sort1Desc = scope.sort().extension( ElasticsearchExtension.get() ).fromJson( json.decode(
-				"{\"nativeField_sort1\": \"desc\"}", JsonObject.class
-		) )
-				.toSort();
-		SearchSort sort2Desc = scope.sort().extension( ElasticsearchExtension.get() ).fromJson( json.decode(
-				"{\"nativeField_sort2\": \"desc\"}", JsonObject.class
-		) )
-				.toSort();
-		SearchSort sort3Desc = scope.sort().extension( ElasticsearchExtension.get() ).fromJson( json.decode(
-				"{\"nativeField_sort3\": \"desc\"}", JsonObject.class
-		) )
-				.toSort();
-		SearchSort sort4Desc = scope.sort()
-				.extension( ElasticsearchExtension.get() ).fromJson( json.decode(
-						"{\"nativeField_sort4\": {\"order\": \"desc\", \"missing\": \"_last\"}}", JsonObject.class
-				) )
-				.then().extension( ElasticsearchExtension.get() ).fromJson( json.decode(
-						"{\"nativeField_sort5\": {\"order\": \"asc\", \"missing\": \"_first\"}}", JsonObject.class
-				) )
-				.toSort();
-
-		query = scope.query()
-				.where( f -> f.matchAll() )
-				.sort( f -> f.composite().add( sort1Desc ).add( sort2Desc ).add( sort3Desc ).add( sort4Desc ) )
-				.toQuery();
-		assertThatQuery( query )
-				.hasDocRefHitsExactOrder( mainIndex.typeName(), FOURTH_ID, THIRD_ID, SECOND_ID, FIRST_ID, EMPTY_ID, FIFTH_ID );
+		SearchSort sort1Asc = scope.sort().extension( ElasticsearchExtension.get() )
+				.fromJson( GsonJsonHandlers.object().fromJson( "{\"nativeField_sort1\": \"asc\"}" ) ).toSort();
+		SearchSort sort2Asc = scope.sort().extension( ElasticsearchExtension.get() )
+				.fromJson( GsonJsonHandlers.object().fromJson( "{\"nativeField_sort2\": \"asc\"}" ) ).toSort();
+		SearchSort sort3Asc = scope.sort().extension( ElasticsearchExtension.get() )
+				.fromJson( GsonJsonHandlers.object().fromJson( "{\"nativeField_sort3\": \"asc\"}" ) ).toSort();
+		SearchSort sort4Asc =
+				scope.sort().extension( ElasticsearchExtension.get() )
+						.fromJson( GsonJsonHandlers.object()
+								.fromJson( "{\"nativeField_sort4\": {\"order\": \"asc\", \"missing\": \"_last\"}}" ) )
+						.then().extension( ElasticsearchExtension.get() )
+						.fromJson( GsonJsonHandlers.object()
+								.fromJson( "{\"nativeField_sort5\": {\"order\": \"asc\", \"missing\": \"_first\"}}" ) )
+						.toSort();
+		SearchQuery<DocumentReference> query = scope.query().where( f -> f.matchAll() )
+				.sort( f -> f.composite().add( sort1Asc ).add( sort2Asc ).add( sort3Asc ).add( sort4Asc ) ).toQuery();
+		assertThatQuery( query ).hasDocRefHitsExactOrder( mainIndex.typeName(), FIRST_ID, SECOND_ID, THIRD_ID, FOURTH_ID,
+				EMPTY_ID, FIFTH_ID );
+		SearchSort sort1Desc = scope.sort().extension( ElasticsearchExtension.get() )
+				.fromJson( GsonJsonHandlers.object().fromJson( "{\"nativeField_sort1\": \"desc\"}" ) ).toSort();
+		SearchSort sort2Desc = scope.sort().extension( ElasticsearchExtension.get() )
+				.fromJson( GsonJsonHandlers.object().fromJson( "{\"nativeField_sort2\": \"desc\"}" ) ).toSort();
+		SearchSort sort3Desc = scope.sort().extension( ElasticsearchExtension.get() )
+				.fromJson( GsonJsonHandlers.object().fromJson( "{\"nativeField_sort3\": \"desc\"}" ) ).toSort();
+		SearchSort sort4Desc =
+				scope.sort().extension( ElasticsearchExtension.get() )
+						.fromJson( GsonJsonHandlers.object()
+								.fromJson( "{\"nativeField_sort4\": {\"order\": \"desc\", \"missing\": \"_last\"}}" ) )
+						.then().extension( ElasticsearchExtension.get() )
+						.fromJson( GsonJsonHandlers.object()
+								.fromJson( "{\"nativeField_sort5\": {\"order\": \"asc\", \"missing\": \"_first\"}}" ) )
+						.toSort();
+		query = scope.query().where( f -> f.matchAll() )
+				.sort( f -> f.composite().add( sort1Desc ).add( sort2Desc ).add( sort3Desc ).add( sort4Desc ) ).toQuery();
+		assertThatQuery( query ).hasDocRefHitsExactOrder( mainIndex.typeName(), FOURTH_ID, THIRD_ID, SECOND_ID, FIRST_ID,
+				EMPTY_ID, FIFTH_ID );
 	}
 
 	@Test
 	void sort_nativeField_fromJson_string() {
 		StubMappingScope scope = mainIndex.createScope();
-
-		SearchQuery<DocumentReference> query = scope.query()
-				.where( f -> f.matchAll() )
-				.sort( f -> f
+		SearchQuery<DocumentReference> query = scope.query().where( f -> f.matchAll() )
+				.sort( f -> f.extension( ElasticsearchExtension.get() ).fromJson( "{\"nativeField_sort1\": \"asc\"}" ).then()
+						.extension( ElasticsearchExtension.get() ).fromJson( "{\"nativeField_sort2\": \"asc\"}" ).then()
+						.extension( ElasticsearchExtension.get() ).fromJson( "{\"nativeField_sort3\": \"asc\"}" ).then()
 						.extension( ElasticsearchExtension.get() )
-						.fromJson( "{\"nativeField_sort1\": \"asc\"}" )
-						.then().extension( ElasticsearchExtension.get() )
-						.fromJson( "{\"nativeField_sort2\": \"asc\"}" )
-						.then().extension( ElasticsearchExtension.get() )
-						.fromJson( "{\"nativeField_sort3\": \"asc\"}" )
-						.then().extension( ElasticsearchExtension.get() )
-						.fromJson( "{\"nativeField_sort4\": {\"order\": \"asc\", \"missing\": \"_last\"}}" )
-						.then().extension( ElasticsearchExtension.get() )
-						.fromJson( "{\"nativeField_sort5\": {\"order\": \"asc\", \"missing\": \"_first\"}}" )
-				)
-				.toQuery();
-		assertThatQuery( query ).hasDocRefHitsExactOrder(
-				mainIndex.typeName(),
-				FIRST_ID, SECOND_ID, THIRD_ID, FOURTH_ID, EMPTY_ID, FIFTH_ID
-		);
-
-		query = scope.query()
-				.where( f -> f.matchAll() )
-				.sort( f -> f
+						.fromJson( "{\"nativeField_sort4\": {\"order\": \"asc\", \"missing\": \"_last\"}}" ).then()
 						.extension( ElasticsearchExtension.get() )
-						.fromJson( "{\"nativeField_sort1\": \"desc\"}" )
-						.then().extension( ElasticsearchExtension.get() )
-						.fromJson( "{\"nativeField_sort2\": \"desc\"}" )
-						.then().extension( ElasticsearchExtension.get() )
-						.fromJson( "{\"nativeField_sort3\": \"desc\"}" )
-						.then().extension( ElasticsearchExtension.get() )
-						.fromJson( "{\"nativeField_sort4\": {\"order\": \"desc\", \"missing\": \"_last\"}}" )
-						.then().extension( ElasticsearchExtension.get() )
-						.fromJson( "{\"nativeField_sort5\": {\"order\": \"asc\", \"missing\": \"_first\"}}" )
-				)
+						.fromJson( "{\"nativeField_sort5\": {\"order\": \"asc\", \"missing\": \"_first\"}}" ) )
 				.toQuery();
-		assertThatQuery( query ).hasDocRefHitsExactOrder(
-				mainIndex.typeName(),
-				FOURTH_ID, THIRD_ID, SECOND_ID, FIRST_ID, EMPTY_ID, FIFTH_ID
-		);
+		assertThatQuery( query ).hasDocRefHitsExactOrder( mainIndex.typeName(), FIRST_ID, SECOND_ID, THIRD_ID, FOURTH_ID,
+				EMPTY_ID, FIFTH_ID );
+		query = scope.query().where( f -> f.matchAll() )
+				.sort( f -> f.extension( ElasticsearchExtension.get() ).fromJson( "{\"nativeField_sort1\": \"desc\"}" ).then()
+						.extension( ElasticsearchExtension.get() ).fromJson( "{\"nativeField_sort2\": \"desc\"}" ).then()
+						.extension( ElasticsearchExtension.get() ).fromJson( "{\"nativeField_sort3\": \"desc\"}" ).then()
+						.extension( ElasticsearchExtension.get() )
+						.fromJson( "{\"nativeField_sort4\": {\"order\": \"desc\", \"missing\": \"_last\"}}" ).then()
+						.extension( ElasticsearchExtension.get() )
+						.fromJson( "{\"nativeField_sort5\": {\"order\": \"asc\", \"missing\": \"_first\"}}" ) )
+				.toQuery();
+		assertThatQuery( query ).hasDocRefHitsExactOrder( mainIndex.typeName(), FOURTH_ID, THIRD_ID, SECOND_ID, FIRST_ID,
+				EMPTY_ID, FIFTH_ID );
 	}
 
 	@Test
 	void sort_nativeField_fromJson_string_separateSort() {
 		StubMappingScope scope = mainIndex.createScope();
-
-		SearchSort sort1Asc = scope.sort().extension( ElasticsearchExtension.get() )
-				.fromJson( "{\"nativeField_sort1\": \"asc\"}" )
-				.toSort();
-		SearchSort sort2Asc = scope.sort().extension( ElasticsearchExtension.get() )
-				.fromJson( "{\"nativeField_sort2\": \"asc\"}" )
-				.toSort();
-		SearchSort sort3Asc = scope.sort().extension( ElasticsearchExtension.get() )
-				.fromJson( "{\"nativeField_sort3\": \"asc\"}" )
-				.toSort();
-		SearchSort sort4Asc = scope.sort()
+		SearchSort sort1Asc =
+				scope.sort().extension( ElasticsearchExtension.get() ).fromJson( "{\"nativeField_sort1\": \"asc\"}" ).toSort();
+		SearchSort sort2Asc =
+				scope.sort().extension( ElasticsearchExtension.get() ).fromJson( "{\"nativeField_sort2\": \"asc\"}" ).toSort();
+		SearchSort sort3Asc =
+				scope.sort().extension( ElasticsearchExtension.get() ).fromJson( "{\"nativeField_sort3\": \"asc\"}" ).toSort();
+		SearchSort sort4Asc = scope.sort().extension( ElasticsearchExtension.get() )
+				.fromJson( "{\"nativeField_sort4\": {\"order\": \"asc\", \"missing\": \"_last\"}}" ).then()
 				.extension( ElasticsearchExtension.get() )
-				.fromJson( "{\"nativeField_sort4\": {\"order\": \"asc\", \"missing\": \"_last\"}}" )
-				.then().extension( ElasticsearchExtension.get() )
-				.fromJson( "{\"nativeField_sort5\": {\"order\": \"asc\", \"missing\": \"_first\"}}" )
-				.toSort();
-
-		SearchQuery<DocumentReference> query = scope.query()
-				.where( f -> f.matchAll() )
-				.sort( f -> f.composite().add( sort1Asc ).add( sort2Asc ).add( sort3Asc ).add( sort4Asc ) )
-				.toQuery();
-		assertThatQuery( query )
-				.hasDocRefHitsExactOrder( mainIndex.typeName(), FIRST_ID, SECOND_ID, THIRD_ID, FOURTH_ID, EMPTY_ID, FIFTH_ID );
-
-		SearchSort sort1Desc = scope.sort().extension( ElasticsearchExtension.get() )
-				.fromJson( "{\"nativeField_sort1\": \"desc\"}" )
-				.toSort();
-		SearchSort sort2Desc = scope.sort().extension( ElasticsearchExtension.get() )
-				.fromJson( "{\"nativeField_sort2\": \"desc\"}" )
-				.toSort();
-		SearchSort sort3Desc = scope.sort().extension( ElasticsearchExtension.get() )
-				.fromJson( "{\"nativeField_sort3\": \"desc\"}" )
-				.toSort();
-		SearchSort sort4Desc = scope.sort()
+				.fromJson( "{\"nativeField_sort5\": {\"order\": \"asc\", \"missing\": \"_first\"}}" ).toSort();
+		SearchQuery<DocumentReference> query = scope.query().where( f -> f.matchAll() )
+				.sort( f -> f.composite().add( sort1Asc ).add( sort2Asc ).add( sort3Asc ).add( sort4Asc ) ).toQuery();
+		assertThatQuery( query ).hasDocRefHitsExactOrder( mainIndex.typeName(), FIRST_ID, SECOND_ID, THIRD_ID, FOURTH_ID,
+				EMPTY_ID, FIFTH_ID );
+		SearchSort sort1Desc =
+				scope.sort().extension( ElasticsearchExtension.get() ).fromJson( "{\"nativeField_sort1\": \"desc\"}" ).toSort();
+		SearchSort sort2Desc =
+				scope.sort().extension( ElasticsearchExtension.get() ).fromJson( "{\"nativeField_sort2\": \"desc\"}" ).toSort();
+		SearchSort sort3Desc =
+				scope.sort().extension( ElasticsearchExtension.get() ).fromJson( "{\"nativeField_sort3\": \"desc\"}" ).toSort();
+		SearchSort sort4Desc = scope.sort().extension( ElasticsearchExtension.get() )
+				.fromJson( "{\"nativeField_sort4\": {\"order\": \"desc\", \"missing\": \"_last\"}}" ).then()
 				.extension( ElasticsearchExtension.get() )
-				.fromJson( "{\"nativeField_sort4\": {\"order\": \"desc\", \"missing\": \"_last\"}}" )
-				.then().extension( ElasticsearchExtension.get() )
-				.fromJson( "{\"nativeField_sort5\": {\"order\": \"asc\", \"missing\": \"_first\"}}" )
-				.toSort();
-
-		query = scope.query()
-				.where( f -> f.matchAll() )
-				.sort( f -> f.composite().add( sort1Desc ).add( sort2Desc ).add( sort3Desc ).add( sort4Desc ) )
-				.toQuery();
-		assertThatQuery( query )
-				.hasDocRefHitsExactOrder( mainIndex.typeName(), FOURTH_ID, THIRD_ID, SECOND_ID, FIRST_ID, EMPTY_ID, FIFTH_ID );
+				.fromJson( "{\"nativeField_sort5\": {\"order\": \"asc\", \"missing\": \"_first\"}}" ).toSort();
+		query = scope.query().where( f -> f.matchAll() )
+				.sort( f -> f.composite().add( sort1Desc ).add( sort2Desc ).add( sort3Desc ).add( sort4Desc ) ).toQuery();
+		assertThatQuery( query ).hasDocRefHitsExactOrder( mainIndex.typeName(), FOURTH_ID, THIRD_ID, SECOND_ID, FIRST_ID,
+				EMPTY_ID, FIFTH_ID );
 	}
 
 	@Test
 	void sort_filter_fromJson() {
 		StubMappingScope scope = mainIndex.createScope();
-
-		SearchQuery<DocumentReference> query = scope.query()
-				.extension( ElasticsearchExtension.get() )
-				.where( f -> f.matchAll() )
-				.sort( f -> f.field( mainIndex.binding().nestedObject.relativeFieldName + ".sort1" )
-						// The provided predicate factory should already be extended and offer Elasticsearch-specific extensions
-						.filter( pf -> pf.fromJson(
-								"{\"match\": {\""
-										+ mainIndex.binding().nestedObject.relativeFieldName + ".discriminator"
-										+ "\": \"included\"}}"
-						) )
-				)
+		SearchQuery<DocumentReference> query = scope.query().extension( ElasticsearchExtension.get() )
+				.where( f -> f.matchAll() ).sort( f -> f.field( mainIndex.binding().nestedObject.relativeFieldName + ".sort1" ).// The provided predicate factory should already be extended and offer Elasticsearch-specific extensions
+						filter( pf -> pf.fromJson( "{\"match\": {\"" + mainIndex.binding().nestedObject.relativeFieldName
+								+ ".discriminator" + "\": \"included\"}}" ) ) )
 				.toQuery();
-		assertThatQuery( query ).hasDocRefHitsExactOrder(
-				mainIndex.typeName(),
-				FIRST_ID, SECOND_ID, THIRD_ID, FOURTH_ID, FIFTH_ID, EMPTY_ID
-		);
-
+		assertThatQuery( query ).hasDocRefHitsExactOrder( mainIndex.typeName(), FIRST_ID, SECOND_ID, THIRD_ID, FOURTH_ID,
+				FIFTH_ID, EMPTY_ID );
 		// Check descending order, just in case the above order was reached by chance.
-		query = scope.query()
-				.extension( ElasticsearchExtension.get() )
-				.where( f -> f.matchAll() )
-				.sort( f -> f.field( mainIndex.binding().nestedObject.relativeFieldName + ".sort1" )
-						.desc()
-						.filter( pf -> pf.fromJson(
-								"{\"match\": {\""
-										+ mainIndex.binding().nestedObject.relativeFieldName + ".discriminator"
-										+ "\": \"included\"}}"
-						) )
-				)
+		query = scope.query().extension( ElasticsearchExtension.get() ).where( f -> f.matchAll() )
+				.sort( f -> f.field( mainIndex.binding().nestedObject.relativeFieldName + ".sort1" ).desc()
+						.filter( pf -> pf.fromJson( "{\"match\": {\"" + mainIndex.binding().nestedObject.relativeFieldName
+								+ ".discriminator" + "\": \"included\"}}" ) ) )
 				.toQuery();
-		assertThatQuery( query ).hasDocRefHitsExactOrder(
-				mainIndex.typeName(),
-				FIFTH_ID, FOURTH_ID, THIRD_ID, SECOND_ID, FIRST_ID, EMPTY_ID
-		);
+		assertThatQuery( query ).hasDocRefHitsExactOrder( mainIndex.typeName(), FIFTH_ID, FOURTH_ID, THIRD_ID, SECOND_ID,
+				FIRST_ID, EMPTY_ID );
 	}
 
 	@Test
 	void projection_nativeField() {
 		StubMappingScope scope = mainIndex.createScope();
-
-		SearchQuery<JsonElement> query = scope.query()
-				.select( f -> f.field( "nativeField_integer", JsonElement.class ) )
-				.where( f -> f.id().matching( SECOND_ID ) )
-				.toQuery();
-
+		SearchQuery<JsonElement> query = scope.query().select( f -> f.field( "nativeField_integer", JsonElement.class ) )
+				.where( f -> f.id().matching( SECOND_ID ) ).toQuery();
 		assertThatQuery( query ).hasHitsAnyOrder( new JsonPrimitive( 2 ) );
 	}
 
@@ -807,53 +557,32 @@ class ElasticsearchExtensionIT {
 	@SuppressWarnings("rawtypes")
 	void projection_nativeField_withProjectionConverters_enabled() {
 		StubMappingScope scope = mainIndex.createScope();
-
-		SearchQuery<ValueWrapper> query = scope.query()
-				.select( f -> f.field( "nativeField_integer_converted", ValueWrapper.class ) )
-				.where( f -> f.id().matching( SECOND_ID ) )
-				.toQuery();
-
+		SearchQuery<ValueWrapper> query =
+				scope.query().select( f -> f.field( "nativeField_integer_converted", ValueWrapper.class ) )
+						.where( f -> f.id().matching( SECOND_ID ) ).toQuery();
 		assertThatQuery( query ).hasHitsAnyOrder( new ValueWrapper<>( new JsonPrimitive( 2 ) ) );
 	}
 
 	@Test
 	void projection_nativeField_withProjectionConverters_disabled() {
 		StubMappingScope scope = mainIndex.createScope();
-
-		SearchQuery<JsonElement> query = scope.query()
-				.select( f -> f.field( "nativeField_integer_converted", JsonElement.class, ValueModel.INDEX ) )
-				.where( f -> f.id().matching( SECOND_ID ) )
-				.toQuery();
-
+		SearchQuery<JsonElement> query =
+				scope.query().select( f -> f.field( "nativeField_integer_converted", JsonElement.class, ValueModel.INDEX ) )
+						.where( f -> f.id().matching( SECOND_ID ) ).toQuery();
 		assertThatQuery( query ).hasHitsAnyOrder( new JsonPrimitive( 2 ) );
 	}
 
 	@Test
 	void projection_document() throws JSONException {
 		StubMappingScope scope = mainIndex.createScope();
-
-		SearchQuery<JsonObject> query = scope.query()
-				.select(
-						f -> f.extension( ElasticsearchExtension.get() ).source()
-				)
-				.where( f -> f.id().matching( FIFTH_ID ) )
-				.toQuery();
-
+		SearchQuery<JsonObject> query = scope.query().select( f -> f.extension( ElasticsearchExtension.get() ).source() )
+				.where( f -> f.id().matching( FIFTH_ID ) ).toQuery();
 		List<JsonObject> result = query.fetchAll().hits();
 		assertThat( result ).hasSize( 1 );
-		assertJsonEquals(
-				"{"
-						+ "  'string': 'text 5',"
-						+ "  'nativeField_string': 'text 2',"
-						+ "  'nativeField_integer': 1,"
-						+ "  \"nativeField_geoPoint\": {\"lat\": 45.12, \"lon\": -75.34},"
-						+ "  'nativeField_dateWithColons': '2018:01:25',"
-						+ "  'nativeField_unsupportedType': 'foobar',"
-						+ "  'nativeField_sort5': 'z'"
-						+ "}",
-				result.get( 0 ).toString(),
-				JSONCompareMode.LENIENT
-		);
+		assertJsonEquals( "{" + "  'string': 'text 5'," + "  'nativeField_string': 'text 2'," + "  'nativeField_integer': 1,"
+				+ "  \"nativeField_geoPoint\": {\"lat\": 45.12, \"lon\": -75.34},"
+				+ "  'nativeField_dateWithColons': '2018:01:25'," + "  'nativeField_unsupportedType': 'foobar',"
+				+ "  'nativeField_sort5': 'z'" + "}", result.get( 0 ).toString(), JSONCompareMode.LENIENT );
 	}
 
 	/**
@@ -863,395 +592,271 @@ class ElasticsearchExtensionIT {
 	@Test
 	void projection_documentAndField() {
 		StubMappingScope scope = mainIndex.createScope();
-
-		SearchQuery<List<?>> query = scope.query()
-				.select( f -> f.composite(
-						f.extension( ElasticsearchExtension.get() ).source(),
-						f.field( "nativeField_string" )
-				)
-				)
-				.where( f -> f.id().matching( FIFTH_ID ) )
-				.toQuery();
-
-		List<JsonObject> result = query.fetchAll().hits().stream()
-				.map( list -> (JsonObject) list.get( 0 ) )
-				.collect( Collectors.toList() );
+		SearchQuery<List<?>> query = scope.query().select(
+				f -> f.composite( f.extension( ElasticsearchExtension.get() ).source(), f.field( "nativeField_string" ) ) )
+				.where( f -> f.id().matching( FIFTH_ID ) ).toQuery();
+		List<JsonObject> result =
+				query.fetchAll().hits().stream().map( list -> (JsonObject) list.get( 0 ) ).collect( Collectors.toList() );
 		assertThat( result ).hasSize( 1 );
-		assertJsonEquals(
-				"{"
-						+ "  'string': 'text 5',"
-						+ "  'nativeField_string': 'text 2',"
-						+ "  'nativeField_integer': 1,"
-						+ "  \"nativeField_geoPoint\": {\"lat\": 45.12, \"lon\": -75.34},"
-						+ "  'nativeField_dateWithColons': '2018:01:25',"
-						+ "  'nativeField_unsupportedType': 'foobar',"
-						+ "  'nativeField_sort5': 'z'"
-						+ "}",
-				result.get( 0 ).toString(),
-				JSONCompareMode.LENIENT
-		);
+		assertJsonEquals( "{" + "  'string': 'text 5'," + "  'nativeField_string': 'text 2'," + "  'nativeField_integer': 1,"
+				+ "  \"nativeField_geoPoint\": {\"lat\": 45.12, \"lon\": -75.34},"
+				+ "  'nativeField_dateWithColons': '2018:01:25'," + "  'nativeField_unsupportedType': 'foobar',"
+				+ "  'nativeField_sort5': 'z'" + "}", result.get( 0 ).toString(), JSONCompareMode.LENIENT );
 	}
 
 	@Test
 	void projection_explanation() {
 		StubMappingScope scope = mainIndex.createScope();
-
-		SearchQuery<JsonObject> query = scope.query()
-				.select( f -> f.extension( ElasticsearchExtension.get() ).explanation() )
-				.where( f -> f.id().matching( FIRST_ID ) )
-				.toQuery();
-
+		SearchQuery<JsonObject> query = scope.query().select( f -> f.extension( ElasticsearchExtension.get() ).explanation() )
+				.where( f -> f.id().matching( FIRST_ID ) ).toQuery();
 		List<JsonObject> result = query.fetchAll().hits();
 		assertThat( result ).hasSize( 1 );
-		assertThat( result.get( 0 ) )
-				.asString()
-				.contains( "\"description\":" )
-				.contains( "\"details\":" );
+		assertThat( result.get( 0 ) ).asString().contains( "\"description\":" ).contains( "\"details\":" );
 	}
 
 	@Test
 	void projection_jsonHit() {
 		StubMappingScope scope = mainIndex.createScope();
-
-		SearchQuery<JsonObject> query = scope.query()
-				.select( f -> f.extension( ElasticsearchExtension.get() ).jsonHit() )
-				.where( f -> f.id().matching( FIRST_ID ) )
-				.toQuery();
-
+		SearchQuery<JsonObject> query = scope.query().select( f -> f.extension( ElasticsearchExtension.get() ).jsonHit() )
+				.where( f -> f.id().matching( FIRST_ID ) ).toQuery();
 		List<JsonObject> result = query.fetchAll().hits();
 		assertThat( result ).hasSize( 1 );
 		assertJsonEquals(
-				"{"
-						+ "  '_id': '" + FIRST_ID + "',"
-						+ "  '_index': '" + defaultPrimaryName( mainIndex.name() ) + "'"
-						+ "}",
-				result.get( 0 ).toString(),
-				JSONCompareMode.LENIENT
-		);
+				"{" + "  '_id': '" + FIRST_ID + "'," + "  '_index': '" + defaultPrimaryName( mainIndex.name() ) + "'" + "}",
+				result.get( 0 ).toString(), JSONCompareMode.LENIENT );
 	}
 
 	@Test
 	void aggregation_nativeField() {
 		StubMappingScope scope = mainIndex.createScope();
-
 		AggregationKey<Map<JsonElement, Long>> documentCountPerValue = AggregationKey.of( "documentCountPerValue" );
-
-		SearchQuery<DocumentReference> query = scope.query()
-				.where( f -> f.matchAll() )
+		SearchQuery<DocumentReference> query = scope.query().where( f -> f.matchAll() )
 				.aggregation( documentCountPerValue, f -> f.terms().field( "nativeField_aggregation", JsonElement.class ) )
 				.toQuery();
 		assertThatQuery( query ).aggregation( documentCountPerValue )
-				.asInstanceOf( InstanceOfAssertFactories.map( JsonElement.class, Long.class ) )
-				.containsExactly(
-						// There are extra quotes because it's a native field: these are JSON-formatted strings representing string values
+				.asInstanceOf( InstanceOfAssertFactories.map( JsonElement.class, Long.class ) ).containsExactly( // There are extra quotes because it's a native field: these are JSON-formatted strings representing string values
 						entry( new JsonPrimitive( "value-for-doc-1-and-2" ), 2L ),
-						entry( new JsonPrimitive( "value-for-doc-3" ), 1L )
-				);
+						entry( new JsonPrimitive( "value-for-doc-3" ), 1L ) );
 	}
 
 	@Test
 	void aggregation_nativeField_fromJson_jsonObject() {
 		StubMappingScope scope = mainIndex.createScope();
-
 		AggregationKey<JsonObject> documentCountPerValue = AggregationKey.of( "documentCountPerValue" );
-
-		SearchQuery<DocumentReference> query = scope.query()
-				.extension( ElasticsearchExtension.get() )
-				.where( f -> f.matchAll() )
-				.aggregation( documentCountPerValue, f -> f.fromJson( json.decode(
-						"{"
-								+ "  \"value_count\" : {"
-								+ "    \"field\" : \"nativeField_aggregation\""
-								+ " }"
-								+ "}",
-						JsonObject.class
-				) ) )
-				.toQuery();
+		SearchQuery<DocumentReference> query =
+				scope.query().extension( ElasticsearchExtension.get() ).where( f -> f.matchAll() )
+						.aggregation( documentCountPerValue, f -> f.fromJson( GsonJsonHandlers.object().fromJson(
+								"{" + "  \"value_count\" : {" + "    \"field\" : \"nativeField_aggregation\"" + " }" + "}" ) ) )
+						.toQuery();
 		JsonObject aggregationResult = query.fetchAll().aggregation( documentCountPerValue );
-		assertJsonEquals(
-				"{"
-						+ "  'value': 3"
-						+ "}",
-				aggregationResult.toString()
-		);
+		assertJsonEquals( "{" + "  'value': 3" + "}", aggregationResult.toString() );
 	}
-
 
 	@Test
 	void aggregation_nativeField_fromJson_string() {
 		StubMappingScope scope = mainIndex.createScope();
-
 		AggregationKey<JsonObject> documentCountPerValue = AggregationKey.of( "documentCountPerValue" );
-
-		SearchQuery<DocumentReference> query = scope.query()
-				.extension( ElasticsearchExtension.get() )
-				.where( f -> f.matchAll() )
-				.aggregation( documentCountPerValue, f -> f.fromJson(
-						"{"
-								+ "  \"value_count\" : {"
-								+ "    \"field\" : \"nativeField_aggregation\""
-								+ " }"
-								+ "  }"
-				) )
-				.toQuery();
+		SearchQuery<DocumentReference> query =
+				scope.query().extension( ElasticsearchExtension.get() ).where( f -> f.matchAll() )
+						.aggregation( documentCountPerValue, f -> f.fromJson(
+								"{" + "  \"value_count\" : {" + "    \"field\" : \"nativeField_aggregation\"" + " }" + "  }" ) )
+						.toQuery();
 		JsonObject aggregationResult = query.fetchAll().aggregation( documentCountPerValue );
-		assertJsonEquals(
-				"{"
-						+ "  'value': 3"
-						+ "}",
-				aggregationResult.toString()
-		);
+		assertJsonEquals( "{" + "  'value': 3" + "}", aggregationResult.toString() );
 	}
-
 
 	@Test
 	void aggregation_filter_fromLuceneQuery() {
 		StubMappingScope scope = mainIndex.createScope();
-
 		AggregationKey<Map<String, Long>> aggregationKey = AggregationKey.of( "agg" );
-
-		SearchQuery<DocumentReference> query = scope.query()
-				.extension( ElasticsearchExtension.get() )
-				.where( f -> f.matchAll() )
-				.aggregation( aggregationKey, f -> f.terms()
-						.field( mainIndex.binding().nestedObject.relativeFieldName + ".aggregation1", String.class )
-						// The provided predicate factory should already be extended and offer Elasticsearch-specific extensions
-						.filter( pf -> pf.fromJson(
-								"{\"match\": {\""
-										+ mainIndex.binding().nestedObject.relativeFieldName + ".discriminator"
-										+ "\": \"included\"}}"
-						) )
-				)
+		SearchQuery<DocumentReference> query = scope.query().extension( ElasticsearchExtension.get() )
+				.where( f -> f.matchAll() ).aggregation( aggregationKey, f -> f.terms()
+						.field( mainIndex.binding().nestedObject.relativeFieldName + ".aggregation1", String.class ).// The provided predicate factory should already be extended and offer Elasticsearch-specific extensions
+						filter( pf -> pf.fromJson( "{\"match\": {\"" + mainIndex.binding().nestedObject.relativeFieldName
+								+ ".discriminator" + "\": \"included\"}}" ) ) )
 				.toQuery();
-		assertThatQuery( query ).aggregation( aggregationKey, agg -> assertThat( agg ).containsExactly(
-				entry( "five", 1L ),
-				entry( "four", 1L ),
-				entry( "one", 1L ),
-				entry( "three", 1L ),
-				entry( "two", 1L )
-		) );
+		assertThatQuery( query ).aggregation( aggregationKey, agg -> assertThat( agg ).containsExactly( entry( "five", 1L ),
+				entry( "four", 1L ), entry( "one", 1L ), entry( "three", 1L ), entry( "two", 1L ) ) );
 	}
 
 	@Test
 	void backend_unwrap() {
 		Backend backend = integration.backend();
-		assertThat( backend.unwrap( ElasticsearchBackend.class ) )
-				.isNotNull();
+		assertThat( backend.unwrap( ElasticsearchBackend.class ) ).isNotNull();
 	}
 
 	@Test
 	void backend_unwrap_error_unknownType() {
 		Backend backend = integration.backend();
-
-		assertThatThrownBy( () -> backend.unwrap( String.class ) )
-				.isInstanceOf( SearchException.class )
-				.hasMessageContainingAll(
-						"Invalid requested type for this backend: '" + String.class.getName() + "'",
-						"Elasticsearch backends can only be unwrapped to '" + ElasticsearchBackend.class.getName() + "'"
-				);
+		assertThatThrownBy( () -> backend.unwrap( String.class ) ).isInstanceOf( SearchException.class )
+				.hasMessageContainingAll( "Invalid requested type for this backend: '" + String.class.getName() + "'",
+						"Elasticsearch backends can only be unwrapped to '" + ElasticsearchBackend.class.getName() + "'" );
 	}
 
 	@Test
 	void mainIndex_unwrap() {
 		IndexManager mainIndexFromIntegration = integration.indexManager( mainIndex.name() );
-		assertThat( mainIndexFromIntegration.unwrap( ElasticsearchIndexManager.class ) )
-				.isNotNull();
+		assertThat( mainIndexFromIntegration.unwrap( ElasticsearchIndexManager.class ) ).isNotNull();
 	}
 
 	@Test
 	void mainIndex_unwrap_error_unknownType() {
 		IndexManager mainIndexFromIntegration = integration.indexManager( mainIndex.name() );
-
-		assertThatThrownBy( () -> mainIndexFromIntegration.unwrap( String.class ) )
-				.isInstanceOf( SearchException.class )
-				.hasMessageContainingAll(
-						"Invalid requested type for this index manager: '" + String.class.getName() + "'",
-						"Elasticsearch index managers can only be unwrapped to '"
-								+ ElasticsearchIndexManager.class.getName() + "'"
-				);
+		assertThatThrownBy( () -> mainIndexFromIntegration.unwrap( String.class ) ).isInstanceOf( SearchException.class )
+				.hasMessageContainingAll( "Invalid requested type for this index manager: '" + String.class.getName() + "'",
+						"Elasticsearch index managers can only be unwrapped to '" + ElasticsearchIndexManager.class.getName()
+								+ "'" );
 	}
 
 	@Test
 	void jsonHitProjectionInsideNested() {
 		assertThatThrownBy( () -> mainIndex.createScope().query()
-				.select( f -> f.object( "nestedObject" ).from(
-						f.extension( ElasticsearchExtension.get() ).jsonHit()
-				).asList().collector( ProjectionCollector.list() )
-				)
-				.where( f -> f.matchAll() )
-				.toQuery()
-		).isInstanceOf( SearchException.class )
-				.hasMessageContainingAll(
-						"'projection:json-hit' cannot be nested in an object projection",
-						"A JSON hit projection represents a root hit object and adding it as a part of the nested object projection might produce misleading results."
-				);
+				.select( f -> f.object( "nestedObject" ).from( f.extension( ElasticsearchExtension.get() ).jsonHit() ).asList()
+						.collector( ProjectionCollector.list() ) )
+				.where( f -> f.matchAll() ).toQuery() ).isInstanceOf( SearchException.class )
+				.hasMessageContainingAll( "'projection:json-hit' cannot be nested in an object projection",
+						"A JSON hit projection represents a root hit object and adding it as a part of the nested object projection might produce misleading results." );
 	}
 
 	@Test
 	void sourceProjectionInsideNested() {
 		assertThatThrownBy( () -> mainIndex.createScope().query()
-				.select( f -> f.object( "nestedObject" ).from(
-						f.extension( ElasticsearchExtension.get() ).source()
-				).asList().collector( ProjectionCollector.list() )
-				)
-				.where( f -> f.matchAll() )
-				.toQuery()
-		).isInstanceOf( SearchException.class )
-				.hasMessageContainingAll(
-						"'projection:source' cannot be nested in an object projection",
-						"A source projection represents a root source object and adding it as a part of the nested object projection might produce misleading results."
-				);
+				.select( f -> f.object( "nestedObject" ).from( f.extension( ElasticsearchExtension.get() ).source() ).asList()
+						.collector( ProjectionCollector.list() ) )
+				.where( f -> f.matchAll() ).toQuery() ).isInstanceOf( SearchException.class )
+				.hasMessageContainingAll( "'projection:source' cannot be nested in an object projection",
+						"A source projection represents a root source object and adding it as a part of the nested object projection might produce misleading results." );
 	}
 
 	@Test
 	void explanationProjectionInsideNested() {
 		assertThatThrownBy( () -> mainIndex.createScope().query()
-				.select( f -> f.object( "nestedObject" ).from(
-						f.extension( ElasticsearchExtension.get() ).explanation()
-				).asList().collector( ProjectionCollector.list() )
-				)
-				.where( f -> f.matchAll() )
-				.toQuery()
-		).isInstanceOf( SearchException.class )
-				.hasMessageContainingAll(
-						"'projection:explanation' cannot be nested in an object projection",
-						"An explanation projection describes the score computation for the hit and adding it as a part of the nested object projection might produce misleading results."
-				);
+				.select( f -> f.object( "nestedObject" ).from( f.extension( ElasticsearchExtension.get() ).explanation() )
+						.asList().collector( ProjectionCollector.list() ) )
+				.where( f -> f.matchAll() ).toQuery() ).isInstanceOf( SearchException.class )
+				.hasMessageContainingAll( "'projection:explanation' cannot be nested in an object projection",
+						"An explanation projection describes the score computation for the hit and adding it as a part of the nested object projection might produce misleading results." );
 	}
 
-	@SuppressWarnings("unused") // For EJC and lambda arg
+	// For EJC and lambda arg
+	@SuppressWarnings("unused")
 	private void initData() {
-		mainIndex.bulkIndexer()
-				.add( SECOND_ID, document -> {
-					document.addValue( mainIndex.binding().string, "text 2" );
-
-					document.addValue( mainIndex.binding().nativeField_integer, new JsonPrimitive( 2 ) );
-					document.addValue( mainIndex.binding().nativeField_integer_converted, new JsonPrimitive( 2 ) );
-					document.addValue( mainIndex.binding().nativeField_unsupportedType, new JsonPrimitive( "42" ) );
-
-					document.addValue( mainIndex.binding().nativeField_sort1, new JsonPrimitive( "z" ) );
-					document.addValue( mainIndex.binding().nativeField_sort2, new JsonPrimitive( "a" ) );
-					document.addValue( mainIndex.binding().nativeField_sort3, new JsonPrimitive( "z" ) );
-					document.addValue( mainIndex.binding().nativeField_sort4, new JsonPrimitive( "z" ) );
-					document.addValue( mainIndex.binding().nativeField_sort5, new JsonPrimitive( "a" ) );
-
-					document.addValue( mainIndex.binding().nativeField_aggregation,
-							new JsonPrimitive( "value-for-doc-1-and-2" ) );
-
-					DocumentElement nestedObject1 = document.addObject( mainIndex.binding().nestedObject.self );
-					nestedObject1.addValue( mainIndex.binding().nestedObject.discriminator, "included" );
-					nestedObject1.addValue( mainIndex.binding().nestedObject.sort1, "b" );
-					nestedObject1.addValue( mainIndex.binding().nestedObject.aggregation1, "one" );
-					DocumentElement nestedObject2 = document.addObject( mainIndex.binding().nestedObject.self );
-					nestedObject2.addValue( mainIndex.binding().nestedObject.discriminator, "excluded" );
-					nestedObject2.addValue( mainIndex.binding().nestedObject.sort1, "a" );
-					nestedObject2.addValue( mainIndex.binding().nestedObject.aggregation1, "fifty-one" );
-				} )
-				.add( FIRST_ID, document -> {
-					document.addValue( mainIndex.binding().string, "text 1" );
-
-					document.addValue( mainIndex.binding().nativeField_string, new JsonPrimitive( "text 1" ) );
-
-					document.addValue( mainIndex.binding().nativeField_sort1, new JsonPrimitive( "a" ) );
-					document.addValue( mainIndex.binding().nativeField_sort2, new JsonPrimitive( "z" ) );
-					document.addValue( mainIndex.binding().nativeField_sort3, new JsonPrimitive( "z" ) );
-					document.addValue( mainIndex.binding().nativeField_sort4, new JsonPrimitive( "z" ) );
-					document.addValue( mainIndex.binding().nativeField_sort5, new JsonPrimitive( "a" ) );
-
-					document.addValue( mainIndex.binding().nativeField_aggregation,
-							new JsonPrimitive( "value-for-doc-1-and-2" ) );
-
-					DocumentElement nestedObject1 = document.addObject( mainIndex.binding().nestedObject.self );
-					nestedObject1.addValue( mainIndex.binding().nestedObject.discriminator, "included" );
-					nestedObject1.addValue( mainIndex.binding().nestedObject.sort1, "a" );
-					nestedObject1.addValue( mainIndex.binding().nestedObject.aggregation1, "two" );
-					DocumentElement nestedObject2 = document.addObject( mainIndex.binding().nestedObject.self );
-					nestedObject2.addValue( mainIndex.binding().nestedObject.discriminator, "excluded" );
-					nestedObject2.addValue( mainIndex.binding().nestedObject.sort1, "b" );
-					nestedObject2.addValue( mainIndex.binding().nestedObject.aggregation1, "fifty-two" );
-				} )
-				.add( THIRD_ID, document -> {
-					document.addValue( mainIndex.binding().string, "text 3" );
-
-					document.addValue( mainIndex.binding().nativeField_geoPoint,
-							json.decode( "{\"lat\": 40.12, \"lon\": -71.34}", JsonObject.class ) );
-
-					document.addValue( mainIndex.binding().nativeField_sort1, new JsonPrimitive( "z" ) );
-					document.addValue( mainIndex.binding().nativeField_sort2, new JsonPrimitive( "z" ) );
-					document.addValue( mainIndex.binding().nativeField_sort3, new JsonPrimitive( "a" ) );
-					document.addValue( mainIndex.binding().nativeField_sort4, new JsonPrimitive( "z" ) );
-					document.addValue( mainIndex.binding().nativeField_sort5, new JsonPrimitive( "a" ) );
-
-					document.addValue( mainIndex.binding().nativeField_aggregation, new JsonPrimitive( "value-for-doc-3" ) );
-
-					DocumentElement nestedObject1 = document.addObject( mainIndex.binding().nestedObject.self );
-					nestedObject1.addValue( mainIndex.binding().nestedObject.discriminator, "included" );
-					nestedObject1.addValue( mainIndex.binding().nestedObject.sort1, "c" );
-					nestedObject1.addValue( mainIndex.binding().nestedObject.aggregation1, "three" );
-					DocumentElement nestedObject2 = document.addObject( mainIndex.binding().nestedObject.self );
-					nestedObject2.addValue( mainIndex.binding().nestedObject.discriminator, "excluded" );
-					nestedObject2.addValue( mainIndex.binding().nestedObject.sort1, "b" );
-					nestedObject2.addValue( mainIndex.binding().nestedObject.aggregation1, "fifty-three" );
-				} )
-				.add( FOURTH_ID, document -> {
-					document.addValue( mainIndex.binding().string, "text 4" );
-
-					document.addValue( mainIndex.binding().nativeField_dateWithColons, new JsonPrimitive( "2018:01:12" ) );
-
-					document.addValue( mainIndex.binding().nativeField_sort1, new JsonPrimitive( "z" ) );
-					document.addValue( mainIndex.binding().nativeField_sort2, new JsonPrimitive( "z" ) );
-					document.addValue( mainIndex.binding().nativeField_sort3, new JsonPrimitive( "z" ) );
-					document.addValue( mainIndex.binding().nativeField_sort4, new JsonPrimitive( "a" ) );
-					document.addValue( mainIndex.binding().nativeField_sort5, new JsonPrimitive( "a" ) );
-
-					DocumentElement nestedObject1 = document.addObject( mainIndex.binding().nestedObject.self );
-					nestedObject1.addValue( mainIndex.binding().nestedObject.discriminator, "included" );
-					nestedObject1.addValue( mainIndex.binding().nestedObject.sort1, "d" );
-					nestedObject1.addValue( mainIndex.binding().nestedObject.aggregation1, "four" );
-					DocumentElement nestedObject2 = document.addObject( mainIndex.binding().nestedObject.self );
-					nestedObject2.addValue( mainIndex.binding().nestedObject.discriminator, "excluded" );
-					nestedObject2.addValue( mainIndex.binding().nestedObject.sort1, "c" );
-					nestedObject2.addValue( mainIndex.binding().nestedObject.aggregation1, "fifty-four" );
-				} )
-				.add( FIFTH_ID, document -> {
-					document.addValue( mainIndex.binding().string, "text 5" );
-
-					// This document should not match any query
-					document.addValue( mainIndex.binding().nativeField_string, new JsonPrimitive( "text 2" ) );
-					document.addValue( mainIndex.binding().nativeField_integer, new JsonPrimitive( 1 ) );
-					document.addValue( mainIndex.binding().nativeField_geoPoint,
-							json.decode( "{\"lat\": 45.12, \"lon\": -75.34}", JsonObject.class ) );
-					document.addValue( mainIndex.binding().nativeField_dateWithColons, new JsonPrimitive( "2018:01:25" ) );
-					document.addValue( mainIndex.binding().nativeField_unsupportedType, new JsonPrimitive( "foobar" ) ); // ignore_malformed is enabled, this should be ignored
-
-					document.addValue( mainIndex.binding().nativeField_sort5, new JsonPrimitive( "z" ) );
-
-					DocumentElement nestedObject1 = document.addObject( mainIndex.binding().nestedObject.self );
-					nestedObject1.addValue( mainIndex.binding().nestedObject.discriminator, "included" );
-					nestedObject1.addValue( mainIndex.binding().nestedObject.sort1, "e" );
-					nestedObject1.addValue( mainIndex.binding().nestedObject.aggregation1, "five" );
-					DocumentElement nestedObject2 = document.addObject( mainIndex.binding().nestedObject.self );
-					nestedObject2.addValue( mainIndex.binding().nestedObject.discriminator, "excluded" );
-					nestedObject2.addValue( mainIndex.binding().nestedObject.sort1, "a" );
-					nestedObject2.addValue( mainIndex.binding().nestedObject.aggregation1, "fifty-five" );
-				} )
-				.add( EMPTY_ID, document -> {} )
-				.join();
+		mainIndex.bulkIndexer().add( SECOND_ID, document -> {
+			document.addValue( mainIndex.binding().string, "text 2" );
+			document.addValue( mainIndex.binding().nativeField_integer, new JsonPrimitive( 2 ) );
+			document.addValue( mainIndex.binding().nativeField_integer_converted, new JsonPrimitive( 2 ) );
+			document.addValue( mainIndex.binding().nativeField_unsupportedType, new JsonPrimitive( "42" ) );
+			document.addValue( mainIndex.binding().nativeField_sort1, new JsonPrimitive( "z" ) );
+			document.addValue( mainIndex.binding().nativeField_sort2, new JsonPrimitive( "a" ) );
+			document.addValue( mainIndex.binding().nativeField_sort3, new JsonPrimitive( "z" ) );
+			document.addValue( mainIndex.binding().nativeField_sort4, new JsonPrimitive( "z" ) );
+			document.addValue( mainIndex.binding().nativeField_sort5, new JsonPrimitive( "a" ) );
+			document.addValue( mainIndex.binding().nativeField_aggregation, new JsonPrimitive( "value-for-doc-1-and-2" ) );
+			DocumentElement nestedObject1 = document.addObject( mainIndex.binding().nestedObject.self );
+			nestedObject1.addValue( mainIndex.binding().nestedObject.discriminator, "included" );
+			nestedObject1.addValue( mainIndex.binding().nestedObject.sort1, "b" );
+			nestedObject1.addValue( mainIndex.binding().nestedObject.aggregation1, "one" );
+			DocumentElement nestedObject2 = document.addObject( mainIndex.binding().nestedObject.self );
+			nestedObject2.addValue( mainIndex.binding().nestedObject.discriminator, "excluded" );
+			nestedObject2.addValue( mainIndex.binding().nestedObject.sort1, "a" );
+			nestedObject2.addValue( mainIndex.binding().nestedObject.aggregation1, "fifty-one" );
+		} ).add( FIRST_ID, document -> {
+			document.addValue( mainIndex.binding().string, "text 1" );
+			document.addValue( mainIndex.binding().nativeField_string, new JsonPrimitive( "text 1" ) );
+			document.addValue( mainIndex.binding().nativeField_sort1, new JsonPrimitive( "a" ) );
+			document.addValue( mainIndex.binding().nativeField_sort2, new JsonPrimitive( "z" ) );
+			document.addValue( mainIndex.binding().nativeField_sort3, new JsonPrimitive( "z" ) );
+			document.addValue( mainIndex.binding().nativeField_sort4, new JsonPrimitive( "z" ) );
+			document.addValue( mainIndex.binding().nativeField_sort5, new JsonPrimitive( "a" ) );
+			document.addValue( mainIndex.binding().nativeField_aggregation, new JsonPrimitive( "value-for-doc-1-and-2" ) );
+			DocumentElement nestedObject1 = document.addObject( mainIndex.binding().nestedObject.self );
+			nestedObject1.addValue( mainIndex.binding().nestedObject.discriminator, "included" );
+			nestedObject1.addValue( mainIndex.binding().nestedObject.sort1, "a" );
+			nestedObject1.addValue( mainIndex.binding().nestedObject.aggregation1, "two" );
+			DocumentElement nestedObject2 = document.addObject( mainIndex.binding().nestedObject.self );
+			nestedObject2.addValue( mainIndex.binding().nestedObject.discriminator, "excluded" );
+			nestedObject2.addValue( mainIndex.binding().nestedObject.sort1, "b" );
+			nestedObject2.addValue( mainIndex.binding().nestedObject.aggregation1, "fifty-two" );
+		} ).add( THIRD_ID, document -> {
+			document.addValue( mainIndex.binding().string, "text 3" );
+			document.addValue( mainIndex.binding().nativeField_geoPoint,
+					GsonJsonHandlers.object().fromJson( "{\"lat\": 40.12, \"lon\": -71.34}" ) );
+			document.addValue( mainIndex.binding().nativeField_sort1, new JsonPrimitive( "z" ) );
+			document.addValue( mainIndex.binding().nativeField_sort2, new JsonPrimitive( "z" ) );
+			document.addValue( mainIndex.binding().nativeField_sort3, new JsonPrimitive( "a" ) );
+			document.addValue( mainIndex.binding().nativeField_sort4, new JsonPrimitive( "z" ) );
+			document.addValue( mainIndex.binding().nativeField_sort5, new JsonPrimitive( "a" ) );
+			document.addValue( mainIndex.binding().nativeField_aggregation, new JsonPrimitive( "value-for-doc-3" ) );
+			DocumentElement nestedObject1 = document.addObject( mainIndex.binding().nestedObject.self );
+			nestedObject1.addValue( mainIndex.binding().nestedObject.discriminator, "included" );
+			nestedObject1.addValue( mainIndex.binding().nestedObject.sort1, "c" );
+			nestedObject1.addValue( mainIndex.binding().nestedObject.aggregation1, "three" );
+			DocumentElement nestedObject2 = document.addObject( mainIndex.binding().nestedObject.self );
+			nestedObject2.addValue( mainIndex.binding().nestedObject.discriminator, "excluded" );
+			nestedObject2.addValue( mainIndex.binding().nestedObject.sort1, "b" );
+			nestedObject2.addValue( mainIndex.binding().nestedObject.aggregation1, "fifty-three" );
+		} ).add( FOURTH_ID, document -> {
+			document.addValue( mainIndex.binding().string, "text 4" );
+			document.addValue( mainIndex.binding().nativeField_dateWithColons, new JsonPrimitive( "2018:01:12" ) );
+			document.addValue( mainIndex.binding().nativeField_sort1, new JsonPrimitive( "z" ) );
+			document.addValue( mainIndex.binding().nativeField_sort2, new JsonPrimitive( "z" ) );
+			document.addValue( mainIndex.binding().nativeField_sort3, new JsonPrimitive( "z" ) );
+			document.addValue( mainIndex.binding().nativeField_sort4, new JsonPrimitive( "a" ) );
+			document.addValue( mainIndex.binding().nativeField_sort5, new JsonPrimitive( "a" ) );
+			DocumentElement nestedObject1 = document.addObject( mainIndex.binding().nestedObject.self );
+			nestedObject1.addValue( mainIndex.binding().nestedObject.discriminator, "included" );
+			nestedObject1.addValue( mainIndex.binding().nestedObject.sort1, "d" );
+			nestedObject1.addValue( mainIndex.binding().nestedObject.aggregation1, "four" );
+			DocumentElement nestedObject2 = document.addObject( mainIndex.binding().nestedObject.self );
+			nestedObject2.addValue( mainIndex.binding().nestedObject.discriminator, "excluded" );
+			nestedObject2.addValue( mainIndex.binding().nestedObject.sort1, "c" );
+			nestedObject2.addValue( mainIndex.binding().nestedObject.aggregation1, "fifty-four" );
+		} ).add( FIFTH_ID, document -> {
+			document.addValue( mainIndex.binding().string, "text 5" );
+			// This document should not match any query
+			document.addValue( mainIndex.binding().nativeField_string, new JsonPrimitive( "text 2" ) );
+			document.addValue( mainIndex.binding().nativeField_integer, new JsonPrimitive( 1 ) );
+			document.addValue( mainIndex.binding().nativeField_geoPoint,
+					GsonJsonHandlers.object().fromJson( "{\"lat\": 45.12, \"lon\": -75.34}" ) );
+			document.addValue( mainIndex.binding().nativeField_dateWithColons, new JsonPrimitive( "2018:01:25" ) );
+			// ignore_malformed is enabled, this should be ignored
+			document.addValue( mainIndex.binding().nativeField_unsupportedType, new JsonPrimitive( "foobar" ) );
+			document.addValue( mainIndex.binding().nativeField_sort5, new JsonPrimitive( "z" ) );
+			DocumentElement nestedObject1 = document.addObject( mainIndex.binding().nestedObject.self );
+			nestedObject1.addValue( mainIndex.binding().nestedObject.discriminator, "included" );
+			nestedObject1.addValue( mainIndex.binding().nestedObject.sort1, "e" );
+			nestedObject1.addValue( mainIndex.binding().nestedObject.aggregation1, "five" );
+			DocumentElement nestedObject2 = document.addObject( mainIndex.binding().nestedObject.self );
+			nestedObject2.addValue( mainIndex.binding().nestedObject.discriminator, "excluded" );
+			nestedObject2.addValue( mainIndex.binding().nestedObject.sort1, "a" );
+			nestedObject2.addValue( mainIndex.binding().nestedObject.aggregation1, "fifty-five" );
+		} ).add( EMPTY_ID, document -> {} ).join();
 	}
 
 	private static class IndexBinding {
+
 		final IndexFieldReference<String> string;
+
 		final IndexFieldReference<JsonElement> nativeField_integer;
+
 		final IndexFieldReference<JsonElement> nativeField_integer_converted;
+
 		final IndexFieldReference<JsonElement> nativeField_string;
+
 		final IndexFieldReference<JsonElement> nativeField_geoPoint;
+
 		final IndexFieldReference<JsonElement> nativeField_dateWithColons;
+
 		final IndexFieldReference<JsonElement> nativeField_unsupportedType;
 
 		final IndexFieldReference<JsonElement> nativeField_sort1;
+
 		final IndexFieldReference<JsonElement> nativeField_sort2;
+
 		final IndexFieldReference<JsonElement> nativeField_sort3;
+
 		final IndexFieldReference<JsonElement> nativeField_sort4;
+
 		final IndexFieldReference<JsonElement> nativeField_sort5;
 
 		final IndexFieldReference<JsonElement> nativeField_aggregation;
@@ -1260,97 +865,59 @@ class ElasticsearchExtensionIT {
 
 		IndexBinding(IndexSchemaElement root) {
 			string = root.field( "string", f -> f.asString().projectable( Projectable.YES ) ).toReference();
-			nativeField_integer = root.field(
-					"nativeField_integer",
-					f -> f.extension( ElasticsearchExtension.get() )
-							.asNative().mapping( "{\"type\": \"integer\"}" )
-			)
+			nativeField_integer = root
+					.field( "nativeField_integer",
+							f -> f.extension( ElasticsearchExtension.get() ).asNative().mapping( "{\"type\": \"integer\"}" ) )
 					.toReference();
-			nativeField_integer_converted = root.field(
-					"nativeField_integer_converted",
-					f -> f.extension( ElasticsearchExtension.get() )
-							.asNative().mapping( "{\"type\": \"integer\"}" )
-							.dslConverter( ValueWrapper.class, ValueWrapper.toDocumentValueConverter() )
-							.projectionConverter( ValueWrapper.class, ValueWrapper.fromDocumentValueConverter() )
-			)
+			nativeField_integer_converted = root
+					.field( "nativeField_integer_converted",
+							f -> f.extension( ElasticsearchExtension.get() ).asNative().mapping( "{\"type\": \"integer\"}" )
+									.dslConverter( ValueWrapper.class, ValueWrapper.toDocumentValueConverter() )
+									.projectionConverter( ValueWrapper.class, ValueWrapper.fromDocumentValueConverter() ) )
 					.toReference();
-			nativeField_string = root.field(
-					"nativeField_string",
-					f -> f.extension( ElasticsearchExtension.get() )
-							.asNative().mapping( "{\"type\": \"keyword\"}" )
-			)
+			nativeField_string = root
+					.field( "nativeField_string",
+							f -> f.extension( ElasticsearchExtension.get() ).asNative().mapping( "{\"type\": \"keyword\"}" ) )
 					.toReference();
-			nativeField_geoPoint = root.field(
-					"nativeField_geoPoint",
-					f -> f.extension( ElasticsearchExtension.get() )
-							.asNative().mapping( "{\"type\": \"geo_point\"}" )
-			)
+			nativeField_geoPoint = root
+					.field( "nativeField_geoPoint",
+							f -> f.extension( ElasticsearchExtension.get() ).asNative().mapping( "{\"type\": \"geo_point\"}" ) )
 					.toReference();
-			nativeField_dateWithColons = root.field(
-					"nativeField_dateWithColons",
-					f -> f.extension( ElasticsearchExtension.get() )
-							.asNative().mapping( "{\"type\": \"date\", \"format\": \"yyyy:MM:dd\"}" )
-			)
-					.toReference();
-			nativeField_unsupportedType = root.field(
-					"nativeField_unsupportedType",
-					f -> f.extension( ElasticsearchExtension.get() )
-							.asNative().mapping( "{\"type\": \"half_float\", \"ignore_malformed\": true}" )
-			)
-					.toReference();
-
-			nativeField_sort1 = root.field(
-					"nativeField_sort1",
-					f -> f.extension( ElasticsearchExtension.get() )
-							.asNative().mapping( "{\"type\": \"keyword\", \"doc_values\": true}" )
-			)
-					.toReference();
-			nativeField_sort2 = root.field(
-					"nativeField_sort2",
-					f -> f.extension( ElasticsearchExtension.get() )
-							.asNative().mapping( "{\"type\": \"keyword\", \"doc_values\": true}" )
-			)
-					.toReference();
-			nativeField_sort3 = root.field(
-					"nativeField_sort3",
-					f -> f.extension( ElasticsearchExtension.get() )
-							.asNative().mapping( "{\"type\": \"keyword\", \"doc_values\": true}" )
-			)
-					.toReference();
-			nativeField_sort4 = root.field(
-					"nativeField_sort4",
-					f -> f.extension( ElasticsearchExtension.get() )
-							.asNative().mapping( "{\"type\": \"keyword\", \"doc_values\": true}" )
-			)
-					.toReference();
-			nativeField_sort5 = root.field(
-					"nativeField_sort5",
-					f -> f.extension( ElasticsearchExtension.get() )
-							.asNative().mapping( "{\"type\": \"keyword\", \"doc_values\": true}" )
-			)
-					.toReference();
-
-			nativeField_aggregation = root.field(
-					"nativeField_aggregation",
-					f -> f.extension( ElasticsearchExtension.get() )
-							.asNative().mapping( "{\"type\": \"keyword\", \"doc_values\": true}" )
-			)
-					.toReference();
-
+			nativeField_dateWithColons =
+					root.field( "nativeField_dateWithColons", f -> f.extension( ElasticsearchExtension.get() ).asNative()
+							.mapping( "{\"type\": \"date\", \"format\": \"yyyy:MM:dd\"}" ) ).toReference();
+			nativeField_unsupportedType =
+					root.field( "nativeField_unsupportedType", f -> f.extension( ElasticsearchExtension.get() ).asNative()
+							.mapping( "{\"type\": \"half_float\", \"ignore_malformed\": true}" ) ).toReference();
+			nativeField_sort1 = root.field( "nativeField_sort1", f -> f.extension( ElasticsearchExtension.get() ).asNative()
+					.mapping( "{\"type\": \"keyword\", \"doc_values\": true}" ) ).toReference();
+			nativeField_sort2 = root.field( "nativeField_sort2", f -> f.extension( ElasticsearchExtension.get() ).asNative()
+					.mapping( "{\"type\": \"keyword\", \"doc_values\": true}" ) ).toReference();
+			nativeField_sort3 = root.field( "nativeField_sort3", f -> f.extension( ElasticsearchExtension.get() ).asNative()
+					.mapping( "{\"type\": \"keyword\", \"doc_values\": true}" ) ).toReference();
+			nativeField_sort4 = root.field( "nativeField_sort4", f -> f.extension( ElasticsearchExtension.get() ).asNative()
+					.mapping( "{\"type\": \"keyword\", \"doc_values\": true}" ) ).toReference();
+			nativeField_sort5 = root.field( "nativeField_sort5", f -> f.extension( ElasticsearchExtension.get() ).asNative()
+					.mapping( "{\"type\": \"keyword\", \"doc_values\": true}" ) ).toReference();
+			nativeField_aggregation = root.field( "nativeField_aggregation", f -> f.extension( ElasticsearchExtension.get() )
+					.asNative().mapping( "{\"type\": \"keyword\", \"doc_values\": true}" ) ).toReference();
 			nestedObject = ObjectMapping.create( root, "nestedObject", ObjectStructure.NESTED, true );
 		}
 	}
 
 	private static class ObjectMapping {
+
 		final String relativeFieldName;
+
 		final IndexObjectFieldReference self;
 
 		final IndexFieldReference<String> discriminator;
+
 		final IndexFieldReference<String> sort1;
+
 		final IndexFieldReference<String> aggregation1;
 
-		public static ObjectMapping create(IndexSchemaElement parent, String relativeFieldName,
-				ObjectStructure structure,
+		public static ObjectMapping create(IndexSchemaElement parent, String relativeFieldName, ObjectStructure structure,
 				boolean multiValued) {
 			IndexSchemaObjectField objectField = parent.objectField( relativeFieldName, structure );
 			if ( multiValued ) {
@@ -1362,13 +929,9 @@ class ElasticsearchExtensionIT {
 		private ObjectMapping(String relativeFieldName, IndexSchemaObjectField objectField) {
 			this.relativeFieldName = relativeFieldName;
 			self = objectField.toReference();
-
 			discriminator = objectField.field( "discriminator", f -> f.asString() ).toReference();
-
-			sort1 = objectField.field( "sort1", f -> f.asString().sortable( Sortable.YES ) )
-					.toReference();
-			aggregation1 = objectField.field( "aggregation1", f -> f.asString().aggregable( Aggregable.YES ) )
-					.toReference();
+			sort1 = objectField.field( "sort1", f -> f.asString().sortable( Sortable.YES ) ).toReference();
+			aggregation1 = objectField.field( "aggregation1", f -> f.asString().aggregable( Aggregable.YES ) ).toReference();
 		}
 	}
 }

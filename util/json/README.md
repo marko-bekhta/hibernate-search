@@ -1,9 +1,10 @@
 # Hibernate Search JSON utilities
 
-`hibernate-search-util-json` provides a JSON tree model, typed accessors, incremental
-parsing, replayable UTF-8 output and explicit Java/tree codecs. It is independent
-of Elasticsearch and HTTP. The implementation uses Jackson 3 Core; callers use
-Search types without exposing Jackson types or depending on Databind.
+`hibernate-search-util-json` provides Jackson-native incremental parsing, replayable
+UTF-8 output, validation and explicit Java/tree codecs. It is independent of
+Elasticsearch and HTTP. Its approved low-level SPI uses Jackson 3 Databind nodes
+with Jackson 3 Core. Hibernate Search application integration uses the backend's
+typed JSON handlers; this module provides no replacement tree or public accessors.
 
 This guide covers the module directly. For Hibernate Search backend integration,
 see the [JSON reference chapter](../../documentation/src/main/asciidoc/public/reference/_backend-elasticsearch-json.adoc).
@@ -25,8 +26,9 @@ The Java module name is `org.hibernate.search.util.json`.
 
 | Need | API |
 | --- | --- |
-| Build or inspect a tree | `org.hibernate.search.util.json`: `JsonElement`, `JsonObject`, `JsonArray`, `JsonPrimitive`, `JsonNull` |
-| Reusable typed paths | `JsonAccessor` and its object/array/unknown-type accessors |
+| Build or inspect a tree | Jackson `JsonNode`, `ObjectNode`, `ArrayNode` and standard scalar nodes |
+| Validate external trees | `JsonTreeValidation.validateExternal(JsonNode)` |
+| Construct exact numeric nodes | `JsonNumbers.fromNumber(Number)` |
 | Parse an owned String | `JsonParsing.parse(String)` |
 | Parse incoming bytes | `JsonParsing.createParser()` and `JsonParserSession` |
 | Write or replay UTF-8 JSON | `JsonBodies`, `JsonBody`, `JsonWriteCursor` |
@@ -35,81 +37,51 @@ The Java module name is `org.hibernate.search.util.json`.
 The services in this table live in `org.hibernate.search.util.json.spi`.
 Classes in `impl` are implementation details.
 
-## Building and reading trees
+## Building trees and exact numeric values
 
 ```java
-import org.hibernate.search.util.json.JsonArray;
-import org.hibernate.search.util.json.JsonNull;
-import org.hibernate.search.util.json.JsonObject;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
-JsonObject document = new JsonObject();
-document.addProperty( "title", "Streaming JSON" );
-document.addProperty( "pages", 42 );
-JsonArray tags = new JsonArray();
-tags.add( "java" );
-tags.add( "async" );
-document.add( "tags", tags );
-document.add( "summary", JsonNull.INSTANCE );
-
-String title = document.get( "title" ).getAsString();
-boolean missing = document.get( "author" ) == null;
-boolean explicitNull = document.get( "summary" ).isJsonNull();
-JsonObject editableCopy = document.deepCopy();
+ObjectNode document = JsonNodeFactory.instance.objectNode();
+document.put( "title", "Streaming JSON" );
+document.put( "pages", 42 );
+document.putNull( "summary" );
 ```
 
-Objects and arrays are mutable; primitive and null nodes are immutable.
-Objects preserve member insertion order. Replacing a duplicate name replaces its
-value in place. Adding Java `null` to an object or array stores JSON null.
-`deepCopy()` creates independent containers and can share immutable nodes.
+Objects and arrays are mutable; retain stable trees through processing and replay.
+Use Jackson navigation for application code. Backend accessors are internal and
+preserve its stricter missing/null and explicit singleton-array behavior.
 
-Parsed numbers retain their JSON lexemes, including decimal scale and exponent
-spelling, for output. Numeric equality compares exact numeric values and ignores
-decimal scale. Numeric getters can narrow, truncate and overflow; use
-`getAsBigDecimal()` and Java's exact conversions when your application needs
-exact integers. `toString()` is diagnostic rendering and can allocate the whole
-encoded document; use the output APIs for streaming.
+Parsing selects cached IntNode where applicable, LongNode for other signed 64-bit
+integers, and BigIntegerNode otherwise. Decimal input uses exact BigDecimal values;
+negative decimal/exponent zero uses a standard DoubleNode(-0.0) to retain its sign.
+Integer -0 may normalize. Numbers never pass through double before an explicitly
+selected floating conversion. Numeric spelling, decimal scale and node class are
+not round-trip guarantees.
 
-## Typed paths and singleton arrays
+Decimal exponent, scale and normalized exponent must fit ±2147483647; Integer.MIN_VALUE
+scale is rejected. The 1000-character numeric input limit applies to text parsing,
+not already constructed exact nodes. `JsonNumbers.toBigInteger(BigDecimal)` accepts
+mathematically integral values, rejects fractions and limits negative-scale expansion
+to 100000. Textual integer conversions remain strict. Accepted decimal storage can
+have a larger exponent than this conversion supports.
 
-```java
-import org.hibernate.search.util.json.spi.JsonAccessor;
-
-JsonAccessor<String> titlePath = JsonAccessor.root().property( "title" ).asString();
-String title = titlePath.get( document ).orElse( "Untitled" );
-titlePath.set( document, "A new title" );
-
-JsonAccessor<String> nestedValue = JsonAccessor.root()
-        .property( "parent" ).unwrapSingletonArrays().asObject()
-        .property( "value" ).unwrapSingletonArrays().asString();
-```
-
-Accessors are immutable definitions reusable across trees. Typed paths reject
-values of another JSON type, including arrays: `asString()` requires a string
-rather than converting a number. Typed reads return an empty `Optional` for
-missing or JSON-null values. Untyped paths can preserve explicit `JsonNull`.
-Accessors navigate completed trees; they do not participate in parser construction.
-
-Opt into `unwrapSingletonArrays()` separately at every location that needs it.
-It repeatedly unwraps singleton arrays, treats an empty array as absent on reads,
-and rejects arrays with multiple elements. Writes through an adapted parent
-preserve its wrappers; setting the selected terminal location replaces that
-location, including any terminal wrappers. `asArray()` keeps the array itself.
-
-`getOrCreate` creates raw missing/JSON-null locations, including parents as needed.
-An existing array that adapts to absence is not replaced: the supplier is not
-called, and terminal `getOrCreate` returns Java null. Traversing such an absent
-adapted parent for a write throws `IllegalStateException`.
+`JsonTreeValidation.validateExternal` accepts standard acyclic JSON graphs, including
+shared subtrees. It rejects POJO/raw/binary/custom/missing nodes, nonfinite numbers,
+cycles, invalid member names and invalid raw container values, without serialization
+or reflection. It checks the same decimal policy used by both parser routes.
 
 ## Parsing Strings and incoming bytes
 
 For an already materialized String:
 
 ```java
-import org.hibernate.search.util.json.JsonElement;
+import tools.jackson.databind.JsonNode;
 import org.hibernate.search.util.json.spi.JsonParsing;
 
 JsonParsing parsing = new JsonParsing();
-JsonElement tree = parsing.parse( "{\"title\":\"Streaming JSON\"}" );
+JsonNode tree = parsing.parse( "{\"title\":\"Streaming JSON\"}" );
 ```
 
 This call parses characters directly without first encoding the whole String.
@@ -122,7 +94,7 @@ first input through EOF:
 
 ```java
 import java.nio.ByteBuffer;
-import org.hibernate.search.util.json.JsonElement;
+import tools.jackson.databind.JsonNode;
 import org.hibernate.search.util.json.spi.JsonParserSession;
 import org.hibernate.search.util.json.spi.JsonParsing;
 
@@ -139,7 +111,7 @@ final class IncomingJson implements AutoCloseable {
         }
     }
 
-    JsonElement onEnd() {
+    JsonNode onEnd() {
         try {
             return parser.endOfInput();
         }
@@ -169,7 +141,7 @@ is unspecified after failure. Never mutate input during `feed`.
 UTF-8 code points, JSON escapes and tokens can span chunks. Only `endOfInput()`
 returns the root, after validating EOF and trailing input. Empty/whitespace input
 throws `JsonEmptyInputException`; a transport can choose to interpret this as an
-absent HTTP body. The JSON text `null` instead returns `JsonNull.INSTANCE`.
+absent HTTP body. The JSON text `null` instead returns Jackson `NullNode.instance`.
 
 Use `createParser(charset)` when the transport explicitly selects another source
 charset. It transcodes incrementally with bounded scratch space. Charset selection,
@@ -251,33 +223,39 @@ stream for every retry; their traversal positions are independent.
 
 Keep source trees acyclic and unchanged from body creation through every read,
 signing operation and retry. Bodies reference trees without freezing or copying
-them. Share factories, accessor definitions and bodies with stable source trees;
+them. Share factories and bodies with stable source trees;
 use each parser session/cursor/stream from one consumer at a time.
 
-Output is UTF-8, preserves numeric lexemes and object order, and escapes JSON
+Output is UTF-8, preserves supported numeric values and object order, and escapes JSON
 controls, HTML-sensitive characters and U+2028/U+2029. Valid surrogate pairs are
-encoded as UTF-8; isolated surrogates are escaped. It adds no newline or HTTP
-framing. NDJSON separators belong to the caller; one parser session accepts one
-JSON root, not multiple NDJSON records.
+encoded as UTF-8; isolated surrogates are escaped. `JsonBodies.of` adds no newline or HTTP framing. `JsonBodies.ndjson(parts)` emits
+one newline after each part and probes the whole framed body once, sharing a private
+workspace between sequential parts. Each traversal has independent state. One parser
+session accepts one JSON root, not multiple NDJSON records.
+
+Six encoded pending bytes do not describe all memory. Primitive fallback retains
+twenty unencoded characters; BigInteger/decimal output can derive and retain a String
+proportional to digits. BigDecimal can cache its rendering in the immutable source
+number. These routes do not promise scalar-independent total scratch or latency.
 
 ## Explicit Java/tree codecs
 
 ```java
 import java.util.List;
-import org.hibernate.search.util.json.JsonElement;
+import tools.jackson.databind.JsonNode;
 import org.hibernate.search.util.json.spi.JsonCodec;
 import org.hibernate.search.util.json.spi.JsonCodecs;
 
 JsonCodec<List<String>> strings = JsonCodecs.list( JsonCodecs.STRING );
-JsonElement encoded = strings.encode( List.of( "java", "async" ), false );
+JsonNode encoded = strings.encode( List.of( "java", "async" ), false );
 List<String> decoded = strings.decode( encoded );
 ```
 
 `JsonCodecs` supplies scalar, tree, list and string-keyed map codecs. The
 `serializeNulls` flag controls omission of null object members in codecs that
 construct objects; null array positions remain present. `JsonCodecs.copy` applies
-that policy recursively. Scalar codecs use model conversions; use typed accessors
-when you need strict JSON-type checks.
+that policy recursively. Scalar codecs preserve explicit coercion behavior; they
+do not provide automatic Java model mapping.
 
 Implement `JsonCodec<T>` for application types by explicitly decoding/encoding
 known fields. `JsonCodecRegistry` holds explicit class registrations;
@@ -321,7 +299,7 @@ From the repository root:
 ./mvnw test -pl util/json -DskipITs -Dno-build-cache
 ```
 
-The module's tests cover model/accessor behavior, parser fragmentation and limits,
+The module's tests cover ordinary-node/numeric policies, parser fragmentation and limits,
 output correctness/replay, buffer retention and API dependency boundaries.
 See the [benchmark guide](../../integrationtest/performance/backend/README.md#server-independent-json-comparisons)
 for timing and allocation experiments, separately from correctness checks.

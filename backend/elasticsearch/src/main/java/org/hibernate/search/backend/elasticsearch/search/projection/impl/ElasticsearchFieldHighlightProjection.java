@@ -3,6 +3,10 @@ package org.hibernate.search.backend.elasticsearch.search.projection.impl;
 import java.util.Optional;
 import java.util.Set;
 
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonAccessor;
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonArrayAccessor;
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonObjectAccessor;
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonScalarConversions;
 import org.hibernate.search.backend.elasticsearch.logging.impl.QueryLog;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.AbstractElasticsearchValueFieldSearchQueryElementFactory;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexScope;
@@ -16,12 +20,11 @@ import org.hibernate.search.engine.search.loading.spi.ProjectionHitMapper;
 import org.hibernate.search.engine.search.projection.ProjectionCollector;
 import org.hibernate.search.engine.search.projection.SearchProjection;
 import org.hibernate.search.engine.search.projection.dsl.spi.HighlightProjectionBuilder;
-import org.hibernate.search.util.json.JsonArray;
-import org.hibernate.search.util.json.JsonElement;
-import org.hibernate.search.util.json.JsonObject;
-import org.hibernate.search.util.json.spi.JsonAccessor;
-import org.hibernate.search.util.json.spi.JsonArrayAccessor;
-import org.hibernate.search.util.json.spi.JsonObjectAccessor;
+
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 public class ElasticsearchFieldHighlightProjection<T> implements ElasticsearchSearchProjection<T> {
 
@@ -68,7 +71,7 @@ public class ElasticsearchFieldHighlightProjection<T> implements ElasticsearchSe
 	}
 
 	@Override
-	public Extractor<?, T> request(JsonObject requestBody, ProjectionRequestContext context) {
+	public Extractor<?, T> request(ObjectNode requestBody, ProjectionRequestContext context) {
 		if ( context.absoluteCurrentFieldPath() != null ) {
 			throw QueryLog.INSTANCE.cannotHighlightInNestedContext(
 					context.absoluteCurrentFieldPath(),
@@ -96,7 +99,7 @@ public class ElasticsearchFieldHighlightProjection<T> implements ElasticsearchSe
 
 		highlighter.applyToField(
 				absoluteFieldPath,
-				REQUEST_HIGHLIGHT_FIELDS_ACCESSOR.getOrCreate( requestBody, JsonObject::new )
+				REQUEST_HIGHLIGHT_FIELDS_ACCESSOR.getOrCreate( requestBody, JsonNodeFactory.instance::objectNode )
 		);
 
 		return new FieldHighlightExtractor<>( innerContext.absoluteCurrentFieldPath(), collectorProvider.get() );
@@ -113,13 +116,13 @@ public class ElasticsearchFieldHighlightProjection<T> implements ElasticsearchSe
 		}
 
 		@Override
-		public A extract(ProjectionHitMapper<?> projectionHitMapper, JsonObject hit, JsonObject source,
+		public A extract(ProjectionHitMapper<?> projectionHitMapper, ObjectNode hit, ObjectNode source,
 				ProjectionExtractContext context) {
 			A initial = collector.createInitial();
-			Optional<JsonArray> highlights = highlightAccessor.get( hit );
+			Optional<ArrayNode> highlights = highlightAccessor.get( hit );
 			if ( highlights.isPresent() ) {
-				for ( JsonElement element : highlights.get() ) {
-					initial = collector.accumulate( initial, element.getAsString() );
+				for ( JsonNode element : highlights.get() ) {
+					initial = collector.accumulate( initial, JsonScalarConversions.asString( element ) );
 				}
 			}
 			return initial;

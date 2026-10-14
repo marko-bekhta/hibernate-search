@@ -133,8 +133,8 @@ public final class JsonSlowConsumerHarness {
 			}
 		}
 		// Lone surrogates must be escaped to preserve valid UTF-8 output.
-		var lone = new org.hibernate.search.util.json.JsonObject();
-		lone.addProperty( "text", "\ud800" );
+		var lone = tools.jackson.databind.node.JsonNodeFactory.instance.objectNode();
+		lone.put( "text", "\ud800" );
 		String loneOutput = new String( JsonBenchmarkSupport.bytes( JsonBodies.of( lone )::writeTo ), StandardCharsets.UTF_8 );
 		if ( !"{\"text\":\"\\ud800\"}".equals( loneOutput ) ) {
 			throw new IllegalStateException( "Surrogate policy mismatch" );

@@ -8,7 +8,6 @@ import org.hibernate.search.backend.elasticsearch.client.common.json.entity.spi.
 import org.hibernate.search.backend.elasticsearch.client.common.json.entity.spi.JsonHttpEntityContentProvider;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchRequest;
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
-import org.hibernate.search.util.json.JsonObject;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -17,6 +16,7 @@ import org.apache.http.message.BasicHeader;
 import org.apache.http.nio.IOControl;
 import org.apache.http.nio.entity.HttpAsyncContentProducer;
 import org.apache.http.protocol.HTTP;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * Replayable JSON entity using one bounded pending cursor buffer per asynchronous attempt.
@@ -31,14 +31,14 @@ final class ClientRest4JsonHttpEntity extends JsonHttpEntityContentProvider impl
 
 
 	public static HttpEntity toEntity(JsonCodecService json, ElasticsearchRequest request) throws IOException {
-		final List<JsonObject> bodyParts = request.bodyParts();
+		final List<ObjectNode> bodyParts = request.bodyPartsJson();
 		if ( bodyParts.isEmpty() ) {
 			return null;
 		}
 		return new ClientRest4JsonHttpEntity( json, bodyParts );
 	}
 
-	public ClientRest4JsonHttpEntity(JsonCodecService json, List<JsonObject> bodyParts) throws IOException {
+	public ClientRest4JsonHttpEntity(JsonCodecService json, List<ObjectNode> bodyParts) throws IOException {
 		super( json, bodyParts );
 	}
 

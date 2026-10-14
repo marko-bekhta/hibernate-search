@@ -7,12 +7,13 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
-import org.hibernate.search.util.json.JsonElement;
 import org.hibernate.search.util.json.spi.JsonBodies;
 import org.hibernate.search.util.json.spi.JsonEmptyInputException;
 import org.hibernate.search.util.json.spi.JsonParseException;
 import org.hibernate.search.util.json.spi.JsonParserSession;
 import org.hibernate.search.util.json.spi.JsonParsing;
+
+import tools.jackson.databind.JsonNode;
 
 /** Per-attempt result carrier. Parse errors are deferred until the client has decided whether to retry. */
 public final class JsonResponseBody implements AutoCloseable {
@@ -23,7 +24,7 @@ public final class JsonResponseBody implements AutoCloseable {
 	private byte[] diagnosticPrefix = new byte[8192];
 	private int prefixLength;
 	private long inputBytes;
-	private JsonElement tree;
+	private JsonNode tree;
 	private RuntimeException failure;
 	private boolean completed;
 
@@ -92,7 +93,7 @@ public final class JsonResponseBody implements AutoCloseable {
 		}
 	}
 
-	public JsonElement tree() {
+	public JsonNode tree() {
 		if ( !completed ) {
 			throw new IllegalStateException( "Response body is incomplete" );
 		}

@@ -12,12 +12,24 @@ import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
 
 class JsonCodecBoundaryTest {
-	private static final Set<String> GSON_INPUT_COMPATIBILITY = Set.of(
-			"gson/GsonJsonConversion.java",
+	private static final Set<String> GSON_COMPATIBILITY = Set.of(
+			"gson/GsonJsonHandlers.java",
+			"schema/management/ElasticsearchIndexSchemaExport.java",
+			"schema/management/impl/ElasticsearchIndexSchemaExportImpl.java",
 			"search/predicate/dsl/ElasticsearchSearchPredicateFactory.java",
 			"search/sort/dsl/ElasticsearchSearchSortFactory.java",
 			"search/aggregation/dsl/ElasticsearchSearchAggregationFactory.java",
-			"types/dsl/ElasticsearchNativeIndexFieldTypeMappingStep.java"
+			"search/projection/dsl/ElasticsearchSearchProjectionFactory.java",
+			"search/query/ElasticsearchSearchQuery.java",
+			"search/query/ElasticsearchSearchResult.java",
+			"search/query/ElasticsearchSearchRequestTransformerContext.java",
+			"search/query/impl/ElasticsearchSearchRequestTransformerContextImpl.java",
+			"types/dsl/ElasticsearchNativeIndexFieldTypeMappingStep.java",
+			"types/dsl/ElasticsearchNativeIndexFieldTypeOptionsStep.java",
+			"types/dsl/impl/ElasticsearchNativeIndexFieldTypeOptionsStepImpl.java",
+			"types/codec/impl/ElasticsearchJsonElementFieldCodec.java",
+			"client/common/spi/ElasticsearchRequest.java",
+			"client/common/spi/ElasticsearchResponse.java"
 	);
 
 	private static final List<String> PRODUCTION_MODULES = List.of(
@@ -25,13 +37,14 @@ class JsonCodecBoundaryTest {
 			"backend/elasticsearch-client/elasticsearch-rest4-client",
 			"backend/elasticsearch-client/elasticsearch-rest5-client",
 			"backend/elasticsearch-client/opensearch-rest-client", "util/json", "build/json-processor" );
-	private static final Pattern GSON_REFERENCE = Pattern.compile( "com\\s*\\.\\s*google\\s*\\.\\s*gson|GsonJsonConversion" );
+	private static final Pattern GSON_REFERENCE =
+			Pattern.compile( "com\\s*\\.\\s*google\\s*\\.\\s*gson|GsonJsonConversion|GsonJsonHandlers" );
 	private static final Pattern REFLECTIVE_MAPPING = Pattern.compile(
 			"java\\s*\\.\\s*lang\\s*\\.\\s*reflect\\s*\\.\\s*(Field|Method|Constructor)\\b"
 					+ "|getDeclared(Field|Method|Constructor)" );
 
 	@Test
-	void productionModulesUseSearchTreesAndNoReflectiveFallback() throws Exception {
+	void productionModulesUseNativeNodesAndNoReflectiveFallback() throws Exception {
 		Path repository = Path.of( "../.." ).toAbsolutePath().normalize();
 		for ( String module : PRODUCTION_MODULES ) {
 			Path root = repository.resolve( module + "/src/main/java" );
@@ -43,12 +56,8 @@ class JsonCodecBoundaryTest {
 					String prefix = "org/hibernate/search/backend/elasticsearch/";
 					boolean compatibility = "backend/elasticsearch".equals( module )
 							&& relative.startsWith( prefix )
-							&& GSON_INPUT_COMPATIBILITY.contains( relative.substring( prefix.length() ) );
+							&& GSON_COMPATIBILITY.contains( relative.substring( prefix.length() ) );
 					assertOrdinarySource( file.toString(), source, compatibility );
-					if ( compatibility ) {
-						assertThat( source ).as( file.toString() ).contains( "@" + Deprecated.class.getSimpleName(),
-								"future breaking release" );
-					}
 				}
 			}
 		}
@@ -62,7 +71,7 @@ class JsonCodecBoundaryTest {
 			assertThatThrownBy( () -> assertOrdinarySource( "new-production-file.java", source, false ) )
 					.isInstanceOf( AssertionError.class );
 		}
-		assertThat( GSON_INPUT_COMPATIBILITY ).hasSize( 5 ).doesNotContain( "gson/NewMapper.java" );
+		assertThat( GSON_COMPATIBILITY ).doesNotContain( "gson/NewMapper.java" );
 		assertOrdinarySource( "compatibility.java", "com.google.gson.JsonObject", true );
 		assertThatThrownBy( () -> assertOrdinarySource( "compatibility.java", "type.getDeclaredFields()", true ) )
 				.isInstanceOf( AssertionError.class );
@@ -73,18 +82,23 @@ class JsonCodecBoundaryTest {
 			assertThat( GSON_REFERENCE.matcher( source ).find() ).as( path + ": Gson reference" ).isFalse();
 		}
 		assertThat( REFLECTIVE_MAPPING.matcher( source ).find() ).as( path + ": reflective mapper" ).isFalse();
-		assertThat( source ).as( path ).doesNotContain( "jackson.databind" );
+		assertThat( source ).as( path ).doesNotContain( "ObjectMapper", "JsonMapper",
+				"com.fasterxml.jackson.databind", "org.hibernate.search.util.json.JsonElement",
+				"org.hibernate.search.util.json.JsonObject", "org.hibernate.search.util.json.JsonArray",
+				"org.hibernate.search.util.json.JsonPrimitive" );
 	}
 
 	@Test
-	void generatedModelCodecsStayTreeBasedAndLibraryNeutral() throws Exception {
+	void generatedModelCodecsUseDirectNativeNodes() throws Exception {
 		Path root = Path.of( "target/generated-sources/annotations" );
 		try ( var files = Files.walk( root ) ) {
 			var codecs = files.filter( p -> p.getFileName().toString().endsWith( "JsonCodec.java" ) ).toList();
 			assertThat( codecs ).hasSize( 15 );
 			for ( Path file : codecs ) {
 				assertThat( Files.readString( file ) ).as( file.toString() )
-						.doesNotContain( "com.google.gson", "jackson", "java.lang.reflect", "toString()", "parse(" );
+						.contains( "tools.jackson.databind.JsonNode" )
+						.doesNotContain( "com.google.gson", "ObjectMapper", "JsonMapper", "java.lang.reflect", "toString()",
+								"parse(" );
 			}
 		}
 	}

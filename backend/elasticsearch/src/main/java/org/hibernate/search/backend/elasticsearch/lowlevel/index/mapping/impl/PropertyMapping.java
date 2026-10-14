@@ -5,7 +5,8 @@ import java.util.List;
 import org.hibernate.search.backend.elasticsearch.json.impl.JsonFieldCodec;
 import org.hibernate.search.backend.elasticsearch.json.impl.JsonName;
 import org.hibernate.search.backend.elasticsearch.json.impl.JsonSerializable;
-import org.hibernate.search.util.json.JsonElement;
+
+import tools.jackson.databind.JsonNode;
 
 /**
  * An object representing Elasticsearch property mappings, i.e. the mappings of properties inside a type mapping.
@@ -36,7 +37,7 @@ public class PropertyMapping extends AbstractTypeMapping {
 	 * routed through doubles when decoding this replacement value.
 	 */
 	@JsonName("null_value")
-	private JsonElement nullValue;
+	private JsonNode nullValue;
 
 	/*
 	 * Text datatype
@@ -159,11 +160,11 @@ public class PropertyMapping extends AbstractTypeMapping {
 		this.docValues = docValues;
 	}
 
-	public JsonElement getNullValue() {
+	public JsonNode getNullValue() {
 		return nullValue;
 	}
 
-	public void setNullValue(JsonElement nullValue) {
+	public void setNullValue(JsonNode nullValue) {
 		this.nullValue = nullValue;
 	}
 

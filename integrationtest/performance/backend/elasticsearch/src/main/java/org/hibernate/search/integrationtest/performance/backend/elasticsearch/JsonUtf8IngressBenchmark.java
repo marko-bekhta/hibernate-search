@@ -5,7 +5,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
-import org.hibernate.search.util.json.JsonElement;
 import org.hibernate.search.util.json.spi.JsonBodies;
 
 import org.openjdk.jmh.annotations.Benchmark;
@@ -18,6 +17,8 @@ import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
+
+import tools.jackson.databind.JsonNode;
 
 /** UTF-8 decoding, parser construction, complete feed/end-of-input and tree construction. */
 @BenchmarkMode(Mode.Throughput)
@@ -50,9 +51,11 @@ public class JsonUtf8IngressBenchmark {
 				default -> throw new IllegalArgumentException( bufferKind );
 			};
 			try {
-				JsonElement search = parseSearch( this );
+				JsonNode search = parseSearch( this );
 				byte[] searchBytes = JsonBenchmarkSupport.bytes( JsonBodies.of( search )::writeTo );
-				if ( !Arrays.equals( input, searchBytes ) ) {
+				if ( exactOutputBytes()
+						? !Arrays.equals( input, searchBytes )
+						: !parsing.parse( json ).equals( search ) ) {
 					throw new IllegalStateException( "UTF-8 ingress content mismatch" );
 				}
 			}
@@ -63,11 +66,11 @@ public class JsonUtf8IngressBenchmark {
 	}
 
 	@Benchmark
-	public JsonElement searchParser(Bodies state) {
+	public JsonNode searchParser(Bodies state) {
 		return parseSearch( state );
 	}
 
-	private static JsonElement parseSearch(Bodies state) {
+	private static JsonNode parseSearch(Bodies state) {
 		try ( var session = state.parsing.createParser() ) {
 			ByteBuffer input = state.prepared == null ? ByteBuffer.wrap( state.input ) : state.prepared.duplicate();
 			while ( input.position() < state.input.length ) {

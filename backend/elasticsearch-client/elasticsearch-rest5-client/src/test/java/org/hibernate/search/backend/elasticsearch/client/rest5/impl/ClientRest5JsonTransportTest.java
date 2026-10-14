@@ -9,7 +9,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper;
-import org.hibernate.search.util.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -24,6 +23,8 @@ import org.apache.hc.core5.http.impl.BasicEntityDetails;
 import org.apache.hc.core5.http.message.BasicHttpResponse;
 import org.apache.hc.core5.http.nio.DataStreamChannel;
 import org.apache.hc.core5.http.protocol.HttpCoreContext;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 class ClientRest5JsonTransportTest {
 	@ParameterizedTest
@@ -59,7 +60,7 @@ class ClientRest5JsonTransportTest {
 		assertThat( result.response.getReasonPhrase() ).isEqualTo( "fine" );
 		assertThat( result.response.getFirstHeader( "Warning" ).getValue() ).contains( "warning" );
 		var entity = (ClientRest5JsonResponseConsumer.Entity) result.response.getEntity();
-		assertThat( entity.body().tree().getAsJsonObject().get( "é😀" ).getAsString() ).isEqualTo( "é😀".repeat( 5000 ) );
+		assertThat( entity.body().tree().asObject().get( "é😀" ).asString() ).isEqualTo( "é😀".repeat( 5000 ) );
 		for ( int attempt = 0; attempt < 2; ++attempt ) {
 			try ( var input = entity.getContent() ) {
 				assertThat( new String( input.readAllBytes(), StandardCharsets.UTF_8 ) ).isEqualTo( text );
@@ -89,7 +90,7 @@ class ClientRest5JsonTransportTest {
 		}
 		consumer.streamEnd( List.of() );
 		var entity = (ClientRest5JsonResponseConsumer.Entity) result.response.getEntity();
-		assertThat( entity.body().tree().getAsJsonObject().get( "value" ).getAsString() )
+		assertThat( entity.body().tree().asObject().get( "value" ).asString() )
 				.isEqualTo( "é😀".repeat( 5000 ) );
 		assertThat( entity.getContentEncoding() ).isNull();
 	}
@@ -125,8 +126,8 @@ class ClientRest5JsonTransportTest {
 		consumer.consume( ByteBuffer.wrap( "{\"x\":1}".getBytes( StandardCharsets.UTF_8 ) ) );
 		consumer.streamEnd( List.of() );
 		assertThat( first.completions ).isZero();
-		assertThat( ( (ClientRest5JsonResponseConsumer.Entity) second.response.getEntity() ).body().tree().getAsJsonObject()
-				.get( "x" ).getAsInt() )
+		assertThat( ( (ClientRest5JsonResponseConsumer.Entity) second.response.getEntity() ).body().tree().asObject()
+				.get( "x" ).intValue() )
 				.isEqualTo( 1 );
 	}
 
@@ -180,8 +181,8 @@ class ClientRest5JsonTransportTest {
 						.getDeclaredField( "cursor" );
 		cursor.setAccessible( true );
 		for ( int size : new int[] { 100, 100_000, 1_000_000 } ) {
-			JsonObject document = new JsonObject();
-			document.addProperty( "value", "x".repeat( size ) );
+			ObjectNode document = JsonNodeFactory.instance.objectNode();
+			document.put( "value", "x".repeat( size ) );
 			var entity = new ClientRest5JsonHttpEntity( JsonProviderHelper.create( true ).getCodec(), List.of( document ) );
 			Sink sink = new Sink();
 			for ( int step = 0; step < 3 && !sink.ended; ++step ) {
@@ -248,7 +249,7 @@ class ClientRest5JsonTransportTest {
 			consumer.consume( ByteBuffer.wrap( text.getBytes( StandardCharsets.UTF_8 ) ) );
 			consumer.streamEnd( List.of() );
 			var entity = (ClientRest5JsonResponseConsumer.Entity) result.response.getEntity();
-			assertThat( JsonProviderHelper.create( true ).getCodec().decode( entity.body().tree(), JsonObject.class ) )
+			assertThat( JsonProviderHelper.create( true ).getCodec().decode( entity.body().tree(), ObjectNode.class ) )
 					.isNull();
 		}
 		var consumer = new ClientRest5JsonResponseConsumer( 100 );
@@ -270,8 +271,8 @@ class ClientRest5JsonTransportTest {
 	@ValueSource(ints = { 1, 2, 5, 8192 })
 	void partialZeroWritesWakeupsAndRetry(int capacity) throws Exception {
 		var json = JsonProviderHelper.create( true ).getCodec();
-		JsonObject object = new JsonObject();
-		object.addProperty( "value", "é😀".repeat( 5000 ) );
+		ObjectNode object = JsonNodeFactory.instance.objectNode();
+		object.put( "value", "é😀".repeat( 5000 ) );
 		var entity = new ClientRest5JsonHttpEntity( json, List.of( object ) );
 		assertThat( entity.getContentLength() ).isEqualTo( -1 );
 		Sink sink = new Sink();
@@ -299,8 +300,8 @@ class ClientRest5JsonTransportTest {
 	@SuppressWarnings("deprecation")
 	void pinnedRequestCompressionBuffersAndPropagatesFailure() throws Exception {
 		var json = JsonProviderHelper.create( true ).getCodec();
-		JsonObject document = new JsonObject();
-		document.addProperty( "value", "é😀".repeat( 10_000 ) );
+		ObjectNode document = JsonNodeFactory.instance.objectNode();
+		document.put( "value", "é😀".repeat( 10_000 ) );
 		var entity = new ClientRest5JsonHttpEntity( json, List.of( document ) );
 		var compressed = new co.elastic.clients.transport.rest5_client.low_level.Rest5Client.ContentCompressingEntity( entity );
 		for ( int attempt = 0; attempt < 2; ++attempt ) {

@@ -8,6 +8,7 @@ import java.util.Optional;
 import jakarta.persistence.EntityManagerFactory;
 
 import org.hibernate.search.backend.elasticsearch.ElasticsearchExtension;
+import org.hibernate.search.backend.elasticsearch.json.jackson.JacksonJsonHandlers;
 import org.hibernate.search.documentation.testsupport.BackendConfigurations;
 import org.hibernate.search.documentation.testsupport.DocumentationSetupHelper;
 import org.hibernate.search.engine.common.schema.management.SchemaExport;
@@ -17,11 +18,12 @@ import org.hibernate.search.mapper.orm.schema.management.SchemaManagementStrateg
 import org.hibernate.search.mapper.orm.schema.management.SearchSchemaManager;
 import org.hibernate.search.mapper.orm.session.SearchSession;
 import org.hibernate.search.mapper.pojo.schema.management.SearchSchemaCollector;
-import org.hibernate.search.util.json.JsonObject;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+
+import tools.jackson.databind.node.ObjectNode;
 
 class ElasticsearchHibernateOrmSchemaManagerIT {
 
@@ -53,9 +55,9 @@ class ElasticsearchHibernateOrmSchemaManagerIT {
 
 						@Override
 						public void indexSchema(Optional<String> backendName, String indexName, SchemaExport export) {
-							List<JsonObject> bodyParts = export
+							List<ObjectNode> bodyParts = export
 									.extension( ElasticsearchExtension.get() ) // <1>
-									.bodyParts(); // <2>
+									.bodyParts( JacksonJsonHandlers.object() ); // <2>
 						}
 					}
 			// end::walking-the-schema-extension[]

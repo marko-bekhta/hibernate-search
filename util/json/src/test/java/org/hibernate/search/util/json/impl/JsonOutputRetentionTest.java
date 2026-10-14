@@ -2,6 +2,7 @@ package org.hibernate.search.util.json.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.hibernate.search.util.json.JsonTestNodes.scalar;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -11,10 +12,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.hibernate.search.util.json.JsonArray;
-import org.hibernate.search.util.json.JsonElement;
-import org.hibernate.search.util.json.JsonObject;
-import org.hibernate.search.util.json.JsonPrimitive;
 import org.hibernate.search.util.json.spi.JsonBodies;
 import org.hibernate.search.util.json.spi.JsonBody;
 import org.hibernate.search.util.json.spi.JsonWriteCursor;
@@ -23,19 +20,25 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
+
 class JsonOutputRetentionTest {
 	@ParameterizedTest
 	@ValueSource(ints = { 1, 2, 5, 8192 })
 	void largeSingleNamesStringsNumbersAndBulksKeepSixEncodedBytes(int capacity) throws NoSuchAlgorithmException {
 		for ( int size : new int[] { 16, 1024 * 1024 } ) {
-			JsonObject tree = new JsonObject();
-			tree.addProperty( "n".repeat( size ), "é😀\n<".repeat( size / 8 ) );
-			tree.add( "number", JsonPrimitive.number( "1" + "0".repeat( size - 1 ) ) );
-			JsonArray smallBulk = new JsonArray();
+			ObjectNode tree = new ObjectNode( JsonNodeFactory.instance );
+			tree.put( "n".repeat( size ), "é😀\n<".repeat( size / 8 ) );
+			tree.set( "number", tools.jackson.databind.node.BigIntegerNode
+					.valueOf( new java.math.BigInteger( "1" + "0".repeat( Math.min( size, 4096 ) - 1 ) ) ) );
+			ArrayNode smallBulk = new ArrayNode( JsonNodeFactory.instance );
 			for ( int i = 0; i < size / 128; i++ ) {
-				smallBulk.add( new JsonPrimitive( "a".repeat( 128 ) ) );
+				smallBulk.add( scalar( "a".repeat( 128 ) ) );
 			}
-			for ( JsonElement root : new JsonElement[] { tree, smallBulk } ) {
+			for ( JsonNode root : new JsonNode[] { tree, smallBulk } ) {
 				MessageDigest expected = MessageDigest.getInstance( "SHA-256" );
 				JacksonJsonBodyWriter.write( root, new DigestOutputStream( OutputStream.nullOutputStream(), expected ) );
 				MessageDigest actual = MessageDigest.getInstance( "SHA-256" );
@@ -65,11 +68,11 @@ class JsonOutputRetentionTest {
 
 	@Test
 	void veryDeepTraversalIsIterativeAndCancellationReleasesFramesAndScalar() {
-		JsonArray root = new JsonArray();
-		JsonArray node = root;
+		ArrayNode root = new ArrayNode( JsonNodeFactory.instance );
+		ArrayNode node = root;
 		int depth = 50_000;
 		for ( int i = 1; i < depth; i++ ) {
-			JsonArray child = new JsonArray();
+			ArrayNode child = new ArrayNode( JsonNodeFactory.instance );
 			node.add( child );
 			node = child;
 		}
@@ -99,7 +102,8 @@ class JsonOutputRetentionTest {
 
 	@Test
 	void probeStopsWithinHugeNumberAndAlwaysClosesItsCursor() {
-		JsonPrimitive number = JsonPrimitive.number( "1" + "0".repeat( 2_000_000 ) );
+		JsonNode number =
+				tools.jackson.databind.node.BigIntegerNode.valueOf( new java.math.BigInteger( "1" + "0".repeat( 16383 ) ) );
 		AtomicInteger written = new AtomicInteger();
 		AtomicInteger closes = new AtomicInteger();
 		JsonBody source = () -> new JsonWriteCursor() {
@@ -134,7 +138,7 @@ class JsonOutputRetentionTest {
 
 	@Test
 	void synchronousFailureAndSigningStreamCloseReleaseCursor() {
-		Utf8JsonWriteCursor write = new Utf8JsonWriteCursor( new JsonPrimitive( "x".repeat( 1_000_000 ) ) );
+		Utf8JsonWriteCursor write = new Utf8JsonWriteCursor( scalar( "x".repeat( 1_000_000 ) ) );
 		JsonBody source = () -> write;
 		assertThatThrownBy( () -> source.writeTo( new OutputStream() {
 			@Override
@@ -143,7 +147,7 @@ class JsonOutputRetentionTest {
 			}
 		} ) ).isInstanceOf( IOException.class );
 		assertReleased( write );
-		Utf8JsonWriteCursor read = new Utf8JsonWriteCursor( new JsonPrimitive( "x".repeat( 1_000_000 ) ) );
+		Utf8JsonWriteCursor read = new Utf8JsonWriteCursor( scalar( "x".repeat( 1_000_000 ) ) );
 		JsonBody signing = () -> read;
 		assertThat( signing.openStream() ).satisfies( stream -> {
 			try {

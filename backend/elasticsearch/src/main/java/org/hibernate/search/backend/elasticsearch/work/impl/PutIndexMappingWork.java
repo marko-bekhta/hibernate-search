@@ -7,7 +7,8 @@ import org.hibernate.search.backend.elasticsearch.client.common.util.spi.URLEnco
 import org.hibernate.search.backend.elasticsearch.client.impl.Paths;
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.mapping.impl.RootTypeMapping;
-import org.hibernate.search.util.json.JsonObject;
+
+import tools.jackson.databind.node.ObjectNode;
 
 public class PutIndexMappingWork extends AbstractNonBulkableWork<Void> {
 
@@ -21,18 +22,16 @@ public class PutIndexMappingWork extends AbstractNonBulkableWork<Void> {
 	}
 
 	public static class Builder extends AbstractBuilder<Builder> {
-		private final URLEncodedString indexName;
-		private final JsonObject payload;
 
-		public static Builder create(JsonProvider jsonProvider,
-				URLEncodedString indexName, RootTypeMapping typeMapping) {
+		private final URLEncodedString indexName;
+
+		private final ObjectNode payload;
+
+		public static Builder create(JsonProvider jsonProvider, URLEncodedString indexName, RootTypeMapping typeMapping) {
 			return new Builder( jsonProvider, indexName, typeMapping );
 		}
 
-		private Builder(
-				JsonProvider jsonProvider,
-				URLEncodedString indexName,
-				RootTypeMapping typeMapping) {
+		private Builder(JsonProvider jsonProvider, URLEncodedString indexName, RootTypeMapping typeMapping) {
 			super( ElasticsearchRequestSuccessAssessor.DEFAULT_INSTANCE );
 			this.indexName = indexName;
 			/*
@@ -40,14 +39,13 @@ public class PutIndexMappingWork extends AbstractNonBulkableWork<Void> {
 			 * We better not include the null fields.
 			 */
 			JsonCodecService json = jsonProvider.getCodecNoSerializeNulls();
-			this.payload = json.encode( typeMapping ).getAsJsonObject();
+			this.payload = ( (ObjectNode) json.encode( typeMapping ) );
 		}
 
 		@Override
 		protected ElasticsearchRequest buildRequest() {
 			ElasticsearchRequest.Builder builder = ElasticsearchRequest.put().pathComponent( indexName );
-			builder.pathComponent( Paths._MAPPING )
-					.body( payload );
+			builder.pathComponent( Paths._MAPPING ).bodyJson( payload );
 			return builder.build();
 		}
 
