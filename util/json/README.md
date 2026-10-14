@@ -3,8 +3,9 @@
 `hibernate-search-util-json` provides Jackson-native incremental parsing, replayable
 UTF-8 output, validation and explicit Java/tree codecs. It is independent of
 Elasticsearch and HTTP. Its approved low-level SPI uses Jackson 3 Databind nodes
-with Jackson 3 Core. Hibernate Search application integration uses the backend's
-typed JSON handlers; this module provides no replacement tree or public accessors.
+with Jackson 3 Core. The public `org.hibernate.search.util.json.JsonHandler<T>`
+contract also supports library-independent JSON boundaries. Backend adapter factories
+provide its Elasticsearch integration; this module provides no replacement tree or public accessors.
 
 This guide covers the module directly. For Hibernate Search backend integration,
 see the [JSON reference chapter](../../documentation/src/main/asciidoc/public/reference/_backend-elasticsearch-json.adoc).

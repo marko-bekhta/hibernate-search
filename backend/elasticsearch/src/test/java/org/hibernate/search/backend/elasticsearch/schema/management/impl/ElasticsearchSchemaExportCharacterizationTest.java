@@ -63,8 +63,8 @@ class ElasticsearchSchemaExportCharacterizationTest {
 		ElasticsearchIndexSchemaExportImpl export = export( ElasticsearchRequest.put().wholeEncodedPath( "/index" )
 				.bodyJson( body ).build() );
 		java.util.concurrent.atomic.AtomicInteger reads = new java.util.concurrent.atomic.AtomicInteger();
-		org.hibernate.search.backend.elasticsearch.json.JsonHandler<ObjectNode> handler =
-				new org.hibernate.search.backend.elasticsearch.json.JsonHandler<>() {
+		org.hibernate.search.util.json.JsonHandler<ObjectNode> handler =
+				new org.hibernate.search.util.json.JsonHandler<>() {
 					@Override
 					public Class<ObjectNode> javaType() {
 						return ObjectNode.class;

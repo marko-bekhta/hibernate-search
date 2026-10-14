@@ -1,12 +1,12 @@
 package org.hibernate.search.backend.elasticsearch.search.aggregation.impl;
 
-import org.hibernate.search.backend.elasticsearch.json.JsonHandler;
 import org.hibernate.search.backend.elasticsearch.json.impl.JsonHandlerBridge;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexScope;
 import org.hibernate.search.engine.search.aggregation.spi.CompositeAggregationBuilder;
 import org.hibernate.search.engine.search.aggregation.spi.SearchAggregationBuilder;
 import org.hibernate.search.engine.search.aggregation.spi.SearchAggregationBuilderFactory;
 import org.hibernate.search.engine.search.aggregation.spi.WithParametersAggregationBuilder;
+import org.hibernate.search.util.json.JsonHandler;
 
 public class ElasticsearchSearchAggregationBuilderFactory
 		implements SearchAggregationBuilderFactory {

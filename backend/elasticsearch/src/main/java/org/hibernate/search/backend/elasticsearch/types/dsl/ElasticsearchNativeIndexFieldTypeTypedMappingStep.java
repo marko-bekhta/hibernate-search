@@ -1,6 +1,6 @@
 package org.hibernate.search.backend.elasticsearch.types.dsl;
 
-import org.hibernate.search.backend.elasticsearch.json.JsonHandler;
+import org.hibernate.search.util.json.JsonHandler;
 
 /** Defines mapping JSON independently of the native indexing/projection value representation. */
 public interface ElasticsearchNativeIndexFieldTypeTypedMappingStep<T> {

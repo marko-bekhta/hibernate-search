@@ -18,50 +18,82 @@ final class JsonCodecWriter {
 			f.codecExpression();
 		}
 		try ( PrintWriter w = new PrintWriter( filer.createSourceFile( m.codecQualifiedName, element ).openWriter() ) ) {
-			w.println( "package " + m.packageName + ";" );
-			w.println(
-					"import tools.jackson.databind.JsonNode; import tools.jackson.databind.node.ObjectNode; import tools.jackson.databind.node.NullNode; import tools.jackson.databind.node.JsonNodeFactory;" );
-			w.println(
-					"import org.hibernate.search.util.json.spi.JsonCodec; import org.hibernate.search.util.json.spi.JsonCodecs; import org.hibernate.search.util.json.spi.JsonCodecRegistry;" );
-			w.println( "@javax.annotation.processing.Generated(\"" + processorClassName + "\")" );
-			w.println( "public final class " + m.codecSimpleName + " implements JsonCodec<" + m.qualifiedName + "> {" );
-			for ( FieldModel f : m.fields ) {
-				w.println( "private final JsonCodec<" + f.typeMirror + "> " + f.javaName + "Codec;" );
+			line( w, 0, "package " + m.packageName + ";" );
+			w.println();
+			for ( String name : new String[] { "JsonNode", "node.ObjectNode", "node.NullNode", "node.JsonNodeFactory" } ) {
+				line( w, 0, "import tools.jackson.databind." + name + ";" );
 			}
-			w.println( "public " + m.codecSimpleName + "(JsonCodecRegistry registry) {" );
-			for ( FieldModel f : m.fields ) {
-				w.println( "this." + f.javaName + "Codec = " + f.codecExpression() + ";" );
+			w.println();
+			for ( String name : new String[] { "JsonCodec", "JsonCodecs", "JsonCodecRegistry" } ) {
+				line( w, 0, "import org.hibernate.search.util.json.spi." + name + ";" );
 			}
-			w.println( "}" );
-			w.println( "public " + m.qualifiedName + " decode(JsonNode value) {" );
-			w.println( "if (JsonCodecs.isNull(value)) { return null; }" );
-			w.println( m.qualifiedName + " instance = new " + m.qualifiedName + "();" );
-			w.println( "for (var entry : ((ObjectNode) value).properties()) { switch(entry.getKey()) {" );
+			w.println();
+			line( w, 0, "@javax.annotation.processing.Generated(\"" + processorClassName + "\")" );
+			line( w, 0, "public final class " + m.codecSimpleName + " implements JsonCodec<" + m.qualifiedName + "> {" );
 			for ( FieldModel f : m.fields ) {
-				w.println( "case \"" + f.jsonName + "\":" );
+				line( w, 1, "private final JsonCodec<" + f.typeMirror + "> " + f.javaName + "Codec;" );
+			}
+			w.println();
+			line( w, 1, "public " + m.codecSimpleName + "(JsonCodecRegistry registry) {" );
+			for ( FieldModel f : m.fields ) {
+				line( w, 2, "this." + f.javaName + "Codec = " + f.codecExpression() + ";" );
+			}
+			line( w, 1, "}" );
+			w.println();
+			line( w, 1, "@Override" );
+			line( w, 1, "public " + m.qualifiedName + " decode(JsonNode value) {" );
+			line( w, 2, "if ( JsonCodecs.isNull( value ) ) {" );
+			line( w, 3, "return null;" );
+			line( w, 2, "}" );
+			line( w, 2, m.qualifiedName + " instance = new " + m.qualifiedName + "();" );
+			line( w, 2, "for ( var entry : ((ObjectNode) value).properties() ) {" );
+			line( w, 3, "switch ( entry.getKey() ) {" );
+			for ( FieldModel f : m.fields ) {
+				line( w, 4, "case \"" + f.jsonName + "\":" );
 				for ( String alt : f.alternateNames ) {
-					w.println( "case \"" + alt + "\":" );
+					line( w, 4, "case \"" + alt + "\":" );
 				}
-				w.println( "instance." + f.setter + "(" + f.javaName + "Codec.decode(entry.getValue())); break;" );
+				line( w, 5, "instance." + f.setter + "( " + f.javaName + "Codec.decode( entry.getValue() ) );" );
+				line( w, 5, "break;" );
 			}
-			w.println( "default:" );
+			line( w, 4, "default:" );
 			if ( m.hasExtraProperties() ) {
-				w.println( "if(instance." + m.extraPropsGetter + "() == null) { instance." + m.extraPropsSetter
-						+ "(new java.util.LinkedHashMap<>()); }" );
-				w.println( "instance." + m.extraPropsGetter + "().put(entry.getKey(),entry.getValue());" );
+				line( w, 5, "if ( instance." + m.extraPropsGetter + "() == null ) {" );
+				line( w, 6, "instance." + m.extraPropsSetter + "( new java.util.LinkedHashMap<>() );" );
+				line( w, 5, "}" );
+				line( w, 5, "instance." + m.extraPropsGetter + "().put( entry.getKey(), entry.getValue() );" );
 			}
-			w.println( "break; } } return instance; }" );
-			w.println( "public JsonNode encode(" + m.qualifiedName + " instance, boolean serializeNulls) {" );
-			w.println( "if(instance == null) { return NullNode.instance; } ObjectNode result = JsonNodeFactory.instance.objectNode();" );
+			line( w, 5, "break;" );
+			line( w, 3, "}" );
+			line( w, 2, "}" );
+			line( w, 2, "return instance;" );
+			line( w, 1, "}" );
+			w.println();
+			line( w, 1, "@Override" );
+			line( w, 1, "public JsonNode encode(" + m.qualifiedName + " instance, boolean serializeNulls) {" );
+			line( w, 2, "if ( instance == null ) {" );
+			line( w, 3, "return NullNode.instance;" );
+			line( w, 2, "}" );
+			line( w, 2, "ObjectNode result = JsonNodeFactory.instance.objectNode();" );
 			for ( FieldModel f : m.fields ) {
-				w.println( "JsonCodecs.put(result,\"" + f.jsonName + "\"," + f.javaName + "Codec.encode(instance." + f.getter
-						+ "(), serializeNulls), serializeNulls);" );
+				line( w, 2, "JsonCodecs.put( result, \"" + f.jsonName + "\", " + f.javaName + "Codec.encode( instance." + f.getter
+						+ "(), serializeNulls ), serializeNulls );" );
 			}
 			if ( m.hasExtraProperties() ) {
-				w.println( "if(instance." + m.extraPropsGetter + "() != null) { instance." + m.extraPropsGetter
-						+ "().forEach((k,v) -> JsonCodecs.put(result,k,JsonCodecs.copy(v,serializeNulls),serializeNulls)); }" );
+				line( w, 2, "if ( instance." + m.extraPropsGetter + "() != null ) {" );
+				line( w, 3, "for ( var entry : instance." + m.extraPropsGetter + "().entrySet() ) {" );
+				line( w, 4, "JsonCodecs.put( result, entry.getKey(), JsonCodecs.copy( entry.getValue(), serializeNulls ), serializeNulls );" );
+				line( w, 3, "}" );
+				line( w, 2, "}" );
 			}
-			w.println( "return result; } }" );
+			line( w, 2, "return result;" );
+			line( w, 1, "}" );
+			line( w, 0, "}" );
 		}
+	}
+
+	private static void line(PrintWriter writer, int indentation, String text) {
+		writer.print( "\t".repeat( indentation ) );
+		writer.println( text );
 	}
 }

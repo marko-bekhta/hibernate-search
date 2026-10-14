@@ -28,7 +28,7 @@ class JsonApiBoundaryTest {
 	void onlyApprovedNativeSpiSignaturesExposeJackson() throws Exception {
 		PublicApiDependencyTestUtils.assertNoDependencies( Path.of( "target/classes" ),
 				List.of( "com.google.gson", "com.fasterxml.jackson", "tools.jackson",
-						"org.hibernate.search.util.json.impl" ),
+						"org.hibernate.search.util.json.impl", "org.hibernate.search.backend" ),
 				(type, prefix) -> "tools.jackson".equals( prefix )
 						&& Set.of(
 								"JsonCodec", "JsonCodecs", "JsonParserSession", "JsonParsing", "JsonBodies", "JsonNumbers",
@@ -44,7 +44,7 @@ class JsonApiBoundaryTest {
 				assertThat( Files.readString( file ) ).as( file.toString() )
 						.doesNotContain( "com.google.gson", "com.fasterxml.jackson.databind", "ObjectMapper", "JsonMapper",
 								"java.lang.reflect",
-								"getDeclaredField", "getDeclaredMethod" );
+								"getDeclaredField", "getDeclaredMethod", "org.hibernate.search.backend" );
 			}
 		}
 	}
@@ -79,8 +79,11 @@ class JsonApiBoundaryTest {
 
 	static List<Class<?>> leakingContracts() {
 		return List.of( GenericReturn.class, GenericInterface.class, GenericBound.class, Superclass.class,
-				Field.class, Constructor.class, Throws.class, Annotated.class, TypeAnnotated.class, AnnotationDefault.class );
+				Field.class, Constructor.class, Throws.class, Annotated.class, TypeAnnotated.class, AnnotationDefault.class,
+				HandlerWithNativeBound.class );
 	}
+
+	public interface HandlerWithNativeBound<T extends tools.jackson.databind.JsonNode> extends JsonHandler<T> {}
 
 	public interface GenericReturn { List<JsonParser> parse(); }
 

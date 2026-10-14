@@ -1,12 +1,11 @@
-package org.hibernate.search.backend.elasticsearch.json;
+package org.hibernate.search.util.json;
 
 /**
- * Converts a JSON library's tree/value representation at an Elasticsearch API boundary.
+ * Converts a JSON library's tree/value representation to and from strict JSON text.
  * <p>
  * {@code T} represents JSON values, not entities or arbitrary application DTOs.
  * Implementations must preserve arbitrary members and nested JSON null values.
- * Both methods use exactly one strict JSON value; object-only endpoints additionally
- * validate an object root. The configuration and runtime type token must be stable,
+ * Both methods use exactly one strict JSON value. The configuration and runtime type token must be stable,
  * and methods must support concurrent invocation. Parsed values must be independent.
  * <p>
  * Keep input values stable while Search uses them, including execution/retries.

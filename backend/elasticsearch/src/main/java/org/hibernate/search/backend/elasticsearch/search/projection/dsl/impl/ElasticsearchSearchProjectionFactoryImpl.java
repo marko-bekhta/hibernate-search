@@ -1,6 +1,5 @@
 package org.hibernate.search.backend.elasticsearch.search.projection.dsl.impl;
 
-import org.hibernate.search.backend.elasticsearch.json.JsonHandler;
 import org.hibernate.search.backend.elasticsearch.search.projection.dsl.ElasticsearchSearchProjectionFactory;
 import org.hibernate.search.backend.elasticsearch.search.projection.impl.ElasticsearchSearchProjectionIndexScope;
 import org.hibernate.search.engine.search.projection.dsl.ExtendedSearchProjectionFactory;
@@ -8,6 +7,7 @@ import org.hibernate.search.engine.search.projection.dsl.ProjectionFinalStep;
 import org.hibernate.search.engine.search.projection.dsl.spi.AbstractSearchProjectionFactory;
 import org.hibernate.search.engine.search.projection.dsl.spi.SearchProjectionDslContext;
 import org.hibernate.search.engine.search.projection.dsl.spi.StaticProjectionFinalStep;
+import org.hibernate.search.util.json.JsonHandler;
 
 public class ElasticsearchSearchProjectionFactoryImpl<SR, R, E>
 		extends AbstractSearchProjectionFactory<

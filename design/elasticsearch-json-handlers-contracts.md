@@ -51,8 +51,8 @@ generic result can preserve erasure while breaking source use and runtime casts.
 
 ## Handler and package contract
 
-Put the neutral API in backend artifact `hibernate-search-backend-elasticsearch`,
-package `org.hibernate.search.backend.elasticsearch.json`:
+Put the neutral API in utility artifact `hibernate-search-util-json`,
+public package `org.hibernate.search.util.json`:
 
 ```java
 public interface JsonHandler<T> {

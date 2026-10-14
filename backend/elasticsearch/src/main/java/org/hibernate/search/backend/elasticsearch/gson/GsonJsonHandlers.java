@@ -2,7 +2,7 @@ package org.hibernate.search.backend.elasticsearch.gson;
 
 import java.util.Objects;
 
-import org.hibernate.search.backend.elasticsearch.json.JsonHandler;
+import org.hibernate.search.util.json.JsonHandler;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

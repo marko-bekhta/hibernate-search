@@ -55,6 +55,51 @@ class JsonNodePolicyTest {
 	}
 
 	@Test
+	void customNumbersRequireStrictJsonGrammarBeforeExactConstruction() {
+		for ( String text : new String[] { "+1", "01", "-01", ".5", "1.", "1e", "NaN", " 1", "1 " } ) {
+			assertThatThrownBy( () -> JsonNumbers.fromNumber( new TextNumber( text ) ) )
+					.as( text ).isInstanceOf( IllegalArgumentException.class );
+		}
+		for ( String text : new String[] { "0", "-1", "18446744073709551617", "1.2500", "1e+10", "-0.0" } ) {
+			assertThat( JsonNumbers.fromNumber( new TextNumber( text ) ) )
+					.as( text ).isEqualTo( new JsonParsing().parse( text ) );
+		}
+	}
+
+	private static final class TextNumber extends Number {
+		private final String text;
+
+		private TextNumber(String text) {
+			this.text = text;
+		}
+
+		@Override
+		public int intValue() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public long longValue() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public float floatValue() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public double doubleValue() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public String toString() {
+			return text;
+		}
+	}
+
+	@Test
 	void externalValidationAllowsSharedSubtreesAndRejectsCyclesCustomMissingBinaryAndPojo() {
 		var child = new ArrayNode( JsonNodeFactory.instance ).add( 1 );
 		var root = new ObjectNode( JsonNodeFactory.instance ).set( "a", child ).set( "b", child );

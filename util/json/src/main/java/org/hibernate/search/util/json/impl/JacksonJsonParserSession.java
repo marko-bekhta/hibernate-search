@@ -108,8 +108,10 @@ final class JacksonJsonParserSession implements JsonParserSession {
 					builder.add( StringNode.valueOf( parser.getString() ) );
 					break;
 				case VALUE_NUMBER_INT:
+					builder.add( JsonNumbers.fromIntegerToken( parser.getString() ) );
+					break;
 				case VALUE_NUMBER_FLOAT:
-					builder.add( JsonNumbers.fromToken( parser.getString(), token == JsonToken.VALUE_NUMBER_FLOAT ) );
+					builder.add( JsonNumbers.fromFloatingToken( parser.getString() ) );
 					break;
 				case VALUE_TRUE:
 					builder.add( BooleanNode.TRUE );

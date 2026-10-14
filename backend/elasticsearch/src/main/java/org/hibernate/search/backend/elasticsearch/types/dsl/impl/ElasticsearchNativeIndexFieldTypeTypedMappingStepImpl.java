@@ -2,11 +2,11 @@ package org.hibernate.search.backend.elasticsearch.types.dsl.impl;
 
 import java.util.Objects;
 
-import org.hibernate.search.backend.elasticsearch.json.JsonHandler;
 import org.hibernate.search.backend.elasticsearch.json.impl.JsonHandlerBridge;
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.mapping.impl.PropertyMapping;
 import org.hibernate.search.backend.elasticsearch.types.dsl.ElasticsearchNativeIndexFieldTypeTypedMappingStep;
 import org.hibernate.search.backend.elasticsearch.types.dsl.ElasticsearchNativeIndexFieldTypeTypedOptionsStep;
+import org.hibernate.search.util.json.JsonHandler;
 
 class ElasticsearchNativeIndexFieldTypeTypedMappingStepImpl<T> implements ElasticsearchNativeIndexFieldTypeTypedMappingStep<T> {
 	private final ElasticsearchIndexFieldTypeBuildContext buildContext;

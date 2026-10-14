@@ -13,7 +13,6 @@ import java.time.Year;
 import java.time.YearMonth;
 import java.time.ZonedDateTime;
 
-import org.hibernate.search.backend.elasticsearch.json.JsonHandler;
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
 import org.hibernate.search.backend.elasticsearch.logging.impl.MappingLog;
 import org.hibernate.search.backend.elasticsearch.types.dsl.ElasticsearchIndexFieldTypeFactory;
@@ -30,6 +29,7 @@ import org.hibernate.search.engine.backend.types.dsl.VectorFieldTypeOptionsStep;
 import org.hibernate.search.engine.mapper.mapping.building.spi.IndexFieldTypeDefaultsProvider;
 import org.hibernate.search.engine.spatial.GeoPoint;
 import org.hibernate.search.util.common.reporting.EventContext;
+import org.hibernate.search.util.json.JsonHandler;
 
 public class ElasticsearchIndexFieldTypeFactoryImpl
 		implements ElasticsearchIndexFieldTypeFactory, ElasticsearchIndexFieldTypeBuildContext {

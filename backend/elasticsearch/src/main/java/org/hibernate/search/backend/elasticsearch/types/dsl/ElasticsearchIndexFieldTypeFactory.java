@@ -1,10 +1,9 @@
 package org.hibernate.search.backend.elasticsearch.types.dsl;
 
-import org.hibernate.search.backend.elasticsearch.json.JsonHandler;
-
 import org.hibernate.search.backend.elasticsearch.search.predicate.dsl.ElasticsearchSearchPredicateFactory;
 import org.hibernate.search.backend.elasticsearch.search.sort.dsl.ElasticsearchSearchSortFactory;
 import org.hibernate.search.engine.backend.types.dsl.IndexFieldTypeFactory;
+import org.hibernate.search.util.json.JsonHandler;
 
 public interface ElasticsearchIndexFieldTypeFactory extends IndexFieldTypeFactory {
 

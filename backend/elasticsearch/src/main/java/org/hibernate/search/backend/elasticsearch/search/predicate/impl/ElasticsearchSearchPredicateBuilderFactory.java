@@ -1,6 +1,5 @@
 package org.hibernate.search.backend.elasticsearch.search.predicate.impl;
 
-import org.hibernate.search.backend.elasticsearch.json.JsonHandler;
 import org.hibernate.search.backend.elasticsearch.json.impl.JsonHandlerBridge;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexScope;
 import org.hibernate.search.engine.search.predicate.spi.BooleanPredicateBuilder;
@@ -12,6 +11,7 @@ import org.hibernate.search.engine.search.predicate.spi.QueryStringPredicateBuil
 import org.hibernate.search.engine.search.predicate.spi.SearchPredicateBuilderFactory;
 import org.hibernate.search.engine.search.predicate.spi.SimpleQueryStringPredicateBuilder;
 import org.hibernate.search.engine.search.predicate.spi.WithParametersPredicateBuilder;
+import org.hibernate.search.util.json.JsonHandler;
 
 import tools.jackson.databind.node.ObjectNode;
 

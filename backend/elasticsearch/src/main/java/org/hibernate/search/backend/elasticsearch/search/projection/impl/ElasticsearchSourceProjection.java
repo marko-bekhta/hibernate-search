@@ -1,6 +1,5 @@
 package org.hibernate.search.backend.elasticsearch.search.projection.impl;
 
-import org.hibernate.search.backend.elasticsearch.json.JsonHandler;
 import org.hibernate.search.backend.elasticsearch.json.impl.JsonAccessor;
 import org.hibernate.search.backend.elasticsearch.json.impl.JsonArrayAccessor;
 import org.hibernate.search.backend.elasticsearch.json.impl.JsonHandlerBridge;
@@ -9,6 +8,7 @@ import org.hibernate.search.backend.elasticsearch.reporting.impl.ElasticsearchSe
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexScope;
 import org.hibernate.search.engine.search.loading.spi.LoadingResult;
 import org.hibernate.search.engine.search.loading.spi.ProjectionHitMapper;
+import org.hibernate.search.util.json.JsonHandler;
 
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;

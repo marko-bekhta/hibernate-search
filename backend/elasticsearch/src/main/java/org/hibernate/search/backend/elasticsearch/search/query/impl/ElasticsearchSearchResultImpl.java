@@ -4,12 +4,12 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 
-import org.hibernate.search.backend.elasticsearch.json.JsonHandler;
 import org.hibernate.search.backend.elasticsearch.json.impl.JsonHandlerBridge;
 import org.hibernate.search.backend.elasticsearch.search.query.ElasticsearchSearchResult;
 import org.hibernate.search.engine.search.aggregation.AggregationKey;
 import org.hibernate.search.engine.search.query.SearchResultTotal;
 import org.hibernate.search.engine.search.query.spi.SimpleSearchResult;
+import org.hibernate.search.util.json.JsonHandler;
 
 import tools.jackson.databind.node.ObjectNode;
 

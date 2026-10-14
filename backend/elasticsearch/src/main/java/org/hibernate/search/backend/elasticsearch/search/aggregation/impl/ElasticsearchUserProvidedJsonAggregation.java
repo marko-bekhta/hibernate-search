@@ -1,9 +1,9 @@
 package org.hibernate.search.backend.elasticsearch.search.aggregation.impl;
 
-import org.hibernate.search.backend.elasticsearch.json.JsonHandler;
 import org.hibernate.search.backend.elasticsearch.json.impl.JsonHandlerBridge;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexScope;
 import org.hibernate.search.engine.search.aggregation.AggregationKey;
+import org.hibernate.search.util.json.JsonHandler;
 
 import tools.jackson.databind.node.ObjectNode;
 

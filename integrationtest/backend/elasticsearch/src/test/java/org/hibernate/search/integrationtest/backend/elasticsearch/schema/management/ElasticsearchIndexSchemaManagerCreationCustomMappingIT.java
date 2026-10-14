@@ -49,61 +49,61 @@ class ElasticsearchIndexSchemaManagerCreationCustomMappingIT {
 		assertJsonEquals(
 				" { " +
 						"    'dynamic':'strict', " +
-						"    \"_source\":{ " +
+						"    '_source':{ " +
 						"       'enabled':false " +
 						"    }, " +
-						"    \"properties\":{ " +
-						"       \"_entity_type\":{ " +
+						"    'properties':{ " +
+						"       '_entity_type':{ " +
 						"          'type':'keyword', " +
 						"          'index':false " +
 						"       }, " +
-						"       \"bothField\":{ " +
+						"       'bothField':{ " +
 						"          'type':'keyword', " +
 						"          'doc_values':false " +
 						"       }, " +
-						"       \"bothObject\":{ " +
+						"       'bothObject':{ " +
 						"          'dynamic':'strict', " +
-						"          \"properties\":{ " +
-						"             \"bothNested\":{ " +
+						"          'properties':{ " +
+						"             'bothNested':{ " +
 						"                'type':'keyword', " +
 						"                'doc_values':false " +
 						"             }, " +
-						"             \"bothNestedObject\":{ " +
+						"             'bothNestedObject':{ " +
 						"                'dynamic':'strict', " +
-						"                \"properties\":{ " +
-						"                   \"bothNestedNested\":{ " +
+						"                'properties':{ " +
+						"                   'bothNestedNested':{ " +
 						"                      'type':'keyword', " +
 						"                      'doc_values':false " +
 						"                   }, " +
-						"                   \"searchNestedNested\":{ " +
+						"                   'searchNestedNested':{ " +
 						"                      'type':'keyword', " +
 						"                      'doc_values':false " +
 						"                   } " +
 						"                } " +
 						"             }, " +
-						"             \"searchNested\":{ " +
+						"             'searchNested':{ " +
 						"                'type':'keyword', " +
 						"                'doc_values':false " +
 						"             }, " +
-						"             \"searchNestedObject\":{ " +
+						"             'searchNestedObject':{ " +
 						"                'type':'object', " +
 						"                'dynamic':'strict' " +
 						"             } " +
 						"          } " +
 						"       }, " +
-						"       \"searchField\":{ " +
+						"       'searchField':{ " +
 						"          'type':'keyword', " +
 						"          'doc_values':false " +
 						"       }, " +
-						"       \"searchObject\":{ " +
+						"       'searchObject':{ " +
 						"          'type':'object', " +
 						"          'dynamic':'strict' " +
 						"       }, " +
-						"       \"userField\":{ " +
+						"       'userField':{ " +
 						"          'type':'keyword', " +
 						"          'norms':true " +
 						"       }, " +
-						"       \"userObject\":{ " +
+						"       'userObject':{ " +
 						"          'type':'object', " +
 						"          'dynamic':'true' " +
 						"       } " +
@@ -119,73 +119,73 @@ class ElasticsearchIndexSchemaManagerCreationCustomMappingIT {
 		assertJsonEquals(
 				" { " +
 						"    'dynamic':'strict', " +
-						"    \"_source\":{ " +
+						"    '_source':{ " +
 						"       'enabled':false " +
 						"    }, " +
-						"    \"properties\":{ " +
-						"       \"_entity_type\":{ " +
+						"    'properties':{ " +
+						"       '_entity_type':{ " +
 						"          'type':'keyword', " +
 						"          'index':false " +
 						"       }, " +
-						"       \"bothField\":{ " +
+						"       'bothField':{ " +
 						"          'type':'keyword', " +
 						"          'norms':true " +
 						"       }, " +
-						"       \"bothObject\":{ " +
+						"       'bothObject':{ " +
 						"          'dynamic':'strict', " +
-						"          \"properties\":{ " +
-						"             \"bothNested\":{ " +
+						"          'properties':{ " +
+						"             'bothNested':{ " +
 						"                'type':'keyword', " +
 						"                'norms':true " +
 						"             }, " +
-						"             \"bothNestedObject\":{ " +
+						"             'bothNestedObject':{ " +
 						"                'dynamic':'true', " +
-						"                \"properties\":{ " +
-						"                   \"bothNestedNested\":{ " +
+						"                'properties':{ " +
+						"                   'bothNestedNested':{ " +
 						"                      'type':'keyword', " +
 						"                      'norms':true " +
 						"                   }, " +
-						"                   \"searchNestedNested\":{ " +
+						"                   'searchNestedNested':{ " +
 						"                      'type':'keyword', " +
 						"                      'doc_values':false " +
 						"                   }, " +
-						"                   \"userNestedNested\":{ " +
+						"                   'userNestedNested':{ " +
 						"                      'type':'keyword', " +
 						"                      'norms':true " +
 						"                   } " +
 						"                } " +
 						"             }, " +
-						"             \"searchNested\":{ " +
+						"             'searchNested':{ " +
 						"                'type':'keyword', " +
 						"                'doc_values':false " +
 						"             }, " +
-						"             \"searchNestedObject\":{ " +
+						"             'searchNestedObject':{ " +
 						"                'type':'object', " +
 						"                'dynamic':'strict' " +
 						"             }, " +
-						"             \"userNested\":{ " +
+						"             'userNested':{ " +
 						"                'type':'keyword', " +
 						"                'norms':true " +
 						"             }, " +
-						"             \"userNestedObject\":{ " +
+						"             'userNestedObject':{ " +
 						"                'type':'object', " +
 						"                'dynamic':'true' " +
 						"             } " +
 						"          } " +
 						"       }, " +
-						"       \"searchField\":{ " +
+						"       'searchField':{ " +
 						"          'type':'keyword', " +
 						"          'doc_values':false " +
 						"       }, " +
-						"       \"searchObject\":{ " +
+						"       'searchObject':{ " +
 						"          'type':'object', " +
 						"          'dynamic':'strict' " +
 						"       }, " +
-						"       \"userField\":{ " +
+						"       'userField':{ " +
 						"          'type':'keyword', " +
 						"          'norms':true " +
 						"       }, " +
-						"       \"userObject\":{ " +
+						"       'userObject':{ " +
 						"          'type':'object', " +
 						"          'dynamic':'true' " +
 						"       } " +

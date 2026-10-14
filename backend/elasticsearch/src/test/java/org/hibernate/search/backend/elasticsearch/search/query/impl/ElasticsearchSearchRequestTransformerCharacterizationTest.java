@@ -8,10 +8,10 @@ import java.util.function.Function;
 
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchRequest;
 import org.hibernate.search.backend.elasticsearch.gson.GsonJsonHandlers;
-import org.hibernate.search.backend.elasticsearch.json.JsonHandler;
 import org.hibernate.search.backend.elasticsearch.json.jackson.JacksonJsonHandlers;
 import org.hibernate.search.util.common.AssertionFailure;
 import org.hibernate.search.util.common.SearchException;
+import org.hibernate.search.util.json.JsonHandler;
 
 import org.junit.jupiter.api.Test;
 

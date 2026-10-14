@@ -769,3 +769,46 @@ and complete backend throughput remain separate work. Unsupported extreme expone
 Java 17 target compilation is not Java 17 runtime verification. Optional handler
 and functional slice experiments measure explicit boundary overhead/stand-in flows;
 they are separate from this primary kernel comparison.
+
+## Review cleanup: scalar codec dispatch comparison (2026-10-14)
+
+A bounded comparison on `d3a21e558f` tested the current captured `Function`
+implementation against a single scalar codec class with a private enum and
+switches. The workload uses the actual generated `PropertyMapping` and
+`IndexSettings` codecs, including nested mapping properties, mixed scalar kinds,
+and analysis lists/maps. Encoding and decoding are measured separately with
+preconstructed trees/models, excluding parsing and output. The candidate changes
+only scalar dispatch; both variants retain identical collection/copy code and
+share the same generated codec classes and dependency runtime.
+
+JMH 1.37 ran two fresh JVM forks per variant/workload, three 500 ms warmup and
+four 500 ms measurement iterations, `-Xms256m -Xmx256m`, with the GC profiler.
+No builds ran concurrently. Results are throughput in millions of operations/s;
+errors are JMH's reported 99.9% confidence interval half-widths.
+
+| Generated codec / operation | Captured functions | Enum switch | Mean change |
+| --- | ---: | ---: | ---: |
+| PropertyMapping encode | 3.337 ± 0.137 | 3.501 ± 0.075 | +4.9% |
+| PropertyMapping decode | 8.896 ± 0.262 | 8.925 ± 0.444 | +0.3% |
+| IndexSettings encode | 5.019 ± 0.102 | 5.077 ± 0.077 | +1.2% |
+| IndexSettings decode | 7.657 ± 0.142 | 7.693 ± 0.220 | +0.5% |
+
+Intervals overlap in all four comparisons. Encoding allocations are unchanged
+(1496 B/op for PropertyMapping, 1968 B/op for IndexSettings). Decoding allocation
+estimates vary across forks and show no improvement. These short local results
+do not establish a reliable performance gain, so the captured scalar functions
+are retained. They do not support any general speed claim about either design.
+
+The harness, complete candidate source, runtime/source provenance, raw JMH JSON,
+logs and Jackson numeric-node bytecode inspection are saved separately under
+`/home/agentuser/json-handler-review-evidence/scalar-dispatch/`; frozen evidence
+under `json-handler-baseline-evidence` was not changed. The first property setup
+check incorrectly compared DecimalNode input with DoubleNode codec output by
+node equality and failed before timing; the corrected property runs compare
+strict text round-trips before measurement and are the reported results.
+
+Independent bytecode inspection of Jackson Databind 3.2.2 confirms that standard
+numeric nodes' `asString()` delegates to their primitive or underlying exact
+number rendering. The cleanup uses that API after retaining supported-class,
+finite-number and decimal-range checks; the output cursor's int/long fast paths
+are unchanged. No performance claim is made for the other review cleanups.

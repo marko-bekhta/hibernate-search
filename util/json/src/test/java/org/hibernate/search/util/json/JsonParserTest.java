@@ -134,6 +134,8 @@ class JsonParserTest {
 		} ).isInstanceOf( JsonParseException.class );
 		for ( String broken : new String[] { "\"\ud800\"", "{\"\udc00\":0}" } ) {
 			assertThatThrownBy( () -> parsing.parse( broken ) ).isInstanceOf( JsonParseException.class );
+			JsonParsing byteLimited = new JsonParsing( JsonParsingOptions.DEFAULT.withMaxInputBytes( 100 ) );
+			assertThatThrownBy( () -> byteLimited.parse( broken ) ).isInstanceOf( JsonParseException.class );
 		}
 	}
 

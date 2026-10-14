@@ -2,8 +2,8 @@ package org.hibernate.search.backend.elasticsearch.json.jackson;
 
 import java.util.Objects;
 
-import org.hibernate.search.backend.elasticsearch.json.JsonHandler;
 import org.hibernate.search.backend.elasticsearch.json.impl.JsonHandlerBridge;
+import org.hibernate.search.util.json.JsonHandler;
 import org.hibernate.search.util.json.spi.JsonTreeValidation;
 
 import tools.jackson.databind.JsonNode;

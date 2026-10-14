@@ -3,9 +3,9 @@ package org.hibernate.search.backend.elasticsearch.schema.management;
 import java.util.List;
 import java.util.Map;
 
-import org.hibernate.search.backend.elasticsearch.json.JsonHandler;
 import org.hibernate.search.engine.common.schema.management.SchemaExport;
 import org.hibernate.search.util.common.annotation.Incubating;
+import org.hibernate.search.util.json.JsonHandler;
 
 import com.google.gson.JsonObject;
 

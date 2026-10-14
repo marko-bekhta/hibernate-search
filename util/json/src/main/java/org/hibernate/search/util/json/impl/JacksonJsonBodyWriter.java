@@ -18,6 +18,8 @@ import tools.jackson.databind.JsonNode;
 
 /** Internal synchronous comparison implementation; production output drains the resumable cursor. */
 public final class JacksonJsonBodyWriter {
+	private static final SerializedString LINE_SEPARATOR_ESCAPE = new SerializedString( "\\u2028" );
+	private static final SerializedString PARAGRAPH_SEPARATOR_ESCAPE = new SerializedString( "\\u2029" );
 	private static final CharacterEscapes REQUEST_ESCAPES = new CharacterEscapes() {
 		private final int[] ascii = createAscii();
 
@@ -36,8 +38,8 @@ public final class JacksonJsonBodyWriter {
 
 		@Override
 		public SerializableString getEscapeSequence(int character) {
-			return character == 0x2028 ? new SerializedString( "\\u2028" )
-					: character == 0x2029 ? new SerializedString( "\\u2029" )
+			return character == 0x2028 ? LINE_SEPARATOR_ESCAPE
+					: character == 0x2029 ? PARAGRAPH_SEPARATOR_ESCAPE
 					: null;
 		}
 	};

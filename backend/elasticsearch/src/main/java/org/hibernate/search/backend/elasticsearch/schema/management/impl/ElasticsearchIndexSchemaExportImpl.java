@@ -10,11 +10,11 @@ import java.util.Map;
 
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchRequest;
 import org.hibernate.search.backend.elasticsearch.gson.GsonJsonHandlers;
-import org.hibernate.search.backend.elasticsearch.json.JsonHandler;
 import org.hibernate.search.backend.elasticsearch.json.impl.JsonHandlerBridge;
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
 import org.hibernate.search.backend.elasticsearch.logging.impl.ElasticsearchMiscLog;
 import org.hibernate.search.backend.elasticsearch.schema.management.ElasticsearchIndexSchemaExport;
+import org.hibernate.search.util.json.JsonHandler;
 
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;

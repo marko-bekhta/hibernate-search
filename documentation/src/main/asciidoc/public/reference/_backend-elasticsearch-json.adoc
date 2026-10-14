@@ -3,7 +3,7 @@
 
 Hibernate Search uses Jackson 3 `JsonNode` trees internally.
 Application-facing Elasticsearch JSON APIs select a representation through
-`org.hibernate.search.backend.elasticsearch.json.JsonHandler<T>`.
+`org.hibernate.search.util.json.JsonHandler<T>`.
 `T` is a JSON library's tree/value type, not an entity or application DTO.
 A handler supplies a stable `Class<T> javaType()`, `toJson(T)` and `fromJson(String)`.
 Implementations must support concurrent use, preserve arbitrary members and nested nulls,

@@ -1,6 +1,5 @@
 package org.hibernate.search.backend.elasticsearch.search.sort.impl;
 
-import org.hibernate.search.backend.elasticsearch.json.JsonHandler;
 import org.hibernate.search.backend.elasticsearch.json.impl.JsonHandlerBridge;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexScope;
 import org.hibernate.search.engine.search.sort.SearchSort;
@@ -8,6 +7,7 @@ import org.hibernate.search.engine.search.sort.spi.CompositeSortBuilder;
 import org.hibernate.search.engine.search.sort.spi.ScoreSortBuilder;
 import org.hibernate.search.engine.search.sort.spi.SearchSortBuilderFactory;
 import org.hibernate.search.engine.search.sort.spi.WithParametersSortBuilder;
+import org.hibernate.search.util.json.JsonHandler;
 
 import tools.jackson.databind.node.ObjectNode;
 

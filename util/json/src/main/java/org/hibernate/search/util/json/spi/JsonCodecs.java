@@ -114,13 +114,16 @@ public final class JsonCodecs {
 		}
 		if ( value instanceof ObjectNode object ) {
 			ObjectNode result = JsonNodeFactory.instance.objectNode();
-			object.properties()
-					.forEach( e -> put( result, e.getKey(), copy( e.getValue(), serializeNulls ), serializeNulls ) );
+			for ( var entry : object.properties() ) {
+				put( result, entry.getKey(), copy( entry.getValue(), serializeNulls ), serializeNulls );
+			}
 			return result;
 		}
 		if ( value instanceof ArrayNode array ) {
 			ArrayNode result = JsonNodeFactory.instance.arrayNode();
-			array.forEach( e -> result.add( copy( e, serializeNulls ) ) );
+			for ( JsonNode entry : array ) {
+				result.add( copy( entry, serializeNulls ) );
+			}
 			return result;
 		}
 		return value;
@@ -136,7 +139,9 @@ public final class JsonCodecs {
 					throw new IllegalArgumentException( "Expected JSON array" );
 				}
 				List<T> result = new ArrayList<>();
-				array.forEach( e -> result.add( element.decode( e ) ) );
+				for ( JsonNode entry : array ) {
+					result.add( element.decode( entry ) );
+				}
 				return result;
 			}
 
@@ -145,7 +150,9 @@ public final class JsonCodecs {
 					return NullNode.instance;
 				}
 				ArrayNode result = JsonNodeFactory.instance.arrayNode();
-				value.forEach( e -> result.add( element.encode( e, serializeNulls ) ) );
+				for ( T entry : value ) {
+					result.add( element.encode( entry, serializeNulls ) );
+				}
 				return result;
 			}
 		};
@@ -161,7 +168,9 @@ public final class JsonCodecs {
 					throw new IllegalArgumentException( "Expected JSON object" );
 				}
 				Map<String, T> result = new LinkedHashMap<>();
-				object.properties().forEach( e -> result.put( e.getKey(), element.decode( e.getValue() ) ) );
+				for ( var entry : object.properties() ) {
+					result.put( entry.getKey(), element.decode( entry.getValue() ) );
+				}
 				return result;
 			}
 
@@ -170,7 +179,9 @@ public final class JsonCodecs {
 					return NullNode.instance;
 				}
 				ObjectNode result = JsonNodeFactory.instance.objectNode();
-				value.forEach( (k, v) -> put( result, k, element.encode( v, serializeNulls ), serializeNulls ) );
+				for ( var entry : value.entrySet() ) {
+					put( result, entry.getKey(), element.encode( entry.getValue(), serializeNulls ), serializeNulls );
+				}
 				return result;
 			}
 		};

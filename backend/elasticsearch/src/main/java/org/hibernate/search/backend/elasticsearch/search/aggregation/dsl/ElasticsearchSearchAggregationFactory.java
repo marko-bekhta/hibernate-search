@@ -1,10 +1,10 @@
 package org.hibernate.search.backend.elasticsearch.search.aggregation.dsl;
 
 import org.hibernate.search.backend.elasticsearch.gson.GsonJsonHandlers;
-import org.hibernate.search.backend.elasticsearch.json.JsonHandler;
 import org.hibernate.search.backend.elasticsearch.search.predicate.dsl.ElasticsearchSearchPredicateFactory;
 import org.hibernate.search.engine.search.aggregation.dsl.AggregationFinalStep;
 import org.hibernate.search.engine.search.aggregation.dsl.ExtendedSearchAggregationFactory;
+import org.hibernate.search.util.json.JsonHandler;
 
 import com.google.gson.JsonObject;
 

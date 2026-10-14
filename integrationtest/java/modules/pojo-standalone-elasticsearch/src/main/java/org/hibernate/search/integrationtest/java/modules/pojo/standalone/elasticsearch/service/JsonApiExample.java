@@ -1,8 +1,8 @@
 package org.hibernate.search.integrationtest.java.modules.pojo.standalone.elasticsearch.service;
 
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchRequest;
-import org.hibernate.search.backend.elasticsearch.json.JsonHandler;
 import org.hibernate.search.backend.elasticsearch.json.jackson.JacksonJsonHandlers;
+import org.hibernate.search.util.json.JsonHandler;
 import org.hibernate.search.util.json.spi.JsonParsing;
 
 import tools.jackson.databind.JsonNode;

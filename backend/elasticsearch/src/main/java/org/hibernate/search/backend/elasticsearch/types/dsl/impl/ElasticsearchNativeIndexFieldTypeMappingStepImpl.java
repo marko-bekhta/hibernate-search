@@ -1,10 +1,10 @@
 package org.hibernate.search.backend.elasticsearch.types.dsl.impl;
 
-import org.hibernate.search.backend.elasticsearch.json.JsonHandler;
 import org.hibernate.search.backend.elasticsearch.json.impl.JsonHandlerBridge;
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.mapping.impl.PropertyMapping;
 import org.hibernate.search.backend.elasticsearch.types.dsl.ElasticsearchNativeIndexFieldTypeMappingStep;
 import org.hibernate.search.backend.elasticsearch.types.dsl.ElasticsearchNativeIndexFieldTypeOptionsStep;
+import org.hibernate.search.util.json.JsonHandler;
 
 @SuppressWarnings("deprecation")
 class ElasticsearchNativeIndexFieldTypeMappingStepImpl implements ElasticsearchNativeIndexFieldTypeMappingStep {

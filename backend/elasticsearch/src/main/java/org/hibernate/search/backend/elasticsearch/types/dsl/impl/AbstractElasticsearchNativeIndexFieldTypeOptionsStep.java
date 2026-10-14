@@ -1,6 +1,5 @@
 package org.hibernate.search.backend.elasticsearch.types.dsl.impl;
 
-import org.hibernate.search.backend.elasticsearch.json.JsonHandler;
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.mapping.impl.PropertyMapping;
 import org.hibernate.search.backend.elasticsearch.search.aggregation.impl.ElasticsearchRangeAggregation;
@@ -17,6 +16,7 @@ import org.hibernate.search.engine.search.aggregation.spi.AggregationTypeKeys;
 import org.hibernate.search.engine.search.predicate.spi.PredicateTypeKeys;
 import org.hibernate.search.engine.search.projection.spi.ProjectionTypeKeys;
 import org.hibernate.search.engine.search.sort.spi.SortTypeKeys;
+import org.hibernate.search.util.json.JsonHandler;
 
 abstract class AbstractElasticsearchNativeIndexFieldTypeOptionsStep<
 		S extends AbstractElasticsearchNativeIndexFieldTypeOptionsStep<S, T>,

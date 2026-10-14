@@ -2,9 +2,9 @@ package org.hibernate.search.backend.elasticsearch.types.codec.impl;
 
 import java.util.Objects;
 
-import org.hibernate.search.backend.elasticsearch.json.JsonHandler;
 import org.hibernate.search.backend.elasticsearch.json.impl.JsonHandlerBridge;
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
+import org.hibernate.search.util.json.JsonHandler;
 
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.DoubleNode;

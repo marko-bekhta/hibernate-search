@@ -1,7 +1,7 @@
 package org.hibernate.search.backend.elasticsearch.types.dsl.impl;
 
-import org.hibernate.search.backend.elasticsearch.json.JsonHandler;
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.mapping.impl.PropertyMapping;
+import org.hibernate.search.util.json.JsonHandler;
 
 class ElasticsearchNativeIndexFieldTypeTypedOptionsStepImpl<T>
 		extends

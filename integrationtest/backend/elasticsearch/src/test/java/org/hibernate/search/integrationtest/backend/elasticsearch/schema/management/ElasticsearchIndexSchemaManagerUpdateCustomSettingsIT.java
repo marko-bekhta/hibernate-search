@@ -76,18 +76,18 @@ class ElasticsearchIndexSchemaManagerUpdateCustomSettingsIT {
 
 		assertJsonEquals(
 				" { " +
-						" 	\"analyzer\": { " +
-						" 		\"my_standard-english\": { " +
+						" 	'analyzer': { " +
+						" 		'my_standard-english': { " +
 						" 			'type': 'standard', " +
 						" 			'stopwords': '_english_' " +
 						" 		}, " +
-						" 		\"my_analyzer_ngram\": { " +
+						" 		'my_analyzer_ngram': { " +
 						" 			'type': 'custom', " +
 						" 			'tokenizer': 'my_analyzer_ngram_tokenizer' " +
 						" 		} " +
 						" 	}, " +
-						" 	\"tokenizer\": { " +
-						" 		\"my_analyzer_ngram_tokenizer\": { " +
+						" 	'tokenizer': { " +
+						" 		'my_analyzer_ngram_tokenizer': { " +
 						" 			'type': 'ngram', " +
 						" 			'min_gram': '5', " +
 						" 			'max_gram': '6' " +
@@ -135,18 +135,18 @@ class ElasticsearchIndexSchemaManagerUpdateCustomSettingsIT {
 
 		assertJsonEquals(
 				" { " +
-						" 	\"analyzer\": { " +
-						" 		\"my_standard-english\": { " +
+						" 	'analyzer': { " +
+						" 		'my_standard-english': { " +
 						" 			'type': 'standard', " +
 						" 			'stopwords': '_english_' " +
 						" 		}, " +
-						" 		\"my_analyzer_ngram\": { " +
+						" 		'my_analyzer_ngram': { " +
 						" 			'type': 'custom', " +
 						" 			'tokenizer': 'my_analyzer_ngram_tokenizer' " +
 						" 		} " +
 						" 	}, " +
-						" 	\"tokenizer\": { " +
-						" 		\"my_analyzer_ngram_tokenizer\": { " +
+						" 	'tokenizer': { " +
+						" 		'my_analyzer_ngram_tokenizer': { " +
 						" 			'type': 'ngram', " +
 						" 			'min_gram': '5', " +
 						" 			'max_gram': '6' " +

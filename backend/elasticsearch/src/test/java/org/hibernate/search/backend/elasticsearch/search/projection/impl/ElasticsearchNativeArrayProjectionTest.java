@@ -16,7 +16,6 @@ import org.hibernate.search.backend.elasticsearch.document.model.impl.Elasticsea
 import org.hibernate.search.backend.elasticsearch.document.model.impl.ElasticsearchIndexRoot;
 import org.hibernate.search.backend.elasticsearch.document.model.impl.ElasticsearchIndexValueField;
 import org.hibernate.search.backend.elasticsearch.gson.GsonJsonHandlers;
-import org.hibernate.search.backend.elasticsearch.json.JsonHandler;
 import org.hibernate.search.backend.elasticsearch.json.jackson.JacksonJsonHandlers;
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper;
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.mapping.impl.PropertyMapping;
@@ -33,6 +32,7 @@ import org.hibernate.search.engine.backend.types.ObjectStructure;
 import org.hibernate.search.engine.common.tree.spi.TreeNodeInclusion;
 import org.hibernate.search.engine.search.common.ValueModel;
 import org.hibernate.search.engine.search.projection.ProjectionCollector;
+import org.hibernate.search.util.json.JsonHandler;
 import org.hibernate.search.util.json.spi.JsonTreeValidation;
 
 import org.junit.jupiter.api.Test;

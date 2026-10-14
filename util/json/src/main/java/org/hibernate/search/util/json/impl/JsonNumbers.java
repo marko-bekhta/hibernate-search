@@ -2,6 +2,7 @@ package org.hibernate.search.util.json.impl;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.regex.Pattern;
 
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.BigIntegerNode;
@@ -19,27 +20,33 @@ public final class JsonNumbers {
 
 	public static final int MAX_DECIMAL_EXPONENT = Integer.MAX_VALUE;
 
+	private static final Pattern JSON_NUMBER =
+			Pattern.compile( "-?(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?(?:[eE][+-]?[0-9]+)?" );
+
 	private static final BigInteger MAX_EXPONENT = BigInteger.valueOf( MAX_DECIMAL_EXPONENT );
 
 	private JsonNumbers() {
 	}
 
-	public static JsonNode fromToken(String text, boolean floating) {
-		if ( !floating ) {
-			// Keep the cheap int cache/long route without routing exact values through double.
-			if ( text.length() <= 20 ) {
-				try {
-					long value = Long.parseLong( text );
-					return value >= Integer.MIN_VALUE && value <= Integer.MAX_VALUE
-							? IntNode.valueOf( (int) value )
-							: LongNode.valueOf( value );
-				}
-				catch (NumberFormatException tooLarge) {
-					/* Exact BigInteger route below. */
-				}
+	/** Construct an integer token whose JSON syntax has already been validated by the parser. */
+	public static JsonNode fromIntegerToken(String text) {
+		// Keep the cheap int cache/long route without routing exact values through double.
+		if ( text.length() <= 20 ) {
+			try {
+				long value = Long.parseLong( text );
+				return value >= Integer.MIN_VALUE && value <= Integer.MAX_VALUE
+						? IntNode.valueOf( (int) value )
+						: LongNode.valueOf( value );
 			}
-			return BigIntegerNode.valueOf( new BigInteger( text ) );
+			catch (NumberFormatException tooLarge) {
+				/* Exact BigInteger route below. */
+			}
 		}
+		return BigIntegerNode.valueOf( new BigInteger( text ) );
+	}
+
+	/** Construct a floating token whose JSON syntax has already been validated by the parser. */
+	public static JsonNode fromFloatingToken(String text) {
 		int exponent = Math.max( text.indexOf( 'e' ), text.indexOf( 'E' ) );
 		if ( exponent >= 0 && new BigInteger( text.substring( exponent + 1 ) ).abs().compareTo( MAX_EXPONENT ) > 0 ) {
 			throw new IllegalArgumentException( "Unsupported JSON decimal exponent" );
@@ -91,10 +98,12 @@ public final class JsonNumbers {
 		}
 		// Mutable/custom Number implementations are snapshotted through their numeric text, never databinding.
 		String text = value.toString();
-		if ( !text.matches( "-?(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?(?:[eE][+-]?[0-9]+)?" ) ) {
+		if ( !JSON_NUMBER.matcher( text ).matches() ) {
 			throw new IllegalArgumentException( "Unsupported JSON number" );
 		}
-		return fromToken( text, text.indexOf( '.' ) >= 0 || text.indexOf( 'e' ) >= 0 || text.indexOf( 'E' ) >= 0 );
+		return text.indexOf( '.' ) >= 0 || text.indexOf( 'e' ) >= 0 || text.indexOf( 'E' ) >= 0
+				? fromFloatingToken( text )
+				: fromIntegerToken( text );
 	}
 
 	/**
@@ -149,12 +158,6 @@ public final class JsonNumbers {
 		else if ( type != ShortNode.class && type != IntNode.class && type != LongNode.class && type != BigIntegerNode.class ) {
 			throw new IllegalArgumentException( "Unsupported JSON number " + type.getName() );
 		}
-		if ( type == DoubleNode.class ) {
-			return Double.toString( node.doubleValue() );
-		}
-		if ( type == FloatNode.class ) {
-			return Float.toString( node.floatValue() );
-		}
-		return node.numberValue().toString();
+		return node.asString();
 	}
 }

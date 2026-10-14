@@ -79,9 +79,11 @@ class JsonCodecProcessorTest {
 						""" ) );
 		DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
 		assertThat( compile( sources, diagnostics ) ).as( diagnostics.getDiagnostics().toString() ).isTrue();
-		assertThat( java.nio.file.Files.readString( directory.resolve( "fixture/GeneratedFixtureJsonCodec.java" ) ) )
+		assertThat( java.nio.file.Files.readString( directory.resolve( "fixture/GeneratedFixtureJsonCodec.java" ) )
+				.replace( "\r\n", "\n" ) )
 				.contains( "new fixture.Fixture()", "instance.setInherited(", "instance.getRaw()", "tools.jackson.databind.JsonNode" )
-				.doesNotContain( "ObjectMapper", "java.lang.reflect", "org.hibernate.search.util.json.JsonElement" );
+				.contains( "\n\t@Override\n\tpublic", "\n\t\t\tswitch" )
+				.doesNotContain( "ObjectMapper", "java.lang.reflect", "org.hibernate.search.util.json.JsonElement", "; import " );
 		try ( var loader =
 				new URLClassLoader( new java.net.URL[] { directory.toUri().toURL() }, getClass().getClassLoader() ) ) {
 			Class<?> type = loader.loadClass( "fixture.Fixture" );
@@ -97,11 +99,18 @@ class JsonCodecProcessorTest {
 			JsonCodec<Object> codec = (JsonCodec<Object>) registry.get( type );
 			var parsing = new JsonParsing();
 			Object value = codec.decode( parsing.parse(
-					"{\"z\":null,\"old\":\"parent\",\"custom\":\"a;b\",\"children\":[null,{\"renamed\":\"child\",\"extra\":{\"null\":null}}],\"raw\":{\"omitted\":null,\"items\":[null,{\"omitted\":null}]},\"a\":1}" ) );
+					"""
+					{ "z": null, "old": "parent", "custom": "a;b",
+					  "children": [null, { "renamed": "child", "extra": { "null": null } }],
+					  "raw": { "omitted": null, "items": [null, { "omitted": null }] }, "a": 1 }
+					""" ) );
 			var encoded = (ObjectNode) codec.encode( value, false );
 			assertThat( encoded.propertyNames() ).containsExactly( "children", "custom", "renamed", "raw", "a" );
 			assertThat( encoded ).isEqualTo( parsing.parse(
-					"{\"children\":[null,{\"renamed\":\"child\",\"extra\":{}}],\"custom\":\"a;b\",\"raw\":{\"items\":[null,{}]},\"renamed\":\"parent\",\"a\":1}" ) );
+					"""
+					{ "children": [null, { "renamed": "child", "extra": {} }], "custom": "a;b",
+					  "raw": { "items": [null, {}] }, "renamed": "parent", "a": 1 }
+					""" ) );
 			assertThat( codec.encode( value, true ).get( "z" ).isNull() ).isTrue();
 		}
 	}

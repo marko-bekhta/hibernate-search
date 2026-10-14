@@ -39,7 +39,7 @@ public final class JacksonJsonParserFactory {
 		if ( options.maxInputBytes() == 0 ) {
 			validateUtf16( json );
 		}
-		else if ( utf8Length( json ) > options.maxInputBytes() ) {
+		else if ( exceedsUtf8ByteLimit( json, options.maxInputBytes() ) ) {
 			throw new JsonParseException( "JSON input exceeds byte limit " + options.maxInputBytes() );
 		}
 		JsonTreeBuilder builder = new JsonTreeBuilder();
@@ -60,7 +60,7 @@ public final class JacksonJsonParserFactory {
 					case PROPERTY_NAME:
 						String name = parser.currentName();
 						// The async parser constrains names by decoded UTF-8 byte length, not UTF-16 units.
-						if ( utf8Length( name ) > options.maxNameLength() ) {
+						if ( exceedsUtf8ByteLimit( name, options.maxNameLength() ) ) {
 							throw new JsonParseException( "JSON name exceeds length limit " + options.maxNameLength() );
 						}
 						builder.name( name );
@@ -71,8 +71,10 @@ public final class JacksonJsonParserFactory {
 						builder.add( StringNode.valueOf( value ) );
 						break;
 					case VALUE_NUMBER_INT:
+						builder.add( JsonNumbers.fromIntegerToken( parser.getString() ) );
+						break;
 					case VALUE_NUMBER_FLOAT:
-						builder.add( JsonNumbers.fromToken( parser.getString(), token == JsonToken.VALUE_NUMBER_FLOAT ) );
+						builder.add( JsonNumbers.fromFloatingToken( parser.getString() ) );
 						break;
 					case VALUE_TRUE:
 						builder.add( BooleanNode.TRUE );
@@ -114,8 +116,16 @@ public final class JacksonJsonParserFactory {
 		}
 	}
 
-	/** Validate raw UTF-16 and count its UTF-8 representation without allocating another input. */
-	private static long utf8Length(String text) {
+	/**
+	 * Core's character parser accepts raw unpaired surrogates and constrains names in UTF-16 units.
+	 * This scan retains strict Unicode and byte-limit parity with async input without allocating UTF-8.
+	 * Stop as soon as a limit is exceeded: the caller rejects the whole input in that case.
+	 */
+	private static boolean exceedsUtf8ByteLimit(String text, long maxBytes) {
+		// Even ASCII needs one UTF-8 byte per UTF-16 unit; longer input can be rejected immediately.
+		if ( text.length() > maxBytes ) {
+			return true;
+		}
 		long result = 0;
 		int index = 0;
 		while ( index < text.length() ) {
@@ -138,8 +148,11 @@ public final class JacksonJsonParserFactory {
 			else {
 				result += 3;
 			}
+			if ( result > maxBytes ) {
+				return true;
+			}
 		}
-		return result;
+		return false;
 	}
 
 	public JsonParserSession createParser() {

@@ -1,7 +1,7 @@
 package org.hibernate.search.backend.elasticsearch.types.dsl;
 
 import org.hibernate.search.backend.elasticsearch.gson.GsonJsonHandlers;
-import org.hibernate.search.backend.elasticsearch.json.JsonHandler;
+import org.hibernate.search.util.json.JsonHandler;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;

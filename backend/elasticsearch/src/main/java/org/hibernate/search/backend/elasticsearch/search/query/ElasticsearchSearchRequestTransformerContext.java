@@ -3,8 +3,8 @@ package org.hibernate.search.backend.elasticsearch.search.query;
 import java.util.Map;
 import java.util.function.UnaryOperator;
 
-import org.hibernate.search.backend.elasticsearch.json.JsonHandler;
 import org.hibernate.search.util.common.annotation.Incubating;
+import org.hibernate.search.util.json.JsonHandler;
 
 import com.google.gson.JsonObject;
 

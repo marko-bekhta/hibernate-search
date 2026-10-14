@@ -6,10 +6,10 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
-import org.hibernate.search.backend.elasticsearch.json.JsonHandler;
 import org.hibernate.search.backend.elasticsearch.json.jackson.JacksonJsonHandlers;
 import org.hibernate.search.backend.elasticsearch.logging.impl.QueryLog;
 import org.hibernate.search.util.common.SearchException;
+import org.hibernate.search.util.json.JsonHandler;
 import org.hibernate.search.util.json.spi.JsonBodies;
 import org.hibernate.search.util.json.spi.JsonParsing;
 import org.hibernate.search.util.json.spi.JsonTreeValidation;
