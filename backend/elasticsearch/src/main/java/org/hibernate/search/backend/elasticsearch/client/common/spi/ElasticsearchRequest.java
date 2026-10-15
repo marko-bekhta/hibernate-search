@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.StringJoiner;
 
 import org.hibernate.search.backend.elasticsearch.client.common.util.spi.URLEncodedString;
@@ -173,12 +174,27 @@ public final class ElasticsearchRequest {
 		/** @deprecated Use {@link #bodyJson(ObjectNode)}. */
 		@Deprecated
 		public Builder body(JsonObject object) {
-			return bodyJson( JsonHandlerBridge.importObject( GsonJsonHandlers.object(), object, "request body import" ) );
+			return bodyJsonFromInternal(
+					JsonHandlerBridge.importObject( GsonJsonHandlers.object(), object, "request body import" ) );
 		}
 
 		/** Retain this validated tree; it must stay unchanged across retries. */
 		public Builder bodyJson(ObjectNode object) {
 			JsonTreeValidation.validateExternal( object );
+			return retainBody( object );
+		}
+
+		/**
+		 * Internal caller contract: stable ordinary acyclic tree built/parsed by Search or already
+		 * validated at the external boundary. Never use for unchecked application/client trees.
+		 */
+		public Builder bodyJsonFromInternal(ObjectNode object) {
+			Objects.requireNonNull( object );
+			JsonTreeValidation.validateInternal( object );
+			return retainBody( object );
+		}
+
+		private Builder retainBody(ObjectNode object) {
 			if ( bodyParts == null ) {
 				bodyParts = new ArrayList<>();
 			}

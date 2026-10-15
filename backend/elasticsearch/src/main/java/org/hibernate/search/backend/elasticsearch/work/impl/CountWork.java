@@ -67,7 +67,7 @@ public class CountWork extends AbstractNonBulkableWork<Long> {
 			ElasticsearchRequest.Builder builder = ElasticsearchRequest.get().multiValuedPathComponent( indexNames );
 			builder.pathComponent( Paths._COUNT );
 			if ( query != null ) {
-				builder.bodyJson( query );
+				builder.bodyJsonFromInternal( query );
 			}
 			if ( !routingKeys.isEmpty() ) {
 				builder.multiValuedParam( "routing", routingKeys );

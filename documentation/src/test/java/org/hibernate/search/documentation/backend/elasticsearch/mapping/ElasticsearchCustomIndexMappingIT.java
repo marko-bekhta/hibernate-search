@@ -10,6 +10,7 @@ import java.util.List;
 import jakarta.persistence.EntityManagerFactory;
 
 import org.hibernate.search.backend.elasticsearch.cfg.ElasticsearchIndexSettings;
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper;
 import org.hibernate.search.documentation.backend.elasticsearch.layout.Book;
 import org.hibernate.search.documentation.testsupport.BackendConfigurations;
 import org.hibernate.search.documentation.testsupport.DocumentationSetupHelper;
@@ -19,6 +20,8 @@ import org.hibernate.search.util.impl.integrationtest.backend.elasticsearch.exte
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+
+import tools.jackson.databind.JsonNode;
 
 class ElasticsearchCustomIndexMappingIT {
 
@@ -62,8 +65,8 @@ class ElasticsearchCustomIndexMappingIT {
 		try ( InputStream in = ElasticsearchCustomIndexMappingIT.class.getClassLoader()
 				.getResourceAsStream( "custom/index-mapping-merged.json" ) ) {
 
-			return org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.createUserFacingCodec()
-					.decode( in, tools.jackson.databind.JsonNode.class ).toString();
+			return JsonProviderHelper.createUserFacingCodec()
+					.decode( in, JsonNode.class ).toString();
 		}
 	}
 }

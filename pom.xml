@@ -420,6 +420,7 @@
         <failsafe.jvm.args.jdbc></failsafe.jvm.args.jdbc>
         <!-- Argument passed from the command line -->
         <test.launcher.args></test.launcher.args>
+        <test.json.internal_validation>true</test.json.internal_validation>
         <!--
             Caution, jacoco properties use @{...} for late property evaluation:
             http://maven.apache.org/surefire/maven-surefire-plugin/faq.html#late-property-evaluation
@@ -751,6 +752,9 @@
                         <trimStackTrace>false</trimStackTrace>
                         <jvm>${java-version.test.launcher}</jvm>
                         <argLine>${surefire.jvm.args}</argLine>
+                        <systemPropertyVariables>
+                            <hibernate.search.json.internal_validation>${test.json.internal_validation}</hibernate.search.json.internal_validation>
+                        </systemPropertyVariables>
                         <!--
                             Better test names in test reports.
                             See https://maven.apache.org/surefire/maven-surefire-plugin/examples/junit-platform.html#Surefire_Extensions_and_Reports_Configuration_for_.40DisplayName
@@ -802,6 +806,9 @@
                         <trimStackTrace>false</trimStackTrace>
                         <jvm>${java-version.test.launcher}</jvm>
                         <argLine>${failsafe.jvm.args}</argLine>
+                        <systemPropertyVariables>
+                            <hibernate.search.json.internal_validation>${test.json.internal_validation}</hibernate.search.json.internal_validation>
+                        </systemPropertyVariables>
                         <!-- Catch configuration problems that could cause the plugin
                              to not detect any tests.
                              For example, in the past, we've had:

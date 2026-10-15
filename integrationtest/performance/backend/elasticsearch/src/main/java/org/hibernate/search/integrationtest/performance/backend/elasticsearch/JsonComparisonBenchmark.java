@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.hibernate.search.backend.elasticsearch.client.common.json.impl.ElasticsearchJsonBody;
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonAccessor;
 import org.hibernate.search.util.json.spi.JsonBody;
 import org.hibernate.search.util.json.spi.JsonParsing;
 
@@ -23,6 +24,7 @@ import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.infra.Blackhole;
 
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 /** Complete NDJSON writes. Fresh includes construction/probe; reused excludes them for every writer. */
 @BenchmarkMode(Mode.Throughput)
@@ -109,17 +111,17 @@ public class JsonComparisonBenchmark {
 
 	@State(Scope.Thread)
 	public static class Accessors {
-		final org.hibernate.search.backend.elasticsearch.json.impl.JsonAccessor<Long> strict =
-				org.hibernate.search.backend.elasticsearch.json.impl.JsonAccessor.root().property( "hits" ).property( "total" )
+		final JsonAccessor<Long> strict =
+				JsonAccessor.root().property( "hits" ).property( "total" )
 						.property( "value" ).asLong();
-		final org.hibernate.search.backend.elasticsearch.json.impl.JsonAccessor<Long> adapted =
-				org.hibernate.search.backend.elasticsearch.json.impl.JsonAccessor.root().property( "hits" )
+		final JsonAccessor<Long> adapted =
+				JsonAccessor.root().property( "hits" )
 						.unwrapSingletonArrays()
 						.property( "total" ).unwrapSingletonArrays().property( "value" ).unwrapSingletonArrays().asLong();
 		final String plain = "{\"hits\":{\"total\":{\"value\":42}}}";
 		final String arrays = "{\"hits\":[[{\"total\":[{\"value\":[[42]]}]}]]}";
-		final tools.jackson.databind.node.ObjectNode searchPlain = new JsonParsing().parse( plain ).asObject();
-		final tools.jackson.databind.node.ObjectNode searchArrays = new JsonParsing().parse( arrays ).asObject();
+		final ObjectNode searchPlain = new JsonParsing().parse( plain ).asObject();
+		final ObjectNode searchArrays = new JsonParsing().parse( arrays ).asObject();
 
 		@Setup
 		public void verify() {

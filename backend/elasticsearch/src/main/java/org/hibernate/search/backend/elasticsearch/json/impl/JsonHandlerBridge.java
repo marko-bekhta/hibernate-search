@@ -48,10 +48,11 @@ public final class JsonHandlerBridge {
 		return requireObject( importValue( handler, value, operation ), operation );
 	}
 
+	/** Export only stable internal or externally validated trees; arbitrary inputs must use importValue first. */
 	public static <T> T exportValue(JsonHandler<T> handler, JsonNode value, String operation) {
 		try {
 			Class<T> javaType = Objects.requireNonNull( Objects.requireNonNull( handler ).javaType() );
-			JsonTreeValidation.validateExternal( Objects.requireNonNull( value ) );
+			JsonTreeValidation.validateInternal( Objects.requireNonNull( value ) );
 			if ( isTrusted( handler ) ) {
 				return javaType.cast( value );
 			}
@@ -100,11 +101,11 @@ public final class JsonHandlerBridge {
 		return object;
 	}
 
-	/** Explicit text boundary, preserving all object members and nested nulls. */
+	/** Internal/previously validated text boundary, preserving object members and nested nulls. */
 	public static String toJson(JsonNode value) {
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		try {
-			JsonBodies.of( value ).writeTo( output );
+			JsonBodies.ofInternal( value ).writeTo( output );
 		}
 		catch (IOException e) {
 			throw new UncheckedIOException( e );

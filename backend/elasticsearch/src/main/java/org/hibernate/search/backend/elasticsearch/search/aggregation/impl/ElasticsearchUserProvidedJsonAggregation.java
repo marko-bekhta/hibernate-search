@@ -1,5 +1,7 @@
 package org.hibernate.search.backend.elasticsearch.search.aggregation.impl;
 
+import java.util.Objects;
+
 import org.hibernate.search.backend.elasticsearch.json.impl.JsonHandlerBridge;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexScope;
 import org.hibernate.search.engine.search.aggregation.AggregationKey;
@@ -33,7 +35,7 @@ class ElasticsearchUserProvidedJsonAggregation<T> extends AbstractElasticsearchA
 		Builder(ElasticsearchSearchIndexScope<?> scope, ObjectNode json, JsonHandler<T> handler) {
 			super( scope );
 			this.json = json;
-			this.handler = java.util.Objects.requireNonNull( handler );
+			this.handler = Objects.requireNonNull( handler );
 		}
 
 		@Override

@@ -19,6 +19,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper;
+import org.hibernate.search.util.json.spi.JsonBodies;
 import org.hibernate.search.util.json.spi.JsonParsing;
 
 import org.junit.jupiter.params.ParameterizedTest;
@@ -37,7 +39,7 @@ class ClientRest5JsonHttpEntityTest {
 	public static List<? extends Arguments> params() {
 		List<Arguments> params = new ArrayList<>();
 		JsonCodecService json =
-				org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.create( true ).getCodec();
+				JsonProviderHelper.create( true ).getCodec();
 
 		ObjectNode bodyPart1 = new JsonParsing().parse( "{ \"foo\": \"bar\" }" ).asObject();
 		ObjectNode bodyPart2 = new JsonParsing().parse( "{ \"foobar\": 235 }" ).asObject();
@@ -148,7 +150,7 @@ class ClientRest5JsonHttpEntityTest {
 
 	public void init(List<ObjectNode> payload) throws IOException {
 		JsonCodecService json =
-				org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.create( true ).getCodec();
+				JsonProviderHelper.create( true ).getCodec();
 		this.gsonEntity = new ClientRest5JsonHttpEntity( json, payload );
 		StringBuilder builder = new StringBuilder();
 		for ( ObjectNode object : payload ) {
@@ -167,7 +169,7 @@ class ClientRest5JsonHttpEntityTest {
 
 
 		assertThat( gsonEntity.getContentLength() )
-				.isEqualTo( expectedContentLength <= org.hibernate.search.util.json.spi.JsonBodies.DEFAULT_BUFFER_SIZE
+				.isEqualTo( expectedContentLength <= JsonBodies.DEFAULT_BUFFER_SIZE
 						? expectedContentLength
 						: -1 );
 	}
@@ -189,7 +191,7 @@ class ClientRest5JsonHttpEntityTest {
 			assertThat( doProduceContent( gsonEntity, pushBackPeriod ) )
 					.isEqualTo( expectedPayloadString );
 			assertThat( gsonEntity.getContentLength() )
-					.isEqualTo( expectedContentLength <= org.hibernate.search.util.json.spi.JsonBodies.DEFAULT_BUFFER_SIZE
+					.isEqualTo( expectedContentLength <= JsonBodies.DEFAULT_BUFFER_SIZE
 							? expectedContentLength
 							: -1 );
 		}
@@ -204,7 +206,7 @@ class ClientRest5JsonHttpEntityTest {
 			assertThat( doProduceContent( gsonEntity, pushBackPeriod ) )
 					.isEqualTo( expectedPayloadString );
 			assertThat( gsonEntity.getContentLength() )
-					.isEqualTo( expectedContentLength <= org.hibernate.search.util.json.spi.JsonBodies.DEFAULT_BUFFER_SIZE
+					.isEqualTo( expectedContentLength <= JsonBodies.DEFAULT_BUFFER_SIZE
 							? expectedContentLength
 							: -1 );
 		}
@@ -220,7 +222,7 @@ class ClientRest5JsonHttpEntityTest {
 			assertThat( doProduceContent( gsonEntity, pushBackPeriod ) )
 					.isEqualTo( expectedPayloadString );
 			assertThat( gsonEntity.getContentLength() )
-					.isEqualTo( expectedContentLength <= org.hibernate.search.util.json.spi.JsonBodies.DEFAULT_BUFFER_SIZE
+					.isEqualTo( expectedContentLength <= JsonBodies.DEFAULT_BUFFER_SIZE
 							? expectedContentLength
 							: -1 );
 		}
@@ -236,7 +238,7 @@ class ClientRest5JsonHttpEntityTest {
 			assertThat( doProduceContent( gsonEntity, pushBackPeriod ) )
 					.isEqualTo( expectedPayloadString );
 			assertThat( gsonEntity.getContentLength() )
-					.isEqualTo( expectedContentLength <= org.hibernate.search.util.json.spi.JsonBodies.DEFAULT_BUFFER_SIZE
+					.isEqualTo( expectedContentLength <= JsonBodies.DEFAULT_BUFFER_SIZE
 							? expectedContentLength
 							: -1 );
 		}
@@ -250,7 +252,7 @@ class ClientRest5JsonHttpEntityTest {
 			assertThat( doWriteTo( gsonEntity ) )
 					.isEqualTo( expectedPayloadString );
 			assertThat( gsonEntity.getContentLength() )
-					.isEqualTo( expectedContentLength <= org.hibernate.search.util.json.spi.JsonBodies.DEFAULT_BUFFER_SIZE
+					.isEqualTo( expectedContentLength <= JsonBodies.DEFAULT_BUFFER_SIZE
 							? expectedContentLength
 							: -1 );
 		}
@@ -264,7 +266,7 @@ class ClientRest5JsonHttpEntityTest {
 			assertThat( doGetContent( gsonEntity ) )
 					.isEqualTo( expectedPayloadString );
 			assertThat( gsonEntity.getContentLength() )
-					.isEqualTo( expectedContentLength <= org.hibernate.search.util.json.spi.JsonBodies.DEFAULT_BUFFER_SIZE
+					.isEqualTo( expectedContentLength <= JsonBodies.DEFAULT_BUFFER_SIZE
 							? expectedContentLength
 							: -1 );
 		}

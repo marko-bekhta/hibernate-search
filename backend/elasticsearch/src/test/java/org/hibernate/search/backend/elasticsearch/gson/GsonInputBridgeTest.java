@@ -15,6 +15,8 @@ import org.hibernate.search.backend.elasticsearch.types.dsl.ElasticsearchNativeI
 
 import org.junit.jupiter.api.Test;
 
+import tools.jackson.databind.node.ObjectNode;
+
 @SuppressWarnings({ "deprecation", "unchecked" })
 class GsonInputBridgeTest {
 	@Test
@@ -47,7 +49,7 @@ class GsonInputBridgeTest {
 		var converted = builder.fromJson( GsonJsonHandlers.object(), input ).toJsonQuery( null );
 		assertThat( converted.path( "field" ).path( "number" ).longValue() ).isEqualTo( 9007199254740993L );
 		assertThat( converted.path( "field" ).path( "nested" ).isNull() ).isTrue();
-		( (tools.jackson.databind.node.ObjectNode) converted.get( "field" ) ).put( "changed", true );
+		( (ObjectNode) converted.get( "field" ) ).put( "changed", true );
 		assertThat( input.getAsJsonObject( "field" ).has( "changed" ) ).isFalse();
 		assertThat( builder.fromJson( JacksonJsonHandlers.object(), converted ).toJsonQuery( null ) ).isSameAs( converted );
 	}

@@ -10,6 +10,7 @@ import org.hibernate.search.backend.elasticsearch.cfg.ElasticsearchBackendSettin
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchRequest;
 import org.hibernate.search.backend.elasticsearch.client.common.util.spi.URLEncodedString;
 import org.hibernate.search.backend.elasticsearch.client.impl.Paths;
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper;
 import org.hibernate.search.engine.backend.document.IndexFieldReference;
 import org.hibernate.search.engine.backend.document.model.dsl.IndexSchemaElement;
 import org.hibernate.search.engine.backend.types.Projectable;
@@ -76,7 +77,7 @@ class ElasticsearchSearchQueryIT {
 		SearchQuery<?> query = scope.query().where( f -> f.matchAll() ).toQuery();
 		clientSpy.expectNext(
 				ElasticsearchRequest.post().pathComponent( readName ).pathComponent( Paths._SEARCH )
-						.bodyJson( org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.create( false )
+						.bodyJson( JsonProviderHelper.create( false )
 								.getCodec().decode( "{\"_source\":false}", ObjectNode.class ) )
 						.build(),
 				ElasticsearchRequestAssertionMode.EXTENSIBLE );
@@ -91,7 +92,7 @@ class ElasticsearchSearchQueryIT {
 		SearchQuery<Object> query = scope.query().select( f -> f.field( "string" ) ).where( f -> f.matchAll() ).toQuery();
 		clientSpy.expectNext(
 				ElasticsearchRequest.post().pathComponent( readName ).pathComponent( Paths._SEARCH )
-						.bodyJson( org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.create( false )
+						.bodyJson( JsonProviderHelper.create( false )
 								.getCodec().decode( "{\"_source\":[\"string\"]}", ObjectNode.class ) )
 						.build(),
 				ElasticsearchRequestAssertionMode.EXTENSIBLE );

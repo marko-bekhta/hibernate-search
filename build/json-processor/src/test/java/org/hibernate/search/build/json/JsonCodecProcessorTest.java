@@ -3,11 +3,14 @@ package org.hibernate.search.build.json;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.URI;
+import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
 import javax.tools.DiagnosticCollector;
 import javax.tools.JavaFileObject;
 import javax.tools.SimpleJavaFileObject;
@@ -21,6 +24,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+
 import tools.jackson.databind.node.ObjectNode;
 
 class JsonCodecProcessorTest {
@@ -79,13 +83,14 @@ class JsonCodecProcessorTest {
 						""" ) );
 		DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
 		assertThat( compile( sources, diagnostics ) ).as( diagnostics.getDiagnostics().toString() ).isTrue();
-		assertThat( java.nio.file.Files.readString( directory.resolve( "fixture/GeneratedFixtureJsonCodec.java" ) )
+		assertThat( Files.readString( directory.resolve( "fixture/GeneratedFixtureJsonCodec.java" ) )
 				.replace( "\r\n", "\n" ) )
-				.contains( "new fixture.Fixture()", "instance.setInherited(", "instance.getRaw()", "tools.jackson.databind.JsonNode" )
+				.contains( "new Fixture()", "instance.setInherited(", "instance.getRaw()", "tools.jackson.databind.JsonNode" )
 				.contains( "\n\t@Override\n\tpublic", "\n\t\t\tswitch" )
-				.doesNotContain( "ObjectMapper", "java.lang.reflect", "org.hibernate.search.util.json.JsonElement", "; import " );
+				.doesNotContain( "ObjectMapper", "java.lang.reflect", "org.hibernate.search.util.json.JsonElement", "; import ",
+						"java.lang.String", "java.util.List<", "fixture.Fixture" );
 		try ( var loader =
-				new URLClassLoader( new java.net.URL[] { directory.toUri().toURL() }, getClass().getClassLoader() ) ) {
+				new URLClassLoader( new URL[] { directory.toUri().toURL() }, getClass().getClassLoader() ) ) {
 			Class<?> type = loader.loadClass( "fixture.Fixture" );
 			var constructor = loader.loadClass( "fixture.GeneratedFixtureJsonCodec" ).getConstructor( JsonCodecRegistry.class );
 			var registry = new JsonCodecRegistry( Map.of( type, r -> {
@@ -113,6 +118,39 @@ class JsonCodecProcessorTest {
 					""" ) );
 			assertThat( codec.encode( value, true ).get( "z" ).isNull() ).isTrue();
 		}
+	}
+
+	@Test
+	void generatedImportsPreserveCollidingTypeNames() throws Exception {
+		var sources = annotations();
+		sources.add( source( "first.Value", "package first; public class Value {}" ) );
+		sources.add( source( "second.Value", "package second; public class Value {}" ) );
+		sources.add( source( "other.GeneratedJsonNodeJsonCodec", "package other; public class GeneratedJsonNodeJsonCodec {}" ) );
+		sources.add( source( "fixture.JsonNode", """
+				package fixture;
+				@org.hibernate.search.backend.elasticsearch.json.impl.JsonSerializable
+				public class JsonNode {
+				private first.Value first;
+				private second.Value second;
+				private tools.jackson.databind.JsonNode raw;
+				private other.GeneratedJsonNodeJsonCodec generated;
+				public other.GeneratedJsonNodeJsonCodec getGenerated() { return generated; }
+				public void setGenerated(other.GeneratedJsonNodeJsonCodec value) { generated = value; }
+				public first.Value getFirst() { return first; }
+				public void setFirst(first.Value value) { first = value; }
+				public second.Value getSecond() { return second; }
+				public void setSecond(second.Value value) { second = value; }
+				public tools.jackson.databind.JsonNode getRaw() { return raw; }
+				public void setRaw(tools.jackson.databind.JsonNode value) { raw = value; }
+				}
+				""" ) );
+		var diagnostics = new DiagnosticCollector<JavaFileObject>();
+		assertThat( compile( sources, diagnostics ) ).as( diagnostics.getDiagnostics().toString() ).isTrue();
+		assertThat( Files.readString( directory.resolve( "fixture/GeneratedJsonNodeJsonCodec.java" ) ) )
+				.contains( "import first.Value;", "import tools.jackson.databind.JsonNode;",
+						"JsonCodec<fixture.JsonNode>", "JsonCodec<Value> firstCodec", "JsonCodec<second.Value> secondCodec",
+						"JsonCodec<other.GeneratedJsonNodeJsonCodec> generatedCodec" )
+				.doesNotContain( "import fixture.JsonNode;", "import second.Value;", "import other.GeneratedJsonNodeJsonCodec;" );
 	}
 
 	@ParameterizedTest

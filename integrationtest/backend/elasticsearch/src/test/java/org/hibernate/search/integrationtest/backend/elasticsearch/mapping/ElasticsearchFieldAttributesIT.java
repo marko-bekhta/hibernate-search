@@ -8,6 +8,7 @@ import java.util.function.Consumer;
 import org.hibernate.search.backend.elasticsearch.ElasticsearchExtension;
 import org.hibernate.search.backend.elasticsearch.cfg.ElasticsearchBackendSettings;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchRequest;
+import org.hibernate.search.backend.elasticsearch.json.jackson.JacksonJsonHandlers;
 import org.hibernate.search.engine.backend.document.model.dsl.IndexSchemaElement;
 import org.hibernate.search.engine.backend.types.Norms;
 import org.hibernate.search.engine.backend.types.TermVector;
@@ -73,7 +74,7 @@ class ElasticsearchFieldAttributesIT {
 		matchMapping( root -> {
 			root.field( "native",
 					f -> f.extension( ElasticsearchExtension.get() )
-							.asNative( org.hibernate.search.backend.elasticsearch.json.jackson.JacksonJsonHandlers.value() )
+							.asNative( JacksonJsonHandlers.value() )
 							.mapping( "{\"type\": \"half_float\",\"ignore_malformed\": true}" ) )
 					.toReference();
 		}, properties );

@@ -1,5 +1,7 @@
 package org.hibernate.search.backend.elasticsearch.json.impl;
 
+import java.util.Objects;
+
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.JsonNodeFactory;
 import tools.jackson.databind.node.ObjectNode;
@@ -28,7 +30,7 @@ public class JsonObjectAccessorImpl extends AbstractTypingJsonAccessor<ObjectNod
 
 	@Override
 	public UnknownTypeJsonAccessor property(String propertyName) {
-		java.util.Objects.requireNonNull( propertyName );
+		Objects.requireNonNull( propertyName );
 		return new ObjectPropertyJsonAccessor( this, propertyName );
 	}
 }

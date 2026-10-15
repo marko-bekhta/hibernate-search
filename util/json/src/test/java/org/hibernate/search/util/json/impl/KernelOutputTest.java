@@ -17,6 +17,7 @@ import java.util.List;
 import org.hibernate.search.util.json.spi.JsonBodies;
 import org.hibernate.search.util.json.spi.JsonBody;
 import org.hibernate.search.util.json.spi.JsonParsing;
+import org.hibernate.search.util.json.spi.JsonWriteCursor;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -69,7 +70,7 @@ class KernelOutputTest {
 	void probeIsBoundedStableAndClosesItsTraversal() throws Exception {
 		var root = StringNode.valueOf( "x".repeat( 1024 * 1024 ) );
 		int[] writtenAndCloses = new int[2];
-		JsonBody instrumented = () -> new org.hibernate.search.util.json.spi.JsonWriteCursor() {
+		JsonBody instrumented = () -> new JsonWriteCursor() {
 
 			final Utf8JsonWriteCursor delegate = new Utf8JsonWriteCursor( root );
 

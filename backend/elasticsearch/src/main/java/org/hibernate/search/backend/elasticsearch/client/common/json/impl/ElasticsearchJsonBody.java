@@ -12,8 +12,8 @@ public final class ElasticsearchJsonBody {
 	private ElasticsearchJsonBody() {
 	}
 
-	/** Retain stable submitted trees; all parts share one workspace and one whole-body length probe. */
+	/** Internal caller contract: parts are already parsed/built/validated, ordinary and acyclic. Retain stable submitted trees; all parts share one workspace and one whole-body length probe. */
 	public static JsonBody ndjson(List<? extends JsonNode> parts) {
-		return JsonBodies.ndjson( parts );
+		return JsonBodies.ndjsonInternal( parts );
 	}
 }

@@ -12,6 +12,7 @@ import org.hibernate.search.backend.elasticsearch.client.common.spi.Elasticsearc
 import org.hibernate.search.backend.elasticsearch.client.common.util.spi.URLEncodedString;
 import org.hibernate.search.backend.elasticsearch.client.impl.Paths;
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper;
 import org.hibernate.search.engine.backend.document.IndexFieldReference;
 import org.hibernate.search.engine.backend.document.model.dsl.IndexSchemaElement;
 import org.hibernate.search.engine.backend.work.execution.OperationSubmitter;
@@ -62,7 +63,7 @@ class ElasticsearchIndexingIT {
 	void addUpdateDelete_noRouting(Object layoutStrategy, URLEncodedString writeName) {
 		init( layoutStrategy, writeName );
 		JsonCodecService json =
-				org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.create( false ).getCodec();
+				JsonProviderHelper.create( false ).getCodec();
 		IndexIndexingPlan plan = index.createIndexingPlan();
 		plan.add( referenceProvider( "1" ), document -> {
 			document.addValue( index.binding().string, "text1" );
@@ -103,7 +104,7 @@ class ElasticsearchIndexingIT {
 	void addUpdateDelete_routing(Object layoutStrategy, URLEncodedString writeName) {
 		init( layoutStrategy, writeName );
 		JsonCodecService json =
-				org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.create( false ).getCodec();
+				JsonProviderHelper.create( false ).getCodec();
 		String routingKey = "someRoutingKey";
 		IndexIndexingPlan plan = index.createIndexingPlan();
 		plan.add( referenceProvider( "1", routingKey ), document -> {

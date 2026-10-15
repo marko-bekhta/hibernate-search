@@ -2,6 +2,7 @@ package org.hibernate.search.build.json;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+
 import javax.annotation.processing.Filer;
 import javax.lang.model.element.TypeElement;
 
@@ -13,39 +14,59 @@ final class JsonCodecWriter {
 	}
 
 	void write(ClassModel m, TypeElement element, Filer filer) throws IOException {
-		// Validate every field before opening the generated source.
+		SourceImports imports = new SourceImports( m.packageName, element );
+		imports.add( m.codecQualifiedName );
+		for ( String type : new String[] {
+				"tools.jackson.databind.JsonNode", "tools.jackson.databind.node.ObjectNode",
+				"tools.jackson.databind.node.NullNode", "tools.jackson.databind.node.JsonNodeFactory",
+				"org.hibernate.search.util.json.spi.JsonCodec", "org.hibernate.search.util.json.spi.JsonCodecs",
+				"org.hibernate.search.util.json.spi.JsonCodecRegistry", "javax.annotation.processing.Generated",
+				"java.lang.Override" } ) {
+			imports.add( type );
+		}
+		if ( m.hasExtraProperties() ) {
+			imports.add( "java.util.LinkedHashMap" );
+		}
+		imports.add( m.qualifiedName );
+		// Validate every field and collect its referenced types before opening the generated source.
 		for ( FieldModel f : m.fields ) {
 			f.codecExpression();
+			imports.add( f.typeMirror );
+			if ( f.customCodecClass != null ) {
+				imports.add( f.customCodecClass );
+			}
 		}
 		try ( PrintWriter w = new PrintWriter( filer.createSourceFile( m.codecQualifiedName, element ).openWriter() ) ) {
 			line( w, 0, "package " + m.packageName + ";" );
 			w.println();
-			for ( String name : new String[] { "JsonNode", "node.ObjectNode", "node.NullNode", "node.JsonNodeFactory" } ) {
-				line( w, 0, "import tools.jackson.databind." + name + ";" );
+			String previousGroup = null;
+			for ( String name : imports.declarations() ) {
+				String group = name.substring( 0, name.indexOf( '.' ) );
+				if ( previousGroup != null && !previousGroup.equals( group ) ) {
+					w.println();
+				}
+				line( w, 0, "import " + name + ";" );
+				previousGroup = group;
 			}
 			w.println();
-			for ( String name : new String[] { "JsonCodec", "JsonCodecs", "JsonCodecRegistry" } ) {
-				line( w, 0, "import org.hibernate.search.util.json.spi." + name + ";" );
-			}
-			w.println();
-			line( w, 0, "@javax.annotation.processing.Generated(\"" + processorClassName + "\")" );
-			line( w, 0, "public final class " + m.codecSimpleName + " implements JsonCodec<" + m.qualifiedName + "> {" );
+			line( w, 0, "@Generated(\"" + processorClassName + "\")" );
+			line( w, 0, "public final class " + m.codecSimpleName + " implements JsonCodec<" + imports.shorten( m.qualifiedName ) + "> {" );
 			for ( FieldModel f : m.fields ) {
-				line( w, 1, "private final JsonCodec<" + f.typeMirror + "> " + f.javaName + "Codec;" );
+				line( w, 1, "private final JsonCodec<" + imports.shorten( f.typeMirror.toString() ) + "> " + f.javaName + "Codec;" );
 			}
 			w.println();
 			line( w, 1, "public " + m.codecSimpleName + "(JsonCodecRegistry registry) {" );
 			for ( FieldModel f : m.fields ) {
-				line( w, 2, "this." + f.javaName + "Codec = " + f.codecExpression() + ";" );
+				line( w, 2, "this." + f.javaName + "Codec = " + imports.shorten( f.codecExpression() ) + ";" );
 			}
 			line( w, 1, "}" );
 			w.println();
 			line( w, 1, "@Override" );
-			line( w, 1, "public " + m.qualifiedName + " decode(JsonNode value) {" );
+			line( w, 1, "public " + imports.shorten( m.qualifiedName ) + " decode(JsonNode value) {" );
 			line( w, 2, "if ( JsonCodecs.isNull( value ) ) {" );
 			line( w, 3, "return null;" );
 			line( w, 2, "}" );
-			line( w, 2, m.qualifiedName + " instance = new " + m.qualifiedName + "();" );
+			line( w, 2, imports.shorten( m.qualifiedName ) + " instance = new " + imports.shorten( m.qualifiedName ) + "();" );
 			line( w, 2, "for ( var entry : ((ObjectNode) value).properties() ) {" );
 			line( w, 3, "switch ( entry.getKey() ) {" );
 			for ( FieldModel f : m.fields ) {
@@ -59,7 +80,7 @@ final class JsonCodecWriter {
 			line( w, 4, "default:" );
 			if ( m.hasExtraProperties() ) {
 				line( w, 5, "if ( instance." + m.extraPropsGetter + "() == null ) {" );
-				line( w, 6, "instance." + m.extraPropsSetter + "( new java.util.LinkedHashMap<>() );" );
+				line( w, 6, "instance." + m.extraPropsSetter + "( new LinkedHashMap<>() );" );
 				line( w, 5, "}" );
 				line( w, 5, "instance." + m.extraPropsGetter + "().put( entry.getKey(), entry.getValue() );" );
 			}
@@ -70,7 +91,7 @@ final class JsonCodecWriter {
 			line( w, 1, "}" );
 			w.println();
 			line( w, 1, "@Override" );
-			line( w, 1, "public JsonNode encode(" + m.qualifiedName + " instance, boolean serializeNulls) {" );
+			line( w, 1, "public JsonNode encode(" + imports.shorten( m.qualifiedName ) + " instance, boolean serializeNulls) {" );
 			line( w, 2, "if ( instance == null ) {" );
 			line( w, 3, "return NullNode.instance;" );
 			line( w, 2, "}" );

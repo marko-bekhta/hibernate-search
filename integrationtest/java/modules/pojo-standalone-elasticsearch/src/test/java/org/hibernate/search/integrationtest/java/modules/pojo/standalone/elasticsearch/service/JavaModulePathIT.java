@@ -2,6 +2,9 @@ package org.hibernate.search.integrationtest.java.modules.pojo.standalone.elasti
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.lang.module.ModuleDescriptor;
+
+import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchRequest;
 import org.hibernate.search.mapper.pojo.standalone.mapping.SearchMapping;
 import org.hibernate.search.util.json.spi.JsonParsing;
 
@@ -55,19 +58,19 @@ class JavaModulePathIT {
 				.anySatisfy( requirement -> {
 					assertThat( requirement.name() ).isEqualTo( "tools.jackson.databind" );
 					assertThat( requirement.modifiers() )
-							.contains( java.lang.module.ModuleDescriptor.Requires.Modifier.TRANSITIVE );
+							.contains( ModuleDescriptor.Requires.Modifier.TRANSITIVE );
 				} );
 		assertThat( JsonParsing.class.getModule().isExported( "org.hibernate.search.util.json.impl",
 				JsonApiExample.class.getModule() ) ).isFalse();
 		assertThat( JsonParsing.class.getModule().getDescriptor().opens() ).isEmpty();
-		assertThat( org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchRequest.class.getModule()
+		assertThat( ElasticsearchRequest.class.getModule()
 				.isExported( "org.hibernate.search.backend.elasticsearch.json.impl", JsonApiExample.class.getModule() ) )
 				.isFalse();
 		assertThat( JsonParsing.class.getModule().getDescriptor().requires() )
 				.anySatisfy( requirement -> {
 					assertThat( requirement.name() ).isEqualTo( "tools.jackson.core" );
 					assertThat( requirement.modifiers() )
-							.doesNotContain( java.lang.module.ModuleDescriptor.Requires.Modifier.TRANSITIVE );
+							.doesNotContain( ModuleDescriptor.Requires.Modifier.TRANSITIVE );
 				} );
 	}
 

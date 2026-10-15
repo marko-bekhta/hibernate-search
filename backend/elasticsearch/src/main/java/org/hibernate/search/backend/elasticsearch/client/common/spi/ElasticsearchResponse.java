@@ -25,13 +25,25 @@ public final class ElasticsearchResponse {
 	/** The optional body is validated and retained as a stable borrowed tree. */
 	public static ElasticsearchResponse withJsonBody(String hostAndPort, int statusCode,
 			String statusMessage, ObjectNode body) {
+		if ( body != null ) {
+			JsonTreeValidation.validateExternal( body );
+		}
+		return new ElasticsearchResponse( body, hostAndPort, statusCode, statusMessage );
+	}
+
+	/**
+	 * Internal caller contract: body was parsed/constructed by Search or already externally validated,
+	 * and remains stable/read-only. Custom clients with arbitrary trees must use {@link #withJsonBody(String, int, String, ObjectNode)}.
+	 */
+	public static ElasticsearchResponse withInternalJsonBody(String hostAndPort, int statusCode,
+			String statusMessage, ObjectNode body) {
+		if ( body != null ) {
+			JsonTreeValidation.validateInternal( body );
+		}
 		return new ElasticsearchResponse( body, hostAndPort, statusCode, statusMessage );
 	}
 
 	private ElasticsearchResponse(ObjectNode body, String hostAndPort, int statusCode, String statusMessage) {
-		if ( body != null ) {
-			JsonTreeValidation.validateExternal( body );
-		}
 		this.hostAndPort = hostAndPort;
 		this.statusCode = statusCode;
 		this.statusMessage = statusMessage;

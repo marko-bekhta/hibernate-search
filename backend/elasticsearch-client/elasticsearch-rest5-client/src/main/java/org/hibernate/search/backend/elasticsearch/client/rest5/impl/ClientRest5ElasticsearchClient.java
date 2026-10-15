@@ -9,6 +9,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import org.hibernate.search.backend.elasticsearch.client.common.json.entity.spi.JsonHttpEntityContentProvider;
 import org.hibernate.search.backend.elasticsearch.client.common.json.impl.JsonResponseBody;
 import org.hibernate.search.backend.elasticsearch.client.common.json.impl.JsonResponseConsumerScope;
 import org.hibernate.search.backend.elasticsearch.client.common.json.spi.JsonLogHelper;
@@ -133,7 +134,7 @@ public class ClientRest5ElasticsearchClient implements ElasticsearchClientImplem
 
 		completableFuture.whenComplete( (response, failure) -> {
 			if ( failure != null ) {
-				if ( entity instanceof org.hibernate.search.backend.elasticsearch.client.common.json.entity.spi.JsonHttpEntityContentProvider provider ) {
+				if ( entity instanceof JsonHttpEntityContentProvider provider ) {
 					provider.cancel();
 				}
 				responseScope.cancel();
@@ -218,7 +219,7 @@ public class ClientRest5ElasticsearchClient implements ElasticsearchClientImplem
 		try {
 
 			ObjectNode body = parseBody( response );
-			return ElasticsearchResponse.withJsonBody(
+			return ElasticsearchResponse.withInternalJsonBody(
 					response.getHost().toHostString(),
 					response.getStatusCode(),
 					reason,

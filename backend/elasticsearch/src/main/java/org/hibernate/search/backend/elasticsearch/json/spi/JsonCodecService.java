@@ -10,6 +10,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
+import org.hibernate.search.util.json.spi.JsonBodies;
 import org.hibernate.search.util.json.spi.JsonCodec;
 import org.hibernate.search.util.json.spi.JsonCodecRegistry;
 import org.hibernate.search.util.json.spi.JsonCodecs;
@@ -26,7 +27,12 @@ import tools.jackson.databind.node.NullNode;
 import tools.jackson.databind.node.ObjectNode;
 import tools.jackson.databind.node.StringNode;
 
-/** Backend JSON services over Jackson nodes, using explicit known-type codecs and bounded byte input. */
+/**
+ * Internal backend JSON services using explicit known-type codecs and bounded byte input.
+ * JsonNode arguments must be stable ordinary acyclic trees produced by parsing/codecs or validated at
+ * their external boundary. Custom clients accepting arbitrary trees must validate them first with
+ * JsonTreeValidation.validateExternal; this service does not establish trust based on node type.
+ */
 public final class JsonCodecService {
 	private final JsonCodecRegistry registry;
 	private final boolean serializeNulls;
@@ -154,7 +160,7 @@ public final class JsonCodecService {
 
 	/** Compact streaming UTF-8 output, preserving schema export's file format. */
 	public void writeCompact(Object value, OutputStream output) throws IOException {
-		org.hibernate.search.util.json.spi.JsonBodies.of( encode( value ) ).writeTo( output );
+		JsonBodies.ofInternal( encode( value ) ).writeTo( output );
 	}
 
 	private void render(JsonNode value, Writer writer, int depth) throws IOException {
@@ -196,7 +202,7 @@ public final class JsonCodecService {
 	}
 
 	private void compact(JsonNode value, Writer writer) throws IOException {
-		try ( var input = org.hibernate.search.util.json.spi.JsonBodies.of( value ).openStream();
+		try ( var input = JsonBodies.ofInternal( value ).openStream();
 				var reader = new InputStreamReader( input, StandardCharsets.UTF_8 ) ) {
 			char[] buffer = new char[8192];
 			int count;

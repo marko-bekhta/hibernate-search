@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hibernate.search.util.impl.integrationtest.backend.elasticsearch.extension.TestElasticsearchClient.getDiscoveredClientFactory;
 
 import java.io.ByteArrayOutputStream;
+import java.io.EOFException;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -12,9 +14,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.zip.GZIPOutputStream;
 
 import org.hibernate.search.backend.elasticsearch.cfg.ElasticsearchBackendSettings;
@@ -23,6 +27,7 @@ import org.hibernate.search.backend.elasticsearch.client.common.spi.Elasticsearc
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchResponse;
 import org.hibernate.search.backend.elasticsearch.client.common.util.spi.URLEncodedString;
 import org.hibernate.search.backend.elasticsearch.json.impl.JsonScalarConversions;
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper;
 import org.hibernate.search.engine.cfg.spi.AllAwareConfigurationPropertySource;
 import org.hibernate.search.engine.common.execution.spi.DelegatingSimpleScheduledExecutor;
 import org.hibernate.search.engine.environment.bean.BeanHolder;
@@ -126,7 +131,7 @@ class ElasticsearchJsonTransportIT {
 			AtomicInteger attempts = new AtomicInteger();
 			ObjectNode document = new ObjectNode( JsonNodeFactory.instance );
 			document.put( "value", "é😀".repeat( 100_000 ) );
-			String expected = org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.create( true ).getCodec()
+			String expected = JsonProviderHelper.create( true ).getCodec()
 					.write( document ) + "\n";
 			StreamingHttpServer.Handler handler = exchange -> {
 				ByteArrayOutputStream upload = new ByteArrayOutputStream();
@@ -168,13 +173,13 @@ class ElasticsearchJsonTransportIT {
 		long expectedLength = 6_000_013;
 		StreamingHttpServer.Handler handler = exchange -> {
 			boolean first = attempts.incrementAndGet() == 1;
-			var received = new java.util.concurrent.atomic.AtomicLong();
+			var received = new AtomicLong();
 			var prefix = new ByteArrayOutputStream();
 			exchange.readBody( (bytes, count) -> {
 				if ( first ) {
 					// Close after receiving only the first bounded fragment of a multi-megabyte upload.
 					assertThat( count ).isBetween( 1, 8192 );
-					throw new java.io.EOFException( "Fixture interrupts partial upload" );
+					throw new EOFException( "Fixture interrupts partial upload" );
 				}
 				if ( received.get() < 12 ) {
 					prefix.write( bytes, 0, (int) Math.min( count, 12 - received.get() ) );
@@ -194,7 +199,7 @@ class ElasticsearchJsonTransportIT {
 					.bodyJson( document ).build();
 			if ( isJdk() ) {
 				assertThatThrownBy( () -> client.submit( request ).get( 10, TimeUnit.SECONDS ) )
-						.hasRootCauseInstanceOf( java.io.IOException.class );
+						.hasRootCauseInstanceOf( IOException.class );
 			}
 			else {
 				assertThat( client.submit( request ).get( 10, TimeUnit.SECONDS ).statusCode() ).isEqualTo( 200 );
@@ -346,7 +351,7 @@ class ElasticsearchJsonTransportIT {
 					try {
 						assertThat( response.get( 10, TimeUnit.SECONDS ).statusCode() ).isEqualTo( 413 );
 					}
-					catch (java.util.concurrent.ExecutionException e) {
+					catch (ExecutionException e) {
 						assertThat( e.getCause() ).isNotNull();
 					}
 				}
@@ -377,7 +382,7 @@ class ElasticsearchJsonTransportIT {
 		return getDiscoveredClientFactory( resolver ).get().create( resolver,
 				AllAwareConfigurationPropertySource.fromMap( properties ), threads.threadProvider(), "Transport",
 				new DelegatingSimpleScheduledExecutor( timeouts, true ),
-				org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.create( true ) );
+				JsonProviderHelper.create( true ) );
 	}
 
 	private static ElasticsearchRequest request(String path) {

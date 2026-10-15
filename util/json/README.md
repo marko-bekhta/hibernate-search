@@ -73,6 +73,33 @@ shared subtrees. It rejects POJO/raw/binary/custom/missing nodes, nonfinite numb
 cycles, invalid member names and invalid raw container values, without serialization
 or reflection. It checks the same decimal policy used by both parser routes.
 
+## External validation and internal assurance
+
+Public arbitrary-tree factories (`JsonBodies.of`, `ndjson`, `openCursor`) always
+validate their input, as do backend application handler imports, transformer results
+and custom-client response/request entrypoints. Keep retained trees stable afterward;
+validation does not cache a valid bit or isolate later mutation.
+
+The explicitly named internal SPI routes (`ofInternal`, `ndjsonInternal`,
+`openCursorInternal`, request `bodyJsonFromInternal`, response `withInternalJsonBody`)
+require ordinary acyclic trees constructed/parsed by Search or already validated
+at their external boundary. They avoid repeated whole-tree walks in production.
+They are caller contracts, not trust inferred from the Jackson node class.
+
+Set the JVM property `hibernate.search.json.internal_validation=true` before class
+initialization to enable internal invariant validation and writer cycle tracking.
+Its production default is `false`; the mode is fixed once per JVM and captured by
+each writer. Repository Surefire/Failsafe tests enable it by default; use
+`-Dtest.json.internal_validation=false` for production-mode verification.
+When disabled, internal validation does not traverse the tree and writers allocate
+no cycle tracking state. Numeric fallback encoding may still use its fixed character
+workspace, and NDJSON shares that encoding workspace across parts.
+
+Debug checks provide assurance, not a proof of all internal invariants. With them
+disabled, violating an internal route's acyclic/stable-tree contract may cause a
+nonterminating traversal. External validation remains unconditional in both modes;
+escaping, finite/exact number checks, output bounds and cleanup remain active.
+
 ## Parsing Strings and incoming bytes
 
 For an already materialized String:

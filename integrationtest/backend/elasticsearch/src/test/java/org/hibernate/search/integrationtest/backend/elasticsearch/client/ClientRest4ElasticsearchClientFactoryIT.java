@@ -39,9 +39,11 @@ import org.hibernate.search.backend.elasticsearch.client.common.spi.Elasticsearc
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchRequest;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchResponse;
 import org.hibernate.search.backend.elasticsearch.client.common.util.spi.URLEncodedString;
+import org.hibernate.search.backend.elasticsearch.client.rest4.ElasticsearchHttpClientConfigurer;
 import org.hibernate.search.backend.elasticsearch.client.rest4.cfg.ClientRest4ElasticsearchBackendClientSettings;
 import org.hibernate.search.backend.elasticsearch.client.rest4.cfg.spi.ClientRest4ElasticsearchBackendClientSpiSettings;
 import org.hibernate.search.backend.elasticsearch.client.rest4.impl.ClientRest4ElasticsearchClientFactory;
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper;
 import org.hibernate.search.engine.cfg.ConfigurationPropertySource;
 import org.hibernate.search.engine.cfg.spi.AllAwareConfigurationPropertySource;
 import org.hibernate.search.engine.cfg.spi.EngineSpiSettings;
@@ -168,7 +170,7 @@ class ClientRest4ElasticsearchClientFactoryIT {
 		HttpResponseInterceptor responseInterceptor = spy( HttpResponseInterceptor.class );
 		try ( ElasticsearchClientImplementor client = createClient( properties -> properties.accept(
 				ClientRest4ElasticsearchBackendClientSettings.CLIENT_CONFIGURER,
-				(org.hibernate.search.backend.elasticsearch.client.rest4.ElasticsearchHttpClientConfigurer) context -> context
+				(ElasticsearchHttpClientConfigurer) context -> context
 						.clientBuilder().addInterceptorFirst( responseInterceptor ) ) ) ) {
 			ElasticsearchResponse result = doPost( client, "/myIndex/myType", payload );
 			assertThat( result.statusCode() ).as( "status code" ).isEqualTo( 200 );
@@ -798,7 +800,7 @@ class ClientRest4ElasticsearchClientFactoryIT {
 		Set<String> usedConnections = Collections.synchronizedSet( new HashSet<>() );
 		try ( ElasticsearchClientImplementor client = createClient( properties -> {
 			properties.accept( ClientRest4ElasticsearchBackendClientSettings.CLIENT_CONFIGURER,
-					(org.hibernate.search.backend.elasticsearch.client.rest4.ElasticsearchHttpClientConfigurer) context -> {
+					(ElasticsearchHttpClientConfigurer) context -> {
 						context.clientBuilder().setConnectionManager( createPoolManager( usedConnections ) );
 					} );
 			properties.accept( ClientRest4ElasticsearchBackendClientSettings.MAX_KEEP_ALIVE, time );
@@ -872,7 +874,7 @@ class ClientRest4ElasticsearchClientFactoryIT {
 		return new ClientRest4ElasticsearchClientFactory().create( beanResolver, clientPropertySource,
 				threadPoolProvider.threadProvider(), "Client",
 				new DelegatingSimpleScheduledExecutor( timeoutExecutorService, true ),
-				org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.create( true ) );
+				JsonProviderHelper.create( true ) );
 	}
 
 	private ElasticsearchResponse doPost(ElasticsearchClient client, String path, String payload) {
@@ -958,9 +960,9 @@ class ClientRest4ElasticsearchClientFactoryIT {
 	private static BeanConfigurer elasticsearchSslBeanConfigurer() {
 		return context -> {
 			context.define(
-					org.hibernate.search.backend.elasticsearch.client.rest4.ElasticsearchHttpClientConfigurer.class,
+					ElasticsearchHttpClientConfigurer.class,
 					BeanReference.ofInstance(
-							(org.hibernate.search.backend.elasticsearch.client.rest4.ElasticsearchHttpClientConfigurer) clientContext -> {
+							(ElasticsearchHttpClientConfigurer) clientContext -> {
 								clientContext.clientBuilder().setSSLHostnameVerifier( NoopHostnameVerifier.INSTANCE );
 								clientContext.clientBuilder().setSSLContext( buildAllowAnythingSSLContext() );
 							} )

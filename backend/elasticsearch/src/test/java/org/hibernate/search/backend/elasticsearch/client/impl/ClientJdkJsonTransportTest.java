@@ -3,6 +3,11 @@ package org.hibernate.search.backend.elasticsearch.client.impl;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -14,6 +19,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper;
+import org.hibernate.search.util.common.AssertionFailure;
+import org.hibernate.search.util.impl.test.http.StreamingHttpServer;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -29,16 +36,16 @@ class ClientJdkJsonTransportTest {
 	void localHttpParsesBeforeResponseCompletion() throws Exception {
 		CountDownLatch sent = new CountDownLatch( 1 );
 		CountDownLatch finish = new CountDownLatch( 1 );
-		try ( var server = new org.hibernate.search.util.impl.test.http.StreamingHttpServer( exchange -> {
+		try ( var server = new StreamingHttpServer( exchange -> {
 			exchange.headers( 200, "application/json", "" );
 			exchange.chunk( "<proxy>".getBytes( StandardCharsets.UTF_8 ) );
 			sent.countDown();
 			assertThat( finish.await( 10, TimeUnit.SECONDS ) ).isTrue();
 			exchange.end();
 		} ) ) {
-			java.net.http.HttpClient client = java.net.http.HttpClient.newHttpClient();
+			HttpClient client = HttpClient.newHttpClient();
 			var subscriber = new ClientJdkJsonBodySubscriber( json, StandardCharsets.UTF_8, 200 );
-			var request = java.net.http.HttpRequest.newBuilder( java.net.URI.create( server.uri() ) ).build();
+			var request = HttpRequest.newBuilder( URI.create( server.uri() ) ).build();
 			var future = client.sendAsync( request, info -> subscriber );
 			try {
 				assertThat( sent.await( 10, TimeUnit.SECONDS ) ).isTrue();
@@ -140,7 +147,7 @@ class ClientJdkJsonTransportTest {
 					assertThat( release.await( 10, TimeUnit.SECONDS ) ).isTrue();
 				}
 				catch (InterruptedException e) {
-					throw new org.hibernate.search.util.common.AssertionFailure( "Interrupted", e );
+					throw new AssertionFailure( "Interrupted", e );
 				}
 			}
 		};
@@ -213,7 +220,7 @@ class ClientJdkJsonTransportTest {
 		var failed = new ClientJdkJsonBodySubscriber( json, StandardCharsets.UTF_8, 502 );
 		Demand failedDemand = new Demand();
 		failed.onSubscribe( failedDemand );
-		var failure = new java.io.IOException( "Interrupted HTTP response" );
+		var failure = new IOException( "Interrupted HTTP response" );
 		failed.onError( failure );
 		assertThatThrownBy( () -> failed.getBody().toCompletableFuture().join() ).hasCause( failure );
 		assertThat( failedDemand.cancelled ).isTrue();
@@ -240,7 +247,7 @@ class ClientJdkJsonTransportTest {
 	}
 
 	private static String collect(List<ByteBuffer> buffers) {
-		java.io.ByteArrayOutputStream output = new java.io.ByteArrayOutputStream();
+		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		for ( ByteBuffer buffer : buffers ) {
 			output.writeBytes( bytes( buffer ) );
 		}

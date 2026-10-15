@@ -1,5 +1,7 @@
 package org.hibernate.search.backend.elasticsearch.search.projection.impl;
 
+import java.util.Objects;
+
 import org.hibernate.search.backend.elasticsearch.json.impl.JsonAccessor;
 import org.hibernate.search.backend.elasticsearch.json.impl.JsonArrayAccessor;
 import org.hibernate.search.backend.elasticsearch.json.impl.JsonHandlerBridge;
@@ -23,7 +25,7 @@ class ElasticsearchSourceProjection<T> extends AbstractElasticsearchProjection<T
 
 	ElasticsearchSourceProjection(ElasticsearchSearchIndexScope<?> scope, JsonHandler<T> handler) {
 		super( scope );
-		this.handler = java.util.Objects.requireNonNull( handler );
+		this.handler = Objects.requireNonNull( handler );
 	}
 
 	@Override
@@ -44,7 +46,7 @@ class ElasticsearchSourceProjection<T> extends AbstractElasticsearchProjection<T
 	@Override
 	public ObjectNode extract(ProjectionHitMapper<?> projectionHitMapper, ObjectNode hit,
 			ObjectNode source, ProjectionExtractContext context) {
-		tools.jackson.databind.JsonNode present = hit.get( "_source" );
+		JsonNode present = hit.get( "_source" );
 		return present == null ? null : JsonHandlerBridge.requireObject( present, "source projection" );
 	}
 

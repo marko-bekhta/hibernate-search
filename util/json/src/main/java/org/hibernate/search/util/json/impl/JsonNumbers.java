@@ -2,6 +2,7 @@ package org.hibernate.search.util.json.impl;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 import tools.jackson.databind.JsonNode;
@@ -67,7 +68,7 @@ public final class JsonNumbers {
 	 * Snapshot a supported Java scalar number without widening exact values through double.
 	 */
 	public static JsonNode fromNumber(Number value) {
-		java.util.Objects.requireNonNull( value );
+		Objects.requireNonNull( value );
 		if ( value instanceof Byte || value instanceof Integer ) {
 			return IntNode.valueOf( value.intValue() );
 		}

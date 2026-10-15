@@ -3,26 +3,44 @@ package org.hibernate.search.backend.elasticsearch.client.rest4.impl;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+import org.hibernate.search.backend.elasticsearch.client.common.json.entity.spi.JsonHttpEntityContentProvider;
+import org.hibernate.search.backend.elasticsearch.client.common.json.impl.JsonResponseBody;
+import org.hibernate.search.backend.elasticsearch.client.common.json.impl.JsonResponseConsumerScope;
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper;
+import org.hibernate.search.util.impl.test.http.StreamingHttpServer;
+import org.hibernate.search.util.json.spi.JsonParseException;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import org.apache.http.ContentTooLongException;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpVersion;
 import org.apache.http.entity.BasicHttpEntity;
+import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.apache.http.message.BasicHttpResponse;
 import org.apache.http.nio.ContentDecoder;
 import org.apache.http.nio.ContentEncoder;
 import org.apache.http.nio.IOControl;
+import org.apache.http.nio.client.methods.HttpAsyncMethods;
 import org.apache.http.protocol.BasicHttpContext;
+import org.elasticsearch.client.RestClient;
+import org.mockito.ArgumentMatchers;
+import org.mockito.Mockito;
 import tools.jackson.databind.node.JsonNodeFactory;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -116,13 +134,13 @@ class ClientRest4JsonTransportTest {
 			entity.cancel();
 			entity.cancel();
 			assertThat( entity.isRepeatable() ).isFalse();
-			assertThatThrownBy( first::read ).isInstanceOf( java.io.IOException.class );
-			assertThatThrownBy( second::read ).isInstanceOf( java.io.IOException.class );
+			assertThatThrownBy( first::read ).isInstanceOf( IOException.class );
+			assertThatThrownBy( second::read ).isInstanceOf( IOException.class );
 			assertThatThrownBy( entity::getContent ).hasMessageContaining( "cancelled" );
 			assertThatThrownBy( () -> entity.produceContent( new Sink(), new Sink() ) )
 					.hasMessageContaining( "cancelled" );
 			var field =
-					org.hibernate.search.backend.elasticsearch.client.common.json.entity.spi.JsonHttpEntityContentProvider.class
+					JsonHttpEntityContentProvider.class
 							.getDeclaredField( "cursor" );
 			field.setAccessible( true );
 			assertThat( field.get( entity ) ).isNull();
@@ -131,7 +149,7 @@ class ClientRest4JsonTransportTest {
 
 	@Test
 	void requestCancellationEagerlyReleasesPerAttemptState() throws Exception {
-		var scope = new org.hibernate.search.backend.elasticsearch.client.common.json.impl.JsonResponseConsumerScope();
+		var scope = new JsonResponseConsumerScope();
 		var consumer = new ClientRest4JsonResponseConsumer( 100, scope );
 		consumer.responseReceived( response( 200, "application/json" ) );
 		consumer.consumeContent( new Decoder( ByteBuffer.wrap( "{".getBytes( StandardCharsets.UTF_8 ) ) ),
@@ -139,7 +157,7 @@ class ClientRest4JsonTransportTest {
 		var field = ClientRest4JsonResponseConsumer.class.getDeclaredField( "body" );
 		field.setAccessible( true );
 		var active =
-				(org.hibernate.search.backend.elasticsearch.client.common.json.impl.JsonResponseBody) field.get( consumer );
+				(JsonResponseBody) field.get( consumer );
 		scope.cancel();
 		scope.cancel();
 		assertThat( field.get( consumer ) ).isNull();
@@ -148,40 +166,40 @@ class ClientRest4JsonTransportTest {
 
 	@Test
 	void localHttpParsesBeforeResponseCompletion() throws Exception {
-		var parsed = new java.util.concurrent.CountDownLatch( 1 );
-		var finish = new java.util.concurrent.CountDownLatch( 1 );
-		var observed = new java.util.concurrent.atomic.AtomicReference<
-				org.hibernate.search.backend.elasticsearch.client.common.json.impl.JsonResponseBody>();
+		var parsed = new CountDownLatch( 1 );
+		var finish = new CountDownLatch( 1 );
+		var observed = new AtomicReference<
+				JsonResponseBody>();
 		var bodyField = ClientRest4JsonResponseConsumer.class.getDeclaredField( "body" );
 		bodyField.setAccessible( true );
-		var consumer = org.mockito.Mockito.spy( new ClientRest4JsonResponseConsumer( 1000 ) );
-		org.mockito.Mockito.doAnswer( invocation -> {
+		var consumer = Mockito.spy( new ClientRest4JsonResponseConsumer( 1000 ) );
+		Mockito.doAnswer( invocation -> {
 			invocation.callRealMethod();
-			observed.set( (org.hibernate.search.backend.elasticsearch.client.common.json.impl.JsonResponseBody) bodyField
+			observed.set( (JsonResponseBody) bodyField
 					.get( consumer ) );
 			parsed.countDown();
 			return null;
-		} ).when( consumer ).consumeContent( org.mockito.ArgumentMatchers.any( ContentDecoder.class ),
-				org.mockito.ArgumentMatchers.any( IOControl.class ) );
-		try ( var server = new org.hibernate.search.util.impl.test.http.StreamingHttpServer( exchange -> {
+		} ).when( consumer ).consumeContent( ArgumentMatchers.any( ContentDecoder.class ),
+				ArgumentMatchers.any( IOControl.class ) );
+		try ( var server = new StreamingHttpServer( exchange -> {
 			exchange.headers( 200, "application/json", "" );
 			exchange.chunk( "<proxy>".getBytes( StandardCharsets.UTF_8 ) );
-			assertThat( finish.await( 10, java.util.concurrent.TimeUnit.SECONDS ) ).isTrue();
+			assertThat( finish.await( 10, TimeUnit.SECONDS ) ).isTrue();
 			exchange.end();
-		} ); var client = org.apache.http.impl.nio.client.HttpAsyncClients.createDefault() ) {
+		} ); var client = HttpAsyncClients.createDefault() ) {
 			client.start();
-			var future = client.execute( org.apache.http.nio.client.methods.HttpAsyncMethods.createGet( server.uri() ),
+			var future = client.execute( HttpAsyncMethods.createGet( server.uri() ),
 					consumer, null );
 			try {
-				assertThat( parsed.await( 10, java.util.concurrent.TimeUnit.SECONDS ) ).isTrue();
+				assertThat( parsed.await( 10, TimeUnit.SECONDS ) ).isTrue();
 				assertThat( future.isDone() ).isFalse();
 				assertThatThrownBy( () -> observed.get().throwIfFailed() )
-						.isInstanceOf( org.hibernate.search.util.json.spi.JsonParseException.class );
+						.isInstanceOf( JsonParseException.class );
 			}
 			finally {
 				finish.countDown();
 			}
-			assertThat( future.get( 10, java.util.concurrent.TimeUnit.SECONDS ).getStatusLine().getStatusCode() )
+			assertThat( future.get( 10, TimeUnit.SECONDS ).getStatusLine().getStatusCode() )
 					.isEqualTo( 200 );
 		}
 	}
@@ -189,11 +207,11 @@ class ClientRest4JsonTransportTest {
 	@Test
 	void requestEncodedStorageStaysBoundedAcrossScalarGrowth() throws Exception {
 		var storage =
-				org.hibernate.search.backend.elasticsearch.client.common.json.entity.spi.JsonHttpEntityContentProvider.class
+				JsonHttpEntityContentProvider.class
 						.getDeclaredField( "pending" );
 		storage.setAccessible( true );
 		var cursor =
-				org.hibernate.search.backend.elasticsearch.client.common.json.entity.spi.JsonHttpEntityContentProvider.class
+				JsonHttpEntityContentProvider.class
 						.getDeclaredField( "cursor" );
 		cursor.setAccessible( true );
 		for ( int size : new int[] { 100, 100_000, 1_000_000 } ) {
@@ -294,23 +312,23 @@ class ClientRest4JsonTransportTest {
 		ObjectNode document = JsonNodeFactory.instance.objectNode();
 		document.put( "value", "é😀".repeat( 10_000 ) );
 		var entity = new ClientRest4JsonHttpEntity( json, List.of( document ) );
-		var compressed = new org.elasticsearch.client.RestClient.ContentCompressingEntity( entity );
+		var compressed = new RestClient.ContentCompressingEntity( entity );
 		for ( int attempt = 0; attempt < 2; ++attempt ) {
 			try ( var input = compressed.getContent() ) {
 				// Pinned client wrapper materializes the complete compressed payload before returning this stream.
-				assertThat( input ).isInstanceOf( java.io.ByteArrayInputStream.class );
-				try ( var decoded = new java.util.zip.GZIPInputStream( input ) ) {
+				assertThat( input ).isInstanceOf( ByteArrayInputStream.class );
+				try ( var decoded = new GZIPInputStream( input ) ) {
 					assertThat( new String( decoded.readAllBytes(), StandardCharsets.UTF_8 ) )
 							.isEqualTo( json.write( document ) + "\n" );
 				}
 			}
 		}
 		assertThat( entity.getContentLength() ).isEqualTo( -1 );
-		var failing = org.mockito.Mockito.mock( org.apache.http.HttpEntity.class );
-		org.mockito.Mockito.doThrow( new java.io.IOException( "source failed" ) ).when( failing )
-				.writeTo( org.mockito.ArgumentMatchers.any( java.io.OutputStream.class ) );
-		var failingCompressed = new org.elasticsearch.client.RestClient.ContentCompressingEntity( failing );
-		assertThatThrownBy( failingCompressed::getContent ).isInstanceOf( java.io.IOException.class )
+		var failing = Mockito.mock( HttpEntity.class );
+		Mockito.doThrow( new IOException( "source failed" ) ).when( failing )
+				.writeTo( ArgumentMatchers.any( OutputStream.class ) );
+		var failingCompressed = new RestClient.ContentCompressingEntity( failing );
+		assertThatThrownBy( failingCompressed::getContent ).isInstanceOf( IOException.class )
 				.hasMessageContaining( "source failed" );
 	}
 

@@ -15,6 +15,8 @@ import org.hibernate.search.util.json.JsonHandler;
 
 import org.junit.jupiter.api.Test;
 
+import com.google.gson.JsonObject;
+
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -36,7 +38,7 @@ class ElasticsearchSearchRequestTransformerCharacterizationTest {
 		ElasticsearchRequest original = request( body );
 		Function<ElasticsearchRequest, ElasticsearchRequest> transform =
 				ElasticsearchSearchRequestTransformerContextImpl.createTransformerFunction( context -> {
-					com.google.gson.JsonObject copy = context.body();
+					JsonObject copy = context.body();
 					assertThat( context.body() ).isSameAs( copy );
 					copy.getAsJsonObject( "query" ).getAsJsonObject( "term" ).addProperty( "name", "changed" );
 					context.parametersMap().put( "size", "20" );
@@ -105,6 +107,19 @@ class ElasticsearchSearchRequestTransformerCharacterizationTest {
 		assertThat( original.path() ).isEqualTo( "/index/_search" );
 		assertThat( original.parameters().get( "size" ) ).isEqualTo( "10" );
 		assertThat( body.has( "staged" ) ).isFalse();
+	}
+
+	@Test
+	void returnedCycleIsRejectedRegardlessOfInternalValidationMode() {
+		ElasticsearchRequest original = request( body() );
+		var transform = ElasticsearchSearchRequestTransformerContextImpl.createTransformerFunction(
+				context -> context.transformBody( JacksonJsonHandlers.object(), input -> {
+					input.set( "cycle", input );
+					return input;
+				} ) );
+		assertThatThrownBy( () -> transform.apply( original ) ).isInstanceOf( SearchException.class )
+				.hasCauseInstanceOf( IllegalArgumentException.class );
+		assertThat( original.bodyPartsJson().get( 0 ).has( "cycle" ) ).isFalse();
 	}
 
 	@Test

@@ -3,7 +3,10 @@ package org.hibernate.search.integrationtest.performance.backend.elasticsearch;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.HexFormat;
+import java.util.Locale;
 import java.util.Map;
+
+import org.hibernate.search.util.json.spi.JsonParseException;
 
 /** Untimed fixture fingerprints and integrated production setup checks; no performance scores. */
 public final class JsonHarnessVerification {
@@ -38,7 +41,7 @@ public final class JsonHarnessVerification {
 					throw new IllegalStateException( "Matched baseline fixture changed: " + name );
 				}
 				byte[] input = state.json.getBytes( StandardCharsets.UTF_8 );
-				System.out.printf( java.util.Locale.ROOT, "%s,%d,%s,%d,%s%n", name, input.length, sha256( input ),
+				System.out.printf( Locale.ROOT, "%s,%d,%s,%d,%s%n", name, input.length, sha256( input ),
 						state.expectedBytes.length, hash );
 			}
 			finally {
@@ -69,7 +72,7 @@ public final class JsonHarnessVerification {
 			unsupported.setup();
 			throw new IllegalStateException( "Unsupported historical numeric fixture was accepted" );
 		}
-		catch (org.hibernate.search.util.json.spi.JsonParseException expected) {
+		catch (JsonParseException expected) {
 			System.err.println( "Historical numbers-mixed-10000 rejected by supported exponent policy" );
 		}
 		System.err.println( "Integrated fixture, complete output, numeric read and accessor setup checks passed" );

@@ -94,7 +94,7 @@ public class ClientJdkElasticsearchClient implements ElasticsearchClientImplemen
 
 	private ElasticsearchResponse convertResponse(HttpResponse<ObjectNode> response) {
 		try {
-			return ElasticsearchResponse.withJsonBody(
+			return ElasticsearchResponse.withInternalJsonBody(
 					response.request().uri().getHost(),
 					response.statusCode(),
 					null,

@@ -13,12 +13,15 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.locks.LockSupport;
 
 import org.hibernate.search.backend.elasticsearch.client.common.json.impl.ElasticsearchJsonBody;
 import org.hibernate.search.util.json.spi.JsonBodies;
 import org.hibernate.search.util.json.spi.JsonWriteCursor;
+
+import tools.jackson.databind.node.JsonNodeFactory;
 
 /** Independent exact-byte/retention/cancellation assertions and untimed slow-consumer diagnostics. */
 public final class JsonSlowConsumerHarness {
@@ -36,7 +39,7 @@ public final class JsonSlowConsumerHarness {
 			JsonBenchmarkFixtures fixture = new JsonBenchmarkFixtures();
 			fixture.fixture = name;
 			fixture.setup();
-			var parts = java.util.List.copyOf( fixture.parts );
+			var parts = List.copyOf( fixture.parts );
 			var body = ElasticsearchJsonBody.ndjson( parts );
 			byte[] expected = fixture.expectedBytes;
 			try ( JsonBoundedWorker worker = new JsonBoundedWorker() ) {
@@ -133,7 +136,7 @@ public final class JsonSlowConsumerHarness {
 			}
 		}
 		// Lone surrogates must be escaped to preserve valid UTF-8 output.
-		var lone = tools.jackson.databind.node.JsonNodeFactory.instance.objectNode();
+		var lone = JsonNodeFactory.instance.objectNode();
 		lone.put( "text", "\ud800" );
 		String loneOutput = new String( JsonBenchmarkSupport.bytes( JsonBodies.of( lone )::writeTo ), StandardCharsets.UTF_8 );
 		if ( !"{\"text\":\"\\ud800\"}".equals( loneOutput ) ) {

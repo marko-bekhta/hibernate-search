@@ -1,5 +1,6 @@
 package org.hibernate.search.util.json.spi;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -12,7 +13,7 @@ public final class JsonCodecRegistry {
 
 	public JsonCodecRegistry(Map<Class<?>, Function<JsonCodecRegistry, JsonCodec<?>>> factories) {
 		Map<Class<?>, JsonCodec<?>> registrations = new LinkedHashMap<>();
-		codecs = java.util.Collections.unmodifiableMap( registrations );
+		codecs = Collections.unmodifiableMap( registrations );
 		factories.forEach( (type, factory) -> registrations.put( type, factory.apply( this ) ) );
 	}
 

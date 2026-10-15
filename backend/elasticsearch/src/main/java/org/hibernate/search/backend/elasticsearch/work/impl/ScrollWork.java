@@ -60,7 +60,8 @@ public class ScrollWork<R> extends AbstractNonBulkableWork<R> {
 			body.put( "scroll_id", scrollId );
 			body.put( "scroll", scrollTimeout );
 			ElasticsearchRequest.Builder builder =
-					ElasticsearchRequest.post().pathComponent( Paths._SEARCH ).pathComponent( Paths.SCROLL ).bodyJson( body );
+					ElasticsearchRequest.post().pathComponent( Paths._SEARCH ).pathComponent( Paths.SCROLL )
+							.bodyJsonFromInternal( body );
 			return builder.build();
 		}
 

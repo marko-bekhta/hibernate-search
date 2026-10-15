@@ -2,14 +2,24 @@ package org.hibernate.search.util.json.impl;
 
 import java.nio.ByteBuffer;
 import java.nio.ReadOnlyBufferException;
+import java.util.Arrays;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 
+import org.hibernate.search.util.json.spi.JsonTreeValidation;
 import org.hibernate.search.util.json.spi.JsonWriteCursor;
 
+import tools.jackson.core.io.NumberOutput;
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.BooleanNode;
+import tools.jackson.databind.node.IntNode;
+import tools.jackson.databind.node.LongNode;
+import tools.jackson.databind.node.NullNode;
+import tools.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.ShortNode;
 import tools.jackson.databind.node.StringNode;
 
 /**
@@ -18,18 +28,37 @@ import tools.jackson.databind.node.StringNode;
  */
 public final class Utf8JsonWriteCursor implements JsonWriteCursor {
 
+	// Integral length is either a state sentinel or the positive length of the character fallback.
+	private static final int NO_INTEGRAL = 0;
+	private static final int QUEUED_INTEGRAL = -1;
+
+	private static final int SCALAR_OPEN_QUOTE = 0;
+	private static final int SCALAR_CONTENT = 1;
+	private static final int SCALAR_CLOSE_QUOTE = 2;
+
+	private static final int FRAME_NEXT_MEMBER = 0;
+	private static final int FRAME_NAME_OR_VALUE = 1;
+	private static final int FRAME_COLON = 2;
+	private static final int FRAME_VALUE = 3;
+
+	private static final int ENCODED_UNIT_CAPACITY = 6;
+	private static final int ANCESTOR_SCAN_LIMIT = 16;
+
 	private static final String HEX = "0123456789abcdef";
 
 	private static final boolean[] SAFE_ASCII = safeAscii();
 
 	private static boolean[] safeAscii() {
 		boolean[] result = new boolean[128];
-		java.util.Arrays.fill( result, 0x20, 128, true );
+		Arrays.fill( result, 0x20, 128, true );
 		for ( char character : new char[] { '"', '\\', '<', '>', '&', '=', '\'' } ) {
 			result[character] = false;
 		}
 		return result;
 	}
+
+	// Traversal owns only the active ancestor chain; the source tree must stay stable.
+	private final boolean trackCycles;
 
 	private Frame top;
 
@@ -39,11 +68,12 @@ public final class Utf8JsonWriteCursor implements JsonWriteCursor {
 
 	private JsonWriteWorkspace workspace;
 
+	// Scalar progress survives any destination boundary, including within one number/escape.
 	private int integralOffset;
 
 	private int integralLength;
 
-	// -1 length queues a primitive value; positive length resumes the fixed-character fallback.
+	// QUEUED_INTEGRAL retains the primitive; a positive length resumes fixed-character storage.
 	private long integralValue;
 
 	private String scalar;
@@ -52,17 +82,19 @@ public final class Utf8JsonWriteCursor implements JsonWriteCursor {
 
 	private int scalarOffset;
 
-	// Raw scalars start at stage 1; quoted scalars have opening/content/closing stages 0/1/2.
+	// Raw scalars start at CONTENT; quoted scalars also emit opening and closing quotes.
 	private boolean quoted;
 
 	private int scalarStage;
 
-	private byte[] pending = new byte[6];
+	// Pending is one encoded unit, drained before advancing scalar or tree state.
+	private byte[] pending = new byte[ENCODED_UNIT_CAPACITY];
 
 	private int pendingOffset;
 
 	private int pendingLength;
 
+	// Completion releases retained tree/text references; close also cancels an unfinished traversal.
 	private boolean complete;
 
 	private boolean closed;
@@ -73,6 +105,7 @@ public final class Utf8JsonWriteCursor implements JsonWriteCursor {
 
 	Utf8JsonWriteCursor(JsonNode root, JsonWriteWorkspace workspace) {
 		nextValue = Objects.requireNonNull( root );
+		trackCycles = JsonTreeValidation.isInternalValidationEnabled();
 		this.workspace = workspace;
 	}
 
@@ -86,6 +119,7 @@ public final class Utf8JsonWriteCursor implements JsonWriteCursor {
 		}
 		try {
 			int start = destination.position();
+			// Priority: drain pending bytes, resume a scalar fast path, then advance the tree/general fallback.
 			while ( destination.hasRemaining() && !complete ) {
 				if ( pendingOffset == pendingLength ) {
 					pendingOffset = pendingLength = 0;
@@ -116,7 +150,7 @@ public final class Utf8JsonWriteCursor implements JsonWriteCursor {
 	}
 
 	private boolean hasScalar() {
-		return scalar != null || integralLength != 0;
+		return scalar != null || integralLength != NO_INTEGRAL;
 	}
 
 	private void releaseCompleted() {
@@ -131,10 +165,10 @@ public final class Utf8JsonWriteCursor implements JsonWriteCursor {
 	 * Render complete primitives into caller storage; tiny/direct destinations resume bounded characters.
 	 */
 	private boolean writeIntegralRun(ByteBuffer destination) {
-		if ( integralLength == 0 ) {
+		if ( integralLength == NO_INTEGRAL ) {
 			return false;
 		}
-		if ( integralLength == -1 ) {
+		if ( integralLength == QUEUED_INTEGRAL ) {
 			long value = integralValue;
 			boolean fitsInt = value >= Integer.MIN_VALUE && value <= Integer.MAX_VALUE;
 			// These conservative bounds avoid a digit-count pass; common small values use tighter bounds.
@@ -148,17 +182,17 @@ public final class Utf8JsonWriteCursor implements JsonWriteCursor {
 			if ( destination.hasArray() && destination.remaining() >= required ) {
 				int start = destination.arrayOffset() + destination.position();
 				int end = fitsInt
-						? tools.jackson.core.io.NumberOutput.outputInt( (int) value, destination.array(), start )
-						: tools.jackson.core.io.NumberOutput.outputLong( value, destination.array(), start );
+						? NumberOutput.outputInt( (int) value, destination.array(), start )
+						: NumberOutput.outputLong( value, destination.array(), start );
 				destination.position( destination.position() + end - start );
 				integralValue = 0;
-				integralLength = 0;
+				integralLength = NO_INTEGRAL;
 				return true;
 			}
 			char[] characters = workspace().integral();
 			integralLength = fitsInt
-					? tools.jackson.core.io.NumberOutput.outputInt( (int) value, characters, 0 )
-					: tools.jackson.core.io.NumberOutput.outputLong( value, characters, 0 );
+					? NumberOutput.outputInt( (int) value, characters, 0 )
+					: NumberOutput.outputLong( value, characters, 0 );
 			integralValue = 0;
 			integralOffset = 0;
 		}
@@ -179,7 +213,7 @@ public final class Utf8JsonWriteCursor implements JsonWriteCursor {
 		}
 		integralOffset += count;
 		if ( integralOffset == integralLength ) {
-			integralOffset = integralLength = 0;
+			integralOffset = integralLength = NO_INTEGRAL;
 		}
 		return count != 0;
 	}
@@ -193,14 +227,14 @@ public final class Utf8JsonWriteCursor implements JsonWriteCursor {
 
 	private void integral(JsonNode value) {
 		integralValue = value.longValue();
-		integralLength = -1;
+		integralLength = QUEUED_INTEGRAL;
 	}
 
 	/**
 	 * Copy only the caller's available region; no encoded token or body is materialized.
 	 */
 	private boolean writeAsciiRun(ByteBuffer destination) {
-		if ( scalar == null || scalarStage != 1 || scalarOffset == scalar.length() ) {
+		if ( scalar == null || scalarStage != SCALAR_CONTENT || scalarOffset == scalar.length() ) {
 			return false;
 		}
 		int end = scalarOffset + Math.min( destination.remaining(), scalar.length() - scalarOffset );
@@ -234,7 +268,7 @@ public final class Utf8JsonWriteCursor implements JsonWriteCursor {
 		scalarOffset = offset;
 		if ( offset == scalar.length() ) {
 			if ( quoted ) {
-				scalarStage = 2;
+				scalarStage = SCALAR_CLOSE_QUOTE;
 			}
 			else {
 				scalar = null;
@@ -247,13 +281,15 @@ public final class Utf8JsonWriteCursor implements JsonWriteCursor {
 	 * Encode complete units directly into caller storage; the last partial unit uses pending.
 	 */
 	private boolean writeUnicodeRun(ByteBuffer destination) {
-		if ( scalar == null || !quoted || scalarStage != 1 || !destination.hasArray() || destination.remaining() < 6 ) {
+		if ( scalar == null
+				|| !quoted || scalarStage != SCALAR_CONTENT || !destination.hasArray()
+				|| destination.remaining() < ENCODED_UNIT_CAPACITY ) {
 			return false;
 		}
 		byte[] array = destination.array();
 		int base = destination.arrayOffset();
 		int position = base + destination.position();
-		int end = base + destination.limit() - 6;
+		int end = base + destination.limit() - ENCODED_UNIT_CAPACITY;
 		int offset = scalarOffset;
 		String text = scalar;
 		while ( position <= end && offset < text.length() ) {
@@ -314,7 +350,7 @@ public final class Utf8JsonWriteCursor implements JsonWriteCursor {
 		destination.position( position - base );
 		scalarOffset = offset;
 		if ( offset == text.length() ) {
-			scalarStage = 2;
+			scalarStage = SCALAR_CLOSE_QUOTE;
 		}
 		return true;
 	}
@@ -327,31 +363,31 @@ public final class Utf8JsonWriteCursor implements JsonWriteCursor {
 			else if ( nextValue != null ) {
 				JsonNode value = nextValue;
 				nextValue = null;
-				if ( value.getClass() == tools.jackson.databind.node.ObjectNode.class ) {
+				if ( value.getClass() == ObjectNode.class ) {
 					enterContainer( value );
 					top = new Frame( value, value.properties().iterator(), true, top );
 					depth++;
 					ascii( '{' );
 				}
-				else if ( value.getClass() == tools.jackson.databind.node.ArrayNode.class ) {
+				else if ( value.getClass() == ArrayNode.class ) {
 					enterContainer( value );
 					top = new Frame( value, value.iterator(), false, top );
 					depth++;
 					ascii( '[' );
 				}
-				else if ( value.getClass() == tools.jackson.databind.node.NullNode.class ) {
+				else if ( value.getClass() == NullNode.class ) {
 					scalar( "null", false );
 				}
 				else {
-					if ( value.getClass() == tools.jackson.databind.node.StringNode.class ) {
+					if ( value.getClass() == StringNode.class ) {
 						scalar( value.asString(), true );
 					}
-					else if ( value.getClass() == tools.jackson.databind.node.BooleanNode.class ) {
+					else if ( value.getClass() == BooleanNode.class ) {
 						scalar( value.asBoolean() ? "true" : "false", false );
 					}
-					else if ( value.getClass() == tools.jackson.databind.node.IntNode.class
-							|| value.getClass() == tools.jackson.databind.node.ShortNode.class
-							|| value.getClass() == tools.jackson.databind.node.LongNode.class ) {
+					else if ( value.getClass() == IntNode.class
+							|| value.getClass() == ShortNode.class
+							|| value.getClass() == LongNode.class ) {
 						integral( value );
 						return;
 					}
@@ -371,6 +407,9 @@ public final class Utf8JsonWriteCursor implements JsonWriteCursor {
 	}
 
 	private void enterContainer(JsonNode value) {
+		if ( !trackCycles ) {
+			return;
+		}
 		// Bound the allocation-free path walk; deep trees switch to identity hashing.
 		if ( workspace != null && workspace.active != null ) {
 			if ( workspace.active.put( value, Boolean.TRUE ) != null ) {
@@ -378,7 +417,7 @@ public final class Utf8JsonWriteCursor implements JsonWriteCursor {
 			}
 			return;
 		}
-		if ( depth < 16 ) {
+		if ( depth < ANCESTOR_SCAN_LIMIT ) {
 			for ( Frame ancestor = top; ancestor != null; ancestor = ancestor.parent ) {
 				if ( ancestor.container == value ) {
 					failCycle();
@@ -387,7 +426,7 @@ public final class Utf8JsonWriteCursor implements JsonWriteCursor {
 			return;
 		}
 		JsonWriteWorkspace state = workspace();
-		state.active = new java.util.IdentityHashMap<>( depth + 1 );
+		state.active = new IdentityHashMap<>( depth + 1 );
 		for ( Frame ancestor = top; ancestor != null; ancestor = ancestor.parent ) {
 			state.active.put( ancestor.container, Boolean.TRUE );
 		}
@@ -404,11 +443,11 @@ public final class Utf8JsonWriteCursor implements JsonWriteCursor {
 	private void prepareFrame() {
 		Frame frame = top;
 		switch ( frame.stage ) {
-			case 0:
+			case FRAME_NEXT_MEMBER:
 				if ( !frame.iterator.hasNext() ) {
 					top = frame.parent;
 					depth--;
-					if ( workspace != null && workspace.active != null ) {
+					if ( trackCycles && workspace != null && workspace.active != null ) {
 						workspace.active.remove( frame.container );
 					}
 					ascii( frame.object ? '}' : ']' );
@@ -427,7 +466,7 @@ public final class Utf8JsonWriteCursor implements JsonWriteCursor {
 					throw new IllegalArgumentException( "JSON container value must be a non-null JsonNode" );
 				}
 				frame.value = value;
-				frame.stage = 1;
+				frame.stage = FRAME_NAME_OR_VALUE;
 				if ( frame.first ) {
 					frame.first = false;
 				}
@@ -435,20 +474,20 @@ public final class Utf8JsonWriteCursor implements JsonWriteCursor {
 					ascii( ',' );
 				}
 				break;
-			case 1:
+			case FRAME_NAME_OR_VALUE:
 				if ( frame.object ) {
 					scalar( frame.name, true );
 					frame.name = null;
-					frame.stage = 2;
+					frame.stage = FRAME_COLON;
 					break;
 				}
 				selectValue( frame );
 				break;
-			case 2:
+			case FRAME_COLON:
 				ascii( ':' );
-				frame.stage = 3;
+				frame.stage = FRAME_VALUE;
 				break;
-			case 3:
+			case FRAME_VALUE:
 				selectValue( frame );
 				break;
 			default:
@@ -459,7 +498,7 @@ public final class Utf8JsonWriteCursor implements JsonWriteCursor {
 	private void selectValue(Frame frame) {
 		nextValue = frame.value;
 		frame.value = null;
-		frame.stage = 0;
+		frame.stage = FRAME_NEXT_MEMBER;
 	}
 
 	private void scalar(String value, boolean quoted) {
@@ -467,21 +506,22 @@ public final class Utf8JsonWriteCursor implements JsonWriteCursor {
 		generatedNumericScalar = false;
 		scalarOffset = 0;
 		this.quoted = quoted;
-		scalarStage = quoted ? 0 : 1;
+		scalarStage = quoted ? SCALAR_OPEN_QUOTE : SCALAR_CONTENT;
 	}
 
+	// General encoding fallback handles quotes, escapes and a unit that will not fit the fast paths.
 	private void prepareScalar() {
-		if ( scalarStage == 0 ) {
+		if ( scalarStage == SCALAR_OPEN_QUOTE ) {
 			ascii( '"' );
-			scalarStage = 1;
+			scalarStage = SCALAR_CONTENT;
 		}
-		else if ( scalarStage == 2 ) {
+		else if ( scalarStage == SCALAR_CLOSE_QUOTE ) {
 			ascii( '"' );
 			scalar = null;
 		}
 		else if ( scalarOffset == scalar.length() ) {
 			// Empty strings still have a closing quote.
-			scalarStage = 2;
+			scalarStage = SCALAR_CLOSE_QUOTE;
 		}
 		else {
 			char character = scalar.charAt( scalarOffset++ );
@@ -494,7 +534,7 @@ public final class Utf8JsonWriteCursor implements JsonWriteCursor {
 			}
 			if ( scalarOffset == scalar.length() ) {
 				if ( quoted ) {
-					scalarStage = 2;
+					scalarStage = SCALAR_CLOSE_QUOTE;
 				}
 				else {
 					scalar = null;
@@ -577,7 +617,7 @@ public final class Utf8JsonWriteCursor implements JsonWriteCursor {
 		for ( int i = 0; i < 4; i++ ) {
 			pending[i + 2] = (byte) HEX.charAt( character >> ( 12 - i * 4 ) & 0xf );
 		}
-		pendingLength = 6;
+		pendingLength = ENCODED_UNIT_CAPACITY;
 	}
 
 	@Override
@@ -594,7 +634,7 @@ public final class Utf8JsonWriteCursor implements JsonWriteCursor {
 			workspace.clearReferences();
 		}
 		workspace = null;
-		integralOffset = integralLength = 0;
+		integralOffset = integralLength = NO_INTEGRAL;
 		integralValue = 0;
 		nextValue = null;
 		scalar = null;
@@ -642,7 +682,8 @@ public final class Utf8JsonWriteCursor implements JsonWriteCursor {
 
 		private boolean first = true;
 
-		private int stage;
+		// Names/values are retained only until selected; completed frames leave the active chain.
+		private int stage = FRAME_NEXT_MEMBER;
 
 		private String name;
 

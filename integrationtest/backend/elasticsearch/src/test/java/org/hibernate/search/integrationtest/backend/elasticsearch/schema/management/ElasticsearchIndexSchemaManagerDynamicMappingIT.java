@@ -12,6 +12,7 @@ import org.hibernate.search.backend.elasticsearch.cfg.ElasticsearchIndexSettings
 import org.hibernate.search.backend.elasticsearch.index.DynamicMapping;
 import org.hibernate.search.backend.elasticsearch.json.impl.JsonScalarConversions;
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper;
 import org.hibernate.search.engine.backend.document.model.dsl.IndexSchemaObjectField;
 import org.hibernate.search.engine.backend.types.ObjectStructure;
 import org.hibernate.search.integrationtest.backend.tck.testsupport.util.extension.SearchSetupHelper;
@@ -54,7 +55,7 @@ class ElasticsearchIndexSchemaManagerDynamicMappingIT {
 	} );
 
 	private final JsonCodecService json =
-			org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.create( false ).getCodec();
+			JsonProviderHelper.create( false ).getCodec();
 
 	@ParameterizedTest(name = "With operation {0}")
 	@MethodSource("params")
@@ -116,7 +117,7 @@ class ElasticsearchIndexSchemaManagerDynamicMappingIT {
 	}
 
 	private void verifyDynamicMapping(String mapping, DynamicMapping dynamicMapping) {
-		var tree = json.decode( mapping, tools.jackson.databind.node.ObjectNode.class );
+		var tree = json.decode( mapping, ObjectNode.class );
 		assertThat( JsonScalarConversions.asString( tree.get( "dynamic" ) ) )
 				.isEqualTo( dynamicMapping.externalRepresentation() );
 		assertThat( JsonScalarConversions

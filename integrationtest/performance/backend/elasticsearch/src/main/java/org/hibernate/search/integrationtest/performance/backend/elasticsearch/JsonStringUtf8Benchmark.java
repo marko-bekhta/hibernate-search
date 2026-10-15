@@ -18,6 +18,7 @@ import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.infra.Blackhole;
 
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.JsonNodeFactory;
 import tools.jackson.databind.node.ObjectNode;
 
 /** Already materialized String to complete tree through character and UTF-8 parser paths. */
@@ -37,7 +38,7 @@ public class JsonStringUtf8Benchmark {
 		@Setup
 		public void setup() {
 			JsonBenchmarkSupport.verifyAffinity();
-			ObjectNode expected = tools.jackson.databind.node.JsonNodeFactory.instance.objectNode();
+			ObjectNode expected = JsonNodeFactory.instance.objectNode();
 			switch ( fixture ) {
 				case "scalar-1m":
 					String ascii = "x".repeat( 1024 * 1024 );
@@ -51,8 +52,8 @@ public class JsonStringUtf8Benchmark {
 					break;
 				case "small":
 					json = "{\"query\":{\"term\":{\"name\":\"test\"}},\"size\":10}";
-					ObjectNode query = tools.jackson.databind.node.JsonNodeFactory.instance.objectNode();
-					ObjectNode term = tools.jackson.databind.node.JsonNodeFactory.instance.objectNode();
+					ObjectNode query = JsonNodeFactory.instance.objectNode();
+					ObjectNode term = JsonNodeFactory.instance.objectNode();
 					term.put( "name", "test" );
 					query.set( "term", term );
 					expected.set( "query", query );

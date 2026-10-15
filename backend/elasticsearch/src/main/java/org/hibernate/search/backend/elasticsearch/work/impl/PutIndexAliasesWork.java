@@ -37,7 +37,7 @@ public class PutIndexAliasesWork extends AbstractNonBulkableWork<Void> {
 		@Override
 		protected ElasticsearchRequest buildRequest() {
 			ElasticsearchRequest.Builder builder =
-					ElasticsearchRequest.post().pathComponent( Paths._ALIASES ).bodyJson( payload );
+					ElasticsearchRequest.post().pathComponent( Paths._ALIASES ).bodyJsonFromInternal( payload );
 			return builder.build();
 		}
 

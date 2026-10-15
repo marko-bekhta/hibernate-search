@@ -30,7 +30,9 @@ import tools.jackson.core.StreamReadConstraints;
 import tools.jackson.core.async.ByteArrayFeeder;
 import tools.jackson.core.async.ByteBufferFeeder;
 import tools.jackson.core.json.JsonFactory;
+import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.JsonNodeFactory;
 import tools.jackson.databind.node.ObjectNode;
 
 /** Valid numeric fixtures only: upstream feeding/completion diagnostics, not strict Search SPI competitors. */
@@ -102,8 +104,8 @@ public class JsonNumericUtf8DiagnosticBenchmark {
 
 	@Benchmark
 	public ObjectNode treeFromOwnedLexemes(Input state) {
-		ObjectNode root = tools.jackson.databind.node.JsonNodeFactory.instance.objectNode();
-		ArrayNode values = tools.jackson.databind.node.JsonNodeFactory.instance.arrayNode();
+		ObjectNode root = JsonNodeFactory.instance.objectNode();
+		ArrayNode values = JsonNodeFactory.instance.arrayNode();
 		root.set( "values", values );
 		for ( String lexeme : state.lexemes ) {
 			values.add( number( lexeme ) );
@@ -111,13 +113,14 @@ public class JsonNumericUtf8DiagnosticBenchmark {
 		return root;
 	}
 
-	private static tools.jackson.databind.JsonNode number(String lexeme) {
+	private static JsonNode number(String lexeme) {
 		// Measure the production conversion/storage policy, without a second parser per scalar.
-		return JsonNumbers.fromToken( lexeme,
-				lexeme.indexOf( '.' ) >= 0 || lexeme.indexOf( 'e' ) >= 0 || lexeme.indexOf( 'E' ) >= 0 );
+		return lexeme.indexOf( '.' ) >= 0 || lexeme.indexOf( 'e' ) >= 0 || lexeme.indexOf( 'E' ) >= 0
+				? JsonNumbers.fromFloatingToken( lexeme )
+				: JsonNumbers.fromIntegerToken( lexeme );
 	}
 
-	private static BigDecimal decimal(tools.jackson.databind.JsonNode number) {
+	private static BigDecimal decimal(JsonNode number) {
 		return new BigDecimal( number.numberValue().toString() );
 	}
 
@@ -131,8 +134,8 @@ public class JsonNumericUtf8DiagnosticBenchmark {
 			ObjectNode root = null;
 			ArrayNode values = null;
 			if ( "tree".equals( state.work ) ) {
-				root = tools.jackson.databind.node.JsonNodeFactory.instance.objectNode();
-				values = tools.jackson.databind.node.JsonNodeFactory.instance.arrayNode();
+				root = JsonNodeFactory.instance.objectNode();
+				values = JsonNodeFactory.instance.arrayNode();
 				root.set( "values", values );
 			}
 			long count = 0;
@@ -204,7 +207,7 @@ public class JsonNumericUtf8DiagnosticBenchmark {
 					values.add( number( lexeme ) );
 				}
 				else if ( "numbers".equals( work ) ) {
-					tools.jackson.databind.JsonNode number = number( lexeme );
+					JsonNode number = number( lexeme );
 					if ( actual != null && new BigDecimal( lexeme ).compareTo( decimal( number ) ) != 0 ) {
 						throw new IllegalStateException( "Diagnostic number value mismatch" );
 					}

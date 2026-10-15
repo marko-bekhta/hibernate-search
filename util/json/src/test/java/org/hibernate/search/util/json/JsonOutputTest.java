@@ -11,11 +11,13 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ReadOnlyBufferException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 
 import org.hibernate.search.util.json.impl.JacksonJsonBodyWriter;
 import org.hibernate.search.util.json.spi.JsonBodies;
 import org.hibernate.search.util.json.spi.JsonBody;
+import org.hibernate.search.util.json.spi.JsonParsing;
 import org.hibernate.search.util.json.spi.JsonWriteCursor;
 
 import org.junit.jupiter.api.Test;
@@ -148,7 +150,7 @@ class JsonOutputTest {
 				cursor.write( ByteBuffer.allocate( 2 ) );
 			}
 			assertThat( first.array() ).isEqualTo( retained );
-			assertThat( retained ).isEqualTo( java.util.Arrays.copyOf( drain( body, 5 ), 5 ) );
+			assertThat( retained ).isEqualTo( Arrays.copyOf( drain( body, 5 ), 5 ) );
 		}
 	}
 
@@ -160,7 +162,7 @@ class JsonOutputTest {
 			assertThat( first.read() ).isEqualTo( expected[0] & 0xff );
 			assertThat( first.read( new byte[1], 0, 0 ) ).isZero();
 			assertThat( second.readAllBytes() ).isEqualTo( expected );
-			assertThat( first.readAllBytes() ).isEqualTo( java.util.Arrays.copyOfRange( expected, 1, expected.length ) );
+			assertThat( first.readAllBytes() ).isEqualTo( Arrays.copyOfRange( expected, 1, expected.length ) );
 			assertThat( first.read() ).isEqualTo( -1 );
 		}
 		InputStream cancelled = body.openStream();
@@ -203,9 +205,9 @@ class JsonOutputTest {
 	void exactScalarValuesAndEmptyContainers() throws IOException {
 		for ( String lexeme : new String[] { "-0", "0.000", "1.2300e+04", "1.0E-04", "9007199254740993", "-1e+0003" } ) {
 			assertThat( new String(
-					drain( JsonBodies.of( new org.hibernate.search.util.json.spi.JsonParsing().parse( lexeme ) ), 1 ),
+					drain( JsonBodies.of( new JsonParsing().parse( lexeme ) ), 1 ),
 					StandardCharsets.UTF_8 ) )
-					.isEqualTo( new String( jackson( new org.hibernate.search.util.json.spi.JsonParsing().parse( lexeme ) ),
+					.isEqualTo( new String( jackson( new JsonParsing().parse( lexeme ) ),
 							StandardCharsets.UTF_8 ) );
 		}
 		ArrayNode tree = new ArrayNode( JsonNodeFactory.instance );
@@ -225,7 +227,7 @@ class JsonOutputTest {
 		ArrayNode values = new ArrayNode( JsonNodeFactory.instance );
 		values.add( (JsonNode) null );
 		values.add( true );
-		values.add( new org.hibernate.search.util.json.spi.JsonParsing().parse( "-0.12300e+004" ) );
+		values.add( new JsonParsing().parse( "-0.12300e+004" ) );
 		values.add( new ArrayNode( JsonNodeFactory.instance ) );
 		values.add( new ObjectNode( JsonNodeFactory.instance ) );
 		tree.set( "values", values );

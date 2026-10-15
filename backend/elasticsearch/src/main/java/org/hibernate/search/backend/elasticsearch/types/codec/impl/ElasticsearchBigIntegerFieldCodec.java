@@ -11,6 +11,7 @@ import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
 import org.hibernate.search.backend.elasticsearch.logging.impl.IndexingLog;
 import org.hibernate.search.engine.cfg.spi.NumberScaleConstants;
 import org.hibernate.search.engine.cfg.spi.NumberUtils;
+import org.hibernate.search.util.json.spi.JsonNumbers;
 
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.NullNode;
@@ -72,7 +73,7 @@ public class ElasticsearchBigIntegerFieldCodec extends AbstractElasticsearchFiel
 		}
 
 		// scaled_float aggregations format keys in double format, e.g. 1.514843E8
-		return org.hibernate.search.util.json.spi.JsonNumbers
+		return JsonNumbers
 				.truncateToBigInteger( JsonElementTypes.BIG_DECIMAL.fromElement( key ) );
 	}
 

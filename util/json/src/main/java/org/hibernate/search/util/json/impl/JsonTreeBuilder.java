@@ -7,6 +7,7 @@ import org.hibernate.search.util.json.spi.JsonParseException;
 
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.JsonNodeFactory;
 import tools.jackson.databind.node.ObjectNode;
 
 /** Stack-based tree construction; never uses accessor chains. */
@@ -37,13 +38,13 @@ final class JsonTreeBuilder {
 	}
 
 	void startObject() {
-		ObjectNode object = new ObjectNode( tools.jackson.databind.node.JsonNodeFactory.instance );
+		ObjectNode object = new ObjectNode( JsonNodeFactory.instance );
 		add( object );
 		frames.push( new Frame( object ) );
 	}
 
 	void startArray() {
-		ArrayNode array = new ArrayNode( tools.jackson.databind.node.JsonNodeFactory.instance );
+		ArrayNode array = new ArrayNode( JsonNodeFactory.instance );
 		add( array );
 		frames.push( new Frame( array ) );
 	}

@@ -5,6 +5,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hibernate.search.util.json.spi.JsonNumbers;
@@ -13,6 +17,7 @@ import org.hibernate.search.util.json.spi.JsonTreeValidation;
 
 import org.junit.jupiter.api.Test;
 
+import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.BinaryNode;
 import tools.jackson.databind.node.DecimalNode;
@@ -108,7 +113,7 @@ class JsonNodePolicyTest {
 		child.add( root );
 		assertThatThrownBy( () -> JsonTreeValidation.validateExternal( root ) ).isInstanceOf( IllegalArgumentException.class )
 				.hasMessageContaining( "Cyclic" );
-		for ( var illegal : new tools.jackson.databind.JsonNode[] {
+		for ( var illegal : new JsonNode[] {
 				MissingNode.getInstance(),
 				BinaryNode.valueOf( new byte[] { 1 } ),
 				new POJONode( new Object() ),
@@ -135,7 +140,7 @@ class JsonNodePolicyTest {
 	@Test
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	void directContainerBackingCollectionsRequireStringNamesAndNonNullJsonValues() {
-		java.util.Map raw = new java.util.HashMap();
+		Map raw = new HashMap();
 		raw.put( null, IntNode.valueOf( 1 ) );
 		assertThatThrownBy( () -> JsonTreeValidation.validateExternal( new ObjectNode( JsonNodeFactory.instance, raw ) ) )
 				.isInstanceOf( IllegalArgumentException.class ).hasMessageContaining( "member name" );
@@ -150,7 +155,7 @@ class JsonNodePolicyTest {
 		raw.put( "value", new Object() );
 		assertThatThrownBy( () -> JsonTreeValidation.validateExternal( new ObjectNode( JsonNodeFactory.instance, raw ) ) )
 				.isInstanceOf( IllegalArgumentException.class ).hasMessageContaining( "container value" );
-		java.util.List broken = java.util.Arrays.asList( (Object) null );
+		List broken = Arrays.asList( (Object) null );
 		assertThatThrownBy( () -> JsonTreeValidation.validateExternal( new ArrayNode( JsonNodeFactory.instance, broken ) ) )
 				.isInstanceOf( IllegalArgumentException.class ).hasMessageContaining( "container value" );
 	}

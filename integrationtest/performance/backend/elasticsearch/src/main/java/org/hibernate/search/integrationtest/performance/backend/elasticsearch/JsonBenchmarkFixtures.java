@@ -2,6 +2,7 @@ package org.hibernate.search.integrationtest.performance.backend.elasticsearch;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.hibernate.search.util.json.spi.JsonParsing;
@@ -22,7 +23,7 @@ public class JsonBenchmarkFixtures {
 
 	void verifyOutput(byte[] output) {
 		if ( exactOutputBytes() ) {
-			if ( !java.util.Arrays.equals( expectedBytes, output ) ) {
+			if ( !Arrays.equals( expectedBytes, output ) ) {
 				throw new IllegalStateException( "Full byte mismatch: " + fixture );
 			}
 		}

@@ -5,6 +5,8 @@ import org.hibernate.search.backend.elasticsearch.json.jackson.JacksonJsonHandle
 import org.hibernate.search.util.json.JsonHandler;
 import org.hibernate.search.util.json.spi.JsonParsing;
 
+import com.google.gson.JsonObject;
+
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -49,7 +51,7 @@ public final class JsonApiExample {
 
 	@SuppressWarnings("deprecation")
 	public static long deprecatedGsonValue() {
-		com.google.gson.JsonObject body = new com.google.gson.JsonObject();
+		JsonObject body = new JsonObject();
 		body.addProperty( "value", 42 );
 		return ElasticsearchRequest.post().body( body ).build().bodyParts().get( 0 ).get( "value" ).getAsLong();
 	}

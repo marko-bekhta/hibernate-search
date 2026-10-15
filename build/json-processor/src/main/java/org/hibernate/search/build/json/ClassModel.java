@@ -2,6 +2,7 @@ package org.hibernate.search.build.json;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -88,7 +89,7 @@ final class ClassModel {
 		}
 
 		// Sort for reproducible output regardless of compiler element ordering
-		fields.sort( java.util.Comparator.comparing( f -> f.javaName ) );
+		fields.sort( Comparator.comparing( f -> f.javaName ) );
 		return new ClassModel( packageName, qualifiedName, codecSimpleName,
 				fields, extraPropsGetter, extraPropsSetter );
 	}

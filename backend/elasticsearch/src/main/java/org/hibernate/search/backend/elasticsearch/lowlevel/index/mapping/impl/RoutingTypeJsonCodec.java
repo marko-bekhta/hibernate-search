@@ -5,6 +5,7 @@ import org.hibernate.search.util.json.spi.JsonCodec;
 import org.hibernate.search.util.json.spi.JsonCodecs;
 
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.JsonNodeFactory;
 import tools.jackson.databind.node.NullNode;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -34,7 +35,7 @@ public final class RoutingTypeJsonCodec implements JsonCodec<RoutingType> {
 		if ( value != RoutingType.REQUIRED ) {
 			throw new AssertionFailure( "Unexpected value for attribute of type " + RoutingType.class + ": " + value );
 		}
-		ObjectNode result = tools.jackson.databind.node.JsonNodeFactory.instance.objectNode();
+		ObjectNode result = JsonNodeFactory.instance.objectNode();
 		result.put( "required", true );
 		return result;
 	}

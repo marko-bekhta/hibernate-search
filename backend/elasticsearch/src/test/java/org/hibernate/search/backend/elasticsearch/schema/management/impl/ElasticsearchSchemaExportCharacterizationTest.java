@@ -4,12 +4,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchRequest;
 import org.hibernate.search.backend.elasticsearch.json.jackson.JacksonJsonHandlers;
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper;
+import org.hibernate.search.util.common.AssertionFailure;
+import org.hibernate.search.util.json.JsonHandler;
 import org.hibernate.search.util.json.spi.JsonParsing;
 
 import org.junit.jupiter.api.Test;
@@ -62,9 +66,9 @@ class ElasticsearchSchemaExportCharacterizationTest {
 		ObjectNode body = (ObjectNode) new JsonParsing().parse( "{\"value\":9007199254740993,\"null\":null}" );
 		ElasticsearchIndexSchemaExportImpl export = export( ElasticsearchRequest.put().wholeEncodedPath( "/index" )
 				.bodyJson( body ).build() );
-		java.util.concurrent.atomic.AtomicInteger reads = new java.util.concurrent.atomic.AtomicInteger();
-		org.hibernate.search.util.json.JsonHandler<ObjectNode> handler =
-				new org.hibernate.search.util.json.JsonHandler<>() {
+		AtomicInteger reads = new AtomicInteger();
+		JsonHandler<ObjectNode> handler =
+				new JsonHandler<>() {
 					@Override
 					public Class<ObjectNode> javaType() {
 						return ObjectNode.class;
@@ -72,7 +76,7 @@ class ElasticsearchSchemaExportCharacterizationTest {
 
 					@Override
 					public String toJson(ObjectNode value) {
-						throw new org.hibernate.search.util.common.AssertionFailure( "Output handler only" );
+						throw new AssertionFailure( "Output handler only" );
 					}
 
 					@Override
@@ -85,7 +89,7 @@ class ElasticsearchSchemaExportCharacterizationTest {
 		assertThat( reads.get() ).isEqualTo( 1 );
 		assertThat( converted ).isEqualTo( body ).isNotSameAs( body );
 		var gson = export.bodyParts().get( 0 );
-		assertThat( gson.get( "value" ).getAsBigInteger() ).isEqualTo( new java.math.BigInteger( "9007199254740993" ) );
+		assertThat( gson.get( "value" ).getAsBigInteger() ).isEqualTo( new BigInteger( "9007199254740993" ) );
 		assertThat( gson.get( "null" ).isJsonNull() ).isTrue();
 		gson.addProperty( "value", 1 );
 		assertThat( body.get( "value" ).longValue() ).isEqualTo( 9007199254740993L );

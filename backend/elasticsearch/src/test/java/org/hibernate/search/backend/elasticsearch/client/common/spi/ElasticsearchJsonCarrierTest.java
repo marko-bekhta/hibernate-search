@@ -5,11 +5,15 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.hibernate.search.backend.elasticsearch.gson.GsonJsonHandlers;
 import org.hibernate.search.backend.elasticsearch.json.jackson.JacksonJsonHandlers;
+import org.hibernate.search.util.common.AssertionFailure;
 import org.hibernate.search.util.common.SearchException;
 import org.hibernate.search.util.json.JsonHandler;
 import org.hibernate.search.util.json.spi.JsonParsing;
 
 import org.junit.jupiter.api.Test;
+
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import tools.jackson.databind.node.JsonNodeFactory;
 import tools.jackson.databind.node.ObjectNode;
@@ -30,8 +34,8 @@ class ElasticsearchJsonCarrierTest {
 	@Test
 	@SuppressWarnings("deprecation")
 	void legacyCarriersConvertOnDemandWithoutRetainingSecondTree() {
-		var source = new com.google.gson.JsonObject();
-		source.add( "nested", com.google.gson.JsonParser.parseString( "[9007199254740993,null,{\"null\":null}]" ) );
+		var source = new JsonObject();
+		source.add( "nested", JsonParser.parseString( "[9007199254740993,null,{\"null\":null}]" ) );
 		var request = ElasticsearchRequest.post().body( source ).build();
 		source.addProperty( "later", true );
 		assertThat( request.bodyPartsJson().get( 0 ).has( "later" ) ).isFalse();
@@ -96,12 +100,12 @@ class ElasticsearchJsonCarrierTest {
 
 			@Override
 			public String toJson(ObjectNode value) {
-				throw new org.hibernate.search.util.common.AssertionFailure( "Empty export must not serialize" );
+				throw new AssertionFailure( "Empty export must not serialize" );
 			}
 
 			@Override
 			public ObjectNode fromJson(String json) {
-				throw new org.hibernate.search.util.common.AssertionFailure( "Empty export must not parse" );
+				throw new AssertionFailure( "Empty export must not parse" );
 			}
 		};
 		assertThat( request.bodyParts( handler ) ).isEmpty();
@@ -113,12 +117,12 @@ class ElasticsearchJsonCarrierTest {
 
 			@Override
 			public String toJson(ObjectNode value) {
-				throw new org.hibernate.search.util.common.AssertionFailure( "Invalid token must fail first" );
+				throw new AssertionFailure( "Invalid token must fail first" );
 			}
 
 			@Override
 			public ObjectNode fromJson(String json) {
-				throw new org.hibernate.search.util.common.AssertionFailure( "Invalid token must fail first" );
+				throw new AssertionFailure( "Invalid token must fail first" );
 			}
 		};
 		assertThatThrownBy( () -> request.bodyParts( missingToken ) )

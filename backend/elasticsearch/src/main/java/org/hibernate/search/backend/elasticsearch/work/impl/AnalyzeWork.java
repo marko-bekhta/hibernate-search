@@ -93,7 +93,8 @@ public class AnalyzeWork extends AbstractNonBulkableWork<List<? extends Analysis
 		@Override
 		protected ElasticsearchRequest buildRequest() {
 			ElasticsearchRequest.Builder builder =
-					ElasticsearchRequest.get().pathComponent( indexName ).pathComponent( Paths._ANALYZE ).bodyJson( payload );
+					ElasticsearchRequest.get().pathComponent( indexName ).pathComponent( Paths._ANALYZE )
+							.bodyJsonFromInternal( payload );
 			return builder.build();
 		}
 

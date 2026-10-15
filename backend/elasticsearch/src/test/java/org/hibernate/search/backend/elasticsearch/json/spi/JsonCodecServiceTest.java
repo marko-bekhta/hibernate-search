@@ -5,10 +5,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.mapping.impl.RootTypeMapping;
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.settings.impl.IndexSettings;
+import org.hibernate.search.backend.elasticsearch.lowlevel.syntax.search.impl.Elasticsearch7SearchSyntax;
 import org.hibernate.search.util.json.spi.JsonParseException;
 
 import org.junit.jupiter.api.Test;
@@ -60,7 +63,7 @@ class JsonCodecServiceTest {
 	@Test
 	void recursiveRegisteredCodecsCanInitializeAndRunConcurrently() throws Exception {
 		try ( var workers = Executors.newFixedThreadPool( 8 ) ) {
-			var jobs = new java.util.ArrayList<java.util.concurrent.Callable<String>>();
+			var jobs = new ArrayList<Callable<String>>();
 			for ( int i = 0; i < 100; i++ ) {
 				jobs.add( () -> {
 					var service = JsonProviderHelper.create( false ).getCodecNoSerializeNulls();
@@ -78,7 +81,7 @@ class JsonCodecServiceTest {
 
 	@Test
 	void longSearchSyntaxKeepsStringSerializationAndNull() {
-		var syntax = new org.hibernate.search.backend.elasticsearch.lowlevel.syntax.search.impl.Elasticsearch7SearchSyntax();
+		var syntax = new Elasticsearch7SearchSyntax();
 		assertThat( syntax.encodeLongForAggregation( 9007199254740993L ).isString() ).isTrue();
 		assertThat( syntax.encodeLongForAggregation( 9007199254740993L ).asString() ).isEqualTo( "9007199254740993" );
 		assertThat( syntax.encodeLongForAggregation( null ).isNull() ).isTrue();

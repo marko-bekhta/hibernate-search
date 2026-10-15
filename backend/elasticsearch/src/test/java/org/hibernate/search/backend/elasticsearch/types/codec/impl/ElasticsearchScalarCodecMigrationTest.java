@@ -3,6 +3,8 @@ package org.hibernate.search.backend.elasticsearch.types.codec.impl;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.math.BigInteger;
+
 import org.hibernate.search.backend.elasticsearch.json.jackson.JacksonJsonHandlers;
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper;
 import org.hibernate.search.engine.backend.types.VectorSimilarity;
@@ -27,9 +29,9 @@ class ElasticsearchScalarCodecMigrationTest {
 	void scaledFloatAggregationKeysRetainTruncationWithBoundedIntegerExpansion() {
 		var codec = new ElasticsearchBigIntegerFieldCodec( JsonProviderHelper.create( false ).getCodec(), 0 );
 		assertThat( codec.decodeAggregationKey( JacksonJsonHandlers.value().fromJson( "-3.9" ), null ) )
-				.isEqualTo( java.math.BigInteger.valueOf( -3 ) );
+				.isEqualTo( BigInteger.valueOf( -3 ) );
 		assertThat( codec.decode( JacksonJsonHandlers.value().fromJson( "1.25e2" ) ) )
-				.isEqualTo( java.math.BigInteger.valueOf( 125 ) );
+				.isEqualTo( BigInteger.valueOf( 125 ) );
 		assertThatThrownBy( () -> codec.decodeAggregationKey( JacksonJsonHandlers.value().fromJson( "1e100001" ), null ) )
 				.isInstanceOf( ArithmeticException.class );
 	}

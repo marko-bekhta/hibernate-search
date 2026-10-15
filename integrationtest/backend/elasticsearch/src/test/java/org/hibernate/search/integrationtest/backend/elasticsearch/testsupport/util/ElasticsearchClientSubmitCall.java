@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchRequest;
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper;
 import org.hibernate.search.util.impl.integrationtest.common.extension.Call;
 
 import org.skyscreamer.jsonassert.JSONCompareMode;
@@ -17,7 +18,7 @@ import tools.jackson.databind.node.ObjectNode;
 class ElasticsearchClientSubmitCall extends Call<ElasticsearchClientSubmitCall> {
 
 	private final JsonCodecService json =
-			org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.create( false ).getCodec();
+			JsonProviderHelper.create( false ).getCodec();
 
 	private final ElasticsearchRequest request;
 

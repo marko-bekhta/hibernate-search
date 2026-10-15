@@ -32,7 +32,8 @@ public class ClearScrollWork extends AbstractNonBulkableWork<Void> {
 			ObjectNode body = new ObjectNode( JsonNodeFactory.instance );
 			body.put( "scroll_id", scrollId );
 			ElasticsearchRequest.Builder builder =
-					ElasticsearchRequest.delete().pathComponent( Paths._SEARCH ).pathComponent( Paths.SCROLL ).bodyJson( body );
+					ElasticsearchRequest.delete().pathComponent( Paths._SEARCH ).pathComponent( Paths.SCROLL )
+							.bodyJsonFromInternal( body );
 			return builder.build();
 		}
 

@@ -3,6 +3,7 @@ package org.hibernate.search.backend.elasticsearch.types.codec.impl;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.hibernate.search.backend.elasticsearch.json.jackson.JacksonJsonHandlers;
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper;
 import org.hibernate.search.util.json.spi.JsonParsing;
 
 import org.junit.jupiter.api.Test;
@@ -15,7 +16,7 @@ class ElasticsearchNativeJsonCharacterizationTest {
 	@Test
 	void nativeValuesShareTreeIdentityAndMapNulls() {
 		ElasticsearchJsonHandlerFieldCodec<JsonNode> codec = new ElasticsearchJsonHandlerFieldCodec<>(
-				org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.create( false ).getCodec(),
+				JsonProviderHelper.create( false ).getCodec(),
 				JacksonJsonHandlers.value() );
 		JsonNode value = new JsonParsing().parse( "{\"native\":[1,9007199254740993,null,{\"text\":\"é漢😀\"}]}" );
 		assertThat( codec.encode( value ) ).isSameAs( value );

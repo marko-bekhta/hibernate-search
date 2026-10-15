@@ -6,6 +6,7 @@ import static org.hibernate.search.util.json.JsonTestNodes.scalar;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
@@ -22,6 +23,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.BigIntegerNode;
 import tools.jackson.databind.node.JsonNodeFactory;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -32,8 +34,8 @@ class JsonOutputRetentionTest {
 		for ( int size : new int[] { 16, 1024 * 1024 } ) {
 			ObjectNode tree = new ObjectNode( JsonNodeFactory.instance );
 			tree.put( "n".repeat( size ), "é😀\n<".repeat( size / 8 ) );
-			tree.set( "number", tools.jackson.databind.node.BigIntegerNode
-					.valueOf( new java.math.BigInteger( "1" + "0".repeat( Math.min( size, 4096 ) - 1 ) ) ) );
+			tree.set( "number", BigIntegerNode
+					.valueOf( new BigInteger( "1" + "0".repeat( Math.min( size, 4096 ) - 1 ) ) ) );
 			ArrayNode smallBulk = new ArrayNode( JsonNodeFactory.instance );
 			for ( int i = 0; i < size / 128; i++ ) {
 				smallBulk.add( scalar( "a".repeat( 128 ) ) );
@@ -103,7 +105,7 @@ class JsonOutputRetentionTest {
 	@Test
 	void probeStopsWithinHugeNumberAndAlwaysClosesItsCursor() {
 		JsonNode number =
-				tools.jackson.databind.node.BigIntegerNode.valueOf( new java.math.BigInteger( "1" + "0".repeat( 16383 ) ) );
+				BigIntegerNode.valueOf( new BigInteger( "1" + "0".repeat( 16383 ) ) );
 		AtomicInteger written = new AtomicInteger();
 		AtomicInteger closes = new AtomicInteger();
 		JsonBody source = () -> new JsonWriteCursor() {

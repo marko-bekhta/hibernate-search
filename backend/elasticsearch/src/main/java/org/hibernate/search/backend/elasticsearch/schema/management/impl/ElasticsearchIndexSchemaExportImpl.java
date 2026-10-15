@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchRequest;
 import org.hibernate.search.backend.elasticsearch.gson.GsonJsonHandlers;
@@ -15,6 +16,8 @@ import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
 import org.hibernate.search.backend.elasticsearch.logging.impl.ElasticsearchMiscLog;
 import org.hibernate.search.backend.elasticsearch.schema.management.ElasticsearchIndexSchemaExport;
 import org.hibernate.search.util.json.JsonHandler;
+
+import com.google.gson.JsonObject;
 
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
@@ -65,13 +68,13 @@ public class ElasticsearchIndexSchemaExportImpl implements ElasticsearchIndexSch
 
 	@Override
 	@Deprecated
-	public List<com.google.gson.JsonObject> bodyParts() {
+	public List<JsonObject> bodyParts() {
 		return bodyParts( GsonJsonHandlers.object() );
 	}
 
 	@Override
 	public <T> List<T> bodyParts(JsonHandler<T> handler) {
-		java.util.Objects.requireNonNull( java.util.Objects.requireNonNull( handler ).javaType() );
+		Objects.requireNonNull( Objects.requireNonNull( handler ).javaType() );
 		return request.bodyPartsJson().stream()
 				.map( part -> JsonHandlerBridge.exportObject( handler, part, "schema export" ) )
 				.toList();

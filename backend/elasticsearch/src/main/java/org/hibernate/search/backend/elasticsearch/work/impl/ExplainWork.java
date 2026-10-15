@@ -64,7 +64,7 @@ public class ExplainWork extends AbstractNonBulkableWork<ExplainResult> {
 		@Override
 		protected ElasticsearchRequest buildRequest() {
 			ElasticsearchRequest.Builder builder = ElasticsearchRequest.get().pathComponent( indexName )
-					.pathComponent( Paths._EXPLAIN ).pathComponent( id ).bodyJson( payload );
+					.pathComponent( Paths._EXPLAIN ).pathComponent( id ).bodyJsonFromInternal( payload );
 			if ( !routingKeys.isEmpty() ) {
 				builder.multiValuedParam( "routing", routingKeys );
 			}

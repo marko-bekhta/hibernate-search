@@ -7,6 +7,7 @@ import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.zip.GZIPOutputStream;
 
 import org.hibernate.search.util.json.spi.JsonParseException;
@@ -56,7 +57,7 @@ class JsonResponseBodyTest {
 			try ( var body = new JsonResponseBody( StandardCharsets.UTF_8, 0 ) ) {
 				body.feed( ByteBuffer.wrap( "{\"value\":\"".getBytes( StandardCharsets.UTF_8 ) ) );
 				byte[] chunk = new byte[8192];
-				java.util.Arrays.fill( chunk, (byte) 'x' );
+				Arrays.fill( chunk, (byte) 'x' );
 				for ( int count = 0; count < size; count += chunk.length ) {
 					body.feed( ByteBuffer.wrap( chunk, 0, Math.min( chunk.length, size - count ) ) );
 					assertThat( (byte[]) prefix.get( body ) ).hasSize( 8192 );

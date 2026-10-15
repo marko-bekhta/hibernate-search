@@ -22,6 +22,8 @@ import org.hibernate.search.util.json.spi.JsonWriteCursor;
 
 import org.junit.jupiter.api.Test;
 
+import com.google.gson.JsonObject;
+
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -37,7 +39,7 @@ class JsonMigrationExamplesTest {
 		ElasticsearchRequest request = ElasticsearchRequest.builder( "POST" )
 				.wholeEncodedPath( "/_search" ).bodyJson( query ).build();
 		ObjectNode borrowed = request.bodyParts( jackson ).get( 0 );
-		com.google.gson.JsonObject independentGsonCopy = request.bodyParts( GsonJsonHandlers.object() ).get( 0 );
+		JsonObject independentGsonCopy = request.bodyParts( GsonJsonHandlers.object() ).get( 0 );
 		// end::migration[]
 		assertThat( query.has( "boost" ) ).isFalse();
 		assertThat( borrowed ).isSameAs( query );
@@ -50,13 +52,13 @@ class JsonMigrationExamplesTest {
 	@SuppressWarnings("deprecation")
 	void deprecatedGsonConveniencesKeepTheirGsonTypes() {
 		// tag::legacy-gson[]
-		com.google.gson.JsonObject input = GsonJsonHandlers.object().fromJson(
+		JsonObject input = GsonJsonHandlers.object().fromJson(
 				"{\"number\":9007199254740993,\"custom\":null}" );
 		ElasticsearchRequest request = ElasticsearchRequest.builder( "POST" )
 				.wholeEncodedPath( "/_search" ).body( input ).build();
-		List<com.google.gson.JsonObject> oldParts = request.bodyParts();
+		List<JsonObject> oldParts = request.bodyParts();
 		ElasticsearchResponse response = new ElasticsearchResponse( "HTTP/1.1", 200, "OK", input );
-		com.google.gson.JsonObject oldBody = response.body();
+		JsonObject oldBody = response.body();
 		// end::legacy-gson[]
 		assertThat( oldParts.get( 0 ).get( "number" ).getAsLong() ).isEqualTo( 9007199254740993L );
 		assertThat( oldBody.get( "custom" ).isJsonNull() ).isTrue();

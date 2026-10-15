@@ -16,6 +16,7 @@ import org.hibernate.search.backend.elasticsearch.ElasticsearchExtension;
 import org.hibernate.search.backend.elasticsearch.analysis.ElasticsearchAnalysisConfigurationContext;
 import org.hibernate.search.backend.elasticsearch.analysis.ElasticsearchAnalysisConfigurer;
 import org.hibernate.search.backend.elasticsearch.cfg.ElasticsearchIndexSettings;
+import org.hibernate.search.backend.elasticsearch.json.jackson.JacksonJsonHandlers;
 import org.hibernate.search.engine.backend.document.model.dsl.IndexSchemaObjectField;
 import org.hibernate.search.engine.backend.types.VectorSimilarity;
 import org.hibernate.search.integrationtest.backend.tck.testsupport.util.TckConfiguration;
@@ -262,12 +263,12 @@ class ElasticsearchIndexSchemaManagerValidationMappingBaseIT {
 		StubMappedIndex index = StubMappedIndex.ofNonRetrievable( root -> {
 			root.field( "float", f -> f
 					.extension( ElasticsearchExtension.get() )
-					.asNative( org.hibernate.search.backend.elasticsearch.json.jackson.JacksonJsonHandlers.value() )
+					.asNative( JacksonJsonHandlers.value() )
 					.mapping( "{\"type\": \"float\", \"null_value\": \"AAA\" }" )
 			).toReference();
 			root.field( "double", f -> f
 					.extension( ElasticsearchExtension.get() )
-					.asNative( org.hibernate.search.backend.elasticsearch.json.jackson.JacksonJsonHandlers.value() )
+					.asNative( JacksonJsonHandlers.value() )
 					.mapping( "{\"type\": \"double\", \"null_value\": \"BBB\" }" )
 			).toReference();
 		} );

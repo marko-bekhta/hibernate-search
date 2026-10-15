@@ -77,7 +77,7 @@ public class DeleteByQueryWork extends AbstractNonBulkableWork<Void> {
 			if ( routingKeys != null && !routingKeys.isEmpty() ) {
 				builder.multiValuedParam( "routing", routingKeys );
 			}
-			builder.pathComponent( Paths._DELETE_BY_QUERY ).bodyJson( payload );
+			builder.pathComponent( Paths._DELETE_BY_QUERY ).bodyJsonFromInternal( payload );
 			return builder.build();
 		}
 

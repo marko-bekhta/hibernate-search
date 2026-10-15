@@ -32,6 +32,7 @@ import org.hibernate.search.backend.elasticsearch.index.IndexStatus;
 import org.hibernate.search.backend.elasticsearch.index.layout.impl.IndexNames;
 import org.hibernate.search.backend.elasticsearch.json.impl.JsonHandlerBridge;
 import org.hibernate.search.backend.elasticsearch.json.impl.JsonScalarConversions;
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper;
 import org.hibernate.search.backend.elasticsearch.logging.impl.ElasticsearchRequestFormatter;
 import org.hibernate.search.backend.elasticsearch.logging.impl.ElasticsearchResponseFormatter;
 import org.hibernate.search.engine.cfg.ConfigurationPropertySource;
@@ -53,6 +54,8 @@ import org.hibernate.search.util.impl.integrationtest.common.extension.BackendCo
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
+
+import com.google.gson.JsonParser;
 
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
@@ -471,7 +474,7 @@ public class TestElasticsearchClient implements BeforeEachCallback, AfterEachCal
 				threadPoolProvider.threadProvider(), "Client",
 				new DelegatingSimpleScheduledExecutor( timeoutExecutorService,
 						threadPoolProvider.isScheduledExecutorBlocking() ),
-				org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.create( true ) );
+				JsonProviderHelper.create( true ) );
 	}
 
 	@Override
@@ -562,7 +565,7 @@ public class TestElasticsearchClient implements BeforeEachCallback, AfterEachCal
 	 */
 	@SuppressWarnings("removal")
 	private JsonNode toJsonElement(String jsonAsString) {
-		return JsonHandlerBridge.importValue( GsonJsonHandlers.value(), com.google.gson.JsonParser.parseString( jsonAsString ),
+		return JsonHandlerBridge.importValue( GsonJsonHandlers.value(), JsonParser.parseString( jsonAsString ),
 				"test fixture import" );
 	}
 

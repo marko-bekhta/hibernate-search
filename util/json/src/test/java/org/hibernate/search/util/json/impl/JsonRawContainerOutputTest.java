@@ -60,7 +60,7 @@ class JsonRawContainerOutputTest {
 
 	private static void assertRejectedAndClosed(JsonNode value) {
 		assertThatThrownBy( () -> JsonBodies.of( value ) ).isInstanceOf( IllegalArgumentException.class );
-		try ( var cursor = JsonBodies.openCursor( value ) ) {
+		try ( var cursor = new Utf8JsonWriteCursor( value ) ) {
 			assertThatThrownBy( () -> cursor.write( ByteBuffer.allocate( 64 ) ) )
 					.isInstanceOf( IllegalArgumentException.class );
 			assertThatThrownBy( () -> cursor.write( ByteBuffer.allocate( 1 ) ) )

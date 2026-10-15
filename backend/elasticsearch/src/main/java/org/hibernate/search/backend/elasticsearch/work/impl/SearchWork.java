@@ -137,7 +137,7 @@ public class SearchWork<R> extends AbstractNonBulkableWork<R> {
 		@Override
 		protected ElasticsearchRequest buildRequest() {
 			ElasticsearchRequest.Builder builder = ElasticsearchRequest.post().multiValuedPathComponent( indexes )
-					.pathComponent( Paths._SEARCH ).bodyJson( payload );
+					.pathComponent( Paths._SEARCH ).bodyJsonFromInternal( payload );
 			if ( from != null ) {
 				builder.param( "from", from );
 			}

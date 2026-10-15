@@ -11,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.hibernate.search.util.impl.test.jar.PublicApiDependencyTestUtils;
 
@@ -22,6 +23,7 @@ import org.jboss.jandex.Indexer;
 
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.JsonParser;
+import tools.jackson.databind.JsonNode;
 
 class JsonApiBoundaryTest {
 	@Test
@@ -83,11 +85,11 @@ class JsonApiBoundaryTest {
 				HandlerWithNativeBound.class );
 	}
 
-	public interface HandlerWithNativeBound<T extends tools.jackson.databind.JsonNode> extends JsonHandler<T> {}
+	public interface HandlerWithNativeBound<T extends JsonNode> extends JsonHandler<T> {}
 
 	public interface GenericReturn { List<JsonParser> parse(); }
 
-	public interface GenericInterface extends java.util.function.Supplier<JsonParser> {}
+	public interface GenericInterface extends Supplier<JsonParser> {}
 
 	public interface GenericBound<T extends JsonParser> {}
 

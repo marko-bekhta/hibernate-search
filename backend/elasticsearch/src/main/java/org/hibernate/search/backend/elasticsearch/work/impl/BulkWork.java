@@ -56,10 +56,10 @@ public class BulkWork extends AbstractNonBulkableWork<BulkResult> {
 					break;
 			}
 			for ( BulkableWork<?> work : bulkableWorks ) {
-				builder.bodyJson( work.getBulkableActionMetadata() );
+				builder.bodyJsonFromInternal( work.getBulkableActionMetadata() );
 				ObjectNode actionBody = work.getBulkableActionBody();
 				if ( actionBody != null ) {
-					builder.bodyJson( actionBody );
+					builder.bodyJsonFromInternal( actionBody );
 				}
 			}
 			return builder.build();

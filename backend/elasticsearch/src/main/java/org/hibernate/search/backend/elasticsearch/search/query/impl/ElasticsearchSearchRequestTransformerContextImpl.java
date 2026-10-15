@@ -18,6 +18,8 @@ import org.hibernate.search.util.common.SearchException;
 import org.hibernate.search.util.common.impl.Contracts;
 import org.hibernate.search.util.json.JsonHandler;
 
+import com.google.gson.JsonObject;
+
 import tools.jackson.databind.node.ObjectNode;
 
 final class ElasticsearchSearchRequestTransformerContextImpl
@@ -36,7 +38,7 @@ final class ElasticsearchSearchRequestTransformerContextImpl
 
 	private String path;
 	private ObjectNode potentiallyTransformedBody;
-	private com.google.gson.JsonObject legacyBody;
+	private JsonObject legacyBody;
 	private boolean typedBodyEditing;
 	private Map<String, String> potentiallyTransformedParametersMap;
 
@@ -74,7 +76,7 @@ final class ElasticsearchSearchRequestTransformerContextImpl
 
 	@Override
 	@Deprecated
-	public com.google.gson.JsonObject body() {
+	public JsonObject body() {
 		if ( typedBodyEditing ) {
 			throw QueryLog.INSTANCE.jsonHandlerOperationFailed( "request body editing",
 					new IllegalStateException( "Cannot mix body() and transformBody() in one context" ) );
@@ -133,7 +135,7 @@ final class ElasticsearchSearchRequestTransformerContextImpl
 				: potentiallyTransformedBody != null ? potentiallyTransformedBody
 				: originalBody;
 		if ( body != null ) {
-			builder.bodyJson( body );
+			builder.bodyJsonFromInternal( body );
 		}
 
 		return builder.build();

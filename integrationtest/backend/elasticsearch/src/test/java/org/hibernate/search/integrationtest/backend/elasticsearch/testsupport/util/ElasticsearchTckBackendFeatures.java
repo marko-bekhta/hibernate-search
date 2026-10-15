@@ -2,6 +2,7 @@ package org.hibernate.search.integrationtest.backend.elasticsearch.testsupport.u
 
 import static org.hibernate.search.util.impl.integrationtest.backend.elasticsearch.dialect.ElasticsearchTestDialect.isActualVersion;
 
+import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
@@ -25,6 +26,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper;
 import org.hibernate.search.backend.elasticsearch.types.format.impl.ElasticsearchDefaultFieldFormatProvider;
 import org.hibernate.search.engine.backend.types.VectorSimilarity;
 import org.hibernate.search.engine.cfg.spi.FormatUtils;
@@ -59,7 +61,7 @@ import tools.jackson.databind.node.ObjectNode;
 public class ElasticsearchTckBackendFeatures extends TckBackendFeatures {
 
 	private JsonCodecService json =
-			org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.createUserFacingCodec();
+			JsonProviderHelper.createUserFacingCodec();
 
 	ElasticsearchTckBackendFeatures() {
 	}
@@ -344,8 +346,8 @@ public class ElasticsearchTckBackendFeatures extends TckBackendFeatures {
 		}
 		if ( value != null && value.getClass().isArray() ) {
 			var array = new ArrayNode( JsonNodeFactory.instance );
-			for ( int i = 0; i < java.lang.reflect.Array.getLength( value ); i++ ) {
-				array.add( json.encode( java.lang.reflect.Array.get( value, i ) ) );
+			for ( int i = 0; i < Array.getLength( value ); i++ ) {
+				array.add( json.encode( Array.get( value, i ) ) );
 			}
 			return json.write( array );
 		}

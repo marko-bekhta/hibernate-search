@@ -9,6 +9,8 @@ import org.hibernate.search.backend.elasticsearch.cfg.ElasticsearchBackendSettin
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchRequest;
 import org.hibernate.search.backend.elasticsearch.client.common.util.spi.URLEncodedString;
 import org.hibernate.search.backend.elasticsearch.client.impl.Paths;
+import org.hibernate.search.backend.elasticsearch.json.jackson.JacksonJsonHandlers;
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper;
 import org.hibernate.search.backend.elasticsearch.search.query.ElasticsearchSearchRequestTransformer;
 import org.hibernate.search.engine.backend.common.DocumentReference;
 import org.hibernate.search.engine.backend.document.IndexFieldReference;
@@ -64,7 +66,7 @@ class ElasticsearchSearchQueryRequestTransformerIT {
 		clientSpy.expectNext(
 				ElasticsearchRequest.post().pathComponent( defaultReadAlias( otherIndex.name() ) )
 						.pathComponent( URLEncodedString.fromString( "_search" ) )
-						.bodyJson( org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.create( false )
+						.bodyJson( JsonProviderHelper.create( false )
 								.getCodec().decode( "{}", ObjectNode.class ) )
 						.build(),
 				ElasticsearchRequestAssertionMode.EXTENSIBLE );
@@ -85,7 +87,7 @@ class ElasticsearchSearchQueryRequestTransformerIT {
 				.expectNext(
 						ElasticsearchRequest.post().pathComponent( defaultReadAlias( mainIndex.name() ) )
 								.pathComponent( Paths._SEARCH )
-								.bodyJson( org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper
+								.bodyJson( JsonProviderHelper
 										.create( false ).getCodec().decode( "{}", ObjectNode.class ) )
 								.param( "search_type", "dfs_query_then_fetch" ).build(),
 						ElasticsearchRequestAssertionMode.EXTENSIBLE );
@@ -97,7 +99,7 @@ class ElasticsearchSearchQueryRequestTransformerIT {
 		StubMappingScope scope = mainIndex.createScope();
 		SearchQuery<DocumentReference> query = scope.query().extension( ElasticsearchExtension.get() )
 				.where( f -> f.matchAll() ).requestTransformer( context -> context.transformBody(
-						org.hibernate.search.backend.elasticsearch.json.jackson.JacksonJsonHandlers.object(), body -> {
+						JacksonJsonHandlers.object(), body -> {
 							assertThat( body.get( "min_score" ) ).isNull();
 							body.put( "min_score", 0.5f );
 							assertThat( body.get( "min_score" ).floatValue() ).isEqualTo( 0.5f );
@@ -106,7 +108,7 @@ class ElasticsearchSearchQueryRequestTransformerIT {
 				.toQuery();
 		clientSpy.expectNext(
 				ElasticsearchRequest.post().pathComponent( defaultReadAlias( mainIndex.name() ) ).pathComponent( Paths._SEARCH )
-						.bodyJson( org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.create( false )
+						.bodyJson( JsonProviderHelper.create( false )
 								.getCodec().decode( "{\"min_score\":0.5}", ObjectNode.class ) )
 						.build(),
 				ElasticsearchRequestAssertionMode.EXTENSIBLE );

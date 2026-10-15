@@ -1,5 +1,6 @@
 package org.hibernate.search.integrationtest.performance.backend.elasticsearch;
 
+import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
@@ -21,11 +22,11 @@ public final class JsonStringUtf8Verification {
 		JsonNode actual = JsonStringUtf8Encoding.parse( parsing, json, 4 );
 		var values = actual.get( "😀" );
 		if ( values.get( 0 ).longValue() != 0
-				|| new java.math.BigDecimal( values.get( 1 ).numberValue().toString() )
-						.compareTo( new java.math.BigDecimal( "12300" ) ) != 0
+				|| new BigDecimal( values.get( 1 ).numberValue().toString() )
+						.compareTo( new BigDecimal( "12300" ) ) != 0
 				|| values.get( 2 ).longValue() != 9007199254740993L
-				|| new java.math.BigDecimal( values.get( 3 ).numberValue().toString() )
-						.compareTo( new java.math.BigDecimal( "1e999999999" ) ) != 0
+				|| new BigDecimal( values.get( 3 ).numberValue().toString() )
+						.compareTo( new BigDecimal( "1e999999999" ) ) != 0
 				|| !"\ud800\nA\"\\".equals( actual.get( "escaped" ).asString() )
 				|| !parsing.parse( json ).equals( actual )
 				|| !actual.equals( JsonStringUtf8Encoding.parseStaged( parsing, json, 4, 2 ) ) ) {

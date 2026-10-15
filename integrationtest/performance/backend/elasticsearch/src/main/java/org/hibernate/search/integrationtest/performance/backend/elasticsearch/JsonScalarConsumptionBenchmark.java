@@ -1,5 +1,6 @@
 package org.hibernate.search.integrationtest.performance.backend.elasticsearch;
 
+import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -88,8 +89,8 @@ public class JsonScalarConsumptionBenchmark {
 				return false;
 			}
 			for ( int i = 0; i < expected.size(); i++ ) {
-				if ( new java.math.BigDecimal( expected.get( i ) )
-						.compareTo( new java.math.BigDecimal( actual.get( i ) ) ) != 0 ) {
+				if ( new BigDecimal( expected.get( i ) )
+						.compareTo( new BigDecimal( actual.get( i ) ) ) != 0 ) {
 					return false;
 				}
 			}

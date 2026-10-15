@@ -5,6 +5,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
@@ -194,7 +195,7 @@ class ElasticsearchNativeArrayProjectionTest {
 				.thenReturn( new SearchProjectionBackendContext( typeNameHelper, null ) );
 		return new ElasticsearchSearchIndexScopeImpl<>( mock( BackendMappingContext.class ), Object.class, backend,
 				JsonProviderHelper.create( false ).getCodec(), null, null, null,
-				Set.of( java.util.Arrays.stream( indexes ).map( i -> i.model ).toArray( ElasticsearchIndexModel[]::new ) ) );
+				Set.of( Arrays.stream( indexes ).map( i -> i.model ).toArray( ElasticsearchIndexModel[]::new ) ) );
 	}
 
 	private static <T> ElasticsearchJsonHandlerFieldCodec<T> typedCodec(JsonHandler<T> handler) {

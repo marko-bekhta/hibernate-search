@@ -3,6 +3,7 @@ package org.hibernate.search.backend.elasticsearch.json.impl;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.math.BigInteger;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hibernate.search.util.common.AssertionFailure;
@@ -121,7 +122,7 @@ class JsonAccessorTest {
 		assertThat( STRICT.get( root ) ).contains( 1L );
 		assertThat( JsonAccessor.root().property( "integer" ).asInteger().get( root ) ).contains( 1 );
 		assertThat( JsonElementTypes.BIG_INTEGER.fromElement( root.get( "text" ) ) )
-				.isEqualTo( new java.math.BigInteger( "123" ) );
+				.isEqualTo( new BigInteger( "123" ) );
 		assertThat( JsonAccessor.root().property( "boolean" ).asBoolean().get( root ) ).contains( true );
 		assertThatThrownBy( () -> JsonAccessor.root().property( "boolean" ).asString().get( root ) )
 				.isInstanceOf( UnexpectedJsonElementTypeException.class );

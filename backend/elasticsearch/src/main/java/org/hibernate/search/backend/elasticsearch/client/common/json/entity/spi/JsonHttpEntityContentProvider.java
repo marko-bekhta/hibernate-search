@@ -7,6 +7,7 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.hibernate.search.backend.elasticsearch.client.common.json.impl.ElasticsearchJsonBody;
@@ -26,7 +27,7 @@ public class JsonHttpEntityContentProvider implements ContentProducer {
 	private final Set<InputStream> streams = new HashSet<>();
 
 	public JsonHttpEntityContentProvider(JsonCodecService codec, List<ObjectNode> bodyParts) throws IOException {
-		java.util.Objects.requireNonNull( codec );
+		Objects.requireNonNull( codec );
 		body = ElasticsearchJsonBody.ndjson( bodyParts );
 	}
 

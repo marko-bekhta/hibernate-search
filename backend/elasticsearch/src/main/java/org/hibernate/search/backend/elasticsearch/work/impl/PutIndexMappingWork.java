@@ -45,7 +45,7 @@ public class PutIndexMappingWork extends AbstractNonBulkableWork<Void> {
 		@Override
 		protected ElasticsearchRequest buildRequest() {
 			ElasticsearchRequest.Builder builder = ElasticsearchRequest.put().pathComponent( indexName );
-			builder.pathComponent( Paths._MAPPING ).bodyJson( payload );
+			builder.pathComponent( Paths._MAPPING ).bodyJsonFromInternal( payload );
 			return builder.build();
 		}
 

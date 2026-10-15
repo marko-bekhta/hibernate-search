@@ -1,5 +1,7 @@
 package org.hibernate.search.backend.elasticsearch.types.dsl.impl;
 
+import java.util.Objects;
+
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.mapping.impl.PropertyMapping;
 import org.hibernate.search.backend.elasticsearch.search.aggregation.impl.ElasticsearchRangeAggregation;
@@ -27,7 +29,7 @@ abstract class AbstractElasticsearchNativeIndexFieldTypeOptionsStep<
 
 	AbstractElasticsearchNativeIndexFieldTypeOptionsStep(ElasticsearchIndexFieldTypeBuildContext buildContext,
 			PropertyMapping mapping, JsonHandler<T> handler) {
-		super( buildContext, java.util.Objects.requireNonNull( handler.javaType() ), mapping );
+		super( buildContext, Objects.requireNonNull( handler.javaType() ), mapping );
 		this.handler = handler;
 	}
 

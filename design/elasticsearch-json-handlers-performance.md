@@ -812,3 +812,23 @@ numeric nodes' `asString()` delegates to their primitive or underlying exact
 number rendering. The cleanup uses that API after retaining supported-class,
 finite-number and decimal-range checks; the output cursor's int/long fast paths
 are unchanged. No performance claim is made for the other review cleanups.
+
+## Validation split after the frozen campaigns
+
+The later authorized production validation split is covered by correctness tests,
+not new timing scores. External Jackson input, transformer replacements and
+arbitrary custom-client trees remain unconditionally validated. Internally parsed,
+constructed or already externally validated stable trees use explicit internal
+routes that skip redundant whole-tree walks with the production default
+`hibernate.search.json.internal_validation=false`. Repository tests enable the
+flag by default and separately exercise false. Debug mode adds internal invariant
+checks and writer cycle tracking; disabled writers allocate no cycle map or
+validator traversal state. Ordinary traversal frames and bounded numeric encoding
+workspace remain required for serialization.
+
+The frozen kernel, handler and integrated runtime artifacts above predate this
+split and the cursor's later named-state/comment cleanup. In particular, the
+historical handler-export rows include a validation walk that the current internal
+export route skips in production. Preserve those rows as measurements of their
+recorded artifacts; do not use them as measurements of the final split or infer
+an unmeasured speedup. External validation and ownership contracts remain required.

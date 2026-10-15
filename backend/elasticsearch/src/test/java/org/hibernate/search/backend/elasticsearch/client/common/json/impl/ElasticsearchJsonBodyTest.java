@@ -13,6 +13,7 @@ import java.util.List;
 
 import org.hibernate.search.util.json.spi.JsonBodies;
 import org.hibernate.search.util.json.spi.JsonBody;
+import org.hibernate.search.util.json.spi.JsonParsing;
 import org.hibernate.search.util.json.spi.JsonWriteCursor;
 
 import org.junit.jupiter.api.Test;
@@ -20,7 +21,9 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
 
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.JsonNodeFactory;
@@ -117,8 +120,8 @@ class ElasticsearchJsonBodyTest {
 		String unicode = "<>&='é中😀\n\t\b\f\r\u0000\u001f\u2028\u2029\"\\";
 		ObjectNode tree = JsonNodeFactory.instance.objectNode();
 		tree.put( unicode, unicode );
-		tree.set( "number", new org.hibernate.search.util.json.spi.JsonParsing().parse( "-0.12300e+004" ) );
-		com.google.gson.JsonObject gsonTree = new com.google.gson.JsonObject();
+		tree.set( "number", new JsonParsing().parse( "-0.12300e+004" ) );
+		JsonObject gsonTree = new JsonObject();
 		gsonTree.addProperty( unicode, unicode );
 		gsonTree.add( "number", JsonParser.parseString( tree.get( "number" ).numberValue().toString() ) );
 		ByteArrayOutputStream baseline = new ByteArrayOutputStream();
@@ -134,7 +137,7 @@ class ElasticsearchJsonBodyTest {
 		StringNode tree = StringNode.valueOf( "\ud800" );
 		ByteArrayOutputStream baseline = new ByteArrayOutputStream();
 		OutputStreamWriter writer = new OutputStreamWriter( baseline, StandardCharsets.UTF_8 );
-		new Gson().toJson( new com.google.gson.JsonPrimitive( "\ud800" ), writer );
+		new Gson().toJson( new JsonPrimitive( "\ud800" ), writer );
 		writer.flush();
 		assertThat( baseline.toString( StandardCharsets.UTF_8 ) ).isEqualTo( "\"?\"" );
 		assertThat( new String( drain( JsonBodies.of( tree ), 1 ), StandardCharsets.UTF_8 ) )

@@ -27,6 +27,7 @@ import org.hibernate.search.backend.elasticsearch.client.common.spi.Elasticsearc
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchResponse;
 import org.hibernate.search.backend.elasticsearch.client.common.util.spi.URLEncodedString;
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper;
 import org.hibernate.search.engine.cfg.ConfigurationPropertySource;
 import org.hibernate.search.engine.cfg.spi.AllAwareConfigurationPropertySource;
 import org.hibernate.search.engine.common.execution.spi.DelegatingSimpleScheduledExecutor;
@@ -39,6 +40,7 @@ import org.hibernate.search.util.impl.integrationtest.backend.elasticsearch.Elas
 import org.hibernate.search.util.impl.integrationtest.common.TestConfigurationProvider;
 import org.hibernate.search.util.impl.test.annotation.PortedFromSearch5;
 import org.hibernate.search.util.impl.test.annotation.TestForIssue;
+import org.hibernate.search.util.json.spi.JsonBodies;
 import org.hibernate.search.util.json.spi.JsonParsing;
 
 import org.junit.jupiter.api.AfterEach;
@@ -66,7 +68,7 @@ class ElasticsearchContentLengthIT {
 
 	static {
 		JsonCodecService json =
-				org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.create( false ).getCodec();
+				JsonProviderHelper.create( false ).getCodec();
 		try ( ByteArrayOutputStream out = new ByteArrayOutputStream();
 				Writer writer = new OutputStreamWriter( out, StandardCharsets.UTF_8 ) ) {
 			json.write( BODY_PART, writer );
@@ -80,7 +82,7 @@ class ElasticsearchContentLengthIT {
 		}
 	}
 
-	private static final int BUFFER_LIMIT = org.hibernate.search.util.json.spi.JsonBodies.DEFAULT_BUFFER_SIZE;
+	private static final int BUFFER_LIMIT = JsonBodies.DEFAULT_BUFFER_SIZE;
 
 	@RegisterExtension
 	private final WireMockExtension wireMockRule =
@@ -182,7 +184,7 @@ class ElasticsearchContentLengthIT {
 		return getDiscoveredClientFactory( beanResolver ).get().create( beanResolver, clientPropertySource,
 				threadPoolProvider.threadProvider(), "Client",
 				new DelegatingSimpleScheduledExecutor( timeoutExecutorService, true ),
-				org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.create( true ) );
+				JsonProviderHelper.create( true ) );
 	}
 
 	private ElasticsearchResponse doPost(ElasticsearchClient client, String path, Collection<ObjectNode> bodyParts) {

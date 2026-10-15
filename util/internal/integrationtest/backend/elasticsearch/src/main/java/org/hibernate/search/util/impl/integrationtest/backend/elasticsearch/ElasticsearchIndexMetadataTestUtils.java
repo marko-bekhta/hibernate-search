@@ -4,6 +4,7 @@ import java.util.Set;
 
 import org.hibernate.search.backend.elasticsearch.client.common.util.spi.URLEncodedString;
 import org.hibernate.search.backend.elasticsearch.index.layout.impl.IndexNames;
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper;
 import org.hibernate.search.util.common.impl.CollectionHelper;
 
 import tools.jackson.databind.node.JsonNodeFactory;
@@ -65,7 +66,7 @@ public class ElasticsearchIndexMetadataTestUtils {
 			result = new ObjectNode( JsonNodeFactory.instance );
 		}
 		else {
-			result = org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.create( false ).getCodec()
+			result = JsonProviderHelper.create( false ).getCodec()
 					.decode( "{" + otherAttributes + "}", ObjectNode.class );
 		}
 		result.put( "is_write_index", isWriteIndex );

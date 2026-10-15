@@ -9,6 +9,7 @@ import java.util.function.Consumer;
 import jakarta.persistence.EntityManagerFactory;
 
 import org.hibernate.search.backend.elasticsearch.ElasticsearchExtension;
+import org.hibernate.search.backend.elasticsearch.gson.GsonJsonHandlers;
 import org.hibernate.search.backend.elasticsearch.json.jackson.JacksonJsonHandlers;
 import org.hibernate.search.documentation.testsupport.BackendConfigurations;
 import org.hibernate.search.documentation.testsupport.DocumentationSetupHelper;
@@ -18,6 +19,8 @@ import org.hibernate.search.mapper.orm.session.SearchSession;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+
+import com.google.gson.JsonObject;
 
 import tools.jackson.databind.node.ObjectNode;
 
@@ -88,7 +91,7 @@ class ElasticsearchPredicateDslIT {
 	void deprecatedGsonInput() {
 		withinSearchSession( searchSession -> {
 			// tag::elasticsearch-fromJson-gson[]
-			com.google.gson.JsonObject json = org.hibernate.search.backend.elasticsearch.gson.GsonJsonHandlers.object()
+			JsonObject json = GsonJsonHandlers.object()
 					.fromJson( "{\"regexp\":{\"description\":\"neighbor|neighbour\"}}" );
 			List<Book> hits = searchSession.search( Book.class )
 					.extension( ElasticsearchExtension.get() )

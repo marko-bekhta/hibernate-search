@@ -27,8 +27,8 @@ public final class JsonBodies {
 	 * Exact numeric values and object insertion order are preserved. No newline or HTTP framing is added.
 	 */
 	public static JsonBody of(JsonNode root) {
-		Objects.requireNonNull( root );
-		return withContentLengthProbe( () -> openCursor( root ), DEFAULT_BUFFER_SIZE );
+		JsonTreeValidation.validateExternal( root );
+		return bodyFromInternal( root );
 	}
 
 	/**
@@ -38,15 +38,53 @@ public final class JsonBodies {
 		Contracts.assertNotNull( parts, "parts" );
 		for ( JsonNode part : parts ) {
 			Contracts.assertNotNull( part, "NDJSON part" );
+			JsonTreeValidation.validateExternal( part );
 		}
-		return withContentLengthProbe( new NdjsonBody( parts ), DEFAULT_BUFFER_SIZE );
+		return framedFromInternal( parts );
 	}
 
 	/**
 	 * Open an independent traversal without any preliminary length probe.
 	 */
 	public static JsonWriteCursor openCursor(JsonNode root) {
+		JsonTreeValidation.validateExternal( root );
 		return new Utf8JsonWriteCursor( root );
+	}
+
+	/**
+	 * Internal route: caller guarantees a stable ordinary acyclic tree constructed/parsed by Search
+	 * or already validated at its external boundary. Arbitrary application trees must use {@link #of(JsonNode)}.
+	 * Debug validation is assurance only; it does not establish safety of arbitrary mutable trees.
+	 */
+	public static JsonBody ofInternal(JsonNode root) {
+		Objects.requireNonNull( root );
+		JsonTreeValidation.validateInternal( root );
+		return bodyFromInternal( root );
+	}
+
+	/** Same internal caller contract as {@link #ofInternal(JsonNode)}, without a length probe. */
+	public static JsonWriteCursor openCursorInternal(JsonNode root) {
+		Objects.requireNonNull( root );
+		JsonTreeValidation.validateInternal( root );
+		return new Utf8JsonWriteCursor( root );
+	}
+
+	/** Same internal caller contract as {@link #ofInternal(JsonNode)} for every part and the retained list. */
+	public static JsonBody ndjsonInternal(List<? extends JsonNode> parts) {
+		Contracts.assertNotNull( parts, "parts" );
+		for ( JsonNode part : parts ) {
+			Contracts.assertNotNull( part, "NDJSON part" );
+			JsonTreeValidation.validateInternal( part );
+		}
+		return framedFromInternal( parts );
+	}
+
+	private static JsonBody bodyFromInternal(JsonNode root) {
+		return withContentLengthProbe( () -> new Utf8JsonWriteCursor( root ), DEFAULT_BUFFER_SIZE );
+	}
+
+	private static JsonBody framedFromInternal(List<? extends JsonNode> parts) {
+		return withContentLengthProbe( new NdjsonBody( parts ), DEFAULT_BUFFER_SIZE );
 	}
 
 	/**

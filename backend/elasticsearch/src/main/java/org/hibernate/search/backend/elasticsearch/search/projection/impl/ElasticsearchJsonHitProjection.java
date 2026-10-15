@@ -1,5 +1,7 @@
 package org.hibernate.search.backend.elasticsearch.search.projection.impl;
 
+import java.util.Objects;
+
 import org.hibernate.search.backend.elasticsearch.json.impl.JsonHandlerBridge;
 import org.hibernate.search.backend.elasticsearch.reporting.impl.ElasticsearchSearchHints;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexScope;
@@ -16,7 +18,7 @@ class ElasticsearchJsonHitProjection<T> extends AbstractElasticsearchProjection<
 
 	ElasticsearchJsonHitProjection(ElasticsearchSearchIndexScope<?> scope, JsonHandler<T> handler) {
 		super( scope );
-		this.handler = java.util.Objects.requireNonNull( handler );
+		this.handler = Objects.requireNonNull( handler );
 	}
 
 	@Override

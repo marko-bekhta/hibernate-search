@@ -4,13 +4,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
+import java.nio.ReadOnlyBufferException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.hibernate.search.util.json.spi.JsonBodies;
 import org.hibernate.search.util.json.spi.JsonParsing;
+import org.hibernate.search.util.json.spi.JsonTreeValidation;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -78,6 +82,11 @@ class KernelOutputV2Test {
 			tail = (ArrayNode) tail.get( 0 );
 		}
 		tail.add( root );
+		assertThatThrownBy( () -> JsonBodies.openCursor( root ) ).isInstanceOf( IllegalArgumentException.class );
+		if ( !JsonTreeValidation.isInternalValidationEnabled() ) {
+			// Deliberately invalid internal trees are only traversed with debug cycle tracking enabled.
+			return;
+		}
 		var cursor = new Utf8JsonWriteCursor( root );
 		assertThatThrownBy( () -> cursor.write( ByteBuffer.allocate( depth + 10 ) ) )
 				.isInstanceOf( IllegalArgumentException.class ).hasMessageContaining( "Cyclic" );
@@ -98,9 +107,16 @@ class KernelOutputV2Test {
 		var cursor = new Utf8JsonWriteCursor( chain( 40 ) );
 		cursor.write( ByteBuffer.allocate( 40 ) );
 		JsonWriteWorkspace workspace = (JsonWriteWorkspace) field( cursor, "workspace" );
-		assertThat( workspace.active ).hasSize( 40 );
+		if ( JsonTreeValidation.isInternalValidationEnabled() ) {
+			assertThat( workspace.active ).hasSize( 40 );
+		}
+		else {
+			assertThat( workspace ).isNull();
+		}
 		cursor.cancel();
-		assertThat( workspace.active ).isEmpty();
+		if ( workspace != null ) {
+			assertThat( workspace.active ).isEmpty();
+		}
 		assertThat( field( cursor, "workspace" ) ).isNull();
 	}
 
@@ -125,6 +141,9 @@ class KernelOutputV2Test {
 			while ( !first.isComplete() ) {
 				ByteBuffer one = ByteBuffer.allocate( 1 );
 				first.write( one );
+				if ( !JsonTreeValidation.isInternalValidationEnabled() ) {
+					assertThat( state.active ).isNull();
+				}
 				if ( one.position() == 0 ) {
 					continue;
 				}
@@ -162,11 +181,12 @@ class KernelOutputV2Test {
 
 	@Test
 	void failedNdjsonWriteClearsOuterAndSharedStateAndReadonlyPreflightPreservesCursor() throws Exception {
-		var body = JsonBodies.ndjson( List.of( StringNode.valueOf( "x".repeat( 10000 ) ), DoubleNode.valueOf( Double.NaN ) ) );
+		var body = JsonBodies.withContentLengthProbe( new NdjsonBody(
+				List.of( StringNode.valueOf( "x".repeat( 10000 ) ), DoubleNode.valueOf( Double.NaN ) ) ), 8192 );
 		var cursor = body.openCursor();
 		JsonWriteWorkspace state = (JsonWriteWorkspace) field( cursor, "workspace" );
 		assertThatThrownBy( () -> cursor.write( ByteBuffer.allocate( 1 ).asReadOnlyBuffer() ) )
-				.isInstanceOf( java.nio.ReadOnlyBufferException.class );
+				.isInstanceOf( ReadOnlyBufferException.class );
 		assertThat( field( cursor, "workspace" ) ).isSameAs( state );
 		assertThatThrownBy( () -> {
 			while ( !cursor.isComplete() ) {
@@ -203,8 +223,8 @@ class KernelOutputV2Test {
 		try {
 			JsonBodies.of( value ).writeTo( out );
 		}
-		catch (java.io.IOException failure) {
-			throw new java.io.UncheckedIOException( failure );
+		catch (IOException failure) {
+			throw new UncheckedIOException( failure );
 		}
 		return out.toString( StandardCharsets.UTF_8 );
 	}

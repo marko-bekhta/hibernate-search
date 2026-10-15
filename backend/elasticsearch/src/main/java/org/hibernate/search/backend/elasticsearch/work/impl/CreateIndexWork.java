@@ -12,6 +12,7 @@ import org.hibernate.search.backend.elasticsearch.lowlevel.index.aliases.impl.In
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.mapping.impl.RootTypeMapping;
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.settings.impl.IndexSettings;
 import org.hibernate.search.backend.elasticsearch.work.result.impl.CreateIndexResult;
+import org.hibernate.search.util.json.spi.JsonCodecs;
 
 import tools.jackson.databind.node.JsonNodeFactory;
 import tools.jackson.databind.node.ObjectNode;
@@ -60,7 +61,7 @@ public class CreateIndexWork extends AbstractNonBulkableWork<CreateIndexResult> 
 			 * We better not include the null fields.
 			 */
 			JsonCodecService json = jsonProvider.getCodecNoSerializeNulls();
-			payload.set( "aliases", org.hibernate.search.util.json.spi.JsonCodecs
+			payload.set( "aliases", JsonCodecs
 					.map( json.getCodec( IndexAliasDefinition.class ) ).encode( aliases, false ) );
 			return this;
 		}
@@ -91,7 +92,7 @@ public class CreateIndexWork extends AbstractNonBulkableWork<CreateIndexResult> 
 		protected ElasticsearchRequest buildRequest() {
 			ElasticsearchRequest.Builder builder = ElasticsearchRequest.put().pathComponent( indexName );
 			if ( payload.size() > 0 ) {
-				builder.bodyJson( payload );
+				builder.bodyJsonFromInternal( payload );
 			}
 			return builder.build();
 		}

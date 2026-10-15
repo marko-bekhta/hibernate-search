@@ -5,6 +5,7 @@ import org.hibernate.search.util.json.spi.JsonCodecRegistry;
 import org.hibernate.search.util.json.spi.JsonCodecs;
 
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.JsonNodeFactory;
 import tools.jackson.databind.node.NullNode;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -31,7 +32,7 @@ public final class NamedDynamicTemplateJsonCodec implements JsonCodec<NamedDynam
 		if ( value == null ) {
 			return NullNode.instance;
 		}
-		ObjectNode result = tools.jackson.databind.node.JsonNodeFactory.instance.objectNode();
+		ObjectNode result = JsonNodeFactory.instance.objectNode();
 		JsonCodecs.put( result, value.name, template.encode( value.template, serializeNulls ), serializeNulls );
 		return result;
 	}

@@ -14,6 +14,8 @@ import org.hibernate.search.util.json.spi.JsonParsing;
 
 import org.junit.jupiter.api.Test;
 
+import tools.jackson.databind.node.ObjectNode;
+
 class ElasticsearchCustomJsonClientTest {
 	@Test
 	@SuppressWarnings("deprecation")
@@ -59,7 +61,7 @@ class ElasticsearchCustomJsonClientTest {
 							parser.feed( fragment );
 						}
 					}
-					var tree = provider.getCodec().decode( parser.endOfInput(), tools.jackson.databind.node.ObjectNode.class );
+					var tree = provider.getCodec().decode( parser.endOfInput(), ObjectNode.class );
 					return CompletableFuture.completedFuture( ElasticsearchResponse.withJsonBody( "custom", 200, "ok", tree ) );
 				}
 			}

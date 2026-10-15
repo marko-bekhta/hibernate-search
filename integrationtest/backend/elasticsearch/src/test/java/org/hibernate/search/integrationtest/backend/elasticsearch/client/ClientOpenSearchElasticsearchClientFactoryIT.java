@@ -48,6 +48,7 @@ import org.hibernate.search.backend.elasticsearch.client.opensearch.rest.Elastic
 import org.hibernate.search.backend.elasticsearch.client.opensearch.rest.cfg.ClientOpenSearchElasticsearchBackendClientSettings;
 import org.hibernate.search.backend.elasticsearch.client.opensearch.rest.cfg.spi.ClientOpenSearchElasticsearchBackendClientSpiSettings;
 import org.hibernate.search.backend.elasticsearch.client.opensearch.rest.impl.ClientOpenSearchElasticsearchClientFactory;
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper;
 import org.hibernate.search.engine.cfg.ConfigurationPropertySource;
 import org.hibernate.search.engine.cfg.spi.AllAwareConfigurationPropertySource;
 import org.hibernate.search.engine.cfg.spi.ConfigurationProperty;
@@ -921,7 +922,7 @@ class ClientOpenSearchElasticsearchClientFactoryIT {
 		return new ClientOpenSearchElasticsearchClientFactory().create( beanResolver, clientPropertySource,
 				threadPoolProvider.threadProvider(), "Client",
 				new DelegatingSimpleScheduledExecutor( timeoutExecutorService, true ),
-				org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper.create( true ) );
+				JsonProviderHelper.create( true ) );
 	}
 
 	private ElasticsearchResponse doPost(ElasticsearchClient client, String path, String payload) {

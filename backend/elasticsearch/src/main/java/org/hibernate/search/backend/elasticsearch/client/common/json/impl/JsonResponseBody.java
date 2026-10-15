@@ -119,7 +119,7 @@ public final class JsonResponseBody implements AutoCloseable {
 			}
 			return new ByteArrayInputStream( prefix.getBytes( StandardCharsets.UTF_8 ) );
 		}
-		return tree == null ? InputStream.nullInputStream() : JsonBodies.of( tree ).openStream();
+		return tree == null ? InputStream.nullInputStream() : JsonBodies.ofInternal( tree ).openStream();
 	}
 
 	public long inputBytes() {

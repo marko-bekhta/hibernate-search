@@ -5,16 +5,21 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hibernate.search.backend.elasticsearch.gson.GsonJsonHandlers;
 import org.hibernate.search.backend.elasticsearch.json.jackson.JacksonJsonHandlers;
+import org.hibernate.search.util.common.AssertionFailure;
 import org.hibernate.search.util.common.SearchException;
 import org.hibernate.search.util.json.JsonHandler;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+
+import com.google.gson.JsonObject;
 
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.BinaryNode;
@@ -103,7 +108,7 @@ class JsonHandlerBridgeTest {
 		root.set( "a", shared );
 		root.set( "b", shared );
 		assertThat( JsonHandlerBridge.importObject( JacksonJsonHandlers.object(), root, "shared" ) ).isSameAs( root );
-		java.util.Map<String, JsonNode> malformedMembers = new java.util.LinkedHashMap<>();
+		Map<String, JsonNode> malformedMembers = new LinkedHashMap<>();
 		malformedMembers.put( null, JsonNodeFactory.instance.nullNode() );
 		for ( JsonNode bad : new JsonNode[] {
 				new ObjectNode( JsonNodeFactory.instance, malformedMembers ),
@@ -117,7 +122,7 @@ class JsonHandlerBridgeTest {
 		}
 		root.remove( "bad" );
 		root.set( "cycle", root );
-		assertThatThrownBy( () -> JsonHandlerBridge.exportObject( JacksonJsonHandlers.object(), root, "external tree" ) )
+		assertThatThrownBy( () -> JsonHandlerBridge.importObject( JacksonJsonHandlers.object(), root, "external tree" ) )
 				.isInstanceOf( SearchException.class );
 	}
 
@@ -136,7 +141,7 @@ class JsonHandlerBridgeTest {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	void runtimeTypeAndFailureCauseAreCheckedAtTheBoundary() {
 		JsonHandler raw = JacksonJsonHandlers.value();
-		assertThatThrownBy( () -> JsonHandlerBridge.importValue( raw, new com.google.gson.JsonObject(), "wrong type" ) )
+		assertThatThrownBy( () -> JsonHandlerBridge.importValue( raw, new JsonObject(), "wrong type" ) )
 				.isInstanceOf( SearchException.class ).hasCauseInstanceOf( ClassCastException.class );
 		IllegalStateException cause = new IllegalStateException( "handler failed" );
 		JsonHandler<JsonNode> custom = new JsonHandler<>() {
@@ -187,7 +192,7 @@ class JsonHandlerBridgeTest {
 			@Override
 			public JsonNode fromJson(String json) {
 				exports.incrementAndGet();
-				throw new org.hibernate.search.util.common.AssertionFailure( "Import must not invoke fromJson" );
+				throw new AssertionFailure( "Import must not invoke fromJson" );
 			}
 		};
 		assertThatThrownBy( () -> JsonHandlerBridge.importValue( custom, node, "huge custom import" ) )

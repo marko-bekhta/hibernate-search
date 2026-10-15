@@ -343,13 +343,26 @@ used internally to indicate absent fields are not wire data. Sharing a subtree
 in an acyclic graph is allowed under the stable-input ownership rule.
 
 Validate external direct nodes on import and transformer replacement before
-retaining/installing them. A graph validation walk must not invoke databinding,
-raw node serializers, reflective access or `toString` on unknown nodes. Internal
-construction creates only approved nodes; transport output checks/cannot recurse
-indefinitely on a subsequently corrupted tree, but callers violating the stability
-rule do not gain a mutation isolation guarantee. Apply the existing depth/name/
-string/number constraints where appropriate. Record validation overhead separately
-in direct-boundary benchmarks.
+retaining/installing them, and validate arbitrary trees supplied by custom clients.
+Custom handler text is validated by the parser. A graph validation walk must not
+invoke databinding, raw node serializers, reflective access or `toString` on unknown
+nodes. Internal construction creates only approved nodes. Explicit internal SPI
+routes accept stable ordinary acyclic trees constructed/parsed by Search or already
+validated at their external boundary; production avoids redundant whole-tree walks.
+No validity bit is cached on mutable nodes.
+
+The JVM property `hibernate.search.json.internal_validation` defaults to false.
+When true it enables internal invariant validation and writer cycle tracking; tests
+set it true by default and also exercise production mode through
+`-Dtest.json.internal_validation=false`. The flag is captured once per JVM, and each
+writer selects its mode at construction. Disabled writers allocate no cycle tracking
+state. Numeric encoding workspace is separate from validation bookkeeping.
+Serialization escaping, exact/finite numeric checks, output bounds and cleanup
+remain unconditional. Internal assurance is not a proof: a violated internal
+acyclic/stability contract can fail to terminate with debug checks disabled.
+External trees and transformer results remain checked in either mode. Callers
+violating stable-input ownership do not gain a mutation isolation guarantee.
+Record external validation overhead separately in direct-boundary benchmarks.
 
 Duplicate object members remain last-value-wins, with encounter-order iteration
 consistent with current tree semantics. Object-member null omission is a codec
