@@ -4,7 +4,8 @@ import org.hibernate.search.backend.elasticsearch.client.common.spi.Elasticsearc
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchResponse;
 import org.hibernate.search.backend.elasticsearch.client.impl.Paths;
 
-import com.google.gson.JsonObject;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 public class ClearScrollWork extends AbstractNonBulkableWork<Void> {
 
@@ -17,8 +18,8 @@ public class ClearScrollWork extends AbstractNonBulkableWork<Void> {
 		return null;
 	}
 
-	public static class Builder
-			extends AbstractBuilder<Builder> {
+	public static class Builder extends AbstractBuilder<Builder> {
+
 		private final String scrollId;
 
 		public Builder(String scrollId) {
@@ -28,15 +29,11 @@ public class ClearScrollWork extends AbstractNonBulkableWork<Void> {
 
 		@Override
 		protected ElasticsearchRequest buildRequest() {
-			JsonObject body = new JsonObject();
-			body.addProperty( "scroll_id", scrollId );
-
+			ObjectNode body = new ObjectNode( JsonNodeFactory.instance );
+			body.put( "scroll_id", scrollId );
 			ElasticsearchRequest.Builder builder =
-					ElasticsearchRequest.delete()
-							.pathComponent( Paths._SEARCH )
-							.pathComponent( Paths.SCROLL )
-							.body( body );
-
+					ElasticsearchRequest.delete().pathComponent( Paths._SEARCH ).pathComponent( Paths.SCROLL )
+							.bodyJsonFromInternal( body );
 			return builder.build();
 		}
 

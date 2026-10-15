@@ -8,12 +8,13 @@ import java.util.Optional;
 
 import org.hibernate.search.backend.elasticsearch.ElasticsearchVersion;
 import org.hibernate.search.backend.elasticsearch.cfg.ElasticsearchBackendSettings;
-import org.hibernate.search.backend.elasticsearch.client.common.gson.spi.GsonProvider;
+import org.hibernate.search.backend.elasticsearch.client.common.json.spi.JsonProvider;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchClientFactory;
 import org.hibernate.search.backend.elasticsearch.client.impl.ClientJdkElasticsearchClientFactory;
 import org.hibernate.search.backend.elasticsearch.dialect.impl.ElasticsearchDialectFactory;
 import org.hibernate.search.backend.elasticsearch.dialect.model.impl.ElasticsearchModelDialect;
-import org.hibernate.search.backend.elasticsearch.gson.spi.GsonProviderHelper;
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper;
 import org.hibernate.search.backend.elasticsearch.logging.spi.ConfigurationLog;
 import org.hibernate.search.backend.elasticsearch.mapping.TypeNameMappingStrategyName;
 import org.hibernate.search.backend.elasticsearch.mapping.impl.DiscriminatorTypeNameMapping;
@@ -38,9 +39,6 @@ import org.hibernate.search.engine.environment.bean.BeanResolver;
 import org.hibernate.search.util.common.AssertionFailure;
 import org.hibernate.search.util.common.impl.SuppressingCloser;
 import org.hibernate.search.util.common.reporting.EventContext;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 public class ElasticsearchBackendFactory implements BackendFactory {
 
@@ -72,10 +70,10 @@ public class ElasticsearchBackendFactory implements BackendFactory {
 		boolean logPrettyPrinting = LOG_JSON_PRETTY_PRINTING.get( propertySource );
 		/*
 		 * The Elasticsearch client only converts JsonObjects to String and
-		 * vice-versa, it doesn't need a Gson instance that was specially
+		 * vice-versa, it doesn't need a JsonCodecService instance that was specially
 		 * configured for a particular Elasticsearch version.
 		 */
-		GsonProvider defaultGsonProvider = GsonProviderHelper.create( GsonBuilder::new, logPrettyPrinting );
+		JsonProvider defaultJsonProvider = JsonProviderHelper.create( logPrettyPrinting );
 
 		Optional<ElasticsearchVersion> configuredVersion = ElasticsearchLinkImpl.VERSION.get( propertySource );
 
@@ -91,7 +89,7 @@ public class ElasticsearchBackendFactory implements BackendFactory {
 
 			ElasticsearchDialectFactory dialectFactory = new ElasticsearchDialectFactory();
 			link = new ElasticsearchLinkImpl(
-					clientFactoryHolder, threads, defaultGsonProvider, logPrettyPrinting,
+					clientFactoryHolder, threads, defaultJsonProvider, logPrettyPrinting,
 					dialectFactory, configuredVersion, createTypeNameMapping( propertySource )
 			);
 			MultiTenancyStrategy multiTenancyStrategy = getMultiTenancyStrategy( propertySource, buildContext );
@@ -112,10 +110,10 @@ public class ElasticsearchBackendFactory implements BackendFactory {
 
 			dialect = dialectFactory.createModelDialect( version );
 
-			Gson userFacingGson = GsonProviderHelper.createUserFacingGson();
+			JsonCodecService userFacingCodec = JsonProviderHelper.createUserFacingCodec();
 
 			ElasticsearchIndexFieldTypeFactoryProvider typeFactoryProvider =
-					dialect.createIndexTypeFieldFactoryProvider( userFacingGson );
+					dialect.createIndexTypeFieldFactoryProvider( userFacingCodec );
 			ElasticsearchPropertyMappingValidatorProvider propertyMappingValidatorProvider =
 					dialect.createElasticsearchPropertyMappingValidatorProvider();
 
@@ -125,7 +123,7 @@ public class ElasticsearchBackendFactory implements BackendFactory {
 					threads, link,
 					typeFactoryProvider,
 					propertyMappingValidatorProvider,
-					userFacingGson,
+					userFacingCodec,
 					multiTenancyStrategy,
 					buildContext.failureHandler(), buildContext.timingSource()
 			);

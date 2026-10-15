@@ -1,23 +1,29 @@
 package org.hibernate.search.backend.elasticsearch.search.projection.impl;
 
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonAccessor;
-import org.hibernate.search.backend.elasticsearch.gson.impl.JsonObjectAccessor;
+import java.util.Objects;
+
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonAccessor;
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonHandlerBridge;
 import org.hibernate.search.backend.elasticsearch.reporting.impl.ElasticsearchSearchHints;
 import org.hibernate.search.backend.elasticsearch.search.common.impl.ElasticsearchSearchIndexScope;
 import org.hibernate.search.engine.search.loading.spi.LoadingResult;
 import org.hibernate.search.engine.search.loading.spi.ProjectionHitMapper;
+import org.hibernate.search.util.json.JsonHandler;
 
-import com.google.gson.JsonObject;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
-class ElasticsearchExplanationProjection extends AbstractElasticsearchProjection<JsonObject>
-		implements ElasticsearchSearchProjection.Extractor<JsonObject, JsonObject> {
+class ElasticsearchExplanationProjection<T> extends AbstractElasticsearchProjection<T>
+		implements ElasticsearchSearchProjection.Extractor<ObjectNode, T> {
 
-	private static final JsonAccessor<Boolean> REQUEST_EXPLAIN_ACCESSOR = JsonAccessor.root().property( "explain" ).asBoolean();
-	private static final JsonObjectAccessor HIT_EXPLANATION_ACCESSOR =
-			JsonAccessor.root().property( "_explanation" ).asObject();
+	private static final JsonAccessor<Boolean> REQUEST_EXPLAIN_ACCESSOR =
+			JsonAccessor.root().property( "explain" ).unwrapSingletonArrays().asBoolean();
 
-	ElasticsearchExplanationProjection(ElasticsearchSearchIndexScope<?> scope) {
+	private final JsonHandler<T> handler;
+
+	ElasticsearchExplanationProjection(ElasticsearchSearchIndexScope<?> scope, JsonHandler<T> handler) {
 		super( scope );
+		this.handler = Objects.requireNonNull( handler );
 	}
 
 	@Override
@@ -26,7 +32,7 @@ class ElasticsearchExplanationProjection extends AbstractElasticsearchProjection
 	}
 
 	@Override
-	public Extractor<?, JsonObject> request(JsonObject requestBody, ProjectionRequestContext context) {
+	public Extractor<?, T> request(ObjectNode requestBody, ProjectionRequestContext context) {
 		context.checkNotNested(
 				ElasticsearchProjectionTypeKeys.EXPLANATION,
 				ElasticsearchSearchHints.INSTANCE.explanationProjectionNestingNotSupportedHint()
@@ -36,15 +42,15 @@ class ElasticsearchExplanationProjection extends AbstractElasticsearchProjection
 	}
 
 	@Override
-	public JsonObject extract(ProjectionHitMapper<?> projectionHitMapper, JsonObject hit,
-			JsonObject source, ProjectionExtractContext context) {
-		// We expect the optional to always be non-empty.
-		return HIT_EXPLANATION_ACCESSOR.get( hit ).get();
+	public ObjectNode extract(ProjectionHitMapper<?> projectionHitMapper, ObjectNode hit,
+			ObjectNode source, ProjectionExtractContext context) {
+		JsonNode present = hit.get( "_explanation" );
+		return present == null ? null : JsonHandlerBridge.requireObject( present, "explanation projection" );
 	}
 
 	@Override
-	public JsonObject transform(LoadingResult<?> loadingResult, JsonObject extractedData,
+	public T transform(LoadingResult<?> loadingResult, ObjectNode extractedData,
 			ProjectionTransformContext context) {
-		return extractedData;
+		return JsonHandlerBridge.exportObject( handler, extractedData, "explanation projection" );
 	}
 }

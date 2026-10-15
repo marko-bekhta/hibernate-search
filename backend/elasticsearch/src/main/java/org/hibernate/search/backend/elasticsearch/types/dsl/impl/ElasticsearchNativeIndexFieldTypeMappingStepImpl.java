@@ -1,15 +1,13 @@
 package org.hibernate.search.backend.elasticsearch.types.dsl.impl;
 
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonHandlerBridge;
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.mapping.impl.PropertyMapping;
 import org.hibernate.search.backend.elasticsearch.types.dsl.ElasticsearchNativeIndexFieldTypeMappingStep;
 import org.hibernate.search.backend.elasticsearch.types.dsl.ElasticsearchNativeIndexFieldTypeOptionsStep;
+import org.hibernate.search.util.json.JsonHandler;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-
-class ElasticsearchNativeIndexFieldTypeMappingStepImpl
-		implements ElasticsearchNativeIndexFieldTypeMappingStep {
-
+@SuppressWarnings("deprecation")
+class ElasticsearchNativeIndexFieldTypeMappingStepImpl implements ElasticsearchNativeIndexFieldTypeMappingStep {
 	private final ElasticsearchIndexFieldTypeBuildContext buildContext;
 
 	ElasticsearchNativeIndexFieldTypeMappingStepImpl(ElasticsearchIndexFieldTypeBuildContext buildContext) {
@@ -17,16 +15,16 @@ class ElasticsearchNativeIndexFieldTypeMappingStepImpl
 	}
 
 	@Override
-	public ElasticsearchNativeIndexFieldTypeOptionsStep<?> mapping(JsonObject jsonObject) {
-		Gson gson = buildContext.getUserFacingGson();
-		PropertyMapping mapping = gson.fromJson( jsonObject, PropertyMapping.class );
+	public ElasticsearchNativeIndexFieldTypeOptionsStep<?> mapping(String json) {
+		PropertyMapping mapping = buildContext.getUserFacingCodec().decode(
+				JsonHandlerBridge.parseObject( json, "native field mapping" ), PropertyMapping.class );
 		return new ElasticsearchNativeIndexFieldTypeOptionsStepImpl( buildContext, mapping );
 	}
 
 	@Override
-	public ElasticsearchNativeIndexFieldTypeOptionsStep<?> mapping(String jsonString) {
-		Gson gson = buildContext.getUserFacingGson();
-		return mapping( gson.fromJson( jsonString, JsonObject.class ) );
+	public <M> ElasticsearchNativeIndexFieldTypeOptionsStep<?> mapping(JsonHandler<M> handler, M json) {
+		PropertyMapping mapping = buildContext.getUserFacingCodec().decode(
+				JsonHandlerBridge.importObject( handler, json, "native field mapping" ), PropertyMapping.class );
+		return new ElasticsearchNativeIndexFieldTypeOptionsStepImpl( buildContext, mapping );
 	}
-
 }

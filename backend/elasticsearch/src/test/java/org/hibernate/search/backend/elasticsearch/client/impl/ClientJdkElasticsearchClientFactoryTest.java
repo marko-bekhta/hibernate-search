@@ -11,9 +11,9 @@ import java.util.Map;
 import javax.net.ssl.SSLContext;
 
 import org.hibernate.search.backend.elasticsearch.cfg.ElasticsearchBackendSettings;
-import org.hibernate.search.backend.elasticsearch.client.common.gson.spi.GsonProvider;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchClientImplementor;
 import org.hibernate.search.backend.elasticsearch.client.jdk.ElasticsearchHttpClientConfigurer;
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper;
 import org.hibernate.search.engine.cfg.impl.MapConfigurationPropertySource;
 import org.hibernate.search.engine.environment.bean.BeanHolder;
 import org.hibernate.search.engine.environment.bean.BeanReference;
@@ -22,8 +22,6 @@ import org.hibernate.search.engine.environment.thread.impl.EmbeddedThreadProvide
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-
-import com.google.gson.GsonBuilder;
 
 class ClientJdkElasticsearchClientFactoryTest {
 
@@ -60,7 +58,7 @@ class ClientJdkElasticsearchClientFactoryTest {
 				beanResolver,
 				new MapConfigurationPropertySource( Map.of( ElasticsearchBackendSettings.URIS, scheme + "://localhost:9200" ) ),
 				new EmbeddedThreadProvider( "test" ), "test", null,
-				GsonProvider.create( GsonBuilder::new, false ) );
+				JsonProviderHelper.create( false ) );
 		try {
 			// The JDK default context validates the server certificate against the default trust store.
 			assertThat( configuredContext[0] ).isSameAs( SSLContext.getDefault() );

@@ -6,7 +6,7 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import org.hibernate.search.backend.elasticsearch.cfg.ElasticsearchBackendSettings;
-import org.hibernate.search.backend.elasticsearch.client.common.gson.spi.GsonProvider;
+import org.hibernate.search.backend.elasticsearch.client.common.json.spi.JsonProvider;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchClientFactory;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchClientImplementor;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchRequestInterceptor;
@@ -145,7 +145,7 @@ public class ClientRest5ElasticsearchClientFactory implements ElasticsearchClien
 	public ElasticsearchClientImplementor create(BeanResolver beanResolver, ConfigurationPropertySource propertySource,
 			ThreadProvider threadProvider, String threadNamePrefix,
 			SimpleScheduledExecutor timeoutExecutorService,
-			GsonProvider gsonProvider) {
+			JsonProvider jsonProvider) {
 		Optional<Integer> requestTimeoutMs = REQUEST_TIMEOUT.get( propertySource );
 
 		Optional<BeanHolder<? extends Rest5Client>> providedRestClientHolder = CLIENT_INSTANCE.getAndMap(
@@ -168,7 +168,7 @@ public class ClientRest5ElasticsearchClientFactory implements ElasticsearchClien
 		return new ClientRest5ElasticsearchClient(
 				restClientHolder, sniffer, timeoutExecutorService,
 				requestTimeoutMs,
-				gsonProvider.getGson(), gsonProvider.getLogHelper()
+				jsonProvider.getCodec(), jsonProvider.getLogHelper()
 		);
 	}
 
