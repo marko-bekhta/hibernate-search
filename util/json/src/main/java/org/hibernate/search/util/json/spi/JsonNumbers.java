@@ -3,9 +3,12 @@ package org.hibernate.search.util.json.spi;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+import org.hibernate.search.util.common.annotation.Incubating;
+
 import tools.jackson.databind.JsonNode;
 
 /** Exact Jackson-native scalar construction and decimal conversion policy; no Java object mapping. */
+@Incubating
 public final class JsonNumbers {
 	private JsonNumbers() {
 	}

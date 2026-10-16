@@ -17,11 +17,16 @@ import tools.jackson.databind.JsonNode;
 
 /** Per-attempt result carrier. Parse errors are deferred until the client has decided whether to retry. */
 public final class JsonResponseBody implements AutoCloseable {
+	/** Default response input capacity advertised/allocated by REST adapters. */
+	public static final int DEFAULT_INPUT_CAPACITY = 8192;
+
+	private static final int DIAGNOSTIC_PREFIX_LIMIT = 8192;
+
 	public static final long DEFAULT_LIMIT = 100L * 1024 * 1024;
 	private JsonParserSession parser;
 	private final Charset charset;
 	private final long limit;
-	private byte[] diagnosticPrefix = new byte[8192];
+	private byte[] diagnosticPrefix = new byte[DIAGNOSTIC_PREFIX_LIMIT];
 	private int prefixLength;
 	private long inputBytes;
 	private JsonNode tree;
@@ -115,7 +120,7 @@ public final class JsonResponseBody implements AutoCloseable {
 		if ( failure != null ) {
 			String prefix = new String( diagnosticPrefix, charset );
 			if ( inputBytes > prefixLength ) {
-				prefix += "\n[response diagnostic truncated after 8192 source bytes]";
+				prefix += "\n[response diagnostic truncated after " + DIAGNOSTIC_PREFIX_LIMIT + " source bytes]";
 			}
 			return new ByteArrayInputStream( prefix.getBytes( StandardCharsets.UTF_8 ) );
 		}

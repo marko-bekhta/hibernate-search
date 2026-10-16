@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+import org.hibernate.search.util.common.annotation.Incubating;
+
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.BooleanNode;
@@ -16,6 +18,7 @@ import tools.jackson.databind.node.ObjectNode;
 import tools.jackson.databind.node.StringNode;
 
 /** Composable codecs for explicitly selected tree, scalar, list and string-keyed map types. */
+@Incubating
 public final class JsonCodecs {
 	private JsonCodecs() {
 	}

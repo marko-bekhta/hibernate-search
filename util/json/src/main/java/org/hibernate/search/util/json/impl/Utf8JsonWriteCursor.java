@@ -172,7 +172,7 @@ public final class Utf8JsonWriteCursor implements JsonWriteCursor {
 			long value = integralValue;
 			boolean fitsInt = value >= Integer.MIN_VALUE && value <= Integer.MAX_VALUE;
 			// These conservative bounds avoid a digit-count pass; common small values use tighter bounds.
-			int required = fitsInt ? 11 : 20;
+			int required = fitsInt ? JsonNumbers.MAX_INT_CHARACTER_LENGTH : JsonNumbers.MAX_LONG_CHARACTER_LENGTH;
 			if ( value >= 0 && value < 100 ) {
 				required = value < 10 ? 1 : 2;
 			}

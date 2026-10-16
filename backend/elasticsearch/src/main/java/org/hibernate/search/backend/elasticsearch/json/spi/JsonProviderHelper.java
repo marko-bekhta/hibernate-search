@@ -40,10 +40,12 @@ import org.hibernate.search.backend.elasticsearch.lowlevel.index.settings.impl.A
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.settings.impl.GeneratedAnalysisJsonCodec;
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.settings.impl.GeneratedIndexSettingsJsonCodec;
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.settings.impl.IndexSettings;
+import org.hibernate.search.util.common.annotation.Incubating;
 import org.hibernate.search.util.json.spi.JsonCodec;
 import org.hibernate.search.util.json.spi.JsonCodecRegistry;
 
 /** Explicit registrations for the backend's known schema model types. */
+@Incubating
 public final class JsonProviderHelper {
 	private static final JsonCodecRegistry REGISTRY = registry();
 

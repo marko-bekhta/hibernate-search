@@ -10,6 +10,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
+import org.hibernate.search.util.common.annotation.Incubating;
 import org.hibernate.search.util.json.spi.JsonBodies;
 import org.hibernate.search.util.json.spi.JsonCodec;
 import org.hibernate.search.util.json.spi.JsonCodecRegistry;
@@ -19,6 +20,7 @@ import org.hibernate.search.util.json.spi.JsonNumbers;
 import org.hibernate.search.util.json.spi.JsonParseException;
 import org.hibernate.search.util.json.spi.JsonParserSession;
 import org.hibernate.search.util.json.spi.JsonParsing;
+import org.hibernate.search.util.json.spi.JsonParsingOptions;
 
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
@@ -33,7 +35,10 @@ import tools.jackson.databind.node.StringNode;
  * their external boundary. Custom clients accepting arbitrary trees must validate them first with
  * JsonTreeValidation.validateExternal; this service does not establish trust based on node type.
  */
+@Incubating
 public final class JsonCodecService {
+	private static final int TEXT_BUFFER_SIZE = 8192;
+
 	private final JsonCodecRegistry registry;
 	private final boolean serializeNulls;
 	private final boolean pretty;
@@ -59,7 +64,7 @@ public final class JsonCodecService {
 
 	public <T> T decode(InputStream input, Charset charset, Class<T> type) throws IOException {
 		try ( JsonParserSession parser = parsing.createParser( charset ) ) {
-			byte[] buffer = new byte[8192];
+			byte[] buffer = new byte[JsonParsingOptions.DEFAULT_MAX_INPUT_CHUNK_SIZE];
 			int count;
 			boolean present = false;
 			while ( ( count = input.read( buffer ) ) != -1 ) {
@@ -204,7 +209,7 @@ public final class JsonCodecService {
 	private void compact(JsonNode value, Writer writer) throws IOException {
 		try ( var input = JsonBodies.ofInternal( value ).openStream();
 				var reader = new InputStreamReader( input, StandardCharsets.UTF_8 ) ) {
-			char[] buffer = new char[8192];
+			char[] buffer = new char[TEXT_BUFFER_SIZE];
 			int count;
 			while ( ( count = reader.read( buffer ) ) != -1 ) {
 				writer.write( buffer, 0, count );

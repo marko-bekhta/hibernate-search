@@ -10,6 +10,7 @@ import java.util.concurrent.Flow;
 import org.hibernate.search.backend.elasticsearch.client.common.json.entity.spi.JsonHttpEntityContentProvider;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchRequest;
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
+import org.hibernate.search.util.json.spi.JsonBodies;
 import org.hibernate.search.util.json.spi.JsonWriteCursor;
 
 import tools.jackson.databind.node.ObjectNode;
@@ -98,7 +99,7 @@ public class ClientJdkJsonHttpEntity extends JsonHttpEntityContentProvider imple
 								cursor = openCursor();
 							}
 							// Recipients can retain storage indefinitely. Never recycle emitted storage.
-							bytes = ByteBuffer.allocate( 8192 );
+							bytes = ByteBuffer.allocate( JsonBodies.DEFAULT_BUFFER_SIZE );
 							cursor.write( bytes );
 							bytes.flip();
 							complete = cursor.isComplete();

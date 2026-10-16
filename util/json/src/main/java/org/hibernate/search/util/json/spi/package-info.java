@@ -11,4 +11,7 @@
  * Cancellation uses close, which releases partial trees, parser buffers and output traversal state.
  * No-body interpretation, response byte caps, HTTP charset selection, compression and retries belong to transports.
  */
+@Incubating
 package org.hibernate.search.util.json.spi;
+
+import org.hibernate.search.util.common.annotation.Incubating;

@@ -21,6 +21,12 @@ public final class JsonNumbers {
 
 	public static final int MAX_DECIMAL_EXPONENT = Integer.MAX_VALUE;
 
+	// Maximum signed decimal representation lengths, including a possible minus sign.
+	static final int MAX_INT_CHARACTER_LENGTH = 11;
+	static final int MAX_LONG_CHARACTER_LENGTH = 20;
+
+	private static final int MAX_INTEGER_EXPANSION_SCALE = 100_000;
+
 	private static final Pattern JSON_NUMBER =
 			Pattern.compile( "-?(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?(?:[eE][+-]?[0-9]+)?" );
 
@@ -32,7 +38,7 @@ public final class JsonNumbers {
 	/** Construct an integer token whose JSON syntax has already been validated by the parser. */
 	public static JsonNode fromIntegerToken(String text) {
 		// Keep the cheap int cache/long route without routing exact values through double.
-		if ( text.length() <= 20 ) {
+		if ( text.length() <= MAX_LONG_CHARACTER_LENGTH ) {
 			try {
 				long value = Long.parseLong( text );
 				return value >= Integer.MIN_VALUE && value <= Integer.MAX_VALUE
@@ -119,7 +125,7 @@ public final class JsonNumbers {
 		if ( normalized.scale() > 0 ) {
 			throw new ArithmeticException( "JSON number is not integral" );
 		}
-		if ( normalized.scale() < -100_000 ) {
+		if ( normalized.scale() < -MAX_INTEGER_EXPANSION_SCALE ) {
 			throw new ArithmeticException( "JSON integer expansion exceeds supported scale" );
 		}
 		return normalized.toBigIntegerExact();
@@ -134,7 +140,7 @@ public final class JsonNumbers {
 			return BigInteger.ZERO;
 		}
 		BigDecimal normalized = value.stripTrailingZeros();
-		if ( normalized.scale() < -100_000 ) {
+		if ( normalized.scale() < -MAX_INTEGER_EXPANSION_SCALE ) {
 			throw new ArithmeticException( "JSON integer expansion exceeds supported scale" );
 		}
 		if ( normalized.scale() >= normalized.precision() ) {

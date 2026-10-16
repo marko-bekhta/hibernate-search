@@ -1,10 +1,12 @@
 package org.hibernate.search.util.json.spi;
 
+import org.hibernate.search.util.common.annotation.Incubating;
 import org.hibernate.search.util.json.impl.JsonTreeValidator;
 
 import tools.jackson.databind.JsonNode;
 
 /** Validation of stable external ordinary JSON trees; it never serializes, copies or maps Java models. */
+@Incubating
 public final class JsonTreeValidation {
 	/** Opt-in internal invariant checks; production defaults to false. Read once per JVM. */
 	public static final String INTERNAL_VALIDATION_PROPERTY = "hibernate.search.json.internal_validation";

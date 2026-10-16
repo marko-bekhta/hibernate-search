@@ -2,11 +2,13 @@ package org.hibernate.search.util.json.spi;
 
 import java.nio.charset.Charset;
 
+import org.hibernate.search.util.common.annotation.Incubating;
 import org.hibernate.search.util.json.impl.JacksonJsonParserFactory;
 
 import tools.jackson.databind.JsonNode;
 
 /** Shareable parser factory with immutable constraints and Jackson-native signatures. */
+@Incubating
 public final class JsonParsing {
 	private final JacksonJsonParserFactory implementation;
 

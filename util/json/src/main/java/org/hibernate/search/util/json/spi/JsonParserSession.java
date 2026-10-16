@@ -2,6 +2,8 @@ package org.hibernate.search.util.json.spi;
 
 import java.nio.ByteBuffer;
 
+import org.hibernate.search.util.common.annotation.Incubating;
+
 import tools.jackson.databind.JsonNode;
 
 /** Single-consumer incremental JSON parser. It owns no executor or input queue.
@@ -12,6 +14,7 @@ import tools.jackson.databind.JsonNode;
  * Transports interpret absent HTTP bodies independently. Close cancels and releases partial tree/token/buffer state.
  * Parser token completion/tree construction can consume significant CPU; this SPI promises no latency bound.
  */
+@Incubating
 public interface JsonParserSession extends AutoCloseable {
 	void feed(ByteBuffer input);
 

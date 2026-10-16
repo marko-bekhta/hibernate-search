@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.hibernate.search.util.common.annotation.Incubating;
 import org.hibernate.search.util.json.impl.JsonBodyOutput;
 
 /**
@@ -12,6 +13,7 @@ import org.hibernate.search.util.json.impl.JsonBodyOutput;
  * trees and encoded payloads are not copied.
  * Sources may be shared; their cursors and streams are single-consumer state machines.
  */
+@Incubating
 public interface JsonBody {
 	JsonWriteCursor openCursor();
 

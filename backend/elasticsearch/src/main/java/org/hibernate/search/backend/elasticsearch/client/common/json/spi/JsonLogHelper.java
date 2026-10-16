@@ -5,6 +5,7 @@ import java.io.StringWriter;
 
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper;
+import org.hibernate.search.util.common.annotation.Incubating;
 
 import tools.jackson.databind.node.ObjectNode;
 
@@ -12,6 +13,7 @@ import tools.jackson.databind.node.ObjectNode;
  * Helpers allowing to log JSON.
  *
  */
+@Incubating
 public final class JsonLogHelper {
 
 

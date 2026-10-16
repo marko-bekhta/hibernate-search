@@ -3,6 +3,7 @@ package org.hibernate.search.util.json.spi;
 import java.util.List;
 import java.util.Objects;
 
+import org.hibernate.search.util.common.annotation.Incubating;
 import org.hibernate.search.util.common.impl.Contracts;
 import org.hibernate.search.util.json.impl.JsonBodyOutput;
 import org.hibernate.search.util.json.impl.NdjsonBody;
@@ -13,9 +14,14 @@ import tools.jackson.databind.JsonNode;
 /**
  * Jackson-native output factories. Request output uses cursor-backed writing by default.
  */
+@Incubating
 public final class JsonBodies {
 
+	/** Byte buffer capacity used by cursor-backed output adapters. */
 	public static final int DEFAULT_BUFFER_SIZE = 8192;
+
+	/** Maximum bytes inspected once to determine a small body's content length. */
+	public static final int DEFAULT_CONTENT_LENGTH_PROBE_LIMIT = 8192;
 
 	private JsonBodies() {
 	}
@@ -80,11 +86,11 @@ public final class JsonBodies {
 	}
 
 	private static JsonBody bodyFromInternal(JsonNode root) {
-		return withContentLengthProbe( () -> new Utf8JsonWriteCursor( root ), DEFAULT_BUFFER_SIZE );
+		return withContentLengthProbe( () -> new Utf8JsonWriteCursor( root ), DEFAULT_CONTENT_LENGTH_PROBE_LIMIT );
 	}
 
 	private static JsonBody framedFromInternal(List<? extends JsonNode> parts) {
-		return withContentLengthProbe( new NdjsonBody( parts ), DEFAULT_BUFFER_SIZE );
+		return withContentLengthProbe( new NdjsonBody( parts ), DEFAULT_CONTENT_LENGTH_PROBE_LIMIT );
 	}
 
 	/**

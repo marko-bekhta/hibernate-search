@@ -12,12 +12,15 @@ import java.util.Set;
 
 import org.hibernate.search.backend.elasticsearch.client.common.json.impl.ElasticsearchJsonBody;
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
+import org.hibernate.search.util.common.annotation.Incubating;
+import org.hibernate.search.util.json.spi.JsonBodies;
 import org.hibernate.search.util.json.spi.JsonBody;
 import org.hibernate.search.util.json.spi.JsonWriteCursor;
 
 import tools.jackson.databind.node.ObjectNode;
 
 /** Bounded cursor adapter preserving the existing synchronous entity lifecycle. */
+@Incubating
 public class JsonHttpEntityContentProvider implements ContentProducer {
 	private final JsonBody body;
 	private JsonWriteCursor cursor;
@@ -111,7 +114,7 @@ public class JsonHttpEntityContentProvider implements ContentProducer {
 	}
 
 	protected synchronized int availableBytes() {
-		return cancelled || outputComplete ? 0 : 8192;
+		return cancelled || outputComplete ? 0 : JsonBodies.DEFAULT_BUFFER_SIZE;
 	}
 
 	public synchronized void produceContent(ContentEncoder encoder) throws IOException {
@@ -123,7 +126,7 @@ public class JsonHttpEntityContentProvider implements ContentProducer {
 		}
 		if ( cursor == null ) {
 			cursor = body.openCursor();
-			pending = ByteBuffer.allocate( 8192 );
+			pending = ByteBuffer.allocate( JsonBodies.DEFAULT_BUFFER_SIZE );
 			pending.limit( 0 );
 		}
 		while ( true ) {

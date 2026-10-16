@@ -168,7 +168,7 @@ class ClientRest4JsonHttpEntityTest {
 
 
 		assertThat( gsonEntity.getContentLength() )
-				.isEqualTo( expectedContentLength <= JsonBodies.DEFAULT_BUFFER_SIZE
+				.isEqualTo( expectedContentLength <= JsonBodies.DEFAULT_CONTENT_LENGTH_PROBE_LIMIT
 						? expectedContentLength
 						: -1 );
 	}
@@ -191,7 +191,7 @@ class ClientRest4JsonHttpEntityTest {
 			assertThat( doProduceContent( gsonEntity, pushBackPeriod ) )
 					.isEqualTo( expectedPayloadString );
 			assertThat( gsonEntity.getContentLength() )
-					.isEqualTo( expectedContentLength <= JsonBodies.DEFAULT_BUFFER_SIZE
+					.isEqualTo( expectedContentLength <= JsonBodies.DEFAULT_CONTENT_LENGTH_PROBE_LIMIT
 							? expectedContentLength
 							: -1 );
 		}
@@ -206,7 +206,7 @@ class ClientRest4JsonHttpEntityTest {
 			assertThat( doProduceContent( gsonEntity, pushBackPeriod ) )
 					.isEqualTo( expectedPayloadString );
 			assertThat( gsonEntity.getContentLength() )
-					.isEqualTo( expectedContentLength <= JsonBodies.DEFAULT_BUFFER_SIZE
+					.isEqualTo( expectedContentLength <= JsonBodies.DEFAULT_CONTENT_LENGTH_PROBE_LIMIT
 							? expectedContentLength
 							: -1 );
 		}
@@ -222,7 +222,7 @@ class ClientRest4JsonHttpEntityTest {
 			assertThat( doProduceContent( gsonEntity, pushBackPeriod ) )
 					.isEqualTo( expectedPayloadString );
 			assertThat( gsonEntity.getContentLength() )
-					.isEqualTo( expectedContentLength <= JsonBodies.DEFAULT_BUFFER_SIZE
+					.isEqualTo( expectedContentLength <= JsonBodies.DEFAULT_CONTENT_LENGTH_PROBE_LIMIT
 							? expectedContentLength
 							: -1 );
 		}
@@ -238,7 +238,7 @@ class ClientRest4JsonHttpEntityTest {
 			assertThat( doProduceContent( gsonEntity, pushBackPeriod ) )
 					.isEqualTo( expectedPayloadString );
 			assertThat( gsonEntity.getContentLength() )
-					.isEqualTo( expectedContentLength <= JsonBodies.DEFAULT_BUFFER_SIZE
+					.isEqualTo( expectedContentLength <= JsonBodies.DEFAULT_CONTENT_LENGTH_PROBE_LIMIT
 							? expectedContentLength
 							: -1 );
 		}
@@ -252,7 +252,7 @@ class ClientRest4JsonHttpEntityTest {
 			assertThat( doWriteTo( gsonEntity ) )
 					.isEqualTo( expectedPayloadString );
 			assertThat( gsonEntity.getContentLength() )
-					.isEqualTo( expectedContentLength <= JsonBodies.DEFAULT_BUFFER_SIZE
+					.isEqualTo( expectedContentLength <= JsonBodies.DEFAULT_CONTENT_LENGTH_PROBE_LIMIT
 							? expectedContentLength
 							: -1 );
 		}
@@ -266,7 +266,7 @@ class ClientRest4JsonHttpEntityTest {
 			assertThat( doGetContent( gsonEntity ) )
 					.isEqualTo( expectedPayloadString );
 			assertThat( gsonEntity.getContentLength() )
-					.isEqualTo( expectedContentLength <= JsonBodies.DEFAULT_BUFFER_SIZE
+					.isEqualTo( expectedContentLength <= JsonBodies.DEFAULT_CONTENT_LENGTH_PROBE_LIMIT
 							? expectedContentLength
 							: -1 );
 		}

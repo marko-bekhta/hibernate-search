@@ -15,7 +15,7 @@ final class JsonWriteWorkspace {
 
 	char[] integral() {
 		if ( integral == null ) {
-			integral = new char[20];
+			integral = new char[JsonNumbers.MAX_LONG_CHARACTER_LENGTH];
 		}
 		return integral;
 	}

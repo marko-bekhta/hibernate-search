@@ -9,11 +9,13 @@ import org.hibernate.search.util.json.spi.JsonParseException;
 
 /** Incremental gzip framing for clients whose response consumer precedes decompression. */
 public final class JsonGzipDecoder implements AutoCloseable {
+	private static final int OUTPUT_BUFFER_SIZE = 8192;
+
 	private final JsonResponseBody body;
 	private final Inflater inflater = new Inflater( true );
 	private final CRC32 crc = new CRC32();
 	private final CRC32 headerCrc = new CRC32();
-	private byte[] output = new byte[8192];
+	private byte[] output = new byte[OUTPUT_BUFFER_SIZE];
 	private int state;
 	private int offset;
 	private int flags;

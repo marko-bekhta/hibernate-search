@@ -1,5 +1,7 @@
 package org.hibernate.search.util.json;
 
+import org.hibernate.search.util.common.annotation.Incubating;
+
 /**
  * Converts a JSON library's tree/value representation to and from strict JSON text.
  * <p>
@@ -14,6 +16,7 @@ package org.hibernate.search.util.json;
  *
  * @param <T> The JSON library's tree/value type.
  */
+@Incubating
 public interface JsonHandler<T> {
 	/**
 	 * @return The non-null, stable runtime class of every accepted/returned non-null value.

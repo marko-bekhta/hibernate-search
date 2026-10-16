@@ -30,7 +30,7 @@ final class ClientRest4JsonResponseConsumer extends AbstractAsyncResponseConsume
 	private JsonGzipDecoder gzip;
 	private boolean gzipFailed;
 	private long inputBytes;
-	private ByteBuffer input = ByteBuffer.allocate( 8192 );
+	private ByteBuffer input = ByteBuffer.allocate( JsonResponseBody.DEFAULT_INPUT_CAPACITY );
 
 	ClientRest4JsonResponseConsumer(long limit) {
 		this( limit, new JsonResponseConsumerScope() );

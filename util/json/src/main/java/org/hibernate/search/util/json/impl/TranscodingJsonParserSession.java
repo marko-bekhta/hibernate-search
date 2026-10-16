@@ -18,12 +18,15 @@ import tools.jackson.databind.JsonNode;
 
 /** Bounded incremental charset decoding and UTF-8 encoding. */
 final class TranscodingJsonParserSession implements JsonParserSession {
+	private static final int BYTE_BUFFER_SIZE = 8192;
+	private static final int CHAR_BUFFER_SIZE = 4096;
+
 	private JsonParserSession delegate;
 	private CharsetDecoder decoder;
 	private CharsetEncoder encoder;
-	private ByteBuffer pending = ByteBuffer.allocate( 8192 );
-	private CharBuffer chars = CharBuffer.allocate( 4096 );
-	private ByteBuffer utf8 = ByteBuffer.allocate( 8192 );
+	private ByteBuffer pending = ByteBuffer.allocate( BYTE_BUFFER_SIZE );
+	private CharBuffer chars = CharBuffer.allocate( CHAR_BUFFER_SIZE );
+	private ByteBuffer utf8 = ByteBuffer.allocate( BYTE_BUFFER_SIZE );
 	private final JsonParsingOptions options;
 	private long bytes;
 

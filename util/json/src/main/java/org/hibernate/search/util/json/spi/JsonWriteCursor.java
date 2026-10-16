@@ -2,12 +2,15 @@ package org.hibernate.search.util.json.spi;
 
 import java.nio.ByteBuffer;
 
+import org.hibernate.search.util.common.annotation.Incubating;
+
 /**
  * A single-consumer UTF-8 output traversal. Each cursor has independent replay state.
  * No destination buffer is retained: callers own emitted storage and may reuse it after their sink consumes it.
  * A sink accepting only part of a filled buffer must retain its unread bytes before requesting more.
  * No executor, thread hop or sink scheduling is imposed.
  */
+@Incubating
 public interface JsonWriteCursor extends AutoCloseable {
 	/**
 	 * Fill only the destination's remaining region and advance its position by the returned byte count.

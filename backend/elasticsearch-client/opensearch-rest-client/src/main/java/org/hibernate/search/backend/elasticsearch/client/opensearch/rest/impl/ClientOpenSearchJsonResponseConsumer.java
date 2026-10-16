@@ -35,7 +35,7 @@ final class ClientOpenSearchJsonResponseConsumer implements AsyncResponseConsume
 	private boolean gzipFailed;
 	private boolean terminated;
 	private long inputBytes;
-	private int capacity = 8192;
+	private int capacity = JsonResponseBody.DEFAULT_INPUT_CAPACITY;
 	private FutureCallback<ClassicHttpResponse> callback;
 
 	ClientOpenSearchJsonResponseConsumer(long limit) {
@@ -63,7 +63,7 @@ final class ClientOpenSearchJsonResponseConsumer implements AsyncResponseConsume
 		terminated = false;
 		gzipFailed = false;
 		inputBytes = 0;
-		capacity = 8192;
+		capacity = JsonResponseBody.DEFAULT_INPUT_CAPACITY;
 		this.callback = callback;
 		response = new BasicClassicHttpResponse( incoming.getCode(), incoming.getReasonPhrase() );
 		response.setVersion( incoming.getVersion() );
@@ -106,7 +106,7 @@ final class ClientOpenSearchJsonResponseConsumer implements AsyncResponseConsume
 		}
 		// HC5 can deliver more than the declared window to drain its socket buffer.
 		// Repay that entire batch on the next capacity update, avoiding a negative-window stall.
-		capacity = Math.max( 8192, input.remaining() );
+		capacity = Math.max( JsonResponseBody.DEFAULT_INPUT_CAPACITY, input.remaining() );
 		inputBytes += input.remaining();
 		checkLimit( inputBytes );
 		if ( gzip != null ) {

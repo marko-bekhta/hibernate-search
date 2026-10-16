@@ -5,9 +5,12 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import org.hibernate.search.util.common.annotation.Incubating;
+
 import tools.jackson.databind.JsonNode;
 
 /** Immutable explicit registrations. Unknown classes fail; there is no reflective fallback. */
+@Incubating
 public final class JsonCodecRegistry {
 	private final Map<Class<?>, JsonCodec<?>> codecs;
 
