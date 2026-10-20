@@ -13,6 +13,7 @@ import java.util.function.Consumer;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -116,8 +117,11 @@ public final class SignedJsonClient {
 
 		@Override
 		public void checkActive() {
-			if ( stopped.get() || System.nanoTime() - deadline >= 0 ) {
-				throw new CancellationException( "Request cancelled or deadline exceeded" );
+			if ( stopped.get() ) {
+				throw new CancellationException( "Request cancelled" );
+			}
+			if ( System.nanoTime() - deadline >= 0 ) {
+				throw new CompletionException( new TimeoutException( "Request deadline exceeded" ) );
 			}
 		}
 
@@ -257,10 +261,13 @@ public final class SignedJsonClient {
 		}
 
 		private void succeed(int status) {
-			if ( stopped.get() ) {
+			if ( System.nanoTime() - deadline >= 0 ) {
+				fail( new TimeoutException( "Request deadline exceeded" ) );
 				return;
 			}
-			stopped.set( true );
+			if ( !stopped.compareAndSet( false, true ) ) {
+				return;
+			}
 			vertx.cancelTimer( timer );
 			closeCursor();
 			result.tryComplete( status );
@@ -273,6 +280,9 @@ public final class SignedJsonClient {
 			stopped.set( true );
 			vertx.cancelTimer( timer );
 			closeCursor();
+			while ( failure instanceof CompletionException && failure.getCause() != null ) {
+				failure = failure.getCause();
+			}
 			result.tryFail( failure );
 			if ( request != null ) {
 				request.reset();

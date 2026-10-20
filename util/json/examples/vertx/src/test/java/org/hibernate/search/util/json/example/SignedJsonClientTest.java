@@ -32,6 +32,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.locks.LockSupport;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hibernate.search.backend.elasticsearch.client.common.authentication.spi.ElasticsearchRequestPreparation;
@@ -208,6 +209,25 @@ class SignedJsonClientTest {
 		}
 		assertEquals( 0, body.workerCursors.get() );
 		assertEquals( 0, body.eventLoopCursors.get() );
+		assertEquals( 0, unexpectedRequests.get() );
+	}
+
+	@Test
+	void deadlineCheckBeforeTimerCallbackStillReportsTimeout() throws Exception {
+		URI uri = listeningUri();
+		ElasticsearchRequestPreparation preparation = (request, execution) -> {
+			// Deliberately hold this context turn so the timer cannot run before checkActive.
+			long until = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos( 600 );
+			while ( System.nanoTime() - until < 0 ) {
+				LockSupport.parkNanos( until - System.nanoTime() );
+			}
+			execution.checkActive();
+			return CompletableFuture.completedFuture( new ElasticsearchRequestPreparation.Result( request.headers() ) );
+		};
+		var client = new SignedJsonClient( vertx, http, preparation );
+		var call = onLoop( () -> client.send( new ElasticsearchRequestPreparation.Request( uri, null ), 500 ) );
+		ExecutionException failure = assertThrows( ExecutionException.class, () -> await( call.result() ) );
+		assertInstanceOf( TimeoutException.class, failure.getCause() );
 		assertEquals( 0, unexpectedRequests.get() );
 	}
 
