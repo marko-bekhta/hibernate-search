@@ -8,15 +8,18 @@ server, independent of Hibernate Search's Elasticsearch transports.
 The complete code is in
 [`JsonEchoServer.java`](src/main/java/org/hibernate/search/util/json/example/JsonEchoServer.java).
 The example POM supplies Vert.x; the JSON module itself has no Vert.x dependency.
+It also includes an outgoing AWS-signed client using Search's asynchronous request
+preparation SPI and AWS integration. Those dependencies belong to the standalone
+example/backend integration; the JSON module gains no Vert.x or AWS dependency.
 
 ## Run it
 
 Use JDK 17 or newer and run these commands from the repository root. Install the
-branch's JSON artifact and its parents/dependencies before building the standalone
+branch's backend AWS artifact and its parents/dependencies before building the standalone
 example, which is intentionally outside the main Maven reactor:
 
 ```shell
-./mvnw install -pl util/json -am -DskipTests -DskipITs -Dno-build-cache
+./mvnw clean install -pl backend/elasticsearch-aws -am -DskipTests -DskipITs -Dno-build-cache
 ./mvnw -f util/json/examples/vertx/pom.xml compile exec:java
 ```
 
@@ -127,3 +130,123 @@ See the official Vert.x documentation for the transport contracts:
 - [WriteStream](https://vertx.io/docs/apidocs/io/vertx/core/streams/WriteStream.html): write completion and queue flow control.
 - [Buffer](https://vertx.io/docs/apidocs/io/vertx/core/buffer/Buffer.html): bounded byte transfers.
 - [HttpServerResponse](https://vertx.io/docs/apidocs/io/vertx/core/http/HttpServerResponse.html): framing, completion and disconnect handlers.
+
+## Signing outgoing requests with the Search SPI
+
+[`SignedJsonClient`](src/main/java/org/hibernate/search/util/json/example/SignedJsonClient.java)
+now consumes production Search APIs:
+
+- `org.hibernate.search.backend.elasticsearch.client.common.authentication.spi.ElasticsearchRequestPreparation`
+  describes an immutable destination attempt, a headers-only result and an
+  integration-owned execution/cancellation capability.
+- `org.hibernate.search.backend.elasticsearch.aws.spi.ElasticsearchAwsRequestSigning`
+  resolves credentials and calls the synchronous AWS signer through that capability.
+  It owns its bounded signing streams, creates no executor, and leaves directly
+  supplied credentials owned by the caller.
+- `ElasticsearchRequestPreparations.create(beanResolver, propertySource)` discovers
+  configured asynchronous providers, composes them in order and returns a
+  `BeanHolder` retained until client shutdown. The AWS role reads the existing
+  `aws.signing.enabled`, region, credentials and distribution settings. Its created
+  credentials are owned by that holder. Existing REST clients continue to discover
+  the synchronous interceptor role and retain their existing interception placement.
+
+The example-local `RequestPreparation` and `AwsRequestSigning` prototypes have been
+removed. No `JsonBody` or cursor API change was needed.
+
+```text
+event loop: select destination → create Vert.x request → apply user configuration/framing
+    → snapshot effective authority, method, encoded URI, complete headers and stable body
+    → application workers: resolve credentials → sign through an independent bounded stream
+    → original event loop: replace headers → transmit through a fresh cursor
+```
+
+With application-owned `vertx`, `httpClient` and `credentialsProvider`:
+
+```java
+var signing = new ElasticsearchAwsRequestSigning(
+        credentialsProvider, "us-east-1", "es", Clock.systemUTC() );
+var client = new SignedJsonClient( vertx, httpClient, signing );
+vertx.runOnContext( ignored -> {
+    JsonBody body = JsonBodies.of( new JsonParsing().parse( "{\"query\":{\"match_all\":{}}}" ) );
+    var attempt = new ElasticsearchRequestPreparation.Request(
+            URI.create( "https://your-endpoint.example/index/_search" ), body );
+    SignedJsonClient.Call call = client.send( attempt, 10_000 );
+    call.result().onSuccess( status -> System.out.println( "HTTP " + status ) )
+            .onFailure( Throwable::printStackTrace );
+    // Retain call if the application needs call.cancel().
+} );
+```
+
+The default adapter explicitly uses the existing context's Vert.x worker pool.
+To select another existing application-owned `WorkerExecutor`, pass it as the
+fifth constructor argument after the request configuration callback. Neither
+Search nor `SignedJsonClient` creates or closes a worker pool. The application
+owns Vert.x, the HTTP client, directly supplied credentials and optional workers.
+Admission limits/rejection, queue sizing and worker sizing remain integration policy.
+Use `Context.isOnWorkerThread()` for worker checks; executeBlocking retains the
+originating context even while its callable runs on a worker thread.
+
+Each attempt snapshots the effective HTTP/1 Host/authority, method and encoded
+path/query after request configuration. An explicit Host header takes precedence;
+otherwise the snapshot uses `HttpClientRequest.authority()`. Header values are
+copied before crossing to the worker. The AWS adapter excludes transport framing
+headers from signing while preserving them in the complete result, removes stale
+AWS authentication/session headers and generates new authentication. The event loop
+replaces the complete header set; it never merges an expired session token back in.
+Workers never access mutable Vert.x requests. The body is retained, not copied,
+and must remain unchanged through signing, sending and every retry.
+
+The deadline starts before connection acquisition and includes queued signing,
+credentials, transmission and response consumption. Cancellation signals the
+worker and resets transport on the event loop. Every signing read checks the
+signal; only the signing thread closes its cursor. Late callbacks are rejected
+with attempt-generation/terminal guards. An arbitrary blocking credentials provider
+cannot be forcibly interrupted; cancellation can finish while that provider still
+runs, but its later completion cannot start a send.
+
+Signing traverses a body once and sending uses another independent traversal.
+The complete tree remains materialized; bounded encoded buffering is not a bound
+on scalar processing time. AWS SDK 2.55.4 `signAsync` is not used: its ordinary
+payload-checksum path buffers the complete body. No supported precomputed-hash
+shortcut is assumed.
+
+### Verification and integration handoff
+
+```shell
+./mvnw -f util/json/examples/vertx/pom.xml test
+```
+
+The twelve local signing test executions cover fixed-clock `es`/`aoss` wire
+signatures, exact wire bytes/checksums, bounded independent signing/sending cursors,
+event-loop responsiveness, explicit replay, credential failure, cancellation and
+deadlines during signing and retry preparation. They verify effective Host/authority,
+method, encoded paths/query and multiple header values, fresh signing on another
+local destination after 503, absent GET bodies, removal of expired session headers,
+and selection/ownership of an existing worker executor. Credentials are synthetic.
+These are local HTTP/1.1 protocol checks, not live AWS service validation or benchmarks.
+
+The repository [dispatcher handoff](../../../../design/elasticsearch-async-request-preparation-vertx-handoff.md)
+gives exact production APIs, provider configuration/lifecycle, hook ordering,
+Buffer-to-streaming adaptation, retry/cancellation rules and the remaining checklist
+for the separate dispatcher integration session.
+
+The example matches the intended hook in
+[`AbstractRequestDispatcher.sendToNode`](https://github.com/marko-bekhta/quarkus/blob/feat/elasticsearch-vertx-client/independent-projects/elasticsearch-rest-client/src/main/java/io/quarkus/elasticsearch/restclient/vertx/internal/AbstractRequestDispatcher.java):
+after `httpClient.request` and `applyHeaders`, before transmission. It does not
+compile against or modify that WIP dispatcher, its node selection or its resolver.
+Creating a transport request can acquire a connection before signing; cancellation
+must reset it even while the worker is still resolving credentials.
+
+### Scope
+
+Only uncompressed JSON is sent. Automatic redirects are disabled; the example
+returns response status and discards response chunks. A null body means absent,
+whereas JSON null is a real body. A finite caller-selected destination list retries
+502/503/504 with a fresh request, snapshot, signature and cursor under the original
+deadline. Node discovery, dead-node tracking, connection-failure retry policy,
+proxy authentication, HTTP/2 and custom body transformations are not validated here.
+
+Request gzip/compression is deferred; response decompression is a separate transport
+concern. Resolver dispatcher wiring is out of scope. Existing REST compression and
+synchronous signing behavior are unchanged. Existing renamed Gson/REST entity helpers
+stay in their current packages; they do not need relocation for this hook.
