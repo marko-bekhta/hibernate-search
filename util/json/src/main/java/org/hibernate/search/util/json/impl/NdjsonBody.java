@@ -1,11 +1,15 @@
 package org.hibernate.search.util.json.impl;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ReadOnlyBufferException;
 import java.util.List;
+import java.util.Objects;
 
 import org.hibernate.search.util.json.spi.JsonBody;
 import org.hibernate.search.util.json.spi.JsonWriteCursor;
+import org.hibernate.search.util.json.spi.JsonWriteStrategy;
 
 import tools.jackson.databind.JsonNode;
 
@@ -23,6 +27,20 @@ public final class NdjsonBody implements JsonBody {
 	@Override
 	public JsonWriteCursor openCursor() {
 		return new Cursor( parts );
+	}
+
+	@Override
+	public void writeTo(OutputStream destination, JsonWriteStrategy strategy) throws IOException {
+		Objects.requireNonNull( destination );
+		if ( strategy == JsonWriteStrategy.NATIVE ) {
+			for ( JsonNode part : parts ) {
+				JacksonJsonBodyWriter.writeInternal( part, destination );
+				destination.write( '\n' );
+			}
+		}
+		else {
+			JsonBody.super.writeTo( destination, strategy );
+		}
 	}
 
 	private static final class Cursor implements JsonWriteCursor {

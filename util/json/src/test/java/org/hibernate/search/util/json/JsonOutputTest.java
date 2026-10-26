@@ -12,6 +12,7 @@ import java.nio.ByteBuffer;
 import java.nio.ReadOnlyBufferException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import org.hibernate.search.util.json.impl.JacksonJsonBodyWriter;
@@ -19,6 +20,7 @@ import org.hibernate.search.util.json.spi.JsonBodies;
 import org.hibernate.search.util.json.spi.JsonBody;
 import org.hibernate.search.util.json.spi.JsonParsing;
 import org.hibernate.search.util.json.spi.JsonWriteCursor;
+import org.hibernate.search.util.json.spi.JsonWriteStrategy;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -30,6 +32,18 @@ import tools.jackson.databind.node.JsonNodeFactory;
 import tools.jackson.databind.node.ObjectNode;
 
 class JsonOutputTest {
+	@Test
+	void strategiesPreserveFramingAndCustomBodyFallback() throws IOException {
+		for ( JsonBody body : List.of(
+				JsonBodies.ndjson( List.of() ),
+				JsonBodies.ndjson( List.of( fixture(), new JsonParsing().parse( "-1.2300e+04" ) ) ),
+				JsonBodies.withContentLengthProbe( JsonBodies.of( fixture() ), 0 ) ) ) {
+			synchronous( body );
+		}
+		JsonBody custom = () -> JsonBodies.of( fixture() ).openCursor();
+		synchronous( custom );
+	}
+
 	@ParameterizedTest
 	@ValueSource(ints = { 1, 2, 3, 4, 5, 6, 7, 11, 8192 })
 	void fragmentedOutputAndBufferBoundaries(int capacity) throws IOException {
@@ -189,16 +203,20 @@ class JsonOutputTest {
 				throw new IOException( "close" );
 			}
 		};
-		JsonBodies.of( fixture() ).writeTo( output );
-		JacksonJsonBodyWriter.write( fixture(), output );
+		for ( JsonWriteStrategy strategy : JsonWriteStrategy.values() ) {
+			JsonBodies.of( fixture() ).writeTo( output, strategy );
+			JsonBodies.ndjson( List.of( fixture(), fixture() ) ).writeTo( output, strategy );
+		}
 		OutputStream failure = new OutputStream() {
 			@Override
 			public void write(int value) throws IOException {
 				throw new IOException( "sink failure" );
 			}
 		};
-		assertThatThrownBy( () -> JsonBodies.of( fixture() ).writeTo( failure ) )
-				.isInstanceOf( IOException.class ).hasMessage( "sink failure" );
+		for ( JsonWriteStrategy strategy : JsonWriteStrategy.values() ) {
+			assertThatThrownBy( () -> JsonBodies.of( fixture() ).writeTo( failure, strategy ) )
+					.isInstanceOf( IOException.class ).hasMessage( "sink failure" );
+		}
 	}
 
 	@Test
@@ -237,7 +255,13 @@ class JsonOutputTest {
 	static byte[] synchronous(JsonBody body) throws IOException {
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		body.writeTo( output );
-		return output.toByteArray();
+		byte[] expected = output.toByteArray();
+		for ( JsonWriteStrategy strategy : JsonWriteStrategy.values() ) {
+			output.reset();
+			body.writeTo( output, strategy );
+			assertThat( output.toByteArray() ).isEqualTo( expected );
+		}
+		return expected;
 	}
 
 	static byte[] jackson(JsonNode tree) {

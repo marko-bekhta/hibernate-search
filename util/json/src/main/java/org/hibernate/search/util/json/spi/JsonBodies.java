@@ -1,10 +1,13 @@
 package org.hibernate.search.util.json.spi;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.Objects;
 
 import org.hibernate.search.util.common.annotation.Incubating;
 import org.hibernate.search.util.common.impl.Contracts;
+import org.hibernate.search.util.json.impl.JacksonJsonBodyWriter;
 import org.hibernate.search.util.json.impl.JsonBodyOutput;
 import org.hibernate.search.util.json.impl.NdjsonBody;
 import org.hibernate.search.util.json.impl.Utf8JsonWriteCursor;
@@ -86,7 +89,22 @@ public final class JsonBodies {
 	}
 
 	private static JsonBody bodyFromInternal(JsonNode root) {
-		return withContentLengthProbe( () -> new Utf8JsonWriteCursor( root ), DEFAULT_CONTENT_LENGTH_PROBE_LIMIT );
+		return withContentLengthProbe( new JsonBody() {
+			@Override
+			public JsonWriteCursor openCursor() {
+				return new Utf8JsonWriteCursor( root );
+			}
+
+			@Override
+			public void writeTo(OutputStream destination, JsonWriteStrategy strategy) throws IOException {
+				if ( strategy == JsonWriteStrategy.NATIVE ) {
+					JacksonJsonBodyWriter.writeInternal( root, Objects.requireNonNull( destination ) );
+				}
+				else {
+					JsonBody.super.writeTo( destination, strategy );
+				}
+			}
+		}, DEFAULT_CONTENT_LENGTH_PROBE_LIMIT );
 	}
 
 	private static JsonBody framedFromInternal(List<? extends JsonNode> parts) {
@@ -109,6 +127,11 @@ public final class JsonBodies {
 			@Override
 			public JsonWriteCursor openCursor() {
 				return source.openCursor();
+			}
+
+			@Override
+			public void writeTo(OutputStream destination, JsonWriteStrategy strategy) throws IOException {
+				source.writeTo( destination, strategy );
 			}
 
 			@Override

@@ -3,6 +3,7 @@ package org.hibernate.search.util.json.spi;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Objects;
 
 import org.hibernate.search.util.common.annotation.Incubating;
 import org.hibernate.search.util.json.impl.JsonBodyOutput;
@@ -27,6 +28,16 @@ public interface JsonBody {
 
 	/** Drain an independent cursor using an 8 KiB buffer; neither flush nor close the caller's stream. */
 	default void writeTo(OutputStream destination) throws IOException {
+		writeTo( destination, JsonWriteStrategy.CURSOR );
+	}
+
+	/**
+	 * Write with the selected strategy; neither flush nor close the destination.
+	 * Both strategies produce the same bytes. Custom bodies default to cursor-backed output
+	 * for either strategy unless they override this method with a native writer.
+	 */
+	default void writeTo(OutputStream destination, JsonWriteStrategy strategy) throws IOException {
+		Objects.requireNonNull( strategy );
 		JsonBodyOutput.writeTo( this, destination );
 	}
 
