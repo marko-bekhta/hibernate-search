@@ -13,6 +13,7 @@ import org.hibernate.search.engine.backend.document.IndexFieldReference;
 import org.hibernate.search.engine.backend.document.IndexObjectFieldReference;
 import org.hibernate.search.engine.backend.document.model.dsl.IndexSchemaElement;
 import org.hibernate.search.engine.backend.document.model.dsl.IndexSchemaObjectField;
+import org.hibernate.search.engine.backend.types.IndexFieldTraits;
 import org.hibernate.search.engine.backend.types.ObjectStructure;
 import org.hibernate.search.engine.backend.types.Scorable;
 import org.hibernate.search.engine.backend.types.Searchable;
@@ -413,6 +414,20 @@ class FunctionScorePredicateSpecificsIT {
 	class DefaultsAndEdgeCases {
 
 		@Test
+		void scorableMetamodelAndTraits() {
+			var descriptor = index.toApi().descriptor();
+			var enabled = descriptor.field( "popularity" ).orElseThrow().toValueField().type();
+			assertThat( enabled.scorable() ).isTrue();
+			assertThat( enabled.traits() ).contains( IndexFieldTraits.ScoreFunctions.FIELD_VALUE_FACTOR );
+			var disabled = descriptor.field( "unscorableRating" ).orElseThrow().toValueField().type();
+			assertThat( disabled.scorable() ).isFalse();
+			assertThat( disabled.traits() ).doesNotContain( IndexFieldTraits.ScoreFunctions.FIELD_VALUE_FACTOR );
+			var useDefault = descriptor.field( "defaultScorableRating" ).orElseThrow().toValueField().type();
+			assertThat( useDefault.scorable() ).isFalse();
+			assertThat( useDefault.traits() ).doesNotContain( IndexFieldTraits.ScoreFunctions.FIELD_VALUE_FACTOR );
+		}
+
+		@Test
 		void defaultsToMatchAll() {
 			List<Float> scores = index.createScope().query()
 					.select( SearchProjectionFactory::score )
@@ -439,6 +454,8 @@ class FunctionScorePredicateSpecificsIT {
 		final IndexFieldReference<String> label;
 
 		IndexBinding(IndexSchemaElement root) {
+			root.field( "unscorableRating", f -> f.asInteger().scorable( Scorable.NO ) ).toReference();
+			root.field( "defaultScorableRating", f -> f.asInteger() ).toReference();
 			decimalRating = root.field( "decimalRating", f -> f.asBigDecimal().decimalScale( 2 ).scorable( Scorable.YES ) )
 					.toReference();
 			integerRating = root.field( "integerRating", f -> f.asBigInteger().decimalScale( -2 ).scorable( Scorable.YES ) )

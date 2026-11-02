@@ -79,6 +79,7 @@ abstract class AbstractLuceneNumericIndexFieldTypeOptionsStep<S extends Abstract
 		}
 
 		if ( resolvedScorable ) {
+			builder.scorable( true );
 			builder.queryElementFactory( ScoreFunctionTypeKeys.FIELD_VALUE_FACTOR,
 					new LuceneFieldValueFactorFunction.Factory<>( codec ) );
 		}

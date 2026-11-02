@@ -50,6 +50,7 @@ abstract class AbstractElasticsearchNumericFieldTypeOptionsStep<
 		}
 
 		if ( resolvedScorable ) {
+			builder.scorable( true );
 			builder.queryElementFactory( ScoreFunctionTypeKeys.FIELD_VALUE_FACTOR,
 					new ElasticsearchFieldValueFactorFunction.Factory<>( codec ) );
 		}
