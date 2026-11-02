@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.within;
 import static org.hibernate.search.util.impl.integrationtest.common.assertion.SearchResultAssert.assertThatQuery;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.List;
 
 import org.hibernate.search.engine.backend.document.IndexFieldReference;
@@ -43,6 +45,8 @@ class FunctionScorePredicateSpecificsIT {
 				.add( "1", document -> {
 					document.addValue( index.binding().popularity, 10 );
 					document.addValue( index.binding().rating, 5 );
+					document.addValue( index.binding().decimalRating, new BigDecimal( "1.25" ) );
+					document.addValue( index.binding().integerRating, BigInteger.valueOf( 1000 ) );
 					document.addObject( index.binding().nested ).addValue( index.binding().nestedRating, 7 );
 					document.addValue( index.binding().optionalRating, 5 );
 					document.addValue( index.binding().featured, true );
@@ -58,6 +62,8 @@ class FunctionScorePredicateSpecificsIT {
 				.add( "3", document -> {
 					document.addValue( index.binding().popularity, 5 );
 					document.addValue( index.binding().rating, 8 );
+					document.addValue( index.binding().decimalRating, new BigDecimal( "3.75" ) );
+					document.addValue( index.binding().integerRating, BigInteger.valueOf( 3000 ) );
 					document.addObject( index.binding().nested ).addValue( index.binding().nestedRating, 13 );
 					document.addValue( index.binding().optionalRating, 8 );
 					document.addValue( index.binding().featured, true );
@@ -68,6 +74,30 @@ class FunctionScorePredicateSpecificsIT {
 
 	@Nested
 	class SingleFieldValueFactor {
+
+		@Test
+		void scaledBigDecimalAndMissingUseLogicalValues() {
+			List<Float> scores = index.createScope().query()
+					.select( SearchProjectionFactory::score )
+					.where( f -> f.functionScore()
+							.fieldValueFactor( "decimalRating" ).missing( new BigDecimal( "2.50" ) ).factor( 2 )
+							.boostMode().replace() )
+					.fetchAllHits();
+
+			assertThat( scores ).containsExactlyInAnyOrder( 2.5f, 5f, 7.5f );
+		}
+
+		@Test
+		void scaledBigIntegerAndMissingUseLogicalValues() {
+			List<Float> scores = index.createScope().query()
+					.select( SearchProjectionFactory::score )
+					.where( f -> f.functionScore()
+							.fieldValueFactor( "integerRating" ).missing( BigInteger.valueOf( 2000 ) ).factor( 2 )
+							.boostMode().replace() )
+					.fetchAllHits();
+
+			assertThat( scores ).containsExactlyInAnyOrder( 2000f, 4000f, 6000f );
+		}
 
 		@Test
 		void implicitNesting() {
@@ -398,6 +428,8 @@ class FunctionScorePredicateSpecificsIT {
 	}
 
 	private static class IndexBinding {
+		final IndexFieldReference<BigDecimal> decimalRating;
+		final IndexFieldReference<BigInteger> integerRating;
 		final IndexObjectFieldReference nested;
 		final IndexFieldReference<Integer> nestedRating;
 		final IndexFieldReference<Integer> popularity;
@@ -407,6 +439,10 @@ class FunctionScorePredicateSpecificsIT {
 		final IndexFieldReference<String> label;
 
 		IndexBinding(IndexSchemaElement root) {
+			decimalRating = root.field( "decimalRating", f -> f.asBigDecimal().decimalScale( 2 ).scorable( Scorable.YES ) )
+					.toReference();
+			integerRating = root.field( "integerRating", f -> f.asBigInteger().decimalScale( -2 ).scorable( Scorable.YES ) )
+					.toReference();
 			IndexSchemaObjectField nestedField = root.objectField( "nested", ObjectStructure.NESTED );
 			nested = nestedField.toReference();
 			nestedRating = nestedField.field( "rating", f -> f.asInteger().scorable( Scorable.YES ) ).toReference();

@@ -111,7 +111,7 @@ public class LuceneFieldValueFactorFunction {
 		@Override
 		public void missing(Object value, ValueModel valueModel) {
 			E encoded = field.encodingContext().convertAndEncode( scope, field, codec, value, valueModel );
-			this.missing = encoded.doubleValue();
+			this.missing = codec.encodedValueToDouble( encoded );
 		}
 
 		public String absoluteFieldPath() {

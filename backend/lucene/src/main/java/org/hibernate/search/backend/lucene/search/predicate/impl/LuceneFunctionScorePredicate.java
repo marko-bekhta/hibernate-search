@@ -379,7 +379,7 @@ public class LuceneFunctionScorePredicate extends AbstractLuceneSearchPredicate 
 		DoubleValuesSource toSource(PredicateRequestContext context) {
 			return new FieldValueFactorSource(
 					fieldPath,
-					fvfBuilder.codec().getDomain()::sortedDocValueToDouble,
+					fvfBuilder.codec()::sortedDocValueToDouble,
 					fvfBuilder.modifier(),
 					fvfBuilder.factor(),
 					fvfBuilder.missing()
