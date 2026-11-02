@@ -46,13 +46,16 @@ class ElasticsearchFunctionScorePredicate extends AbstractElasticsearchPredicate
 	@Override
 	protected JsonObject doToJsonQuery(PredicateRequestContext context,
 			JsonObject outerObject, JsonObject innerObject) {
+		PredicateRequestContext contextAfterImplicitNesting = nestedPathHierarchy.isEmpty()
+				? context
+				: context.withNestedPath( nestedPathHierarchy.get( nestedPathHierarchy.size() - 1 ) );
 		if ( innerPredicate != null ) {
-			innerObject.add( "query", innerPredicate.toJsonQuery( context ) );
+			innerObject.add( "query", innerPredicate.toJsonQuery( contextAfterImplicitNesting ) );
 		}
 
 		JsonArray functionsArray = new JsonArray();
 		for ( FunctionEntry entry : functions ) {
-			functionsArray.add( entry.toJson( context ) );
+			functionsArray.add( entry.toJson( contextAfterImplicitNesting ) );
 		}
 		innerObject.add( "functions", functionsArray );
 
