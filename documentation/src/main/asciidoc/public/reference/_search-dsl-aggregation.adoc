@@ -632,13 +632,13 @@ As their name suggests, backend-specific aggregations are not portable from one 
 
 include::../components/_elasticsearch-json-warning.adoc[]
 
-.Defining a native Elasticsearch JSON aggregation as a `JsonObject`
+.Defining a native Elasticsearch JSON aggregation as an `ObjectNode`
 ====
 [source, java, indent=0, subs="+callouts"]
 ----
 include::{sourcedir}/org/hibernate/search/documentation/search/aggregation/ElasticsearchAggregationDslIT.java[tags=elasticsearch-fromJson-jsonObject]
 ----
-<1> The aggregation result is a `JsonObject`.
+<1> The selected `JacksonJsonHandlers.object()` handler makes the aggregation result an `ObjectNode`.
 ====
 
 .Defining a native Elasticsearch JSON aggregation as a JSON-formatted string
@@ -647,7 +647,7 @@ include::{sourcedir}/org/hibernate/search/documentation/search/aggregation/Elast
 ----
 include::{sourcedir}/org/hibernate/search/documentation/search/aggregation/ElasticsearchAggregationDslIT.java[tags=elasticsearch-fromJson-string]
 ----
-<1> The aggregation result is a `JsonObject`.
+<1> The selected `JacksonJsonHandlers.object()` handler makes the aggregation result an `ObjectNode`.
 ====
 
 [[search-dsl-aggregation-common]]

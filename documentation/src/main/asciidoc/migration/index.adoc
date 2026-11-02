@@ -54,7 +54,10 @@ If several are available, startup fails unless you set `hibernate.search.backend
 to `elasticsearch-rest4`, `elasticsearch-rest5`, `opensearch-rest`, or `jdk-rest`.
 The value of `ElasticsearchBackendSettings.Defaults.CLIENT_FACTORY` changed from `elasticsearch-rest4` to `jdk-rest`.
 
-Other than the migration helper removal, the coordinates of Maven artifacts in Hibernate Search {hibernateSearchVersion}
+The new `org.hibernate.search:hibernate-search-util-json` artifact supplies Jackson 3 native parsing, output and codec SPI.
+The Elasticsearch backend brings it in transitively; direct users can declare it explicitly.
+
+Other than these changes, the coordinates of Maven artifacts in Hibernate Search {hibernateSearchVersion}
 are the same as in Hibernate Search {hibernateSearchPreviousStableVersionShort}.
 
 [[data-format]]
@@ -137,6 +140,45 @@ For the REST4 client, use the corresponding interfaces in `org.hibernate.search.
 To replace the old context's `configuredVersion()` method, read `ElasticsearchBackendSettings.VERSION`
 from `configurationPropertySource()`.
 
+[[elasticsearch-json]]
+=== Elasticsearch JSON APIs
+
+Application JSON APIs now offer typed `JsonHandler<T>` overloads.
+Select `JacksonJsonHandlers.object()` for Jackson 3 `ObjectNode` object inputs/results,
+or `JacksonJsonHandlers.value()` for general `JsonNode` native field values.
+`GsonJsonHandlers.object()` and `.value()` select Gson representations explicitly.
+The handler describes JSON tree/value representations; it does not enable automatic entity or DTO mapping.
+
+Deprecated Gson conveniences retain their Gson signatures and result types:
+`responseBody()`, `explain(...)`, `source()`, `explanation()`, `jsonHit()`,
+aggregation `fromJson(...)`, schema export `bodyParts()`, and transformer `body()`.
+Predicate/sort/aggregation/mapping Gson inputs also remain as deprecated conveniences.
+Handler overloads select their indexing/result type explicitly, including the runtime metadata of native fields.
+
+* Object-valued APIs require an object root even when a general value handler is selected.
+* Typed aggregation text input uses `fromJson(jsonString, resultHandler)`.
+* Use `transformBody(handler, transformation)` for scoped editing. The built-in Jackson route makes
+  one pre-copy and no post-copy. Do not mutate the returned tree afterward, and do not mix this method with deprecated `body()`.
+* Typed `asNative(handler)` treats a root array as one JSON value. Deprecated `asNative()` keeps
+  Gson field values and historical root-array splitting. Missing/JSON-null fields project as Java null;
+  nested JSON nulls in a typed value are retained.
+
+Keep submitted trees unchanged until signing, consumption and retries finish.
+Returned trees are borrowed/read-only. The recognized built-in Jackson handler instances transfer nodes directly
+with validation; Gson and custom handlers convert through JSON text at the explicit application boundary.
+Custom handlers using Jackson types are still invoked.
+
+String input uses strict JSON grammar: comments, single quotes, non-finite numbers and trailing content are rejected.
+Numbers retain exact integer/decimal values; original spelling and numeric node class are not guaranteed.
+Negative floating zero retains its sign, while integer `-0` may normalize.
+See the link:{hibernateSearchDocUrl}#backend-elasticsearch-json[JSON reference]
+for compiled examples, numeric constraints, ownership and transport limits.
+
+Custom Elasticsearch clients must recompile against `JsonProvider` and Jackson 3 native carrier signatures.
+Use `bodyPartsJson()`, `bodyJson()`, `Builder.bodyJson(ObjectNode)` and `withJsonBody(...)`
+for native transport processing. Deprecated Gson carrier methods and handler-based conversions remain available.
+The JSON utility SPI uses Jackson 3 nodes and provides no separate Search tree model or public accessor API.
+
 [[spi]]
 == SPI
 
@@ -150,6 +192,18 @@ with the following exceptions:
 * The `ValueReadHandleFactory` SPI interface has been removed. Use `ValueHandleFactory` instead.
 
 * The `ElasticsearchBackendImplSettings` class (both `cfg.impl` and `cfg.spi` variants) has been removed.
+
+* Custom `ElasticsearchClientFactory.create(...)` implementations now receive
+`org.hibernate.search.backend.elasticsearch.client.common.json.spi.JsonProvider` instead of Gson services.
+Native request `bodyPartsJson()` uses `List<ObjectNode>`, builder `bodyJson(...)` accepts Jackson `ObjectNode`,
+and response `bodyJson()` returns Jackson `ObjectNode`. Deprecated Gson carrier methods remain available.
+Use the supplied codec service for registered types and the Jackson-native parser/cursor SPI for streaming.
+Unknown types fail rather than falling back to reflection. Keep independent parser/cursor state per attempt,
+close on terminal events, and preserve caller-buffer ownership and backpressure.
+Signing and interceptors remain synchronous; incremental JSON imposes no automatic worker hop or event-loop latency bound.
+The link:{hibernateSearchDocUrl}#backend-elasticsearch-json-custom-clients[custom-client reference]
+details lifecycle, stable content length, client-owned diagnostic/compression boundaries and cancellation limits.
+
 
 * The `HibernateOrmQueryLoader.createMultiIdentifierLoadAccess(SessionImplementor)` method has been removed.
 Use `HibernateOrmQueryLoader.findMultiple(SessionImplementor, List, FindOption...)` instead.

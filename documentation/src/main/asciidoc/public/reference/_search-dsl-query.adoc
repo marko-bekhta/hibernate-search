@@ -765,6 +765,10 @@ or even the request's path (not shown in this example).
 <5> Retrieve the result as usual.
 ====
 
+`transformBody` copies a built-in Jackson tree once before the callback and retains the returned tree.
+Do not mutate that tree after returning it. Callback or conversion failures preserve the original request.
+The deprecated mutable Gson `body()` convenience cannot be mixed with `transformBody()` in the same context.
+
 For more complicated use cases, it is possible to access the raw JSON of the HTTP response, as shown below.
 
 .Accessing the Elasticsearch response body manually in a search query
@@ -782,14 +786,14 @@ Here we're asking Elasticsearch to apply a link:{elasticsearchDocUrl}/search-sug
 <4> Retrieve the result as usual.
 Since we used the Elasticsearch extension when building the query,
 the result is an `ElasticsearchSearchResult` instead of the usual `SearchResult`.
-<5> Get the response body as a `JsonObject`.
+<5> Get the response body as an `ObjectNode` by selecting `JacksonJsonHandlers.object()`.
 <6> Extract useful information from the response body.
 Here we're extracting the result of the suggester we configured above.
 ====
 
 [NOTE]
 ====
-Gson's API for building JSON objects is quite verbose,
+The Jackson API for building JSON objects is quite verbose,
 so the example above relies on a small, custom helper method to make the code more readable:
 
 [source, java, indent=0, subs="+callouts"]
