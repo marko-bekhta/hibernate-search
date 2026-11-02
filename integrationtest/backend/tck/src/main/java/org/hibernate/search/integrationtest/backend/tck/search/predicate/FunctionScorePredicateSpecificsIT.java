@@ -18,7 +18,10 @@ import org.hibernate.search.engine.backend.types.ObjectStructure;
 import org.hibernate.search.engine.backend.types.Scorable;
 import org.hibernate.search.engine.backend.types.Searchable;
 import org.hibernate.search.engine.search.common.ValueModel;
+import org.hibernate.search.engine.search.predicate.dsl.PredicateFinalStep;
+import org.hibernate.search.engine.search.predicate.dsl.TypedSearchPredicateFactory;
 import org.hibernate.search.engine.search.projection.dsl.SearchProjectionFactory;
+import org.hibernate.search.engine.search.reference.predicate.MatchPredicateFieldReference;
 import org.hibernate.search.engine.search.reference.scorefunction.FieldValueFactorFieldReference;
 import org.hibernate.search.integrationtest.backend.tck.testsupport.util.extension.SearchSetupHelper;
 import org.hibernate.search.util.impl.integrationtest.mapper.stub.SimpleMappedIndex;
@@ -77,6 +80,18 @@ class FunctionScorePredicateSpecificsIT {
 
 	@Nested
 	class SingleFieldValueFactor {
+
+		@Test
+		void scopedFieldFunctionFilterContributor() {
+			List<Float> scores = index.createScope().query()
+					.select( SearchProjectionFactory::score )
+					.where( f -> f.functionScore().fieldValueFactor( "popularity" )
+							.filter( FunctionScorePredicateSpecificsIT::featuredFilter )
+							.boostMode().replace() )
+					.fetchAllHits();
+
+			assertThat( scores ).containsExactlyInAnyOrder( 10f, 1f, 5f );
+		}
 
 		@Test
 		void typedReferenceMissingUsesIndexValueModel() {
@@ -397,6 +412,18 @@ class FunctionScorePredicateSpecificsIT {
 	class WeightFunction {
 
 		@Test
+		void scopedWeightFilterContributor() {
+			List<Float> scores = index.createScope().query()
+					.select( SearchProjectionFactory::score )
+					.where( f -> f.functionScore().weight( 10 )
+							.filter( FunctionScorePredicateSpecificsIT::featuredFilter )
+							.boostMode().replace() )
+					.fetchAllHits();
+
+			assertThat( scores ).containsExactlyInAnyOrder( 10f, 1f, 10f );
+		}
+
+		@Test
 		void weightInsideExplicitNesting() {
 			List<Float> scores = index.createScope().query()
 					.select( SearchProjectionFactory::score )
@@ -513,6 +540,18 @@ class FunctionScorePredicateSpecificsIT {
 
 	private record ScoreFunctionReference<T>(String absolutePath, Class<T> scoreFunctionType, ValueModel valueModel)
 			implements FieldValueFactorFieldReference<Object, T> {
+		@Override
+		public Class<Object> scopeRootType() {
+			return Object.class;
+		}
+	}
+
+	private static PredicateFinalStep featuredFilter(TypedSearchPredicateFactory<Object> factory) {
+		return factory.match().field( new MatchReference<>( "featured", Boolean.class ) ).matching( true );
+	}
+
+	private record MatchReference<T>(String absolutePath, Class<T> predicateType)
+			implements MatchPredicateFieldReference<Object, T> {
 		@Override
 		public Class<Object> scopeRootType() {
 			return Object.class;

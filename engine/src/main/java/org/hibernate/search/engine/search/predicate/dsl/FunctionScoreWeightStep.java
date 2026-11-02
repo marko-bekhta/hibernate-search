@@ -31,6 +31,6 @@ public interface FunctionScoreWeightStep<SR, S extends FunctionScoreClausesStep<
 	 * @param filterContributor A function that will define the filter predicate.
 	 * @return The parent clauses step, for method chaining.
 	 */
-	S filter(Function<? super SearchPredicateFactory, ? extends PredicateFinalStep> filterContributor);
+	S filter(Function<? super TypedSearchPredicateFactory<SR>, ? extends PredicateFinalStep> filterContributor);
 
 }

@@ -11,7 +11,6 @@ import org.hibernate.search.engine.search.predicate.dsl.FunctionScoreFieldValueF
 import org.hibernate.search.engine.search.predicate.dsl.FunctionScoreScoreModeStep;
 import org.hibernate.search.engine.search.predicate.dsl.FunctionScoreWeightStep;
 import org.hibernate.search.engine.search.predicate.dsl.PredicateFinalStep;
-import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
 import org.hibernate.search.engine.search.predicate.dsl.TypedSearchPredicateFactory;
 import org.hibernate.search.engine.search.predicate.dsl.spi.AbstractPredicateFinalStep;
 import org.hibernate.search.engine.search.predicate.dsl.spi.SearchPredicateDslContext;
@@ -142,7 +141,7 @@ public final class FunctionScoreClausesStepImpl<SR>
 
 	@Override
 	public FunctionScoreClausesStepImpl<SR> filter(
-			Function<? super SearchPredicateFactory, ? extends PredicateFinalStep> filterContributor) {
+			Function<? super TypedSearchPredicateFactory<SR>, ? extends PredicateFinalStep> filterContributor) {
 		return filter( filterContributor.apply( factory ).toPredicate() );
 	}
 

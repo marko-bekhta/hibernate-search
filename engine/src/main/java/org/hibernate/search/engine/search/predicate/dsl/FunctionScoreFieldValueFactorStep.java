@@ -86,6 +86,6 @@ public interface FunctionScoreFieldValueFactorStep<SR, S extends FunctionScoreCl
 	 * @return {@code this}, for method chaining.
 	 */
 	FunctionScoreFieldValueFactorStep<SR, S> filter(
-			Function<? super SearchPredicateFactory, ? extends PredicateFinalStep> filterContributor);
+			Function<? super TypedSearchPredicateFactory<SR>, ? extends PredicateFinalStep> filterContributor);
 
 }
