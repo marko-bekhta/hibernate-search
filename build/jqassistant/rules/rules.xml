@@ -874,6 +874,7 @@
         <includeConstraint refId="hsearch:StandalonePojoAPIAndSPIShouldBeAnnotatedWithIncubating" />
         <includeConstraint refId="hsearch:JBossLoggerTypesMustBeInLoggingPackages" />
         <includeConstraint refId="hsearch:JBossMessageTypesMustBeInReportingPackages" />
+        <includeGroup refId="json-boundaries" />
     </group>
 
     <group id="cycles">

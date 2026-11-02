@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jqassistant-rules xmlns="http://schema.jqassistant.org/rule/v1.10"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://schema.jqassistant.org/rule/v1.10 https://schema.jqassistant.org/rule/jqassistant-rule-v1.10.xsd">
+    <concept id="hsearch:JsonProductionTypes">
+        <requiresConcept refId="hsearch:Test" />
+        <description>Production types belonging to Search's JSON utilities, processor and Elasticsearch integrations.</description>
+        <cypher><![CDATA[
+            MATCH (artifact:Maven:Artifact)-[:CONTAINS]->(type:Type)
+            WHERE artifact.name IN [
+                'hibernate-search-util-json', 'hibernate-search-build-json-processor',
+                'hibernate-search-backend-elasticsearch', 'hibernate-search-backend-elasticsearch-aws',
+                'hibernate-search-backend-elasticsearch-client-rest4',
+                'hibernate-search-backend-elasticsearch-client-rest5',
+                'hibernate-search-backend-elasticsearch-client-opensearch-rest'
+            ] AND NOT type:Test
+            SET type:JsonProduction
+            RETURN type
+        ]]></cypher>
+    </concept>
+
+    <concept id="hsearch:JsonPublicContracts">
+        <requiresConcept refId="hsearch:JsonProductionTypes" />
+        <description>Exposed JSON contracts, including protected nested types and package annotations.</description>
+        <cypher><![CDATA[
+            MATCH (type:Type:JsonProduction)
+            WHERE NOT type.fqn CONTAINS '.impl.'
+                AND (type.visibility IN ['public', 'protected'] OR type.name = 'package-info')
+            SET type:JsonPublicContract
+            RETURN type
+        ]]></cypher>
+    </concept>
+
+    <concept id="hsearch:JsonNativeContracts">
+        <description>Only these explicit native contracts may expose Jackson 3; other restrictions still apply.</description>
+        <cypher><![CDATA[
+            MATCH (type:Type)
+            WHERE any(contract IN [
+                    'org.hibernate.search.util.json.spi.JsonCodec',
+                    'org.hibernate.search.util.json.spi.JsonCodecs',
+                    'org.hibernate.search.util.json.spi.JsonParserSession',
+                    'org.hibernate.search.util.json.spi.JsonParsing',
+                    'org.hibernate.search.util.json.spi.JsonBodies',
+                    'org.hibernate.search.util.json.spi.JsonNumbers',
+                    'org.hibernate.search.util.json.spi.JsonTreeValidation',
+                    'org.hibernate.search.util.json.spi.JsonValidation',
+                    'org.hibernate.search.backend.elasticsearch.json.jackson.JacksonJsonHandlers',
+                    'org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService',
+                    'org.hibernate.search.backend.elasticsearch.logging.spi.ElasticsearchClientLog',
+                    'org.hibernate.search.backend.elasticsearch.client.common.json.entity.spi.JsonHttpEntityContentProvider',
+                    'org.hibernate.search.backend.elasticsearch.client.common.json.spi.JsonLogHelper',
+                    'org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchRequest',
+                    'org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchResponse'
+                ] WHERE type.fqn = contract OR type.fqn STARTS WITH contract + '$'
+                    OR (contract STARTS WITH 'org.hibernate.search.backend.elasticsearch.'
+                        AND (type.fqn = contract + '_$logger' OR type.fqn = contract + '_$bundle')))
+            SET type:JsonNativeContract
+            RETURN type
+        ]]></cypher>
+    </concept>
+
+    <concept id="hsearch:JsonExposedTypeDependencies">
+        <requiresConcept refId="hsearch:JsonPublicContracts" />
+        <description>
+            Dependencies exposed by class signatures or public/protected members, including generic bounds,
+            throws declarations, declaration annotations and annotation defaults. Never follows method bodies
+            or private members, and stops at each referenced type instead of traversing its implementation.
+            See ../README.md for the pinned Java scanner's annotation limitations.
+        </description>
+        <cypher><![CDATA[
+            MATCH (type:Type:JsonPublicContract)
+            WITH type, type AS site
+            MATCH path = (site)-[:EXTENDS|IMPLEMENTS|EXTENDS_GENERIC|IMPLEMENTS_GENERIC|DECLARES_TYPE_PARAMETER|ANNOTATED_BY|OF_TYPE|OF_GENERIC_TYPE|OF_RAW_TYPE|HAS_ACTUAL_TYPE_ARGUMENT|HAS_UPPER_BOUND|HAS_LOWER_BOUND|HAS_COMPONENT_TYPE|HAS|CONTAINS|IS*1..]->(dependency:Type)
+            WHERE none(intermediate IN nodes(path)[1..-1] WHERE intermediate:Type)
+            MERGE (type)-[:EXPOSES_JSON_TYPE]->(dependency)
+            RETURN DISTINCT type, dependency
+            UNION
+            MATCH (type:Type:JsonPublicContract)-[:DECLARES]->(site)
+            WHERE (site:Method OR site:Field) AND site.visibility IN ['public', 'protected']
+            WITH type, site
+            MATCH path = (site)-[:RETURNS|RETURNS_GENERIC|THROWS|THROWS_GENERIC|OF_TYPE|OF_GENERIC_TYPE|DECLARES_TYPE_PARAMETER|ANNOTATED_BY|HAS_DEFAULT|HAS|CONTAINS|IS|OF_RAW_TYPE|HAS_ACTUAL_TYPE_ARGUMENT|HAS_UPPER_BOUND|HAS_LOWER_BOUND|HAS_COMPONENT_TYPE*1..]->(dependency:Type)
+            WHERE none(intermediate IN nodes(path)[1..-1] WHERE intermediate:Type)
+            MERGE (type)-[:EXPOSES_JSON_TYPE]->(dependency)
+            RETURN DISTINCT type, dependency
+        ]]></cypher>
+    </concept>
+
+    <constraint id="hsearch:JsonPublicContractsMayNotExposeForbiddenTypes">
+        <requiresConcept refId="hsearch:JsonExposedTypeDependencies" />
+        <requiresConcept refId="hsearch:JsonNativeContracts" />
+        <description>Restrict JSON library exposure and keep utility contracts independent of backend and implementation types.</description>
+        <cypher><![CDATA[
+            MATCH (type:JsonPublicContract)-[:EXPOSES_JSON_TYPE]->(dependency:Type)
+            WHERE dependency.fqn STARTS WITH 'com.fasterxml.jackson.'
+                OR (dependency.fqn STARTS WITH 'tools.jackson.' AND NOT type:JsonNativeContract)
+                OR (type.fqn STARTS WITH 'org.hibernate.search.util.json.' AND (
+                    dependency.fqn STARTS WITH 'com.google.gson.'
+                    OR dependency.fqn STARTS WITH 'org.hibernate.search.util.json.impl.'
+                    OR dependency.fqn STARTS WITH 'org.hibernate.search.backend.'))
+            RETURN type.fqn AS ExposingContract, dependency.fqn AS ExposedType
+        ]]></cypher>
+    </constraint>
+
+    <constraint id="hsearch:JsonUtilitiesMustNotDependOnBackend">
+        <requiresConcept refId="hsearch:JsonProductionTypes" />
+        <description>JSON utilities are backend-independent, including their implementation code.</description>
+        <cypher><![CDATA[
+            MATCH (artifact:Maven:Artifact)-[:CONTAINS]->(type:JsonProduction)-[:DEPENDS_ON]->(dependency:Type)
+            WHERE artifact.name = 'hibernate-search-util-json'
+                AND dependency.fqn STARTS WITH 'org.hibernate.search.backend.'
+            RETURN type.fqn AS DependingType, dependency.fqn AS ForbiddenDependency
+        ]]></cypher>
+    </constraint>
+
+    <constraint id="hsearch:JsonProductionMustUseExplicitGsonCompatibility">
+        <requiresConcept refId="hsearch:JsonProductionTypes" />
+        <description>Gson is allowed only in the explicitly retained Elasticsearch compatibility entry points.</description>
+        <cypher><![CDATA[
+            MATCH (type:JsonProduction)-[:DEPENDS_ON]->(dependency:Type)
+            WHERE (dependency.fqn STARTS WITH 'com.google.gson.'
+                OR dependency.fqn STARTS WITH 'org.hibernate.search.backend.elasticsearch.gson.')
+                AND NOT any(contract IN [
+                    'org.hibernate.search.backend.elasticsearch.gson.GsonJsonHandlers',
+                    'org.hibernate.search.backend.elasticsearch.schema.management.ElasticsearchIndexSchemaExport',
+                    'org.hibernate.search.backend.elasticsearch.schema.management.impl.ElasticsearchIndexSchemaExportImpl',
+                    'org.hibernate.search.backend.elasticsearch.search.predicate.dsl.ElasticsearchSearchPredicateFactory',
+                    'org.hibernate.search.backend.elasticsearch.search.sort.dsl.ElasticsearchSearchSortFactory',
+                    'org.hibernate.search.backend.elasticsearch.search.aggregation.dsl.ElasticsearchSearchAggregationFactory',
+                    'org.hibernate.search.backend.elasticsearch.search.projection.dsl.ElasticsearchSearchProjectionFactory',
+                    'org.hibernate.search.backend.elasticsearch.search.query.ElasticsearchSearchQuery',
+                    'org.hibernate.search.backend.elasticsearch.search.query.ElasticsearchSearchResult',
+                    'org.hibernate.search.backend.elasticsearch.search.query.ElasticsearchSearchRequestTransformerContext',
+                    'org.hibernate.search.backend.elasticsearch.search.query.impl.ElasticsearchSearchRequestTransformerContextImpl',
+                    'org.hibernate.search.backend.elasticsearch.types.dsl.ElasticsearchNativeIndexFieldTypeMappingStep',
+                    'org.hibernate.search.backend.elasticsearch.types.dsl.ElasticsearchNativeIndexFieldTypeOptionsStep',
+                    'org.hibernate.search.backend.elasticsearch.types.dsl.impl.ElasticsearchNativeIndexFieldTypeOptionsStepImpl',
+                    'org.hibernate.search.backend.elasticsearch.types.codec.impl.ElasticsearchJsonElementFieldCodec',
+                    'org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchRequest',
+                    'org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchResponse'
+                ] WHERE type.fqn = contract OR type.fqn STARTS WITH contract + '$')
+            RETURN type.fqn AS DependingType, dependency.fqn AS ForbiddenDependency
+        ]]></cypher>
+    </constraint>
+
+    <constraint id="hsearch:JsonProductionMustNotUseReflectiveMapping">
+        <requiresConcept refId="hsearch:JsonProductionTypes" />
+        <description>Use explicit codecs and native trees instead of reflective mapping in JSON production code.</description>
+        <cypher><![CDATA[
+            MATCH (type:JsonProduction)-[:DEPENDS_ON]->(dependency:Type)
+            WHERE dependency.fqn STARTS WITH 'com.fasterxml.jackson.databind.'
+                OR dependency.fqn STARTS WITH 'tools.jackson.databind.ObjectMapper'
+                OR dependency.fqn STARTS WITH 'tools.jackson.databind.json.JsonMapper'
+                OR dependency.fqn IN [
+                    'java.lang.reflect.Field', 'java.lang.reflect.Method', 'java.lang.reflect.Constructor',
+                    'org.hibernate.search.util.json.JsonElement', 'org.hibernate.search.util.json.JsonObject',
+                    'org.hibernate.search.util.json.JsonArray', 'org.hibernate.search.util.json.JsonPrimitive'
+                ]
+            RETURN type.fqn AS DependingType, dependency.fqn AS ForbiddenDependency
+            UNION
+            MATCH (type:JsonProduction)-[:DECLARES]->(:Method)-[:INVOKES]->(method:Method)<-[:DECLARES]-(owner:Type)
+            WHERE owner.fqn = 'java.lang.Class'
+                AND method.signature =~ '.* getDeclared(Fields?|Methods?|Constructors?)\\(.*'
+            RETURN type.fqn AS DependingType, owner.fqn + '#' + method.signature AS ForbiddenDependency
+        ]]></cypher>
+    </constraint>
+
+    <group id="json-boundaries">
+        <includeConstraint refId="hsearch:JsonPublicContractsMayNotExposeForbiddenTypes" />
+        <includeConstraint refId="hsearch:JsonUtilitiesMustNotDependOnBackend" />
+        <includeConstraint refId="hsearch:JsonProductionMustUseExplicitGsonCompatibility" />
+        <includeConstraint refId="hsearch:JsonProductionMustNotUseReflectiveMapping" />
+    </group>
+</jqassistant-rules>

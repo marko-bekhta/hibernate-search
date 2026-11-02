@@ -25,7 +25,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import com.google.gson.JsonObject;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * Test the schema produced by type name mapping strategies.
@@ -33,11 +34,9 @@ import com.google.gson.JsonObject;
 class ElasticsearchTypeNameMappingSchemaIT {
 
 	public static List<? extends Arguments> params() {
-		return Arrays.asList(
-				Arguments.of( null, mappingWithDiscriminatorProperty( "_entity_type" ) ),
+		return Arrays.asList( Arguments.of( null, mappingWithDiscriminatorProperty( "_entity_type" ) ),
 				Arguments.of( "index-name", mappingWithoutAnyProperty() ),
-				Arguments.of( "discriminator", mappingWithDiscriminatorProperty( "_entity_type" ) )
-		);
+				Arguments.of( "discriminator", mappingWithDiscriminatorProperty( "_entity_type" ) ) );
 	}
 
 	@RegisterExtension
@@ -48,63 +47,40 @@ class ElasticsearchTypeNameMappingSchemaIT {
 
 	private final StubMappedIndex index = StubMappedIndex.withoutFields();
 
-	@SuppressWarnings("unused") // For EJC and lambda arg
+	// For EJC and lambda arg
+	@SuppressWarnings("unused")
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	void schema(String strategyName, JsonObject expectedMappingContent) {
+	void schema(String strategyName, ObjectNode expectedMappingContent) {
 		if ( ElasticsearchTckBackendFeatures.supportsVersionCheck() ) {
-			clientSpy.expectNext(
-					ElasticsearchRequest.get().build(),
-					ElasticsearchRequestAssertionMode.STRICT
-			);
+			clientSpy.expectNext( ElasticsearchRequest.get().build(), ElasticsearchRequestAssertionMode.STRICT );
 		}
-		clientSpy.expectNext(
-				ElasticsearchRequest.get()
-						.multiValuedPathComponent( defaultAliases( index.name() ) )
-						.build(),
-				ElasticsearchRequestAssertionMode.EXTENSIBLE
-		);
-		clientSpy.expectNext(
-				indexCreationRequest( expectedMappingContent ),
-				ElasticsearchRequestAssertionMode.STRICT
-		);
-
-		setupHelper.start()
-				.withBackendProperty(
-						ElasticsearchBackendSettings.CLIENT_FACTORY, clientSpy.factoryReference()
-				)
-				.withBackendProperty(
-						// Don't contribute any analysis definitions, it messes with our assertions
-						ElasticsearchIndexSettings.ANALYSIS_CONFIGURER,
+		clientSpy.expectNext( ElasticsearchRequest.get().multiValuedPathComponent( defaultAliases( index.name() ) ).build(),
+				ElasticsearchRequestAssertionMode.EXTENSIBLE );
+		clientSpy.expectNext( indexCreationRequest( expectedMappingContent ), ElasticsearchRequestAssertionMode.STRICT );
+		// Don't contribute any analysis definitions, it messes with our assertions
+		// Don't contribute any analysis definitions, it messes with our assertions
+		setupHelper.start().withBackendProperty( ElasticsearchBackendSettings.CLIENT_FACTORY, clientSpy.factoryReference() )
+				.withBackendProperty( ElasticsearchIndexSettings.ANALYSIS_CONFIGURER,
 						(ElasticsearchAnalysisConfigurer) (ElasticsearchAnalysisConfigurationContext context) -> {
 							// No-op
-						}
-				)
-				.withBackendProperty(
-						ElasticsearchBackendSettings.MAPPING_TYPE_NAME_STRATEGY, strategyName
-				)
-				.withIndex( index )
+						} )
+				.withBackendProperty( ElasticsearchBackendSettings.MAPPING_TYPE_NAME_STRATEGY, strategyName ).withIndex( index )
 				.setup();
 		clientSpy.verifyExpectationsMet();
 	}
 
-	private ElasticsearchRequest indexCreationRequest(JsonObject expectedMappingContent) {
+	private ElasticsearchRequest indexCreationRequest(ObjectNode expectedMappingContent) {
 		ElasticsearchRequest.Builder schemaRequestBuilder = ElasticsearchRequest.put()
-				.pathComponent( defaultPrimaryName( index.name() ) )
-				.body( indexCreationPayload( expectedMappingContent ) );
-
+				.pathComponent( defaultPrimaryName( index.name() ) ).bodyJson( indexCreationPayload( expectedMappingContent ) );
 		return schemaRequestBuilder.build();
 	}
 
-	private JsonObject indexCreationPayload(JsonObject expectedMappingContent) {
-		JsonObject payload = new JsonObject();
-
-		payload.add( "aliases", defaultAliasDefinitions( index.name() ) );
-
-		payload.add( "mappings", expectedMappingContent );
-
-		payload.add( "settings", new JsonObject() );
-
+	private ObjectNode indexCreationPayload(ObjectNode expectedMappingContent) {
+		ObjectNode payload = new ObjectNode( JsonNodeFactory.instance );
+		payload.set( "aliases", defaultAliasDefinitions( index.name() ) );
+		payload.set( "mappings", expectedMappingContent );
+		payload.set( "settings", new ObjectNode( JsonNodeFactory.instance ) );
 		return payload;
 	}
 }

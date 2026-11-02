@@ -6,12 +6,20 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.StringJoiner;
 
 import org.hibernate.search.backend.elasticsearch.client.common.util.spi.URLEncodedString;
+import org.hibernate.search.backend.elasticsearch.gson.GsonJsonHandlers;
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonHandlerBridge;
 import org.hibernate.search.engine.common.timing.Deadline;
+import org.hibernate.search.util.json.JsonHandler;
+import org.hibernate.search.util.json.spi.JsonTreeValidation;
+import org.hibernate.search.util.json.spi.JsonValidation;
 
 import com.google.gson.JsonObject;
+
+import tools.jackson.databind.node.ObjectNode;
 
 public final class ElasticsearchRequest {
 
@@ -38,8 +46,9 @@ public final class ElasticsearchRequest {
 	private final String method;
 	private final String path;
 	private final Map<String, String> parameters;
-	private final List<JsonObject> bodyParts;
+	private final List<ObjectNode> bodyParts;
 	private final Deadline deadline;
+	private final JsonValidation validation;
 
 	private ElasticsearchRequest(Builder builder) {
 		this.method = builder.method;
@@ -47,8 +56,23 @@ public final class ElasticsearchRequest {
 		this.parameters =
 				builder.parameters == null ? Collections.emptyMap() : Collections.unmodifiableMap( builder.parameters );
 		this.bodyParts =
-				builder.bodyParts == null ? Collections.emptyList() : Collections.unmodifiableList( builder.bodyParts );
+				builder.bodyParts == null ? Collections.emptyList() : List.copyOf( builder.bodyParts );
 		this.deadline = builder.deadline;
+		this.validation = builder.validation;
+	}
+
+	private ElasticsearchRequest(ElasticsearchRequest original, JsonValidation validation) {
+		this.method = original.method;
+		this.path = original.path;
+		this.parameters = original.parameters;
+		this.bodyParts = original.bodyParts;
+		this.deadline = original.deadline;
+		this.validation = Objects.requireNonNull( validation );
+	}
+
+	/** Bind an immutable request view to the receiving client's JSON context. */
+	public ElasticsearchRequest withValidation(JsonValidation validation) {
+		return new ElasticsearchRequest( this, validation );
 	}
 
 	public String method() {
@@ -63,8 +87,25 @@ public final class ElasticsearchRequest {
 		return parameters;
 	}
 
-	public List<JsonObject> bodyParts() {
+	/** Borrowed native parts; submitted trees must stay unchanged across retries. */
+	public List<ObjectNode> bodyPartsJson() {
 		return bodyParts;
+	}
+
+	public <T> List<T> bodyParts(JsonHandler<T> handler) {
+		// Check handler/token even when there are no parts; an absent value needs no conversion.
+		JsonHandlerBridge.exportObject( handler, null, "request body export", validation );
+		List<T> result = new ArrayList<>( bodyParts.size() );
+		for ( ObjectNode part : bodyParts ) {
+			result.add( JsonHandlerBridge.exportObject( handler, part, "request body export", validation ) );
+		}
+		return Collections.unmodifiableList( result );
+	}
+
+	/** @deprecated Use {@link #bodyPartsJson()} or {@link #bodyParts(JsonHandler)}. */
+	@Deprecated
+	public List<JsonObject> bodyParts() {
+		return bodyParts( GsonJsonHandlers.object() );
 	}
 
 	public Deadline deadline() {
@@ -89,8 +130,9 @@ public final class ElasticsearchRequest {
 		private final StringBuilder pathBuilder = new StringBuilder( 20 );
 
 		private Map<String, String> parameters;
-		private List<JsonObject> bodyParts;
+		private List<ObjectNode> bodyParts;
 		private Deadline deadline;
+		private final JsonValidation validation = JsonValidation.systemDefault();
 
 		private Builder(String method) {
 			super();
@@ -147,7 +189,30 @@ public final class ElasticsearchRequest {
 			return param( name, String.join( ",", values ) );
 		}
 
+		/** @deprecated Use {@link #bodyJson(ObjectNode)}. */
+		@Deprecated
 		public Builder body(JsonObject object) {
+			return bodyJsonFromInternal(
+					JsonHandlerBridge.importObject( GsonJsonHandlers.object(), object, "request body import" ) );
+		}
+
+		/** Retain this validated tree; it must stay unchanged across retries. */
+		public Builder bodyJson(ObjectNode object) {
+			JsonTreeValidation.validateExternal( object );
+			return retainBody( object );
+		}
+
+		/**
+		 * Internal caller contract: stable ordinary acyclic tree built/parsed by Search or already
+		 * validated at the external boundary. Never use for unchecked application/client trees.
+		 */
+		public Builder bodyJsonFromInternal(ObjectNode object) {
+			Objects.requireNonNull( object );
+			// Internal checks run at the receiving client's scoped transport boundary.
+			return retainBody( object );
+		}
+
+		private Builder retainBody(ObjectNode object) {
 			if ( bodyParts == null ) {
 				bodyParts = new ArrayList<>();
 			}

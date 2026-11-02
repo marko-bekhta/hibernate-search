@@ -5,7 +5,7 @@ import static org.hibernate.search.util.impl.integrationtest.backend.elasticsear
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.hibernate.search.backend.elasticsearch.client.common.gson.spi.GsonProvider;
+import org.hibernate.search.backend.elasticsearch.client.common.json.spi.JsonProvider;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchClientFactory;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchClientImplementor;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchRequest;
@@ -96,11 +96,11 @@ public class ElasticsearchClientSpy implements BeforeEachCallback, AfterEachCall
 		public ElasticsearchClientImplementor create(BeanResolver beanResolver,
 				ConfigurationPropertySource propertySource,
 				ThreadProvider threadProvider, String threadNamePrefix, SimpleScheduledExecutor timeoutExecutorService,
-				GsonProvider gsonProvider) {
+				JsonProvider jsonProvider) {
 			createdClientCount.incrementAndGet();
 			return new SpyingElasticsearchClient( delegate.create(
 					beanResolver, propertySource, threadProvider, threadNamePrefix,
-					timeoutExecutorService, gsonProvider
+					timeoutExecutorService, jsonProvider
 			) );
 		}
 	}

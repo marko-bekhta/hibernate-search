@@ -1,59 +1,23 @@
 package org.hibernate.search.backend.elasticsearch.types.codec.impl;
 
-import com.google.gson.Gson;
+import org.hibernate.search.backend.elasticsearch.gson.GsonJsonHandlers;
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
+
 import com.google.gson.JsonElement;
-import com.google.gson.JsonNull;
-import com.google.gson.JsonPrimitive;
 
-public class ElasticsearchJsonElementFieldCodec implements ElasticsearchFieldCodec<JsonElement> {
-
-	private final Gson gson;
-
-	public ElasticsearchJsonElementFieldCodec(Gson gson) {
-		this.gson = gson;
+/**
+ * Codec for the deprecated native-field convenience API.
+ * Arrays retain the historical interpretation as multiple field values.
+ * Typed native fields instead decode a root array as a single JSON value.
+ */
+@Deprecated
+public class ElasticsearchJsonElementFieldCodec extends ElasticsearchJsonHandlerFieldCodec<JsonElement> {
+	public ElasticsearchJsonElementFieldCodec(JsonCodecService json) {
+		super( json, GsonJsonHandlers.value() );
 	}
 
 	@Override
-	public JsonElement encode(JsonElement value) {
-		if ( value == null ) {
-			return JsonNull.INSTANCE;
-		}
-		return value;
-	}
-
-	@Override
-	public JsonElement decode(JsonElement element) {
-		if ( element == null || element.isJsonNull() ) {
-			return null;
-		}
-		return element;
-	}
-
-	@Override
-	public JsonElement decode(Double value) {
-		return new JsonPrimitive( value );
-	}
-
-	@Override
-	public boolean isCompatibleWith(ElasticsearchFieldCodec<?> other) {
-		if ( other == this ) {
-			return true;
-		}
-		if ( other == null || !getClass().equals( other.getClass() ) ) {
-			return false;
-		}
-
-		ElasticsearchJsonElementFieldCodec castedOther = (ElasticsearchJsonElementFieldCodec) other;
-		return gson.equals( castedOther.gson );
-	}
-
-	@Override
-	public JsonElement fromJsonStringToElement(String value) {
-		return gson.fromJson( value, JsonElement.class );
-	}
-
-	@Override
-	public String fromJsonElementToString(JsonElement value) {
-		return gson.toJson( value );
+	public boolean canDecodeArrays() {
+		return false;
 	}
 }

@@ -1,0 +1,8 @@
+jqassistant:
+  maven:
+    use-execution-root-as-project-root: true
+  analyze:
+    rule:
+      directory: ../rules
+    groups:
+      - json-boundaries

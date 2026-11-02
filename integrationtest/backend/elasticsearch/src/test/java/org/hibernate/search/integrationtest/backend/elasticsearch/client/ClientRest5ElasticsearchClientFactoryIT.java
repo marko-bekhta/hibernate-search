@@ -39,7 +39,6 @@ import java.util.stream.Collectors;
 import javax.net.ssl.SSLContext;
 
 import org.hibernate.search.backend.elasticsearch.cfg.ElasticsearchBackendSettings;
-import org.hibernate.search.backend.elasticsearch.client.common.gson.spi.GsonProvider;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchClient;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchClientImplementor;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchRequest;
@@ -50,6 +49,7 @@ import org.hibernate.search.backend.elasticsearch.client.rest5.ElasticsearchHttp
 import org.hibernate.search.backend.elasticsearch.client.rest5.cfg.ClientRest5ElasticsearchBackendClientSettings;
 import org.hibernate.search.backend.elasticsearch.client.rest5.cfg.spi.ClientRest5ElasticsearchBackendClientSpiSettings;
 import org.hibernate.search.backend.elasticsearch.client.rest5.impl.ClientRest5ElasticsearchClientFactory;
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper;
 import org.hibernate.search.engine.cfg.ConfigurationPropertySource;
 import org.hibernate.search.engine.cfg.spi.AllAwareConfigurationPropertySource;
 import org.hibernate.search.engine.cfg.spi.ConfigurationProperty;
@@ -72,6 +72,8 @@ import org.hibernate.search.util.impl.test.annotation.PortedFromSearch5;
 import org.hibernate.search.util.impl.test.annotation.TestForIssue;
 import org.hibernate.search.util.impl.test.extension.ExpectedLog4jLog;
 import org.hibernate.search.util.impl.test.extension.RetryExtension;
+import org.hibernate.search.util.json.spi.JsonParseException;
+import org.hibernate.search.util.json.spi.JsonParsing;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -83,11 +85,6 @@ import com.github.tomakehurst.wiremock.http.Request;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import com.github.tomakehurst.wiremock.matching.MatchResult;
 import com.github.tomakehurst.wiremock.matching.RequestMatcherExtension;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonSyntaxException;
 
 import co.elastic.clients.transport.rest5_client.low_level.Rest5Client;
 import org.apache.hc.client5.http.HttpRoute;
@@ -114,6 +111,9 @@ import org.apache.logging.log4j.Level;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 @MockitoSettings(strictness = Strictness.STRICT_STUBS)
 @PortedFromSearch5(original = "org.hibernate.search.elasticsearch.test.DefaultElasticsearchClientFactoryTest")
@@ -122,35 +122,29 @@ class ClientRest5ElasticsearchClientFactoryIT {
 	// Some tests in here are flaky, for some reason once in a while wiremock takes a very long time to answer
 	// even though no delay was configured.
 	// The exact reason is unknown though, so just try multiple times...
-
 	@RegisterExtension
 	private final ExpectedLog4jLog logged = ExpectedLog4jLog.create();
 
 	@RegisterExtension
-	private final WireMockExtension wireMockRule1 = WireMockExtension.newInstance()
-			.options( wireMockConfig().dynamicPort().dynamicHttpsPort() )
-			.build();
+	private final WireMockExtension wireMockRule1 =
+			WireMockExtension.newInstance().options( wireMockConfig().dynamicPort().dynamicHttpsPort() ).build();
 
 	@RegisterExtension
-	private final WireMockExtension wireMockRule2 = WireMockExtension.newInstance()
-			.options( wireMockConfig().dynamicPort().dynamicHttpsPort() )
-			.build();
+	private final WireMockExtension wireMockRule2 =
+			WireMockExtension.newInstance().options( wireMockConfig().dynamicPort().dynamicHttpsPort() ).build();
 
 	@RegisterExtension
 	private final TestConfigurationProvider testConfigurationProvider = new TestConfigurationProvider();
 
 	private final ThreadPoolProviderImpl threadPoolProvider = new ThreadPoolProviderImpl(
-			BeanHolder.of(
-					new EmbeddedThreadProvider( ClientRest5ElasticsearchClientFactoryIT.class.getName() + ": " ) ) );
+			BeanHolder.of( new EmbeddedThreadProvider( ClientRest5ElasticsearchClientFactoryIT.class.getName() + ": " ) ) );
 
-	private final ScheduledExecutorService timeoutExecutorService =
-			threadPoolProvider.newScheduledExecutor( 1, "Timeout - " );
+	private final ScheduledExecutorService timeoutExecutorService = threadPoolProvider.newScheduledExecutor( 1, "Timeout - " );
 
 	@AfterEach
 	void cleanup() {
 		timeoutExecutorService.shutdownNow();
 		threadPoolProvider.close();
-
 		// Avoid side-effects from one test to another
 		// Ideally WiremockRule should do that by itself, but it doesn't...
 		wireMockRule1.resetAll();
@@ -163,23 +157,15 @@ class ClientRest5ElasticsearchClientFactoryIT {
 		String payload = "{ \"foo\": \"bar\" }";
 		String statusMessage = "OK";
 		String responseBody = "{ \"foo\": \"bar\" }";
-		wireMockRule1.stubFor( post( urlPathMatching( "/myIndex/myType" ) )
-				.withRequestBody( equalToJson( payload ) )
-				.andMatching( httpProtocol() )
-				.willReturn( elasticsearchResponse().withStatus( 200 )
-						.withStatusMessage( statusMessage )
-						.withBody( responseBody ) ) );
-
+		wireMockRule1.stubFor( post( urlPathMatching( "/myIndex/myType" ) ).withRequestBody( equalToJson( payload ) )
+				.andMatching( httpProtocol() ).willReturn( elasticsearchResponse().withStatus( 200 )
+						.withStatusMessage( statusMessage ).withBody( responseBody ) ) );
 		try ( ElasticsearchClientImplementor client = createClient() ) {
 			ElasticsearchResponse result = doPost( client, "/myIndex/myType", payload );
 			assertThat( result.statusCode() ).as( "status code" ).isEqualTo( 200 );
 			assertThat( result.statusMessage() ).as( "status message" ).isEqualTo( statusMessage );
-			assertJsonEquals( responseBody, result.body().toString() );
-
-			wireMockRule1.verify(
-					postRequestedFor( urlPathMatching( "/myIndex/myType" ) )
-							.andMatching( httpProtocol() )
-			);
+			assertJsonEquals( responseBody, result.bodyJson().toString() );
+			wireMockRule1.verify( postRequestedFor( urlPathMatching( "/myIndex/myType" ) ).andMatching( httpProtocol() ) );
 		}
 	}
 
@@ -188,32 +174,20 @@ class ClientRest5ElasticsearchClientFactoryIT {
 		String payload = "{ \"foo\": \"bar\" }";
 		String statusMessage = "OK";
 		String responseBody = "{ \"foo\": \"bar\" }";
-		wireMockRule1.stubFor( post( urlPathMatching( "/myIndex/myType" ) )
-				.withRequestBody( equalToJson( payload ) )
-				.andMatching( httpProtocol() )
-				.willReturn( elasticsearchResponse().withStatus( 200 )
-						.withStatusMessage( statusMessage )
-						.withBody( responseBody ) ) );
-
+		wireMockRule1.stubFor( post( urlPathMatching( "/myIndex/myType" ) ).withRequestBody( equalToJson( payload ) )
+				.andMatching( httpProtocol() ).willReturn( elasticsearchResponse().withStatus( 200 )
+						.withStatusMessage( statusMessage ).withBody( responseBody ) ) );
 		HttpResponseInterceptor responseInterceptor = spy( HttpResponseInterceptor.class );
-
-		try ( ElasticsearchClientImplementor client = createClient( properties -> properties.accept(
-				ClientRest5ElasticsearchBackendClientSettings.CLIENT_CONFIGURER,
-				(ElasticsearchHttpClientConfigurer) context -> context
-						.clientBuilder()
-						.addResponseInterceptorFirst( responseInterceptor )
-		) ) ) {
+		try ( ElasticsearchClientImplementor client =
+				createClient( properties -> properties.accept( ClientRest5ElasticsearchBackendClientSettings.CLIENT_CONFIGURER,
+						(ElasticsearchHttpClientConfigurer) context -> context.clientBuilder()
+								.addResponseInterceptorFirst( responseInterceptor ) ) ) ) {
 			ElasticsearchResponse result = doPost( client, "/myIndex/myType", payload );
 			assertThat( result.statusCode() ).as( "status code" ).isEqualTo( 200 );
 			assertThat( result.statusMessage() ).as( "status message" ).isEqualTo( statusMessage );
-			assertJsonEquals( responseBody, result.body().toString() );
-
-			wireMockRule1.verify(
-					postRequestedFor( urlPathMatching( "/myIndex/myType" ) )
-							.andMatching( httpProtocol() )
-			);
+			assertJsonEquals( responseBody, result.bodyJson().toString() );
+			wireMockRule1.verify( postRequestedFor( urlPathMatching( "/myIndex/myType" ) ).andMatching( httpProtocol() ) );
 		}
-
 		verify( responseInterceptor, times( 1 ) ).process( any(), any(), any() );
 	}
 
@@ -223,27 +197,17 @@ class ClientRest5ElasticsearchClientFactoryIT {
 		String payload = "{ \"foo\": \"bar\" }";
 		String statusMessage = "OK";
 		String responseBody = "{ \"foo\": \"bar\" }";
-		wireMockRule1.stubFor( post( urlPathMatching( "/myIndex/myType" ) )
-				.withRequestBody( equalToJson( payload ) )
-				.andMatching( httpProtocol() )
-				.willReturn( elasticsearchResponse().withStatus( 200 )
-						.withStatusMessage( statusMessage )
-						.withBody( responseBody ) ) );
-
-		try ( ElasticsearchClientImplementor client = createClient(
-				properties -> {
-					properties.accept( ElasticsearchBackendSettings.URIS, httpUrisFor( wireMockRule1 ) );
-				}
-		) ) {
+		wireMockRule1.stubFor( post( urlPathMatching( "/myIndex/myType" ) ).withRequestBody( equalToJson( payload ) )
+				.andMatching( httpProtocol() ).willReturn( elasticsearchResponse().withStatus( 200 )
+						.withStatusMessage( statusMessage ).withBody( responseBody ) ) );
+		try ( ElasticsearchClientImplementor client = createClient( properties -> {
+			properties.accept( ElasticsearchBackendSettings.URIS, httpUrisFor( wireMockRule1 ) );
+		} ) ) {
 			ElasticsearchResponse result = doPost( client, "/myIndex/myType", payload );
 			assertThat( result.statusCode() ).as( "status code" ).isEqualTo( 200 );
 			assertThat( result.statusMessage() ).as( "status message" ).isEqualTo( statusMessage );
-			assertJsonEquals( responseBody, result.body().toString() );
-
-			wireMockRule1.verify(
-					postRequestedFor( urlPathMatching( "/myIndex/myType" ) )
-							.andMatching( httpProtocol() )
-			);
+			assertJsonEquals( responseBody, result.bodyJson().toString() );
+			wireMockRule1.verify( postRequestedFor( urlPathMatching( "/myIndex/myType" ) ).andMatching( httpProtocol() ) );
 		}
 	}
 
@@ -254,26 +218,17 @@ class ClientRest5ElasticsearchClientFactoryIT {
 		String statusMessage = "OK";
 		String responseBody = "{ \"foo\": \"bar\" }";
 		wireMockRule1.stubFor( post( urlPathMatching( "/bla/bla/bla/myIndex/myType" ) )
-				.withRequestBody( equalToJson( payload ) )
-				.andMatching( httpProtocol() )
-				.willReturn( elasticsearchResponse().withStatus( 200 )
-						.withStatusMessage( statusMessage )
-						.withBody( responseBody ) ) );
-
-		try ( ElasticsearchClientImplementor client = createClient(
-				properties -> {
-					properties.accept( ElasticsearchBackendSettings.PATH_PREFIX, "bla/bla/bla" );
-				}
-		) ) {
+				.withRequestBody( equalToJson( payload ) ).andMatching( httpProtocol() ).willReturn( elasticsearchResponse()
+						.withStatus( 200 ).withStatusMessage( statusMessage ).withBody( responseBody ) ) );
+		try ( ElasticsearchClientImplementor client = createClient( properties -> {
+			properties.accept( ElasticsearchBackendSettings.PATH_PREFIX, "bla/bla/bla" );
+		} ) ) {
 			ElasticsearchResponse result = doPost( client, "/myIndex/myType", payload );
 			assertThat( result.statusCode() ).as( "status code" ).isEqualTo( 200 );
 			assertThat( result.statusMessage() ).as( "status message" ).isEqualTo( statusMessage );
-			assertJsonEquals( responseBody, result.body().toString() );
-
+			assertJsonEquals( responseBody, result.bodyJson().toString() );
 			wireMockRule1.verify(
-					postRequestedFor( urlPathMatching( "/bla/bla/bla/myIndex/myType" ) )
-							.andMatching( httpProtocol() )
-			);
+					postRequestedFor( urlPathMatching( "/bla/bla/bla/myIndex/myType" ) ).andMatching( httpProtocol() ) );
 		}
 	}
 
@@ -284,27 +239,18 @@ class ClientRest5ElasticsearchClientFactoryIT {
 		String statusMessage = "OK";
 		String responseBody = "{ \"foo\": \"bar\" }";
 		wireMockRule1.stubFor( post( urlPathMatching( "/bla/bla/bla/myIndex/myType" ) )
-				.withRequestBody( equalToJson( payload ) )
-				.andMatching( httpProtocol() )
-				.willReturn( elasticsearchResponse().withStatus( 200 )
-						.withStatusMessage( statusMessage )
-						.withBody( responseBody ) ) );
-
-		try ( ElasticsearchClientImplementor client = createClient(
-				properties -> {
-					properties.accept( ElasticsearchBackendSettings.PATH_PREFIX, "bla/bla/bla" );
-					properties.accept( ElasticsearchBackendSettings.URIS, httpUrisFor( wireMockRule1 ) );
-				}
-		) ) {
+				.withRequestBody( equalToJson( payload ) ).andMatching( httpProtocol() ).willReturn( elasticsearchResponse()
+						.withStatus( 200 ).withStatusMessage( statusMessage ).withBody( responseBody ) ) );
+		try ( ElasticsearchClientImplementor client = createClient( properties -> {
+			properties.accept( ElasticsearchBackendSettings.PATH_PREFIX, "bla/bla/bla" );
+			properties.accept( ElasticsearchBackendSettings.URIS, httpUrisFor( wireMockRule1 ) );
+		} ) ) {
 			ElasticsearchResponse result = doPost( client, "/myIndex/myType", payload );
 			assertThat( result.statusCode() ).as( "status code" ).isEqualTo( 200 );
 			assertThat( result.statusMessage() ).as( "status message" ).isEqualTo( statusMessage );
-			assertJsonEquals( responseBody, result.body().toString() );
-
+			assertJsonEquals( responseBody, result.bodyJson().toString() );
 			wireMockRule1.verify(
-					postRequestedFor( urlPathMatching( "/bla/bla/bla/myIndex/myType" ) )
-							.andMatching( httpProtocol() )
-			);
+					postRequestedFor( urlPathMatching( "/bla/bla/bla/myIndex/myType" ) ).andMatching( httpProtocol() ) );
 		}
 	}
 
@@ -314,28 +260,18 @@ class ClientRest5ElasticsearchClientFactoryIT {
 		String payload = "{ \"foo\": \"bar\" }";
 		String statusMessage = "OK";
 		String responseBody = "{ \"foo\": \"bar\" }";
-		wireMockRule1.stubFor( post( urlPathMatching( "/myIndex/myType" ) )
-				.withRequestBody( equalToJson( payload ) )
-				.andMatching( httpsProtocol() )
-				.willReturn( elasticsearchResponse().withStatus( 200 )
-						.withStatusMessage( statusMessage )
-						.withBody( responseBody ) ) );
-
-		try ( ElasticsearchClientImplementor client = createClient(
-				properties -> {
-					properties.accept( ElasticsearchBackendSettings.HOSTS, httpsHostAndPortFor( wireMockRule1 ) );
-					properties.accept( ElasticsearchBackendSettings.PROTOCOL, "https" );
-				}
-		) ) {
+		wireMockRule1.stubFor( post( urlPathMatching( "/myIndex/myType" ) ).withRequestBody( equalToJson( payload ) )
+				.andMatching( httpsProtocol() ).willReturn( elasticsearchResponse().withStatus( 200 )
+						.withStatusMessage( statusMessage ).withBody( responseBody ) ) );
+		try ( ElasticsearchClientImplementor client = createClient( properties -> {
+			properties.accept( ElasticsearchBackendSettings.HOSTS, httpsHostAndPortFor( wireMockRule1 ) );
+			properties.accept( ElasticsearchBackendSettings.PROTOCOL, "https" );
+		} ) ) {
 			ElasticsearchResponse result = doPost( client, "/myIndex/myType", payload );
 			assertThat( result.statusCode() ).as( "status code" ).isEqualTo( 200 );
 			assertThat( result.statusMessage() ).as( "status message" ).isEqualTo( statusMessage );
-			assertJsonEquals( responseBody, result.body().toString() );
-
-			wireMockRule1.verify(
-					postRequestedFor( urlPathMatching( "/myIndex/myType" ) )
-							.andMatching( httpsProtocol() )
-			);
+			assertJsonEquals( responseBody, result.bodyJson().toString() );
+			wireMockRule1.verify( postRequestedFor( urlPathMatching( "/myIndex/myType" ) ).andMatching( httpsProtocol() ) );
 		}
 	}
 
@@ -345,27 +281,17 @@ class ClientRest5ElasticsearchClientFactoryIT {
 		String payload = "{ \"foo\": \"bar\" }";
 		String statusMessage = "OK";
 		String responseBody = "{ \"foo\": \"bar\" }";
-		wireMockRule1.stubFor( post( urlPathMatching( "/myIndex/myType" ) )
-				.withRequestBody( equalToJson( payload ) )
-				.andMatching( httpsProtocol() )
-				.willReturn( elasticsearchResponse().withStatus( 200 )
-						.withStatusMessage( statusMessage )
-						.withBody( responseBody ) ) );
-
-		try ( ElasticsearchClientImplementor client = createClient(
-				properties -> {
-					properties.accept( ElasticsearchBackendSettings.URIS, httpsUrisFor( wireMockRule1 ) );
-				}
-		) ) {
+		wireMockRule1.stubFor( post( urlPathMatching( "/myIndex/myType" ) ).withRequestBody( equalToJson( payload ) )
+				.andMatching( httpsProtocol() ).willReturn( elasticsearchResponse().withStatus( 200 )
+						.withStatusMessage( statusMessage ).withBody( responseBody ) ) );
+		try ( ElasticsearchClientImplementor client = createClient( properties -> {
+			properties.accept( ElasticsearchBackendSettings.URIS, httpsUrisFor( wireMockRule1 ) );
+		} ) ) {
 			ElasticsearchResponse result = doPost( client, "/myIndex/myType", payload );
 			assertThat( result.statusCode() ).as( "status code" ).isEqualTo( 200 );
 			assertThat( result.statusMessage() ).as( "status message" ).isEqualTo( statusMessage );
-			assertJsonEquals( responseBody, result.body().toString() );
-
-			wireMockRule1.verify(
-					postRequestedFor( urlPathMatching( "/myIndex/myType" ) )
-							.andMatching( httpsProtocol() )
-			);
+			assertJsonEquals( responseBody, result.bodyJson().toString() );
+			wireMockRule1.verify( postRequestedFor( urlPathMatching( "/myIndex/myType" ) ).andMatching( httpsProtocol() ) );
 		}
 	}
 
@@ -373,98 +299,63 @@ class ClientRest5ElasticsearchClientFactoryIT {
 	void error() {
 		String payload = "{ \"foo\": \"bar\" }";
 		String responseBody = "{ \"error\": \"ErrorMessageExplainingTheError\" }";
-		wireMockRule1.stubFor( post( urlPathMatching( "/myIndex/myType" ) )
-				.withRequestBody( equalToJson( payload ) )
-				.willReturn(
-						elasticsearchResponse().withStatus( 500 )
-								.withBody( responseBody )
-				) );
-
+		wireMockRule1.stubFor( post( urlPathMatching( "/myIndex/myType" ) ).withRequestBody( equalToJson( payload ) )
+				.willReturn( elasticsearchResponse().withStatus( 500 ).withBody( responseBody ) ) );
 		try ( ElasticsearchClientImplementor client = createClient() ) {
 			ElasticsearchResponse result = doPost( client, "/myIndex/myType", payload );
 			assertThat( result.statusCode() ).as( "status code" ).isEqualTo( 500 );
-			assertJsonEquals( responseBody, result.body().toString() );
+			assertJsonEquals( responseBody, result.bodyJson().toString() );
 		}
 	}
 
 	@RetryExtension.TestWithRetry
 	void unparseable() {
 		String payload = "{ \"foo\": \"bar\" }";
-		wireMockRule1.stubFor( post( urlPathMatching( "/myIndex/myType" ) )
-				.withRequestBody( equalToJson( payload ) )
-				.willReturn(
-						elasticsearchResponse()
-								.withBody( "'unparseable" )
-				) );
-
+		wireMockRule1.stubFor( post( urlPathMatching( "/myIndex/myType" ) ).withRequestBody( equalToJson( payload ) )
+				.willReturn( elasticsearchResponse().withBody( "'unparseable" ) ) );
 		assertThatThrownBy( () -> {
 			try ( ElasticsearchClientImplementor client = createClient() ) {
 				doPost( client, "/myIndex/myType", payload );
 			}
-		} )
-				.isInstanceOf( AssertionFailure.class )
-				.extracting( Throwable::getCause, InstanceOfAssertFactories.THROWABLE )
+		} ).isInstanceOf( AssertionFailure.class ).extracting( Throwable::getCause, InstanceOfAssertFactories.THROWABLE )
 				.isInstanceOf( CompletionException.class )
-				.extracting( Throwable::getCause, InstanceOfAssertFactories.THROWABLE )
-				.isInstanceOf( SearchException.class )
-				.hasMessageContaining( "HSEARCH400089" )
-				.extracting( Throwable::getCause, InstanceOfAssertFactories.THROWABLE )
-				.isInstanceOf( JsonSyntaxException.class );
+				.extracting( Throwable::getCause, InstanceOfAssertFactories.THROWABLE ).isInstanceOf( SearchException.class )
+				.hasMessageContaining( "HSEARCH400089" ).extracting( Throwable::getCause, InstanceOfAssertFactories.THROWABLE )
+				.isInstanceOf( JsonParseException.class );
 	}
 
 	@RetryExtension.TestWithRetry
 	void timeout_read() {
 		String payload = "{ \"foo\": \"bar\" }";
-		wireMockRule1.stubFor( post( urlPathMatching( "/myIndex/myType" ) )
-				.withRequestBody( equalToJson( payload ) )
-				.willReturn(
-						elasticsearchResponse()
-								.withFixedDelay( 2000 )
-				) );
-
+		wireMockRule1.stubFor( post( urlPathMatching( "/myIndex/myType" ) ).withRequestBody( equalToJson( payload ) )
+				.willReturn( elasticsearchResponse().withFixedDelay( 2000 ) ) );
 		assertThatThrownBy( () -> {
-			try ( ElasticsearchClientImplementor client = createClient(
-					properties -> {
-						properties.accept( ClientRest5ElasticsearchBackendClientSettings.READ_TIMEOUT, "1000" );
-						properties.accept( ClientRest5ElasticsearchBackendClientSettings.REQUEST_TIMEOUT, "99999" );
-					}
-			) ) {
+			try ( ElasticsearchClientImplementor client = createClient( properties -> {
+				properties.accept( ClientRest5ElasticsearchBackendClientSettings.READ_TIMEOUT, "1000" );
+				properties.accept( ClientRest5ElasticsearchBackendClientSettings.REQUEST_TIMEOUT, "99999" );
+			} ) ) {
 				doPost( client, "/myIndex/myType", payload );
 			}
-		} )
-				.isInstanceOf( AssertionFailure.class )
-				.extracting( Throwable::getCause, InstanceOfAssertFactories.THROWABLE )
+		} ).isInstanceOf( AssertionFailure.class ).extracting( Throwable::getCause, InstanceOfAssertFactories.THROWABLE )
 				.isInstanceOf( CompletionException.class )
-				.extracting( Throwable::getCause, InstanceOfAssertFactories.THROWABLE )
-				.isInstanceOf( IOException.class );
+				.extracting( Throwable::getCause, InstanceOfAssertFactories.THROWABLE ).isInstanceOf( IOException.class );
 	}
 
 	@RetryExtension.TestWithRetry
 	void timeout_request() {
 		String payload = "{ \"foo\": \"bar\" }";
-
-		wireMockRule1.stubFor( post( urlPathMatching( "/myIndex/myType" ) )
-				.withRequestBody( equalToJson( payload ) )
-				.willReturn(
-						elasticsearchResponse()
-								.withFixedDelay( 2000 )
-				) );
-
+		wireMockRule1.stubFor( post( urlPathMatching( "/myIndex/myType" ) ).withRequestBody( equalToJson( payload ) )
+				.willReturn( elasticsearchResponse().withFixedDelay( 2000 ) ) );
 		assertThatThrownBy( () -> {
-			try ( ElasticsearchClientImplementor client = createClient(
-					properties -> {
-						properties.accept( ClientRest5ElasticsearchBackendClientSettings.READ_TIMEOUT, "99999" );
-						properties.accept( ClientRest5ElasticsearchBackendClientSettings.REQUEST_TIMEOUT, "1000" );
-					}
-			) ) {
+			try ( ElasticsearchClientImplementor client = createClient( properties -> {
+				properties.accept( ClientRest5ElasticsearchBackendClientSettings.READ_TIMEOUT, "99999" );
+				properties.accept( ClientRest5ElasticsearchBackendClientSettings.REQUEST_TIMEOUT, "1000" );
+			} ) ) {
 				doPost( client, "/myIndex/myType", payload );
 			}
-		} )
-				.isInstanceOf( AssertionFailure.class )
-				.extracting( Throwable::getCause, InstanceOfAssertFactories.THROWABLE )
+		} ).isInstanceOf( AssertionFailure.class ).extracting( Throwable::getCause, InstanceOfAssertFactories.THROWABLE )
 				.isInstanceOf( CompletionException.class )
-				.extracting( Throwable::getCause, InstanceOfAssertFactories.THROWABLE )
-				.isInstanceOf( SearchException.class )
+				.extracting( Throwable::getCause, InstanceOfAssertFactories.THROWABLE ).isInstanceOf( SearchException.class )
 				.hasMessageContainingAll( "Request execution exceeded the timeout of 1s, 0ms and 0ns",
 						"Request was POST /myIndex/myType with parameters {}" );
 	}
@@ -478,31 +369,22 @@ class ClientRest5ElasticsearchClientFactoryIT {
 	@TestForIssue(jiraKey = "HSEARCH-2836")
 	void cloggedClient_noTimeout_read() {
 		String payload = "{ \"foo\": \"bar\" }";
-		wireMockRule1.stubFor( post( urlPathMatching( "/long" ) )
-				.willReturn( elasticsearchResponse()
-						.withFixedDelay( 300 /* 300ms => should not time out, but will still clog up the client */ ) ) );
-		wireMockRule1.stubFor( post( urlPathMatching( "/myIndex/myType" ) )
-				.withRequestBody( equalToJson( payload ) )
-				.willReturn( elasticsearchResponse().withStatus( 200 )
-						.withFixedDelay( 100 /* 100ms => should not time out */ ) ) );
-
-		try ( ElasticsearchClientImplementor client = createClient(
-				properties -> {
-					properties.accept( ElasticsearchBackendSettings.HOSTS, httpHostAndPortFor( wireMockRule1 ) );
-					properties.accept( ClientRest5ElasticsearchBackendClientSettings.MAX_CONNECTIONS_PER_ROUTE, "1" );
-					properties.accept( ClientRest5ElasticsearchBackendClientSettings.READ_TIMEOUT, "1000" /* 1s */ );
-				}
-		) ) {
+		wireMockRule1.stubFor( post( urlPathMatching( "/long" ) ).willReturn( elasticsearchResponse().withFixedDelay( 300 ) ) );
+		wireMockRule1.stubFor( post( urlPathMatching( "/myIndex/myType" ) ).withRequestBody( equalToJson( payload ) )
+				.willReturn( elasticsearchResponse().withStatus( 200 ).withFixedDelay( 100 ) ) );
+		try ( ElasticsearchClientImplementor client = createClient( properties -> {
+			properties.accept( ElasticsearchBackendSettings.HOSTS, httpHostAndPortFor( wireMockRule1 ) );
+			properties.accept( ClientRest5ElasticsearchBackendClientSettings.MAX_CONNECTIONS_PER_ROUTE, "1" );
+			properties.accept( ClientRest5ElasticsearchBackendClientSettings.READ_TIMEOUT, "1000" );
+		} ) ) {
 			// Clog up the client: put many requests in the queue, to be executed asynchronously,
 			// so that we're sure the next request will have to wait in the queue
 			// for more that the configured timeout before it ends up being executed.
 			for ( int i = 0; i < 10; ++i ) {
 				client.submit( buildRequest( ElasticsearchRequest.post(), "/long", payload ) );
 			}
-
 			ElasticsearchResponse result = doPost( client, "/myIndex/myType", payload );
 			assertThat( result.statusCode() ).as( "status code" ).isEqualTo( 200 );
-
 			wireMockRule1.verify( 1, postRequestedFor( urlPathMatching( "/myIndex/myType" ) ) );
 		}
 	}
@@ -515,33 +397,23 @@ class ClientRest5ElasticsearchClientFactoryIT {
 	@TestForIssue(jiraKey = "HSEARCH-2836")
 	void cloggedClient_timeout_request() {
 		String payload = "{ \"foo\": \"bar\" }";
-		wireMockRule1.stubFor( post( urlPathMatching( "/long" ) )
-				.willReturn( elasticsearchResponse()
-						.withFixedDelay( 300 /* 300ms => should not time out, but will still clog up the client */ ) ) );
-		wireMockRule1.stubFor( post( urlPathMatching( "/myIndex/myType" ) )
-				.withRequestBody( equalToJson( payload ) )
-				.willReturn( elasticsearchResponse().withStatus( 200 )
-						.withFixedDelay( 100 /* 100ms => should not time out */ ) ) );
-
-		try ( ElasticsearchClientImplementor client = createClient(
-				properties -> {
-					properties.accept( ElasticsearchBackendSettings.HOSTS, httpHostAndPortFor( wireMockRule1 ) );
-					properties.accept( ClientRest5ElasticsearchBackendClientSettings.MAX_CONNECTIONS_PER_ROUTE, "1" );
-					properties.accept( ClientRest5ElasticsearchBackendClientSettings.REQUEST_TIMEOUT, "1000" /* 1s */ );
-				}
-		) ) {
+		wireMockRule1.stubFor( post( urlPathMatching( "/long" ) ).willReturn( elasticsearchResponse().withFixedDelay( 300 ) ) );
+		wireMockRule1.stubFor( post( urlPathMatching( "/myIndex/myType" ) ).withRequestBody( equalToJson( payload ) )
+				.willReturn( elasticsearchResponse().withStatus( 200 ).withFixedDelay( 100 ) ) );
+		try ( ElasticsearchClientImplementor client = createClient( properties -> {
+			properties.accept( ElasticsearchBackendSettings.HOSTS, httpHostAndPortFor( wireMockRule1 ) );
+			properties.accept( ClientRest5ElasticsearchBackendClientSettings.MAX_CONNECTIONS_PER_ROUTE, "1" );
+			properties.accept( ClientRest5ElasticsearchBackendClientSettings.REQUEST_TIMEOUT, "1000" );
+		} ) ) {
 			// Clog up the client: put many requests in the queue, to be executed asynchronously,
 			// so that we're sure the next request will have to wait in the queue
 			// for more that the configured timeout before it ends up being executed.
 			for ( int i = 0; i < 10; ++i ) {
 				client.submit( buildRequest( ElasticsearchRequest.post(), "/long", payload ) );
 			}
-
 			assertThatThrownBy( () -> {
 				doPost( client, "/myIndex/myType", payload );
-			} )
-					.isInstanceOf( AssertionFailure.class )
-					.extracting( Throwable::getCause, InstanceOfAssertFactories.THROWABLE )
+			} ).isInstanceOf( AssertionFailure.class ).extracting( Throwable::getCause, InstanceOfAssertFactories.THROWABLE )
 					.isInstanceOf( CompletionException.class )
 					.extracting( Throwable::getCause, InstanceOfAssertFactories.THROWABLE )
 					.isInstanceOf( SearchException.class )
@@ -554,24 +426,17 @@ class ClientRest5ElasticsearchClientFactoryIT {
 	@TestForIssue(jiraKey = "HSEARCH-2235")
 	void multipleHosts() {
 		String payload = "{ \"foo\": \"bar\" }";
-		wireMockRule1.stubFor( post( urlPathMatching( "/myIndex/myType" ) )
-				.withRequestBody( equalToJson( payload ) )
+		wireMockRule1.stubFor( post( urlPathMatching( "/myIndex/myType" ) ).withRequestBody( equalToJson( payload ) )
 				.willReturn( elasticsearchResponse().withStatus( 200 ) ) );
-		wireMockRule2.stubFor( post( urlPathMatching( "/myIndex/myType" ) )
-				.withRequestBody( equalToJson( payload ) )
+		wireMockRule2.stubFor( post( urlPathMatching( "/myIndex/myType" ) ).withRequestBody( equalToJson( payload ) )
 				.willReturn( elasticsearchResponse().withStatus( 200 ) ) );
-
-		try ( ElasticsearchClientImplementor client = createClient(
-				properties -> {
-					properties.accept( ElasticsearchBackendSettings.HOSTS,
-							httpHostAndPortFor( wireMockRule1, wireMockRule2 ) );
-				}
-		) ) {
+		try ( ElasticsearchClientImplementor client = createClient( properties -> {
+			properties.accept( ElasticsearchBackendSettings.HOSTS, httpHostAndPortFor( wireMockRule1, wireMockRule2 ) );
+		} ) ) {
 			ElasticsearchResponse result = doPost( client, "/myIndex/myType", payload );
 			assertThat( result.statusCode() ).as( "status code" ).isEqualTo( 200 );
 			result = doPost( client, "/myIndex/myType", payload );
 			assertThat( result.statusCode() ).as( "status code" ).isEqualTo( 200 );
-
 			wireMockRule1.verify( postRequestedFor( urlPathMatching( "/myIndex/myType" ) ) );
 			wireMockRule2.verify( postRequestedFor( urlPathMatching( "/myIndex/myType" ) ) );
 		}
@@ -580,24 +445,17 @@ class ClientRest5ElasticsearchClientFactoryIT {
 	@RetryExtension.TestWithRetry
 	void multipleURIs() {
 		String payload = "{ \"foo\": \"bar\" }";
-		wireMockRule1.stubFor( post( urlPathMatching( "/myIndex/myType" ) )
-				.withRequestBody( equalToJson( payload ) )
+		wireMockRule1.stubFor( post( urlPathMatching( "/myIndex/myType" ) ).withRequestBody( equalToJson( payload ) )
 				.willReturn( elasticsearchResponse().withStatus( 200 ) ) );
-		wireMockRule2.stubFor( post( urlPathMatching( "/myIndex/myType" ) )
-				.withRequestBody( equalToJson( payload ) )
+		wireMockRule2.stubFor( post( urlPathMatching( "/myIndex/myType" ) ).withRequestBody( equalToJson( payload ) )
 				.willReturn( elasticsearchResponse().withStatus( 200 ) ) );
-
-		try ( ElasticsearchClientImplementor client = createClient(
-				properties -> {
-					properties.accept( ElasticsearchBackendSettings.URIS,
-							httpsUrisFor( wireMockRule1, wireMockRule2 ) );
-				}
-		) ) {
+		try ( ElasticsearchClientImplementor client = createClient( properties -> {
+			properties.accept( ElasticsearchBackendSettings.URIS, httpsUrisFor( wireMockRule1, wireMockRule2 ) );
+		} ) ) {
 			ElasticsearchResponse result = doPost( client, "/myIndex/myType", payload );
 			assertThat( result.statusCode() ).as( "status code" ).isEqualTo( 200 );
 			result = doPost( client, "/myIndex/myType", payload );
 			assertThat( result.statusCode() ).as( "status code" ).isEqualTo( 200 );
-
 			wireMockRule1.verify( postRequestedFor( urlPathMatching( "/myIndex/myType" ) ) );
 			wireMockRule2.verify( postRequestedFor( urlPathMatching( "/myIndex/myType" ) ) );
 		}
@@ -607,35 +465,25 @@ class ClientRest5ElasticsearchClientFactoryIT {
 	@TestForIssue(jiraKey = "HSEARCH-2469")
 	void multipleHosts_failover_serverError() {
 		String payload = "{ \"foo\": \"bar\" }";
-		wireMockRule1.stubFor( post( urlPathMatching( "/myIndex/myType" ) )
-				.withRequestBody( equalToJson( payload ) )
+		wireMockRule1.stubFor( post( urlPathMatching( "/myIndex/myType" ) ).withRequestBody( equalToJson( payload ) )
 				.willReturn( elasticsearchResponse().withStatus( 200 ) ) );
-		wireMockRule2.stubFor( post( urlPathMatching( "/myIndex/myType" ) )
-				.withRequestBody( equalToJson( payload ) )
+		wireMockRule2.stubFor( post( urlPathMatching( "/myIndex/myType" ) ).withRequestBody( equalToJson( payload ) )
 				.willReturn( elasticsearchResponse().withStatus( 503 ) ) );
-
-		try ( ElasticsearchClientImplementor client = createClient(
-				properties -> {
-					properties.accept( ElasticsearchBackendSettings.HOSTS,
-							httpHostAndPortFor( wireMockRule1, wireMockRule2 ) );
-				}
-		) ) {
+		try ( ElasticsearchClientImplementor client = createClient( properties -> {
+			properties.accept( ElasticsearchBackendSettings.HOSTS, httpHostAndPortFor( wireMockRule1, wireMockRule2 ) );
+		} ) ) {
 			ElasticsearchResponse result = doPost( client, "/myIndex/myType", payload );
 			assertThat( result.statusCode() ).as( "status code" ).isEqualTo( 200 );
 			result = doPost( client, "/myIndex/myType", payload );
 			assertThat( result.statusCode() ).as( "status code" ).isEqualTo( 200 );
-
 			wireMockRule1.verify( 2, postRequestedFor( urlPathMatching( "/myIndex/myType" ) ) );
 			wireMockRule2.verify( 2, postRequestedFor( urlPathMatching( "/myIndex/myType" ) ) );
-
 			wireMockRule1.resetRequests();
 			wireMockRule2.resetRequests();
-
 			result = doPost( client, "/myIndex/myType", payload );
 			assertThat( result.statusCode() ).as( "status code" ).isEqualTo( 200 );
 			result = doPost( client, "/myIndex/myType", payload );
 			assertThat( result.statusCode() ).as( "status code" ).isEqualTo( 200 );
-
 			// Must not use the failing node anymore
 			wireMockRule1.verify( 2, postRequestedFor( urlPathMatching( "/myIndex/myType" ) ) );
 			wireMockRule2.verify( 0, postRequestedFor( urlPathMatching( "/myIndex/myType" ) ) );
@@ -646,46 +494,34 @@ class ClientRest5ElasticsearchClientFactoryIT {
 	@TestForIssue(jiraKey = "HSEARCH-2469")
 	void multipleHosts_failover_timeout() {
 		String payload = "{ \"foo\": \"bar\" }";
-		wireMockRule1.stubFor( post( urlPathMatching( "/myIndex/myType" ) )
-				.withRequestBody( equalToJson( payload ) )
+		wireMockRule1.stubFor( post( urlPathMatching( "/myIndex/myType" ) ).withRequestBody( equalToJson( payload ) )
 				.willReturn( elasticsearchResponse().withStatus( 200 ) ) );
-		wireMockRule2.stubFor( post( urlPathMatching( "/myIndex/myType" ) )
-				.withRequestBody( equalToJson( payload ) )
-				.willReturn( elasticsearchResponse().withStatus( 200 ).withFixedDelay( 5_000 /* 5s => will time out */ ) ) );
-
-		try ( ElasticsearchClientImplementor client = createClient(
-				properties -> {
-					properties.accept( ElasticsearchBackendSettings.HOSTS,
-							httpHostAndPortFor( wireMockRule1, wireMockRule2 ) );
-					// Use a timeout much higher than 1s, because wiremock can be really slow...
-					properties.accept( ClientRest5ElasticsearchBackendClientSettings.READ_TIMEOUT, "1000" /* 1s */ );
-				}
-		) ) {
+		wireMockRule2.stubFor( post( urlPathMatching( "/myIndex/myType" ) ).withRequestBody( equalToJson( payload ) )
+				.willReturn( elasticsearchResponse().withStatus( 200 ).withFixedDelay( 5_000 ) ) );
+		try ( ElasticsearchClientImplementor client = createClient( properties -> {
+			properties.accept( ElasticsearchBackendSettings.HOSTS, httpHostAndPortFor( wireMockRule1, wireMockRule2 ) );
+			// Use a timeout much higher than 1s, because wiremock can be really slow...
+			properties.accept( ClientRest5ElasticsearchBackendClientSettings.READ_TIMEOUT, "1000" );
+		} ) ) {
 			ElasticsearchResponse result = doPost( client, "/myIndex/myType", payload );
 			assertThat( result.statusCode() ).as( "status code" ).isEqualTo( 200 );
 			result = doPost( client, "/myIndex/myType", payload );
 			assertThat( result.statusCode() ).as( "status code" ).isEqualTo( 200 );
-
 			wireMockRule1.verify( 2, postRequestedFor( urlPathMatching( "/myIndex/myType" ) ) );
 			wireMockRule2.verify( 1, postRequestedFor( urlPathMatching( "/myIndex/myType" ) ) );
-
 			wireMockRule1.resetRequests();
 			wireMockRule2.resetRequests();
-
 			/*
 			 * Remove the failure in the previously failing node,
 			 * so that we can detect if requests are sent to this node.
 			 */
 			wireMockRule2.resetMappings();
-			wireMockRule2.stubFor( post( urlPathMatching( "/myIndex/myType" ) )
-					.withRequestBody( equalToJson( payload ) )
+			wireMockRule2.stubFor( post( urlPathMatching( "/myIndex/myType" ) ).withRequestBody( equalToJson( payload ) )
 					.willReturn( elasticsearchResponse().withStatus( 200 ) ) );
-
 			result = doPost( client, "/myIndex/myType", payload );
 			assertThat( result.statusCode() ).as( "status code" ).isEqualTo( 200 );
 			result = doPost( client, "/myIndex/myType", payload );
 			assertThat( result.statusCode() ).as( "status code" ).isEqualTo( 200 );
-
 			// Must not use the failing node anymore
 			wireMockRule1.verify( 2, postRequestedFor( urlPathMatching( "/myIndex/myType" ) ) );
 			wireMockRule2.verify( 0, postRequestedFor( urlPathMatching( "/myIndex/myType" ) ) );
@@ -696,35 +532,25 @@ class ClientRest5ElasticsearchClientFactoryIT {
 	@TestForIssue(jiraKey = "HSEARCH-2469")
 	void multipleHosts_failover_fault() {
 		String payload = "{ \"foo\": \"bar\" }";
-		wireMockRule1.stubFor( post( urlPathMatching( "/myIndex/myType" ) )
-				.withRequestBody( equalToJson( payload ) )
+		wireMockRule1.stubFor( post( urlPathMatching( "/myIndex/myType" ) ).withRequestBody( equalToJson( payload ) )
 				.willReturn( elasticsearchResponse().withStatus( 200 ) ) );
-		wireMockRule2.stubFor( post( urlPathMatching( "/myIndex/myType" ) )
-				.withRequestBody( equalToJson( payload ) )
+		wireMockRule2.stubFor( post( urlPathMatching( "/myIndex/myType" ) ).withRequestBody( equalToJson( payload ) )
 				.willReturn( elasticsearchResponse().withStatus( 200 ).withFault( Fault.MALFORMED_RESPONSE_CHUNK ) ) );
-
-		try ( ElasticsearchClientImplementor client = createClient(
-				properties -> {
-					properties.accept( ElasticsearchBackendSettings.HOSTS,
-							httpHostAndPortFor( wireMockRule1, wireMockRule2 ) );
-				}
-		) ) {
+		try ( ElasticsearchClientImplementor client = createClient( properties -> {
+			properties.accept( ElasticsearchBackendSettings.HOSTS, httpHostAndPortFor( wireMockRule1, wireMockRule2 ) );
+		} ) ) {
 			ElasticsearchResponse result = doPost( client, "/myIndex/myType", payload );
 			assertThat( result.statusCode() ).as( "status code" ).isEqualTo( 200 );
 			result = doPost( client, "/myIndex/myType", payload );
 			assertThat( result.statusCode() ).as( "status code" ).isEqualTo( 200 );
-
 			wireMockRule1.verify( 2, postRequestedFor( urlPathMatching( "/myIndex/myType" ) ) );
 			wireMockRule2.verify( 1, postRequestedFor( urlPathMatching( "/myIndex/myType" ) ) );
-
 			wireMockRule1.resetRequests();
 			wireMockRule2.resetRequests();
-
 			result = doPost( client, "/myIndex/myType", payload );
 			assertThat( result.statusCode() ).as( "status code" ).isEqualTo( 200 );
 			result = doPost( client, "/myIndex/myType", payload );
 			assertThat( result.statusCode() ).as( "status code" ).isEqualTo( 200 );
-
 			// Must not use the failing node anymore
 			wireMockRule1.verify( 2, postRequestedFor( urlPathMatching( "/myIndex/myType" ) ) );
 			wireMockRule2.verify( 0, postRequestedFor( urlPathMatching( "/myIndex/myType" ) ) );
@@ -737,33 +563,21 @@ class ClientRest5ElasticsearchClientFactoryIT {
 		assumeTrue( ElasticsearchTckBackendFeatures.supportsVersionCheck(),
 				"Elasticsearch REST Client based on Apache HTTP client 5 requires version when sniffer is parsing responses." );
 		String nodesInfoResult = dummyNodeInfoResponse( wireMockRule1.getPort(), wireMockRule2.getPort() );
-
-		wireMockRule1.stubFor( get( urlPathMatching( "/_nodes.*" ) )
-				.andMatching( httpProtocol() )
+		wireMockRule1.stubFor( get( urlPathMatching( "/_nodes.*" ) ).andMatching( httpProtocol() )
 				.willReturn( elasticsearchResponse().withStatus( 200 ).withBody( nodesInfoResult ) ) );
-		wireMockRule2.stubFor( get( urlPathMatching( "/_nodes.*" ) )
-				.andMatching( httpProtocol() )
+		wireMockRule2.stubFor( get( urlPathMatching( "/_nodes.*" ) ).andMatching( httpProtocol() )
 				.willReturn( elasticsearchResponse().withStatus( 200 ).withBody( nodesInfoResult ) ) );
-
 		String payload = "{ \"foo\": \"bar\" }";
-		wireMockRule1.stubFor( post( urlPathMatching( "/myIndex/myType" ) )
-				.withRequestBody( equalToJson( payload ) )
-				.andMatching( httpProtocol() )
-				.willReturn( elasticsearchResponse().withStatus( 200 ) ) );
-		wireMockRule2.stubFor( post( urlPathMatching( "/myIndex/myType" ) )
-				.withRequestBody( equalToJson( payload ) )
-				.andMatching( httpProtocol() )
-				.willReturn( elasticsearchResponse().withStatus( 200 ) ) );
-
-		try ( ElasticsearchClientImplementor client = createClient(
-				properties -> {
-					properties.accept( ClientRest5ElasticsearchBackendClientSettings.DISCOVERY_ENABLED, "true" );
-					properties.accept( ClientRest5ElasticsearchBackendClientSettings.DISCOVERY_REFRESH_INTERVAL, "1" );
-				}
-		) ) {
+		wireMockRule1.stubFor( post( urlPathMatching( "/myIndex/myType" ) ).withRequestBody( equalToJson( payload ) )
+				.andMatching( httpProtocol() ).willReturn( elasticsearchResponse().withStatus( 200 ) ) );
+		wireMockRule2.stubFor( post( urlPathMatching( "/myIndex/myType" ) ).withRequestBody( equalToJson( payload ) )
+				.andMatching( httpProtocol() ).willReturn( elasticsearchResponse().withStatus( 200 ) ) );
+		try ( ElasticsearchClientImplementor client = createClient( properties -> {
+			properties.accept( ClientRest5ElasticsearchBackendClientSettings.DISCOVERY_ENABLED, "true" );
+			properties.accept( ClientRest5ElasticsearchBackendClientSettings.DISCOVERY_REFRESH_INTERVAL, "1" );
+		} ) ) {
 			ElasticsearchResponse result = doPost( client, "/myIndex/myType", payload );
 			assertThat( result.statusCode() ).as( "status code" ).isEqualTo( 200 );
-
 			/*
 			 * Send requests repeatedly until both hosts have been targeted.
 			 * This should happen pretty early (as soon as we sent two requests, actually),
@@ -774,15 +588,8 @@ class ClientRest5ElasticsearchClientFactoryIT {
 			await().untilAsserted( () -> {
 				ElasticsearchResponse newResult = doPost( client, "/myIndex/myType", payload );
 				assertThat( newResult.statusCode() ).as( "status code" ).isEqualTo( 200 );
-
-				wireMockRule2.verify(
-						postRequestedFor( urlPathMatching( "/myIndex/myType" ) )
-								.andMatching( httpProtocol() )
-				);
-				wireMockRule2.verify(
-						postRequestedFor( urlPathMatching( "/myIndex/myType" ) )
-								.andMatching( httpProtocol() )
-				);
+				wireMockRule2.verify( postRequestedFor( urlPathMatching( "/myIndex/myType" ) ).andMatching( httpProtocol() ) );
+				wireMockRule2.verify( postRequestedFor( urlPathMatching( "/myIndex/myType" ) ).andMatching( httpProtocol() ) );
 			} );
 		}
 	}
@@ -793,32 +600,21 @@ class ClientRest5ElasticsearchClientFactoryIT {
 		assumeTrue( ElasticsearchTckBackendFeatures.supportsVersionCheck(),
 				"Elasticsearch REST Client based on Apache HTTP client 5 requires version when sniffer is parsing responses." );
 		String nodesInfoResult = dummyNodeInfoResponse( wireMockRule1.getHttpsPort(), wireMockRule2.getHttpsPort() );
-
-		wireMockRule1.stubFor( get( urlPathMatching( "/_nodes.*" ) )
-				.andMatching( httpsProtocol() )
+		wireMockRule1.stubFor( get( urlPathMatching( "/_nodes.*" ) ).andMatching( httpsProtocol() )
 				.willReturn( elasticsearchResponse().withStatus( 200 ).withBody( nodesInfoResult ) ) );
-		wireMockRule2.stubFor( get( urlPathMatching( "/_nodes.*" ) )
-				.andMatching( httpsProtocol() )
+		wireMockRule2.stubFor( get( urlPathMatching( "/_nodes.*" ) ).andMatching( httpsProtocol() )
 				.willReturn( elasticsearchResponse().withStatus( 200 ).withBody( nodesInfoResult ) ) );
-
 		String payload = "{ \"foo\": \"bar\" }";
-		wireMockRule1.stubFor( post( urlPathMatching( "/myIndex/myType" ) )
-				.withRequestBody( equalToJson( payload ) )
-				.andMatching( httpsProtocol() )
-				.willReturn( elasticsearchResponse().withStatus( 200 ) ) );
-		wireMockRule2.stubFor( post( urlPathMatching( "/myIndex/myType" ) )
-				.withRequestBody( equalToJson( payload ) )
-				.andMatching( httpsProtocol() )
-				.willReturn( elasticsearchResponse().withStatus( 200 ) ) );
-
-		try ( ElasticsearchClientImplementor client = createClient(
-				properties -> {
-					properties.accept( ElasticsearchBackendSettings.HOSTS, httpsHostAndPortFor( wireMockRule1 ) );
-					properties.accept( ElasticsearchBackendSettings.PROTOCOL, "https" );
-					properties.accept( ClientRest5ElasticsearchBackendClientSettings.DISCOVERY_ENABLED, "true" );
-					properties.accept( ClientRest5ElasticsearchBackendClientSettings.DISCOVERY_REFRESH_INTERVAL, "1" );
-				}
-		) ) {
+		wireMockRule1.stubFor( post( urlPathMatching( "/myIndex/myType" ) ).withRequestBody( equalToJson( payload ) )
+				.andMatching( httpsProtocol() ).willReturn( elasticsearchResponse().withStatus( 200 ) ) );
+		wireMockRule2.stubFor( post( urlPathMatching( "/myIndex/myType" ) ).withRequestBody( equalToJson( payload ) )
+				.andMatching( httpsProtocol() ).willReturn( elasticsearchResponse().withStatus( 200 ) ) );
+		try ( ElasticsearchClientImplementor client = createClient( properties -> {
+			properties.accept( ElasticsearchBackendSettings.HOSTS, httpsHostAndPortFor( wireMockRule1 ) );
+			properties.accept( ElasticsearchBackendSettings.PROTOCOL, "https" );
+			properties.accept( ClientRest5ElasticsearchBackendClientSettings.DISCOVERY_ENABLED, "true" );
+			properties.accept( ClientRest5ElasticsearchBackendClientSettings.DISCOVERY_REFRESH_INTERVAL, "1" );
+		} ) ) {
 			/*
 			 * Send requests repeatedly until both hosts have been targeted.
 			 * This should happen pretty early (as soon as we sent two requests, actually),
@@ -829,15 +625,8 @@ class ClientRest5ElasticsearchClientFactoryIT {
 			await().untilAsserted( () -> {
 				ElasticsearchResponse newResult = doPost( client, "/myIndex/myType", payload );
 				assertThat( newResult.statusCode() ).as( "status code" ).isEqualTo( 200 );
-
-				wireMockRule2.verify(
-						postRequestedFor( urlPathMatching( "/myIndex/myType" ) )
-								.andMatching( httpsProtocol() )
-				);
-				wireMockRule2.verify(
-						postRequestedFor( urlPathMatching( "/myIndex/myType" ) )
-								.andMatching( httpsProtocol() )
-				);
+				wireMockRule2.verify( postRequestedFor( urlPathMatching( "/myIndex/myType" ) ).andMatching( httpsProtocol() ) );
+				wireMockRule2.verify( postRequestedFor( urlPathMatching( "/myIndex/myType" ) ).andMatching( httpsProtocol() ) );
 			} );
 		}
 	}
@@ -852,6 +641,7 @@ class ClientRest5ElasticsearchClientFactoryIT {
 
 	private static RequestMatcherExtension protocol(String protocol) {
 		return new RequestMatcherExtension() {
+
 			@Override
 			public MatchResult match(Request request, Parameters parameters) {
 				return MatchResult.of( protocol.equals( request.getScheme() ) );
@@ -867,33 +657,22 @@ class ClientRest5ElasticsearchClientFactoryIT {
 	@RetryExtension.TestWithRetry
 	@TestForIssue(jiraKey = "HSEARCH-2453")
 	void authentication() {
-		assumeFalse(
-				ElasticsearchTestHostConnectionConfiguration.get().isAws(),
-				"This test only is only relevant if Elasticsearch request are *NOT* automatically" +
-						" augmented with an \"Authentication:\" header." +
-						" \"Authentication:\" headers are added by the AWS integration in particular."
-		);
+		assumeFalse( ElasticsearchTestHostConnectionConfiguration.get().isAws(),
+				"This test only is only relevant if Elasticsearch request are *NOT* automatically"
+						+ " augmented with an \"Authentication:\" header."
+						+ " \"Authentication:\" headers are added by the AWS integration in particular." );
 		String username = "ironman";
 		String password = "j@rV1s";
-
 		String payload = "{ \"foo\": \"bar\" }";
-
-		wireMockRule1.stubFor( post( urlPathMatching( "/myIndex/myType/_search" ) )
-				.withRequestBody( equalToJson( payload ) )
-				.willReturn( elasticsearchResponse().withStatus( 401 )
-						.withHeader( "www-authenticate", "Basic realm=\"IT Realm\"" ) ) );
-
-		wireMockRule1.stubFor( post( urlPathMatching( "/myIndex/myType/_search" ) )
-				.withBasicAuth( username, password )
-				.withRequestBody( equalToJson( payload ) )
-				.willReturn( elasticsearchResponse().withStatus( 200 ) ) );
-
-		try ( ElasticsearchClientImplementor client = createClient(
-				properties -> {
-					properties.accept( ElasticsearchBackendSettings.USERNAME, username );
-					properties.accept( ElasticsearchBackendSettings.PASSWORD, password );
-				}
-		) ) {
+		wireMockRule1.stubFor( post( urlPathMatching( "/myIndex/myType/_search" ) ).withRequestBody( equalToJson( payload ) )
+				.willReturn( elasticsearchResponse().withStatus( 401 ).withHeader( "www-authenticate",
+						"Basic realm=\"IT Realm\"" ) ) );
+		wireMockRule1.stubFor( post( urlPathMatching( "/myIndex/myType/_search" ) ).withBasicAuth( username, password )
+				.withRequestBody( equalToJson( payload ) ).willReturn( elasticsearchResponse().withStatus( 200 ) ) );
+		try ( ElasticsearchClientImplementor client = createClient( properties -> {
+			properties.accept( ElasticsearchBackendSettings.USERNAME, username );
+			properties.accept( ElasticsearchBackendSettings.PASSWORD, password );
+		} ) ) {
 			ElasticsearchResponse result = doPost( client, "/myIndex/myType/_search", payload );
 			assertThat( result.statusCode() ).as( "status code" ).isEqualTo( 200 );
 		}
@@ -904,13 +683,8 @@ class ClientRest5ElasticsearchClientFactoryIT {
 	void authentication_error() {
 		String payload = "{ \"foo\": \"bar\" }";
 		String statusMessage = "Unauthorized";
-		wireMockRule1.stubFor( post( urlPathMatching( "/myIndex/myType/_search" ) )
-				.withRequestBody( equalToJson( payload ) )
-				.willReturn(
-						elasticsearchResponse().withStatus( 401 /* Unauthorized */ )
-								.withStatusMessage( statusMessage )
-				) );
-
+		wireMockRule1.stubFor( post( urlPathMatching( "/myIndex/myType/_search" ) ).withRequestBody( equalToJson( payload ) )
+				.willReturn( elasticsearchResponse().withStatus( 401 ).withStatusMessage( statusMessage ) ) );
 		try ( ElasticsearchClientImplementor client = createClient() ) {
 			ElasticsearchResponse result = doPost( client, "/myIndex/myType/_search", payload );
 			assertThat( result.statusCode() ).as( "status code" ).isEqualTo( 401 );
@@ -923,15 +697,11 @@ class ClientRest5ElasticsearchClientFactoryIT {
 	void authentication_http_password() {
 		String username = "ironman";
 		String password = "j@rV1s";
-
 		logged.expectEvent( Level.WARN, "The password will be sent in clear text over the network" );
-
-		try ( ElasticsearchClientImplementor client = createClient(
-				properties -> {
-					properties.accept( ElasticsearchBackendSettings.USERNAME, username );
-					properties.accept( ElasticsearchBackendSettings.PASSWORD, password );
-				}
-		) ) {
+		try ( ElasticsearchClientImplementor client = createClient( properties -> {
+			properties.accept( ElasticsearchBackendSettings.USERNAME, username );
+			properties.accept( ElasticsearchBackendSettings.PASSWORD, password );
+		} ) ) {
 			// Nothing to do here
 		}
 	}
@@ -942,16 +712,11 @@ class ClientRest5ElasticsearchClientFactoryIT {
 			properties.accept( ElasticsearchBackendSettings.URIS, "http://is-not-called:12345" );
 			properties.accept( ElasticsearchBackendSettings.PROTOCOL, "http" );
 		};
-
-		assertThatThrownBy( () -> createClient( additionalProperties ) )
-				.isInstanceOf( SearchException.class )
-				.hasMessageContainingAll(
-						"Invalid target hosts configuration",
-						"both the 'uris' property and the 'protocol' property are set",
-						"Uris: '[http://is-not-called:12345]'", "Protocol: 'http'",
-						"Either set the protocol and hosts simultaneously using the 'uris' property",
-						"or set them separately using the 'protocol' property and the 'hosts' property"
-				);
+		assertThatThrownBy( () -> createClient( additionalProperties ) ).isInstanceOf( SearchException.class )
+				.hasMessageContainingAll( "Invalid target hosts configuration",
+						"both the 'uris' property and the 'protocol' property are set", "Uris: '[http://is-not-called:12345]'",
+						"Protocol: 'http'", "Either set the protocol and hosts simultaneously using the 'uris' property",
+						"or set them separately using the 'protocol' property and the 'hosts' property" );
 	}
 
 	@RetryExtension.TestWithRetry
@@ -960,32 +725,26 @@ class ClientRest5ElasticsearchClientFactoryIT {
 			properties.accept( ElasticsearchBackendSettings.URIS, "http://is-not-called:12345" );
 			properties.accept( ElasticsearchBackendSettings.HOSTS, "not-called-either:234" );
 		};
-
-		assertThatThrownBy( () -> createClient( additionalProperties ) )
-				.isInstanceOf( SearchException.class )
-				.hasMessageContainingAll(
-						"Invalid target hosts configuration",
-						"both the 'uris' property and the 'hosts' property are set",
-						"Uris: '[http://is-not-called:12345]'", "Hosts: '[", // host and port are dynamic
-						"Either set the protocol and hosts simultaneously using the 'uris' property",
-						"or set them separately using the 'protocol' property and the 'hosts' property"
-				);
+		// host and port are dynamic
+		// host and port are dynamic
+		assertThatThrownBy( () -> createClient( additionalProperties ) ).isInstanceOf( SearchException.class ).// host and port are dynamic
+				hasMessageContainingAll( // host and port are dynamic
+						"Invalid target hosts configuration", // host and port are dynamic
+						"both the 'uris' property and the 'hosts' property are set", "Uris: '[http://is-not-called:12345]'",
+						"Hosts: '[", "Either set the protocol and hosts simultaneously using the 'uris' property",
+						"or set them separately using the 'protocol' property and the 'hosts' property" );
 	}
 
 	@RetryExtension.TestWithRetry
 	void differentProtocolsOnUris() {
 		Consumer<BiConsumer<String, Object>> additionalProperties = properties -> {
-			properties.accept( ElasticsearchBackendSettings.URIS,
-					"http://is-not-called:12345, https://neather-is:12345" );
+			properties.accept( ElasticsearchBackendSettings.URIS, "http://is-not-called:12345, https://neather-is:12345" );
 		};
-
-		assertThatThrownBy( () -> createClient( additionalProperties ) )
-				.isInstanceOf( SearchException.class )
+		assertThatThrownBy( () -> createClient( additionalProperties ) ).isInstanceOf( SearchException.class )
 				.hasMessageContainingAll(
 						"Invalid target hosts configuration: the 'uris' use different protocols (http, https)",
 						"All URIs must use the same protocol",
-						"Uris: '[http://is-not-called:12345, https://neather-is:12345]'"
-				);
+						"Uris: '[http://is-not-called:12345, https://neather-is:12345]'" );
 	}
 
 	@RetryExtension.TestWithRetry
@@ -993,12 +752,8 @@ class ClientRest5ElasticsearchClientFactoryIT {
 		Consumer<BiConsumer<String, Object>> additionalProperties = properties -> {
 			properties.accept( ElasticsearchBackendSettings.URIS, Collections.emptyList() );
 		};
-
-		assertThatThrownBy( () -> createClient( additionalProperties ) )
-				.isInstanceOf( SearchException.class )
-				.hasMessageContaining(
-						"Invalid target hosts configuration: the list of URIs must not be empty"
-				);
+		assertThatThrownBy( () -> createClient( additionalProperties ) ).isInstanceOf( SearchException.class )
+				.hasMessageContaining( "Invalid target hosts configuration: the list of URIs must not be empty" );
 	}
 
 	@RetryExtension.TestWithRetry
@@ -1006,12 +761,8 @@ class ClientRest5ElasticsearchClientFactoryIT {
 		Consumer<BiConsumer<String, Object>> additionalProperties = properties -> {
 			properties.accept( ElasticsearchBackendSettings.HOSTS, Collections.emptyList() );
 		};
-
-		assertThatThrownBy( () -> createClient( additionalProperties ) )
-				.isInstanceOf( SearchException.class )
-				.hasMessageContaining(
-						"Invalid target hosts configuration: the list of hosts must not be empty"
-				);
+		assertThatThrownBy( () -> createClient( additionalProperties ) ).isInstanceOf( SearchException.class )
+				.hasMessageContaining( "Invalid target hosts configuration: the list of hosts must not be empty" );
 	}
 
 	@RetryExtension.TestWithRetry
@@ -1020,13 +771,9 @@ class ClientRest5ElasticsearchClientFactoryIT {
 			String payload = "{ \"foo\": \"bar\" }";
 			String statusMessage = "OK";
 			String responseBody = "{ \"foo\": \"bar\" }";
-			wireMockRule1.stubFor( post( urlPathMatching( "/myIndex/myType" ) )
-					.withRequestBody( equalToJson( payload ) )
-					.andMatching( httpProtocol() )
-					.willReturn( elasticsearchResponse().withStatus( 200 )
-							.withStatusMessage( statusMessage )
-							.withBody( responseBody ) ) );
-
+			wireMockRule1.stubFor( post( urlPathMatching( "/myIndex/myType" ) ).withRequestBody( equalToJson( payload ) )
+					.andMatching( httpProtocol() ).willReturn( elasticsearchResponse().withStatus( 200 )
+							.withStatusMessage( statusMessage ).withBody( responseBody ) ) );
 			try ( ElasticsearchClientImplementor client = createClient( properties -> {
 				properties.accept( ClientRest5ElasticsearchBackendClientSpiSettings.CLIENT_INSTANCE,
 						BeanReference.ofInstance( myRestClient ) );
@@ -1034,14 +781,9 @@ class ClientRest5ElasticsearchClientFactoryIT {
 				ElasticsearchResponse result = doPost( client, "/myIndex/myType", payload );
 				assertThat( result.statusCode() ).as( "status code" ).isEqualTo( 200 );
 				assertThat( result.statusMessage() ).as( "status message" ).isEqualTo( statusMessage );
-				assertJsonEquals( responseBody, result.body().toString() );
-
-				wireMockRule1.verify(
-						postRequestedFor( urlPathMatching( "/myIndex/myType" ) )
-								.andMatching( httpProtocol() )
-				);
+				assertJsonEquals( responseBody, result.bodyJson().toString() );
+				wireMockRule1.verify( postRequestedFor( urlPathMatching( "/myIndex/myType" ) ).andMatching( httpProtocol() ) );
 			}
-
 			// Hibernate Search must not close provided client instances
 			assertThat( myRestClient ).returns( true, Rest5Client::isRunning );
 		}
@@ -1049,15 +791,10 @@ class ClientRest5ElasticsearchClientFactoryIT {
 
 	@RetryExtension.TestWithRetry
 	void maxKeepAliveNegativeValue() {
-		assertThatThrownBy( () -> createClient(
-				properties -> {
-					properties.accept( ClientRest5ElasticsearchBackendClientSettings.MAX_KEEP_ALIVE, -1 );
-				}
-		) ).isInstanceOf( SearchException.class )
-				.hasMessageContainingAll(
-						"Invalid value for configuration property",
-						"must be positive or zero"
-				);
+		assertThatThrownBy( () -> createClient( properties -> {
+			properties.accept( ClientRest5ElasticsearchBackendClientSettings.MAX_KEEP_ALIVE, -1 );
+		} ) ).isInstanceOf( SearchException.class ).hasMessageContainingAll( "Invalid value for configuration property",
+				"must be positive or zero" );
 	}
 
 	@RetryExtension.TestWithRetry
@@ -1074,68 +811,45 @@ class ClientRest5ElasticsearchClientFactoryIT {
 		String payload = "{ \"foo\": \"bar\" }";
 		String statusMessage = "OK";
 		String responseBody = "{ \"foo\": \"bar\" }";
-		wireMockRule1.stubFor( post( urlPathMatching( "/myIndex/myType" ) )
-				.withRequestBody( equalToJson( payload ) )
-				.andMatching( httpProtocol() )
-				.willReturn( elasticsearchResponse().withStatus( 200 )
-						.withStatusMessage( statusMessage )
-						.withBody( responseBody ) ) );
-
+		wireMockRule1.stubFor( post( urlPathMatching( "/myIndex/myType" ) ).withRequestBody( equalToJson( payload ) )
+				.andMatching( httpProtocol() ).willReturn( elasticsearchResponse().withStatus( 200 )
+						.withStatusMessage( statusMessage ).withBody( responseBody ) ) );
 		Set<String> usedConnections = Collections.synchronizedSet( new HashSet<>() );
 		try ( ElasticsearchClientImplementor client = createClient( properties -> {
 			properties.accept( ClientRest5ElasticsearchBackendClientSettings.MAX_KEEP_ALIVE, time );
-			properties.accept(
-					ClientRest5ElasticsearchBackendClientSettings.CLIENT_CONFIGURER,
+			properties.accept( ClientRest5ElasticsearchBackendClientSettings.CLIENT_CONFIGURER,
 					(ElasticsearchHttpClientConfigurer) context -> {
 						context.clientBuilder()
 								.setConnectionManager( createPoolManager( usedConnections, connections, connections ) );
-					}
-			);
+					} );
 		} ) ) {
-
 			ElasticsearchResponse result = doPost( client, "/myIndex/myType", payload );
 			assertThat( result.statusCode() ).as( "status code" ).isEqualTo( 200 );
 			assertThat( result.statusMessage() ).as( "status message" ).isEqualTo( statusMessage );
-			assertJsonEquals( responseBody, result.body().toString() );
-
-			wireMockRule1.verify(
-					postRequestedFor( urlPathMatching( "/myIndex/myType" ) )
-							.andMatching( httpProtocol() )
-			);
-
+			assertJsonEquals( responseBody, result.bodyJson().toString() );
+			wireMockRule1.verify( postRequestedFor( urlPathMatching( "/myIndex/myType" ) ).andMatching( httpProtocol() ) );
 			TimeUnit.SECONDS.sleep( 2 );
-
 			result = doPost( client, "/myIndex/myType", payload );
 			assertThat( result.statusCode() ).as( "status code" ).isEqualTo( 200 );
 			assertThat( result.statusMessage() ).as( "status message" ).isEqualTo( statusMessage );
-			assertJsonEquals( responseBody, result.body().toString() );
-
-			wireMockRule1.verify(
-					postRequestedFor( urlPathMatching( "/myIndex/myType" ) )
-							.andMatching( httpProtocol() )
-			);
-
+			assertJsonEquals( responseBody, result.bodyJson().toString() );
+			wireMockRule1.verify( postRequestedFor( urlPathMatching( "/myIndex/myType" ) ).andMatching( httpProtocol() ) );
 			assertThat( usedConnections ).hasSize( connections );
 		}
 	}
 
 	private AsyncClientConnectionManager createPoolManager(Set<String> connections, int maxConnTotal, int maxConnPerRoute) {
-		PoolingAsyncClientConnectionManager delegate = PoolingAsyncClientConnectionManagerBuilder.create()
-				.setMaxConnTotal( maxConnTotal )
-				.setMaxConnPerRoute( maxConnPerRoute )
-				.setTlsStrategy(
-						ClientTlsStrategyBuilder.create()
-								.setSslContext( buildAllowAnythingSSLContext() )
-								// Since httpclient5 5.6.4, the built-in hostname verification is actually applied to the engine
-								// (previously it was set after the parameters were copied to the engine and had no effect).
-								// Use CLIENT policy so that only the noop verifier below runs, keeping WireMock's self-signed cert accepted.
-								.setHostVerificationPolicy( HostnameVerificationPolicy.CLIENT )
-								.setHostnameVerifier( org.apache.http.conn.ssl.NoopHostnameVerifier.INSTANCE )
-								.buildAsync()
-				)
-				.build();
-
+		PoolingAsyncClientConnectionManager delegate = // Since httpclient5 5.6.4, the built-in hostname verification is actually applied to the engine
+				PoolingAsyncClientConnectionManagerBuilder.create().setMaxConnTotal( maxConnTotal )
+						.setMaxConnPerRoute( maxConnPerRoute ).// Since httpclient5 5.6.4, the built-in hostname verification is actually applied to the engine
+						setTlsStrategy( // (previously it was set after the parameters were copied to the engine and had no effect).
+								ClientTlsStrategyBuilder.create().setSslContext( buildAllowAnythingSSLContext() ).// Use CLIENT policy so that only the noop verifier below runs, keeping WireMock's self-signed cert accepted.
+										setHostVerificationPolicy( HostnameVerificationPolicy.CLIENT )
+										.setHostnameVerifier( org.apache.http.conn.ssl.NoopHostnameVerifier.INSTANCE )
+										.buildAsync() )
+						.build();
 		return new AsyncClientConnectionManager() {
+
 			private Field poolEntryRef;
 
 			@Override
@@ -1164,7 +878,6 @@ class ClientRest5ElasticsearchClientFactoryIT {
 					}
 					AtomicReference<PoolEntry<?, ?>> ref = (AtomicReference<PoolEntry<?, ?>>) poolEntryRef.get( endpoint );
 					connections.add( ref.get().getConnection().toString() );
-
 				}
 				catch (NoSuchFieldException | IllegalAccessException e) {
 					fail( e.getMessage(), e );
@@ -1186,50 +899,38 @@ class ClientRest5ElasticsearchClientFactoryIT {
 		};
 	}
 
-	@SuppressWarnings("unused") // For EJC and lambda arg
+	// For EJC and lambda arg
+	@SuppressWarnings("unused")
 	private ElasticsearchClientImplementor createClient() {
 		return createClient( ignored -> {} );
 	}
 
 	private ElasticsearchClientImplementor createClient(Consumer<BiConsumer<String, Object>> additionalProperties) {
-		Map<String, ?> defaultBackendProperties =
-				new ElasticsearchTckBackendHelper().createDefaultBackendSetupStrategy()
-						.createBackendConfigurationProperties( testConfigurationProvider );
-
+		Map<String, ?> defaultBackendProperties = new ElasticsearchTckBackendHelper().createDefaultBackendSetupStrategy()
+				.createBackendConfigurationProperties( testConfigurationProvider );
 		Map<String, Object> clientProperties = new HashMap<>( defaultBackendProperties );
-
 		// We won't target the provided ES instance, but Wiremock
 		clientProperties.remove( ElasticsearchBackendSettings.HOSTS );
 		clientProperties.remove( ElasticsearchBackendSettings.PROTOCOL );
 		clientProperties.remove( ElasticsearchBackendSettings.URIS );
-
 		// Per-test overrides
 		additionalProperties.accept( clientProperties::put );
-
 		// By default, target the Wiremock server 1 using HTTP
 		if ( !clientProperties.containsKey( ElasticsearchBackendSettings.HOSTS )
 				&& !clientProperties.containsKey( ElasticsearchBackendSettings.URIS ) ) {
 			clientProperties.put( ElasticsearchBackendSettings.URIS, httpUrisFor( wireMockRule1 ) );
 		}
-
 		ConfigurationPropertySource clientPropertySource = AllAwareConfigurationPropertySource.fromMap( clientProperties );
-
 		Map<String, Object> beanResolverConfiguration = new HashMap<>();
 		// Accept Wiremock's self-signed SSL certificates
-		beanResolverConfiguration.put(
-				EngineSpiSettings.BEAN_CONFIGURERS,
-				Collections.singletonList( elasticsearchSslBeanConfigurer( clientPropertySource ) )
-		);
-
-		BeanResolver beanResolver = testConfigurationProvider.createBeanResolverForTest(
-				AllAwareConfigurationPropertySource.fromMap( beanResolverConfiguration )
-
-		);
+		beanResolverConfiguration.put( EngineSpiSettings.BEAN_CONFIGURERS,
+				Collections.singletonList( elasticsearchSslBeanConfigurer( clientPropertySource ) ) );
+		BeanResolver beanResolver = testConfigurationProvider
+				.createBeanResolverForTest( AllAwareConfigurationPropertySource.fromMap( beanResolverConfiguration ) );
 		return new ClientRest5ElasticsearchClientFactory().create( beanResolver, clientPropertySource,
 				threadPoolProvider.threadProvider(), "Client",
 				new DelegatingSimpleScheduledExecutor( timeoutExecutorService, true ),
-				GsonProvider.create( GsonBuilder::new, true )
-		);
+				JsonProviderHelper.create( true ) );
 	}
 
 	private ElasticsearchResponse doPost(ElasticsearchClient client, String path, String payload) {
@@ -1249,32 +950,28 @@ class ClientRest5ElasticsearchClientFactoryIT {
 			}
 		}
 		if ( payload != null ) {
-			builder = builder.body( JsonParser.parseString( payload ).getAsJsonObject() );
+			builder = builder.bodyJson( ( (ObjectNode) new JsonParsing().parse( payload ) ) );
 		}
 		return builder.build();
 	}
 
 	private static String httpHostAndPortFor(WireMockExtension... extensions) {
-		return Arrays.stream( extensions )
-				.map( extension -> "localhost:" + extension.getPort() )
+		return Arrays.stream( extensions ).map( extension -> "localhost:" + extension.getPort() )
 				.collect( Collectors.joining( "," ) );
 	}
 
 	private static String httpsHostAndPortFor(WireMockExtension... extensions) {
-		return Arrays.stream( extensions )
-				.map( extension -> "localhost:" + extension.getHttpsPort() )
+		return Arrays.stream( extensions ).map( extension -> "localhost:" + extension.getHttpsPort() )
 				.collect( Collectors.joining( "," ) );
 	}
 
 	private static String httpUrisFor(WireMockExtension... extensions) {
-		return Arrays.stream( extensions )
-				.map( extension -> "http://localhost:" + extension.getPort() )
+		return Arrays.stream( extensions ).map( extension -> "http://localhost:" + extension.getPort() )
 				.collect( Collectors.joining( "," ) );
 	}
 
 	private static String httpsUrisFor(WireMockExtension... extensions) {
-		return Arrays.stream( extensions )
-				.map( extension -> "https://localhost:" + extension.getHttpsPort() )
+		return Arrays.stream( extensions ).map( extension -> "https://localhost:" + extension.getHttpsPort() )
 				.collect( Collectors.joining( "," ) );
 	}
 
@@ -1283,106 +980,81 @@ class ClientRest5ElasticsearchClientFactoryIT {
 	}
 
 	private String dummyNodeInfoResponse(int... ports) {
-		JsonObject body = new JsonObject();
-		body.addProperty( "cluster_name", "foo-cluster.local" );
-
-		JsonObject nodes = new JsonObject();
-		body.add( "nodes", nodes );
+		ObjectNode body = new ObjectNode( JsonNodeFactory.instance );
+		body.put( "cluster_name", "foo-cluster.local" );
+		ObjectNode nodes = new ObjectNode( JsonNodeFactory.instance );
+		body.set( "nodes", nodes );
 		int index = 1;
 		for ( int port : ports ) {
-			nodes.add( "hJLXmY_NTrCytiIMbX4_" + index + "g", dummyNodeInfo( port ) );
+			nodes.set( "hJLXmY_NTrCytiIMbX4_" + index + "g", dummyNodeInfo( port ) );
 			++index;
 		}
-
 		return body.toString();
 	}
 
-	private JsonObject dummyNodeInfo(int port) {
-		JsonObject node = new JsonObject();
-		node.addProperty( "name", "nodeForPort" + port );
-		node.addProperty( "version", ElasticsearchTestDialect.getActualVersion().versionString() );
-
-		JsonObject http = new JsonObject();
-		node.add( "http", http );
-		http.addProperty( "publish_address", "127.0.0.1:" + port );
-		JsonArray boundAddresses = new JsonArray();
-		http.add( "bound_address", boundAddresses );
+	private ObjectNode dummyNodeInfo(int port) {
+		ObjectNode node = new ObjectNode( JsonNodeFactory.instance );
+		node.put( "name", "nodeForPort" + port );
+		node.put( "version", ElasticsearchTestDialect.getActualVersion().versionString() );
+		ObjectNode http = new ObjectNode( JsonNodeFactory.instance );
+		node.set( "http", http );
+		http.put( "publish_address", "127.0.0.1:" + port );
+		ArrayNode boundAddresses = new ArrayNode( JsonNodeFactory.instance );
+		http.set( "bound_address", boundAddresses );
 		boundAddresses.add( "[::]:" + port );
 		boundAddresses.add( "127.0.0.1:" + port );
-
-		JsonArray roles = new JsonArray();
-		node.add( "roles", roles );
+		ArrayNode roles = new ArrayNode( JsonNodeFactory.instance );
+		node.set( "roles", roles );
 		roles.add( "ingest" );
 		roles.add( "master" );
 		roles.add( "data" );
 		roles.add( "ml" );
-
-		node.add( "plugins", new JsonObject() );
-
+		node.set( "plugins", new ObjectNode( JsonNodeFactory.instance ) );
 		return node;
 	}
 
-	private static final ConfigurationProperty<Integer> MAX_TOTAL_CONNECTION =
-			ConfigurationProperty.forKey( ClientRest5ElasticsearchBackendClientSettings.MAX_CONNECTIONS )
-					.asIntegerStrictlyPositive()
-					.withDefault( ClientRest5ElasticsearchBackendClientSettings.Defaults.MAX_CONNECTIONS )
-					.build();
+	private static final ConfigurationProperty<Integer> MAX_TOTAL_CONNECTION = ConfigurationProperty
+			.forKey( ClientRest5ElasticsearchBackendClientSettings.MAX_CONNECTIONS ).asIntegerStrictlyPositive()
+			.withDefault( ClientRest5ElasticsearchBackendClientSettings.Defaults.MAX_CONNECTIONS ).build();
 
-	private static final ConfigurationProperty<Integer> MAX_TOTAL_CONNECTION_PER_ROUTE =
-			ConfigurationProperty.forKey( ClientRest5ElasticsearchBackendClientSettings.MAX_CONNECTIONS_PER_ROUTE )
-					.asIntegerStrictlyPositive()
-					.withDefault( ClientRest5ElasticsearchBackendClientSettings.Defaults.MAX_CONNECTIONS_PER_ROUTE )
-					.build();
+	private static final ConfigurationProperty<Integer> MAX_TOTAL_CONNECTION_PER_ROUTE = ConfigurationProperty
+			.forKey( ClientRest5ElasticsearchBackendClientSettings.MAX_CONNECTIONS_PER_ROUTE ).asIntegerStrictlyPositive()
+			.withDefault( ClientRest5ElasticsearchBackendClientSettings.Defaults.MAX_CONNECTIONS_PER_ROUTE ).build();
 
-	private static final ConfigurationProperty<Integer> READ_TIMEOUT =
-			ConfigurationProperty.forKey( ClientRest5ElasticsearchBackendClientSettings.READ_TIMEOUT )
-					.asIntegerPositiveOrZeroOrNegative()
-					.withDefault( ClientRest5ElasticsearchBackendClientSettings.Defaults.READ_TIMEOUT )
-					.build();
+	private static final ConfigurationProperty<Integer> READ_TIMEOUT = ConfigurationProperty
+			.forKey( ClientRest5ElasticsearchBackendClientSettings.READ_TIMEOUT ).asIntegerPositiveOrZeroOrNegative()
+			.withDefault( ClientRest5ElasticsearchBackendClientSettings.Defaults.READ_TIMEOUT ).build();
 
-	private static final ConfigurationProperty<Integer> CONNECTION_TIMEOUT =
-			ConfigurationProperty.forKey( ClientRest5ElasticsearchBackendClientSettings.CONNECTION_TIMEOUT )
-					.asIntegerPositiveOrZeroOrNegative()
-					.withDefault( ClientRest5ElasticsearchBackendClientSettings.Defaults.CONNECTION_TIMEOUT )
-					.build();
+	private static final ConfigurationProperty<Integer> CONNECTION_TIMEOUT = ConfigurationProperty
+			.forKey( ClientRest5ElasticsearchBackendClientSettings.CONNECTION_TIMEOUT ).asIntegerPositiveOrZeroOrNegative()
+			.withDefault( ClientRest5ElasticsearchBackendClientSettings.Defaults.CONNECTION_TIMEOUT ).build();
 
 	private static BeanConfigurer elasticsearchSslBeanConfigurer(ConfigurationPropertySource propertySource) {
 		return context -> {
-			context.define(
-					ElasticsearchHttpClientConfigurer.class,
+			context.define( ElasticsearchHttpClientConfigurer.class,
 					BeanReference.ofInstance( new ElasticsearchHttpClientConfigurer() {
+
 						@Override
 						public void configure(ElasticsearchHttpClientConfigurationContext context) {
-							context.clientBuilder()
-									.setConnectionManager(
-											PoolingAsyncClientConnectionManagerBuilder.create()
-													.setMaxConnTotal( MAX_TOTAL_CONNECTION.get( propertySource ) )
-													.setMaxConnPerRoute( MAX_TOTAL_CONNECTION_PER_ROUTE.get( propertySource ) )
-													.setDefaultConnectionConfig(
-															ConnectionConfig.copy( ConnectionConfig.DEFAULT )
-																	.setConnectTimeout(
-																			CONNECTION_TIMEOUT.get( propertySource ),
-																			TimeUnit.MILLISECONDS )
-																	.setSocketTimeout( READ_TIMEOUT.get( propertySource ),
-																			TimeUnit.MILLISECONDS )
-																	.build()
-													)
-													.setTlsStrategy(
-															ClientTlsStrategyBuilder.create()
-																	.setSslContext( buildAllowAnythingSSLContext() )
-																	// Since httpclient5 5.6.4, the built-in hostname verification is actually applied to the engine
-																	// (previously it was set after the parameters were copied to the engine and had no effect).
-																	// Use CLIENT policy so that only the noop verifier below runs, keeping WireMock's self-signed cert accepted.
-																	.setHostVerificationPolicy(
-																			HostnameVerificationPolicy.CLIENT )
-																	.setHostnameVerifier( NoopHostnameVerifier.INSTANCE )
-																	.buildAsync()
-													)
-													.build()
-									);
+							context.clientBuilder().setConnectionManager( // Since httpclient5 5.6.4, the built-in hostname verification is actually applied to the engine
+									PoolingAsyncClientConnectionManagerBuilder.create()
+											.setMaxConnTotal( MAX_TOTAL_CONNECTION.get( propertySource ) )
+											.setMaxConnPerRoute( MAX_TOTAL_CONNECTION_PER_ROUTE.get( propertySource ) )
+											.setDefaultConnectionConfig( ConnectionConfig.copy( ConnectionConfig.DEFAULT )
+													.setConnectTimeout( CONNECTION_TIMEOUT.get( propertySource ),
+															TimeUnit.MILLISECONDS )
+													.setSocketTimeout( READ_TIMEOUT.get( propertySource ),
+															TimeUnit.MILLISECONDS )
+													.build() )
+											.// Since httpclient5 5.6.4, the built-in hostname verification is actually applied to the engine
+											setTlsStrategy( // (previously it was set after the parameters were copied to the engine and had no effect).
+													ClientTlsStrategyBuilder.create()
+															.setSslContext( buildAllowAnythingSSLContext() ).// Use CLIENT policy so that only the noop verifier below runs, keeping WireMock's self-signed cert accepted.
+															setHostVerificationPolicy( HostnameVerificationPolicy.CLIENT )
+															.setHostnameVerifier( NoopHostnameVerifier.INSTANCE ).buildAsync() )
+											.build() );
 						}
-					} )
-			);
+					} ) );
 		};
 	}
 

@@ -2,6 +2,7 @@ package org.hibernate.search.integrationtest.backend.elasticsearch.testsupport.u
 
 import static org.hibernate.search.util.impl.integrationtest.backend.elasticsearch.dialect.ElasticsearchTestDialect.isActualVersion;
 
+import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
@@ -20,11 +21,12 @@ import java.time.ZonedDateTime;
 import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper;
 import org.hibernate.search.backend.elasticsearch.types.format.impl.ElasticsearchDefaultFieldFormatProvider;
 import org.hibernate.search.engine.backend.types.VectorSimilarity;
 import org.hibernate.search.engine.cfg.spi.FormatUtils;
@@ -49,15 +51,17 @@ import org.hibernate.search.integrationtest.backend.tck.testsupport.types.ZonedD
 import org.hibernate.search.integrationtest.backend.tck.testsupport.util.TckBackendFeatures;
 import org.hibernate.search.util.impl.integrationtest.backend.elasticsearch.dialect.ElasticsearchTestDialect;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
-@SuppressWarnings("unused") // For EJC and lambda arg
+// For EJC and lambda arg
+@SuppressWarnings("unused")
 public class ElasticsearchTckBackendFeatures extends TckBackendFeatures {
 
-	private Gson gson = new GsonBuilder().setPrettyPrinting().create();
+	private JsonCodecService json =
+			JsonProviderHelper.createUserFacingCodec();
 
 	ElasticsearchTckBackendFeatures() {
 	}
@@ -74,10 +78,8 @@ public class ElasticsearchTckBackendFeatures extends TckBackendFeatures {
 		// In ES 7.7 through 7.11, wildcard predicates on analyzed fields get their pattern normalized,
 		// but that was deemed a bug and fixed in 7.12.2+: https://github.com/elastic/elasticsearch/pull/53127
 		// Apparently the "fix" was also introduced in OpenSearch 2.5.0
-		return isActualVersion(
-				esVersion -> esVersion.isBetween( "7.7", "7.12.1" ),
-				osVersion -> osVersion.isLessThan( "2.5.0" )
-		);
+		return isActualVersion( esVersion -> esVersion.isBetween( "7.7", "7.12.1" ),
+				osVersion -> osVersion.isLessThan( "2.5.0" ) );
 	}
 
 	@Override
@@ -96,10 +98,7 @@ public class ElasticsearchTckBackendFeatures extends TckBackendFeatures {
 	public boolean projectionPreservesNulls(FieldTypeDescriptor<?, ?> fieldType) {
 		if ( ByteVectorFieldTypeDescriptor.INSTANCE.equals( fieldType )
 				|| FloatVectorFieldTypeDescriptor.INSTANCE.equals( fieldType ) ) {
-			return isActualVersion(
-					esVersion -> esVersion.isLessThan( "9.2.0" ),
-					osVersion -> true
-			);
+			return isActualVersion( esVersion -> esVersion.isLessThan( "9.2.0" ), osVersion -> true );
 		}
 		return projectionPreservesNulls();
 	}
@@ -183,21 +182,17 @@ public class ElasticsearchTckBackendFeatures extends TckBackendFeatures {
 		// https://github.com/elastic/elasticsearch/issues/90187
 		// Seems like this was fixed in 8.5.1 and they won't backport to 8.4:
 		// https://github.com/elastic/elasticsearch/pull/90458
-		return isActualVersion(
-				esVersion -> !esVersion.isBetween( "8.4.2", "8.5.0" ),
-				osVersion -> true
-		);
+		return isActualVersion( esVersion -> !esVersion.isBetween( "8.4.2", "8.5.0" ), osVersion -> true );
 	}
 
 	@Override
 	public boolean supportsExtremeScaledNumericValues() {
 		// https://github.com/elastic/elasticsearch/issues/91246
 		// Hopefully this will get fixed in a future version.
-		return isActualVersion(
-				esVersion -> !esVersion.isBetween( "7.17.7", "7.17" ) && esVersion.isLessThan( "8.5.0" ),
-				// https://github.com/opensearch-project/OpenSearch/issues/12433
-				osVersion -> osVersion.isLessThan( "2.12.0" )
-		);
+		return // https://github.com/opensearch-project/OpenSearch/issues/12433
+		// https://github.com/opensearch-project/OpenSearch/issues/12433
+		isActualVersion( esVersion -> !esVersion.isBetween( "7.17.7", "7.17" ) && esVersion.isLessThan( "8.5.0" ),
+				osVersion -> osVersion.isLessThan( "2.12.0" ) );
 	}
 
 	@Override
@@ -205,10 +200,8 @@ public class ElasticsearchTckBackendFeatures extends TckBackendFeatures {
 		// https://github.com/elastic/elasticsearch/issues/84601
 		// There doesn't seem to be any hope for this to get fixed in older versions (7.17/8.0),
 		// but it's been fixed in 8.1.
-		return isActualVersion(
-				esVersion -> !esVersion.isBetween( "7.17.7", "7.17" ) && !esVersion.isBetween( "8.0.0", "8.0" ),
-				osVersion -> true
-		);
+		return isActualVersion( esVersion -> !esVersion.isBetween( "7.17.7", "7.17" ) && !esVersion.isBetween( "8.0.0", "8.0" ),
+				osVersion -> true );
 	}
 
 	@Override
@@ -228,44 +221,26 @@ public class ElasticsearchTckBackendFeatures extends TckBackendFeatures {
 		// A plain highlighter implementation in ES had a bug
 		// https://github.com/elastic/elasticsearch/issues/87210
 		// that is now fixed with https://github.com/elastic/elasticsearch/pull/87414
-		return isActualVersion(
-				esVersion -> !esVersion.isBetween( "7.15", "8.3" ),
-				osVersion -> true
-		);
+		return isActualVersion( esVersion -> !esVersion.isBetween( "7.15", "8.3" ), osVersion -> true );
 	}
 
 	@Override
 	public boolean supportsHighlighterUnifiedPhraseMatching() {
-		return isActualVersion(
-				esVersion -> !esVersion.isAtMost( "8.9" ),
-				osVersion -> false
-		);
+		return isActualVersion( esVersion -> !esVersion.isAtMost( "8.9" ), osVersion -> false );
 	}
 
 	public static boolean supportsIndexClosingAndOpening() {
-		return isActualVersion(
-				// See https://docs.aws.amazon.com/opensearch-service/latest/developerguide/supported-operations.html#version_7_10
-				es -> true,
-				// See https://docs.aws.amazon.com/opensearch-service/latest/developerguide/supported-operations.html#version_opensearch_1.0
-				os -> true,
-				aoss -> false
-		);
+		return // See https://docs.aws.amazon.com/opensearch-service/latest/developerguide/supported-operations.html#version_7_10
+		// See https://docs.aws.amazon.com/opensearch-service/latest/developerguide/supported-operations.html#version_opensearch_1.0
+		isActualVersion( es -> true, os -> true, aoss -> false );
 	}
 
 	public static boolean supportsVersionCheck() {
-		return isActualVersion(
-				es -> true,
-				os -> true,
-				aoss -> false
-		);
+		return isActualVersion( es -> true, os -> true, aoss -> false );
 	}
 
 	public static boolean supportsIndexStatusCheck() {
-		return isActualVersion(
-				es -> true,
-				os -> true,
-				aoss -> false
-		);
+		return isActualVersion( es -> true, os -> true, aoss -> false );
 	}
 
 	@Override
@@ -275,47 +250,27 @@ public class ElasticsearchTckBackendFeatures extends TckBackendFeatures {
 
 	@Override
 	public boolean supportsExplicitMergeSegments() {
-		return isActualVersion(
-				es -> true,
-				os -> true,
-				aoss -> false
-		);
+		return isActualVersion( es -> true, os -> true, aoss -> false );
 	}
 
 	@Override
 	public boolean supportsExplicitFlush() {
-		return isActualVersion(
-				es -> true,
-				os -> true,
-				aoss -> false
-		);
+		return isActualVersion( es -> true, os -> true, aoss -> false );
 	}
 
 	@Override
 	public boolean supportsExplicitRefresh() {
-		return isActualVersion(
-				es -> true,
-				os -> true,
-				aoss -> false
-		);
+		return isActualVersion( es -> true, os -> true, aoss -> false );
 	}
 
 	@Override
 	public boolean supportsVectorSearch() {
-		return isActualVersion(
-				es -> !es.isLessThan( "8.12.0" ),
-				os -> !os.isLessThan( "2.9.0" ),
-				aoss -> true
-		);
+		return isActualVersion( es -> !es.isLessThan( "8.12.0" ), os -> !os.isLessThan( "2.9.0" ), aoss -> true );
 	}
 
 	@Override
 	public boolean supportsVectorSearchRequiredMinimumSimilarity() {
-		return isActualVersion(
-				es -> true,
-				os -> !os.isLessThan( "2.14.0" ),
-				aoss -> true
-		);
+		return isActualVersion( es -> true, os -> !os.isLessThan( "2.14.0" ), aoss -> true );
 	}
 
 	@Override
@@ -323,11 +278,7 @@ public class ElasticsearchTckBackendFeatures extends TckBackendFeatures {
 		switch ( vectorSimilarity ) {
 			case DOT_PRODUCT:
 			case MAX_INNER_PRODUCT:
-				return isActualVersion(
-						es -> true,
-						os -> false,
-						aoss -> false
-				);
+				return isActualVersion( es -> true, os -> false, aoss -> false );
 			default:
 				return true;
 		}
@@ -340,12 +291,10 @@ public class ElasticsearchTckBackendFeatures extends TckBackendFeatures {
 
 	@Override
 	public boolean canPerformTermsQuery(FieldTypeDescriptor<?, ?> fieldType) {
-		return isActualVersion(
-				es -> true,
-				// https://github.com/opensearch-project/OpenSearch/issues/12432
-				os -> !os.isMatching( "2.12.0" ) || !FloatFieldTypeDescriptor.INSTANCE.equals( fieldType ),
-				aoss -> true
-		);
+		return // https://github.com/opensearch-project/OpenSearch/issues/12432
+		// https://github.com/opensearch-project/OpenSearch/issues/12432
+		isActualVersion( es -> true, os -> !os.isMatching( "2.12.0" ) || !FloatFieldTypeDescriptor.INSTANCE.equals( fieldType ),
+				aoss -> true );
 	}
 
 	@Override
@@ -362,9 +311,7 @@ public class ElasticsearchTckBackendFeatures extends TckBackendFeatures {
 					.getDefaultDateTimeFormatter( ( (Class<? extends TemporalAccessor>) descriptor.getJavaType() ) )
 					.withLocale( Locale.ROOT );
 			if ( InstantFieldTypeDescriptor.INSTANCE.equals( descriptor ) ) {
-				return formatter
-						.withZone( ZoneOffset.UTC )
-						.format( (Instant) value );
+				return formatter.withZone( ZoneOffset.UTC ).format( (Instant) value );
 			}
 			if ( MonthDayFieldTypeDescriptor.INSTANCE.equals( descriptor ) ) {
 				return formatter
@@ -372,42 +319,39 @@ public class ElasticsearchTckBackendFeatures extends TckBackendFeatures {
 			}
 			return formatter.format( (TemporalAccessor) value );
 		}
-
 		return super.formatForQueryStringPredicate( descriptor, value );
 	}
 
 	@Override
 	public boolean queryStringFailOnPatternQueries() {
-		return isActualVersion(
-				es -> true,
-				os -> false,
-				aoss -> false
-		);
+		return isActualVersion( es -> true, os -> false, aoss -> false );
 	}
 
 	@Override
 	public boolean vectorSearchRequiredMinimumSimilarityAsLucene() {
-		return isActualVersion(
-				es -> true,
-				os -> false,
-				aoss -> false
-		);
+		return isActualVersion( es -> true, os -> false, aoss -> false );
 	}
 
 	@Override
 	public <F> Object toRawValue(FieldTypeDescriptor<F, ?> descriptor, F value) {
 		if ( TemporalAccessor.class.isAssignableFrom( descriptor.getJavaType() ) ) {
-			return gson.toJson( formatForQueryStringPredicate( descriptor, value ) );
+			return json.write( formatForQueryStringPredicate( descriptor, value ) );
 		}
-
 		if ( GeoPointFieldTypeDescriptor.INSTANCE.equals( descriptor ) ) {
 			// we use a linked map to preserve the order of keys so that we get a predictable string.
-			var point = new LinkedHashMap<>();
+			var point = new ObjectNode( JsonNodeFactory.instance );
 			point.put( "lat", ( (GeoPoint) value ).latitude() );
 			point.put( "lon", ( (GeoPoint) value ).longitude() );
-			return gson.toJson( point );
+			return json.write( point );
 		}
-		return gson.toJson( value );
+		if ( value != null && value.getClass().isArray() ) {
+			var array = new ArrayNode( JsonNodeFactory.instance );
+			for ( int i = 0; i < Array.getLength( value ); i++ ) {
+				array.add( json.encode( Array.get( value, i ) ) );
+			}
+			return json.write( array );
+		}
+		return json.write( value );
 	}
 
 	@Override
@@ -479,8 +423,7 @@ public class ElasticsearchTckBackendFeatures extends TckBackendFeatures {
 					return -1;
 				}
 				// compare parsed JSONs to address possible attribute order change:
-				return gson.fromJson( (String) o1, JsonElement.class )
-						.equals( gson.fromJson( (String) o2, JsonElement.class ) ) ? 0 : -1;
+				return json.decode( (String) o1, JsonNode.class ).equals( json.decode( (String) o2, JsonNode.class ) ) ? 0 : -1;
 			} );
 		}
 		return super.rawValueEqualsComparator( fieldType );
@@ -496,11 +439,7 @@ public class ElasticsearchTckBackendFeatures extends TckBackendFeatures {
 		// See https://github.com/opensearch-project/OpenSearch/issues/15169
 		//  There is a problem with OpenSearch 2.16.0 where query is ignored for a range aggregation,
 		//  leading to routes, being ignored and incorrect counts produced in the results:
-		return isActualVersion(
-				es -> true,
-				os -> !os.isMatching( "2.16.0" ),
-				aoss -> false
-		);
+		return isActualVersion( es -> true, os -> !os.isMatching( "2.16.0" ), aoss -> false );
 	}
 
 	@Override
@@ -511,10 +450,9 @@ public class ElasticsearchTckBackendFeatures extends TckBackendFeatures {
 	@SuppressWarnings("unchecked")
 	@Override
 	public <F, T> T fromRawAggregation(FieldTypeDescriptor<F, ?> typeDescriptor, T value) {
-		JsonObject jsonObject = gson.fromJson( value.toString(), JsonObject.class );
-		return (T) ( gson.toJson( jsonObject.has( "value_as_string" )
-				? jsonObject.get( "value_as_string" )
-				: jsonObject.get( "value" ) ) );
+		ObjectNode jsonObject = json.decode( value.toString(), ObjectNode.class );
+		return (T) ( json.write(
+				jsonObject.has( "value_as_string" ) ? jsonObject.get( "value_as_string" ) : jsonObject.get( "value" ) ) );
 	}
 
 	@Override
@@ -538,7 +476,8 @@ public class ElasticsearchTckBackendFeatures extends TckBackendFeatures {
 		return collector.finish( collector.accumulateAll( collector.createInitial(), values ) );
 	}
 
-	@SuppressWarnings("unchecked") // because we ... did the equals check
+	// because we ... did the equals check
+	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T aggregatedSumNullValue(Class<T> clazz) {
 		if ( String.class.equals( clazz ) ) {
@@ -570,19 +509,11 @@ public class ElasticsearchTckBackendFeatures extends TckBackendFeatures {
 		if ( ByteVectorFieldTypeDescriptor.INSTANCE.equals( fieldTypeDescriptor ) ) {
 			// https://github.com/elastic/elasticsearch/issues/141830
 			// https://github.com/opensearch-project/k-NN/issues/3359
-			return isActualVersion(
-					es -> !es.isBetween( "9.3.0", "9.3.3" ),
-					os -> !os.isMatching( "3.7.0" ),
-					aoss -> false
-			);
+			return isActualVersion( es -> !es.isBetween( "9.3.0", "9.3.3" ), os -> !os.isMatching( "3.7.0" ), aoss -> false );
 		}
 		if ( FloatVectorFieldTypeDescriptor.INSTANCE.equals( fieldTypeDescriptor ) ) {
 			// https://github.com/opensearch-project/k-NN/issues/3359
-			return isActualVersion(
-					es -> true,
-					os -> !os.isMatching( "3.7.0" ),
-					aoss -> false
-			);
+			return isActualVersion( es -> true, os -> !os.isMatching( "3.7.0" ), aoss -> false );
 		}
 		return super.canHandleDeepNestedPredicate( fieldTypeDescriptor );
 	}
@@ -593,12 +524,10 @@ public class ElasticsearchTckBackendFeatures extends TckBackendFeatures {
 				|| FloatVectorFieldTypeDescriptor.INSTANCE.equals( fieldTypeDescriptor ) ) {
 			// https://github.com/opensearch-project/OpenSearch/issues/21184
 			// https://github.com/opensearch-project/k-NN/issues/3268
-			return isActualVersion(
-					es -> true,
-					os -> !os.isMatching( "3.6.0" ),
-					// TODO: CHANGE aoss as ^ are fixed
-					aoss -> false
-			);
+			return // TODO: CHANGE aoss as ^ are fixed
+			// TODO: CHANGE aoss as ^ are fixed
+			isActualVersion( // TODO: CHANGE aoss as ^ are fixed
+					es -> true, os -> !os.isMatching( "3.6.0" ), aoss -> false );
 		}
 		return super.canRetrieveVectorFieldFromNestedCamelCaseObject( fieldTypeDescriptor );
 	}

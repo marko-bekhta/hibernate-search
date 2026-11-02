@@ -1,6 +1,6 @@
 package org.hibernate.search.backend.elasticsearch.logging.impl;
 
-import org.hibernate.search.backend.elasticsearch.client.common.gson.spi.JsonLogHelper;
+import org.hibernate.search.backend.elasticsearch.client.common.json.spi.JsonLogHelper;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchResponse;
 
 /**
@@ -37,7 +37,7 @@ public final class ElasticsearchResponseFormatter {
 				.append( "' from '" )
 				.append( response.hostAndPort() )
 				.append( "' with body " )
-				.append( helper.toString( response.body() ) );
+				.append( helper.toString( response.bodyJson() ) );
 
 		return sb.toString();
 	}

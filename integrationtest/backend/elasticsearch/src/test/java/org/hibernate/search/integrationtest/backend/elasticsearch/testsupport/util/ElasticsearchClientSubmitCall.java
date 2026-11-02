@@ -6,19 +6,22 @@ import static org.hibernate.search.util.impl.test.JsonHelper.assertJsonEquals;
 import java.util.List;
 
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchRequest;
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper;
 import org.hibernate.search.util.impl.integrationtest.common.extension.Call;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-
 import org.skyscreamer.jsonassert.JSONCompareMode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 class ElasticsearchClientSubmitCall extends Call<ElasticsearchClientSubmitCall> {
 
-	private final Gson gson = new Gson();
+	private final JsonCodecService json =
+			JsonProviderHelper.create( false ).getCodec();
 
 	private final ElasticsearchRequest request;
+
 	private final ElasticsearchRequestAssertionMode assertionMode;
 
 	ElasticsearchClientSubmitCall(ElasticsearchRequest request) {
@@ -52,33 +55,25 @@ class ElasticsearchClientSubmitCall extends Call<ElasticsearchClientSubmitCall> 
 					// containsAllEntriesOf( emptyMap ) has a special, inconsistent meaning: "the actual map is empty"
 					// Avoid that...
 					if ( !request.parameters().isEmpty() ) {
-						assertion.assertThat( actualCall.request.parameters() )
-								.containsAllEntriesOf( request.parameters() );
+						assertion.assertThat( actualCall.request.parameters() ).containsAllEntriesOf( request.parameters() );
 					}
-					assertion.check( () -> assertJsonEquals(
-							toComparableJson( request.bodyParts() ),
-							toComparableJson( actualCall.request.bodyParts() ),
-							JSONCompareMode.STRICT_ORDER
-					) );
+					assertion.check( () -> assertJsonEquals( toComparableJson( request.bodyPartsJson() ),
+							toComparableJson( actualCall.request.bodyPartsJson() ), JSONCompareMode.STRICT_ORDER ) );
 					break;
 				case STRICT:
 					assertion.assertThat( actualCall.request.parameters() ).isEqualTo( request.parameters() );
-					assertion.check( () -> assertJsonEquals(
-							toComparableJson( request.bodyParts() ),
-							toComparableJson( actualCall.request.bodyParts() ),
-							JSONCompareMode.STRICT
-					) );
+					assertion.check( () -> assertJsonEquals( toComparableJson( request.bodyPartsJson() ),
+							toComparableJson( actualCall.request.bodyPartsJson() ), JSONCompareMode.STRICT ) );
 					break;
 			}
 		} );
 	}
 
-	private String toComparableJson(List<JsonObject> bodyParts) {
-		JsonArray array = new JsonArray( bodyParts.size() );
-		for ( JsonObject bodyPart : bodyParts ) {
+	private String toComparableJson(List<ObjectNode> bodyParts) {
+		ArrayNode array = new ArrayNode( JsonNodeFactory.instance, bodyParts.size() );
+		for ( ObjectNode bodyPart : bodyParts ) {
 			array.add( bodyPart );
 		}
-		return gson.toJson( array );
+		return json.write( array );
 	}
-
 }

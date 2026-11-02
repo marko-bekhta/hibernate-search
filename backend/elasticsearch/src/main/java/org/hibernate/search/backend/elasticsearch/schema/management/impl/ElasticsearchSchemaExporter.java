@@ -4,21 +4,20 @@ import org.hibernate.search.backend.elasticsearch.client.common.spi.Elasticsearc
 import org.hibernate.search.backend.elasticsearch.client.common.util.spi.URLEncodedString;
 import org.hibernate.search.backend.elasticsearch.index.layout.IndexLayoutStrategy;
 import org.hibernate.search.backend.elasticsearch.index.layout.impl.IndexNames;
+import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
 import org.hibernate.search.backend.elasticsearch.lowlevel.index.impl.IndexMetadata;
 import org.hibernate.search.backend.elasticsearch.schema.management.ElasticsearchIndexSchemaExport;
 import org.hibernate.search.backend.elasticsearch.work.factory.impl.ElasticsearchWorkFactory;
 
-import com.google.gson.Gson;
-
 final class ElasticsearchSchemaExporter {
 
-	private final Gson userFacingGson;
+	private final JsonCodecService userFacingCodec;
 	private final ElasticsearchWorkFactory workFactory;
 	private final IndexLayoutStrategy indexLayoutStrategy;
 
-	public ElasticsearchSchemaExporter(Gson userFacingGson, ElasticsearchWorkFactory workFactory,
+	public ElasticsearchSchemaExporter(JsonCodecService userFacingCodec, ElasticsearchWorkFactory workFactory,
 			IndexLayoutStrategy indexLayoutStrategy) {
-		this.userFacingGson = userFacingGson;
+		this.userFacingCodec = userFacingCodec;
 		this.workFactory = workFactory;
 		this.indexLayoutStrategy = indexLayoutStrategy;
 	}
@@ -32,7 +31,7 @@ final class ElasticsearchSchemaExporter {
 				.build().request();
 
 		return new ElasticsearchIndexSchemaExportImpl(
-				userFacingGson,
+				userFacingCodec,
 				indexNames.hibernateSearchIndex(),
 				request
 		);

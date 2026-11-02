@@ -1,14 +1,66 @@
 package org.hibernate.search.backend.elasticsearch.client.common.spi;
 
+import java.util.Objects;
+
+import org.hibernate.search.backend.elasticsearch.gson.GsonJsonHandlers;
+import org.hibernate.search.backend.elasticsearch.json.impl.JsonHandlerBridge;
+import org.hibernate.search.util.json.JsonHandler;
+import org.hibernate.search.util.json.spi.JsonTreeValidation;
+import org.hibernate.search.util.json.spi.JsonValidation;
+
 import com.google.gson.JsonObject;
+
+import tools.jackson.databind.node.ObjectNode;
 
 public final class ElasticsearchResponse {
 	private final String hostAndPort;
 	private final int statusCode;
 	private final String statusMessage;
-	private final JsonObject body;
+	private final ObjectNode body;
+	private final JsonValidation validation;
 
+	/** @deprecated Use {@link #withJsonBody(String, int, String, ObjectNode)}. */
+	@Deprecated
 	public ElasticsearchResponse(String hostAndPort, int statusCode, String statusMessage, JsonObject body) {
+		this( body == null ? null : JsonHandlerBridge.importObject( GsonJsonHandlers.object(), body, "response body import" ),
+				hostAndPort, statusCode, statusMessage );
+	}
+
+	/** The optional body is validated and retained as a stable borrowed tree. */
+	public static ElasticsearchResponse withJsonBody(String hostAndPort, int statusCode,
+			String statusMessage, ObjectNode body) {
+		if ( body != null ) {
+			JsonTreeValidation.validateExternal( body );
+		}
+		return new ElasticsearchResponse( body, hostAndPort, statusCode, statusMessage );
+	}
+
+	/**
+	 * Internal caller contract: body was parsed/constructed by Search or already externally validated,
+	 * and remains stable/read-only. Custom clients with arbitrary trees must use {@link #withJsonBody(String, int, String, ObjectNode)}.
+	 */
+	public static ElasticsearchResponse withInternalJsonBody(String hostAndPort, int statusCode,
+			String statusMessage, ObjectNode body) {
+		return withInternalJsonBody( hostAndPort, statusCode, statusMessage, body, JsonValidation.systemDefault() );
+	}
+
+	/** Same internal caller contract, bound to the receiving client's JSON context. */
+	public static ElasticsearchResponse withInternalJsonBody(String hostAndPort, int statusCode,
+			String statusMessage, ObjectNode body, JsonValidation validation) {
+		Objects.requireNonNull( validation );
+		if ( body != null ) {
+			validation.validateInternal( body );
+		}
+		return new ElasticsearchResponse( body, hostAndPort, statusCode, statusMessage, validation );
+	}
+
+	private ElasticsearchResponse(ObjectNode body, String hostAndPort, int statusCode, String statusMessage) {
+		this( body, hostAndPort, statusCode, statusMessage, JsonValidation.systemDefault() );
+	}
+
+	private ElasticsearchResponse(ObjectNode body, String hostAndPort, int statusCode, String statusMessage,
+			JsonValidation validation) {
+		this.validation = validation;
 		this.hostAndPort = hostAndPort;
 		this.statusCode = statusCode;
 		this.statusMessage = statusMessage;
@@ -27,7 +79,17 @@ public final class ElasticsearchResponse {
 		return statusMessage;
 	}
 
-	public JsonObject body() {
+	public ObjectNode bodyJson() {
 		return body;
+	}
+
+	public <T> T body(JsonHandler<T> handler) {
+		return JsonHandlerBridge.exportObject( handler, body, "response body export", validation );
+	}
+
+	/** @deprecated Use {@link #bodyJson()} or {@link #body(JsonHandler)}. */
+	@Deprecated
+	public JsonObject body() {
+		return body( GsonJsonHandlers.object() );
 	}
 }
