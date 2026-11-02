@@ -57,6 +57,18 @@ class FunctionScorePredicateSpecificsIT {
 	class SingleFieldValueFactor {
 
 		@Test
+		void withFunctionWeight() {
+			List<Float> scores = index.createScope().query()
+					.select( SearchProjectionFactory::score )
+					.where( f -> f.functionScore( f.matchAll() )
+							.fieldValueFactor( "popularity" ).functionWeight( 3 )
+							.boostMode().replace() )
+					.fetchAllHits();
+
+			assertThat( scores ).containsExactlyInAnyOrder( 30f, 60f, 15f );
+		}
+
+		@Test
 		void simple_boostModeMultiply() {
 			List<Float> scores = index.createScope().query()
 					.select( SearchProjectionFactory::score )

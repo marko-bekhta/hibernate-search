@@ -66,9 +66,6 @@ public class LuceneFunctionScorePredicate extends AbstractLuceneSearchPredicate 
 	}
 
 	private DoubleValuesSource buildCombinedSource(PredicateRequestContext context) {
-		if ( functions.size() == 1 ) {
-			return functions.get( 0 ).toSource( context );
-		}
 		List<DoubleValuesSource> sources = new ArrayList<>();
 		List<Float> weights = new ArrayList<>();
 		for ( FunctionEntry entry : functions ) {
