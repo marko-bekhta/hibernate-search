@@ -22,6 +22,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 //CHECKSTYLE:OFF HideUtilityClassConstructor ignore the rule since it is a class with nested test classes.
 // cannot make a private constructor.
@@ -190,6 +192,20 @@ class FunctionScorePredicateSpecificsIT {
 
 	@Nested
 	class MultipleFunctions {
+
+		@ParameterizedTest
+		@ValueSource(booleans = { true, false })
+		void mixedRootAndNestedFieldsRejected(boolean rootFirst) {
+			String firstField = rootFirst ? "rating" : "nested.rating";
+			String secondField = rootFirst ? "nested.rating" : "rating";
+
+			assertThatThrownBy( () -> index.createScope().predicate().functionScore()
+					.fieldValueFactor( firstField )
+					.fieldValueFactor( secondField )
+					.toPredicate() )
+					.isInstanceOf( IllegalArgumentException.class )
+					.hasMessageContaining( "at different nested paths" );
+		}
 
 		@Test
 		void filteredFunctionIgnoresMissingValueOutsideFilter() {

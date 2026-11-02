@@ -1,6 +1,7 @@
 package org.hibernate.search.backend.elasticsearch.search.predicate.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -21,6 +22,24 @@ import com.google.gson.JsonObject;
 import org.mockito.ArgumentCaptor;
 
 class ElasticsearchFunctionScorePredicateTest {
+
+	@ParameterizedTest
+	@ValueSource(booleans = { true, false })
+	void mixedRootAndNestedFieldsRejected(boolean rootFirst) {
+		ElasticsearchSearchIndexScope<?> scope = mock( ElasticsearchSearchIndexScope.class );
+		ElasticsearchFunctionScorePredicate.Builder builder = new ElasticsearchFunctionScorePredicate.Builder( scope );
+		ElasticsearchFieldValueFactorFunction.Builder<?> root =
+				mock( ElasticsearchFieldValueFactorFunction.Builder.class );
+		when( root.nestedPathHierarchy() ).thenReturn( List.of() );
+		ElasticsearchFieldValueFactorFunction.Builder<?> nested =
+				mock( ElasticsearchFieldValueFactorFunction.Builder.class );
+		when( nested.nestedPathHierarchy() ).thenReturn( List.of( "nested" ) );
+
+		builder.addFieldValueFactorFunction( rootFirst ? root : nested, 1f, null );
+		assertThatThrownBy( () -> builder.addFieldValueFactorFunction( rootFirst ? nested : root, 1f, null ) )
+				.isInstanceOf( IllegalArgumentException.class )
+				.hasMessageContaining( "at different nested paths" );
+	}
 
 	@ParameterizedTest
 	@NullSource

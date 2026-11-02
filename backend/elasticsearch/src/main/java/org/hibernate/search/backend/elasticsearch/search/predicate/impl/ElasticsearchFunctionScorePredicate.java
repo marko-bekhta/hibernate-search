@@ -94,6 +94,7 @@ class ElasticsearchFunctionScorePredicate extends AbstractElasticsearchPredicate
 		private String scoreMode;
 		private String boostMode;
 		private List<String> resolvedNestedPathHierarchy = Collections.emptyList();
+		private boolean nestedPathHierarchyResolved;
 
 		Builder(ElasticsearchSearchIndexScope<?> scope) {
 			super( scope );
@@ -120,11 +121,9 @@ class ElasticsearchFunctionScorePredicate extends AbstractElasticsearchPredicate
 		}
 
 		private void validateNestedPathHierarchy(List<String> fieldNestedPathHierarchy, String fieldPath) {
-			if ( resolvedNestedPathHierarchy.isEmpty() && fieldNestedPathHierarchy.isEmpty() ) {
-				return;
-			}
-			if ( resolvedNestedPathHierarchy.isEmpty() ) {
+			if ( !nestedPathHierarchyResolved ) {
 				resolvedNestedPathHierarchy = fieldNestedPathHierarchy;
+				nestedPathHierarchyResolved = true;
 				return;
 			}
 			if ( !Objects.equals( resolvedNestedPathHierarchy, fieldNestedPathHierarchy ) ) {

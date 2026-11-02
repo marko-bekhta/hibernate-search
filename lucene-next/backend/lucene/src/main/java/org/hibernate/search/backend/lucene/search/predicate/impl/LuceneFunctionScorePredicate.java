@@ -236,6 +236,7 @@ public class LuceneFunctionScorePredicate extends AbstractLuceneSearchPredicate 
 		private ScoreMode scoreMode;
 		private BoostMode boostMode;
 		private List<String> resolvedNestedPathHierarchy = Collections.emptyList();
+		private boolean nestedPathHierarchyResolved;
 
 		Builder(LuceneSearchIndexScope<?> scope) {
 			super( scope );
@@ -262,11 +263,9 @@ public class LuceneFunctionScorePredicate extends AbstractLuceneSearchPredicate 
 		}
 
 		private void validateNestedPathHierarchy(List<String> fieldNestedPathHierarchy, String fieldPath) {
-			if ( resolvedNestedPathHierarchy.isEmpty() && fieldNestedPathHierarchy.isEmpty() ) {
-				return;
-			}
-			if ( resolvedNestedPathHierarchy.isEmpty() ) {
+			if ( !nestedPathHierarchyResolved ) {
 				resolvedNestedPathHierarchy = fieldNestedPathHierarchy;
+				nestedPathHierarchyResolved = true;
 				return;
 			}
 			if ( !Objects.equals( resolvedNestedPathHierarchy, fieldNestedPathHierarchy ) ) {
