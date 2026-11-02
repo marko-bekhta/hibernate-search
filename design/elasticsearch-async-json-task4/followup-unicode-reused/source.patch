@@ -1,0 +1,598 @@
+diff --git a/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonUtf8IngressBenchmark.java b/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonUtf8IngressBenchmark.java
+index e7bf52f6d2..743ea6b697 100644
+--- a/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonUtf8IngressBenchmark.java
++++ b/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonUtf8IngressBenchmark.java
+@@ -17,6 +17,7 @@
+ import org.openjdk.jmh.annotations.Measurement;
+ import org.openjdk.jmh.annotations.Mode;
+ import org.openjdk.jmh.annotations.OutputTimeUnit;
++import org.openjdk.jmh.annotations.Param;
+ import org.openjdk.jmh.annotations.Scope;
+ import org.openjdk.jmh.annotations.Setup;
+ import org.openjdk.jmh.annotations.State;
+@@ -32,11 +33,16 @@ public class JsonUtf8IngressBenchmark {
+ 	@State(Scope.Thread)
+ 	public static class Bodies extends JsonComparisonBenchmark.Bodies {
+ 		byte[] input;
++		@Param({ "8192" })
++		public int feedSize;
+ 
+ 		@Override
+ 		@Setup
+ 		public void setup() {
+ 			super.setup();
++			if ( feedSize <= 0 ) {
++				throw new IllegalArgumentException( "Feed size must be positive" );
++			}
+ 			input = json.getBytes( StandardCharsets.UTF_8 );
+ 			try {
+ 				JsonElement search = parseSearch( this );
+@@ -66,7 +72,8 @@ public com.google.gson.JsonObject gsonParser(Bodies state) throws IOException {
+ 	private static JsonElement parseSearch(Bodies state) {
+ 		try ( var session = state.parsing.createParser() ) {
+ 			ByteBuffer input = ByteBuffer.wrap( state.input );
+-			while ( input.hasRemaining() ) {
++			while ( input.position() < state.input.length ) {
++				input.limit( Math.min( input.position() + state.feedSize, state.input.length ) );
+ 				session.feed( input );
+ 			}
+ 			return session.endOfInput();
+@@ -74,7 +81,8 @@ private static JsonElement parseSearch(Bodies state) {
+ 	}
+ 
+ 	private static com.google.gson.JsonObject parseGson(Bodies state) throws IOException {
+-		try ( var reader = new InputStreamReader( new ByteArrayInputStream( state.input ), StandardCharsets.UTF_8 ) ) {
++		try ( var reader =
++				new InputStreamReader( new FragmentedInputStream( state.input, state.feedSize ), StandardCharsets.UTF_8 ) ) {
+ 			var result = state.gson.fromJson( reader, com.google.gson.JsonObject.class );
+ 			if ( reader.read() != -1 ) {
+ 				throw new IllegalStateException( "Incomplete UTF-8 consumption" );
+@@ -82,4 +90,18 @@ private static com.google.gson.JsonObject parseGson(Bodies state) throws IOExcep
+ 			return result;
+ 		}
+ 	}
++
++	private static final class FragmentedInputStream extends ByteArrayInputStream {
++		private final int feedSize;
++
++		private FragmentedInputStream(byte[] input, int feedSize) {
++			super( input );
++			this.feedSize = feedSize;
++		}
++
++		@Override
++		public synchronized int read(byte[] bytes, int offset, int length) {
++			return super.read( bytes, offset, Math.min( length, feedSize ) );
++		}
++	}
+ }
+diff --git a/integrationtest/performance/backend/scripts/json-benchmark-runner.py b/integrationtest/performance/backend/scripts/json-benchmark-runner.py
+index d715fe66e3..a6e0ca45a3 100644
+--- a/integrationtest/performance/backend/scripts/json-benchmark-runner.py
++++ b/integrationtest/performance/backend/scripts/json-benchmark-runner.py
+@@ -64,6 +64,7 @@ def main():
+     parser.add_argument('--pattern', default='JsonComparisonBenchmark.(gson|jackson|synchronousCursor|incrementalCursor|boundedWorker)$')
+     parser.add_argument('--fixtures', default='small,mapping,unicode,nested,scalar-1m,scalar-8m,bulk-10000')
+     parser.add_argument('--lifecycle', choices=['fresh', 'reused'], default='fresh')
++    parser.add_argument('--param', action='append', default=[], help='additional JMH parameter, e.g. feedSize=64,1024,8192')
+     parser.add_argument('--profiler', help='optional JMH profiler specification; separate diagnostic run')
+     parser.add_argument('--jvm-args', default='', help='additional fork JVM arguments (recorded verbatim)')
+     args = parser.parse_args()
+@@ -136,6 +137,11 @@ def main():
+         command += ['-bm', 'ss']
+     if args.fixtures:
+         command += ['-p', f'fixture={args.fixtures}', '-p', f'lifecycle={args.lifecycle}']
++    for parameter in args.param:
++        name, separator, value = parameter.partition('=')
++        if not separator or not name.isidentifier() or not value:
++            parser.error('--param requires a nonempty name=value')
++        command += ['-p', parameter]
+     if args.profiler:
+         command += ['-prof', args.profiler]
+     patch = capture(['git', '-C', str(ROOT), 'diff', 'HEAD', '--binary'])
+diff --git a/util/json/src/main/java/org/hibernate/search/util/json/impl/Utf8JsonWriteCursor.java b/util/json/src/main/java/org/hibernate/search/util/json/impl/Utf8JsonWriteCursor.java
+index b739ce193d..d044585f30 100644
+--- a/util/json/src/main/java/org/hibernate/search/util/json/impl/Utf8JsonWriteCursor.java
++++ b/util/json/src/main/java/org/hibernate/search/util/json/impl/Utf8JsonWriteCursor.java
+@@ -55,7 +55,7 @@ public int write(ByteBuffer destination) {
+ 		while ( destination.hasRemaining() && !complete ) {
+ 			if ( pendingOffset == pendingLength ) {
+ 				pendingOffset = pendingLength = 0;
+-				if ( writeAsciiRun( destination ) ) {
++				if ( writeAsciiRun( destination ) || writeUnicodeRun( destination ) ) {
+ 					if ( scalar == null && nextValue == null && frames.isEmpty() ) {
+ 						complete = true;
+ 						pending = null;
+@@ -122,6 +122,76 @@ private boolean writeAsciiRun(ByteBuffer destination) {
+ 		return true;
+ 	}
+ 
++	/** Encode complete units directly into caller storage; the last partial unit uses pending. */
++	private boolean writeUnicodeRun(ByteBuffer destination) {
++		if ( scalar == null
++				|| !quoted || scalarStage != 1 || !destination.hasArray()
++				|| destination.remaining() < 6 ) {
++			return false;
++		}
++		byte[] array = destination.array();
++		int base = destination.arrayOffset();
++		int position = base + destination.position();
++		int end = base + destination.limit() - 6;
++		int offset = scalarOffset;
++		String text = scalar;
++		while ( position <= end && offset < text.length() ) {
++			char character = text.charAt( offset++ );
++			if ( character < 128 && SAFE_ASCII[character] ) {
++				array[position++] = (byte) character;
++				continue;
++			}
++			char escape = switch ( character ) {
++				case '"', '\\' -> character;
++				case '\b' -> 'b';
++				case '\f' -> 'f';
++				case '\n' -> 'n';
++				case '\r' -> 'r';
++				case '\t' -> 't';
++				default -> 0;
++			};
++			if ( escape != 0 ) {
++				array[position++] = '\\';
++				array[position++] = (byte) escape;
++			}
++			else if ( character < 128
++					|| character == 0x2028 || character == 0x2029
++					|| Character.isSurrogate( character )
++							&& !( Character.isHighSurrogate( character )
++									&& offset < text.length()
++									&& Character.isLowSurrogate( text.charAt( offset ) ) ) ) {
++				array[position++] = '\\';
++				array[position++] = 'u';
++				array[position++] = (byte) HEX.charAt( character >> 12 & 0xf );
++				array[position++] = (byte) HEX.charAt( character >> 8 & 0xf );
++				array[position++] = (byte) HEX.charAt( character >> 4 & 0xf );
++				array[position++] = (byte) HEX.charAt( character & 0xf );
++			}
++			else if ( character < 0x800 ) {
++				array[position++] = (byte) ( 0xc0 | character >> 6 );
++				array[position++] = (byte) ( 0x80 | character & 0x3f );
++			}
++			else if ( Character.isHighSurrogate( character ) ) {
++				int codePoint = Character.toCodePoint( character, text.charAt( offset++ ) );
++				array[position++] = (byte) ( 0xf0 | codePoint >> 18 );
++				array[position++] = (byte) ( 0x80 | codePoint >> 12 & 0x3f );
++				array[position++] = (byte) ( 0x80 | codePoint >> 6 & 0x3f );
++				array[position++] = (byte) ( 0x80 | codePoint & 0x3f );
++			}
++			else {
++				array[position++] = (byte) ( 0xe0 | character >> 12 );
++				array[position++] = (byte) ( 0x80 | character >> 6 & 0x3f );
++				array[position++] = (byte) ( 0x80 | character & 0x3f );
++			}
++		}
++		destination.position( position - base );
++		scalarOffset = offset;
++		if ( offset == text.length() ) {
++			scalarStage = 2;
++		}
++		return true;
++	}
++
+ 	private void prepare() {
+ 		while ( pendingLength == 0 ) {
+ 			if ( scalar != null ) {
+diff --git a/util/json/src/test/java/org/hibernate/search/util/json/JsonOutputTest.java b/util/json/src/test/java/org/hibernate/search/util/json/JsonOutputTest.java
+index a1ab0522c1..09723db0a4 100644
+--- a/util/json/src/test/java/org/hibernate/search/util/json/JsonOutputTest.java
++++ b/util/json/src/test/java/org/hibernate/search/util/json/JsonOutputTest.java
+@@ -23,7 +23,7 @@
+ 
+ class JsonOutputTest {
+ 	@ParameterizedTest
+-	@ValueSource(ints = { 1, 2, 5, 8192 })
++	@ValueSource(ints = { 1, 2, 3, 4, 5, 6, 7, 11, 8192 })
+ 	void fragmentedOutputAndBufferBoundaries(int capacity) throws IOException {
+ 		JsonObject tree = fixture();
+ 		JsonBody body = JsonBodies.of( tree );
+@@ -81,6 +81,20 @@ void allCharacterEscapesAndSupplementaryPairsAgreeWithJackson() throws IOExcepti
+ 				.isEqualTo( "\"\\u003c\\u003e\\u0026\\u003d\\u0027\\u2028\\u2029é中😀\\ud800x\\udfff\"" );
+ 	}
+ 
++	@Test
++	void directUnicodeRunsYieldAtEveryEncodedUnitBoundary() throws IOException {
++		String text = "aé中😀\"\\\b\f\n\r\t\u0000<>&='\u2028\u2029\ud800x\udfff";
++		JsonObject tree = new JsonObject();
++		// Vary the prefix to exercise each remaining destination size for both names and values.
++		for ( int prefix = 0; prefix < 12; prefix++ ) {
++			tree.addProperty( "x".repeat( prefix ) + text, text.repeat( 4 ) );
++		}
++		byte[] expected = jackson( tree );
++		for ( int capacity = 1; capacity <= 32; capacity++ ) {
++			assertThat( drain( JsonBodies.of( tree ), capacity ) ).isEqualTo( expected );
++		}
++	}
++
+ 	@Test
+ 	void stableBoundedContentLengthAndExactLimit() throws IOException {
+ 		for ( int length : new int[] { 1, 8191, 8192, 8193, 1_000_000 } ) {
+diff --git a/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonNumericConsumptionBenchmark.java b/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonNumericConsumptionBenchmark.java
+new file mode 100644
+index 0000000000..0b416a7687
+--- /dev/null
++++ b/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonNumericConsumptionBenchmark.java
+@@ -0,0 +1,97 @@
++package org.hibernate.search.integrationtest.performance.backend.elasticsearch;
++
++import java.util.concurrent.TimeUnit;
++
++import org.hibernate.search.util.json.JsonElement;
++
++import org.openjdk.jmh.annotations.Benchmark;
++import org.openjdk.jmh.annotations.BenchmarkMode;
++import org.openjdk.jmh.annotations.Fork;
++import org.openjdk.jmh.annotations.Measurement;
++import org.openjdk.jmh.annotations.Mode;
++import org.openjdk.jmh.annotations.OutputTimeUnit;
++import org.openjdk.jmh.annotations.Param;
++import org.openjdk.jmh.annotations.Scope;
++import org.openjdk.jmh.annotations.Setup;
++import org.openjdk.jmh.annotations.State;
++import org.openjdk.jmh.annotations.Warmup;
++import org.openjdk.jmh.infra.Blackhole;
++
++/** Complete numeric-tree construction, with no reads, selected reads, or ten reads of every value. */
++@BenchmarkMode(Mode.Throughput)
++@OutputTimeUnit(TimeUnit.SECONDS)
++@Warmup(iterations = 5, time = 1)
++@Measurement(iterations = 5, time = 1)
++@Fork(3)
++public class JsonNumericConsumptionBenchmark {
++	@State(Scope.Thread)
++	public static class Numbers extends JsonComparisonBenchmark.Bodies {
++		@Param({ "none", "selected", "repeated" })
++		public String reads;
++
++		@Override
++		@Setup
++		public void setup() {
++			super.setup();
++			if ( !"numbers-10000".equals( fixture ) ) {
++				throw new IllegalArgumentException( "Numeric consumption requires numbers-10000" );
++			}
++			long expected = switch ( reads ) {
++				case "none" -> 0;
++				case "selected" -> 495_000;
++				case "repeated" -> 499_950_000;
++				default -> throw new IllegalArgumentException( reads );
++			};
++			if ( readSearch( parsing.parse( json ), reads ) != expected
++					|| readGson( gson.fromJson( json, com.google.gson.JsonObject.class ), reads ) != expected ) {
++				throw new IllegalStateException( "Numeric consumption mismatch" );
++			}
++		}
++	}
++
++	@Benchmark
++	public long searchParser(Numbers state, Blackhole blackhole) {
++		var tree = state.parsing.parse( state.json );
++		blackhole.consume( tree );
++		return readSearch( tree, state.reads );
++	}
++
++	@Benchmark
++	public long gsonParser(Numbers state, Blackhole blackhole) {
++		var tree = state.gson.fromJson( state.json, com.google.gson.JsonObject.class );
++		blackhole.consume( tree );
++		return readGson( tree, state.reads );
++	}
++
++	private static long readSearch(JsonElement tree, String reads) {
++		if ( "none".equals( reads ) ) {
++			return 0;
++		}
++		var values = tree.getAsJsonObject().getAsJsonArray( "values" );
++		int step = "selected".equals( reads ) ? 100 : 1;
++		int repetitions = "selected".equals( reads ) ? 1 : 10;
++		long sum = 0;
++		for ( int pass = 0; pass < repetitions; pass++ ) {
++			for ( int index = 0; index < values.size(); index += step ) {
++				sum += values.get( index ).getAsLong();
++			}
++		}
++		return sum;
++	}
++
++	private static long readGson(com.google.gson.JsonObject tree, String reads) {
++		if ( "none".equals( reads ) ) {
++			return 0;
++		}
++		var values = tree.getAsJsonArray( "values" );
++		int step = "selected".equals( reads ) ? 100 : 1;
++		int repetitions = "selected".equals( reads ) ? 1 : 10;
++		long sum = 0;
++		for ( int pass = 0; pass < repetitions; pass++ ) {
++			for ( int index = 0; index < values.size(); index += step ) {
++				sum += values.get( index ).getAsLong();
++			}
++		}
++		return sum;
++	}
++}
+diff --git a/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonScalarConsumptionBenchmark.java b/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonScalarConsumptionBenchmark.java
+new file mode 100644
+index 0000000000..79ad119fce
+--- /dev/null
++++ b/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonScalarConsumptionBenchmark.java
+@@ -0,0 +1,94 @@
++package org.hibernate.search.integrationtest.performance.backend.elasticsearch;
++
++import java.util.concurrent.TimeUnit;
++
++import org.hibernate.search.util.json.JsonElement;
++import org.hibernate.search.util.json.spi.JsonParsingOptions;
++
++import org.openjdk.jmh.annotations.Benchmark;
++import org.openjdk.jmh.annotations.BenchmarkMode;
++import org.openjdk.jmh.annotations.Fork;
++import org.openjdk.jmh.annotations.Measurement;
++import org.openjdk.jmh.annotations.Mode;
++import org.openjdk.jmh.annotations.OutputTimeUnit;
++import org.openjdk.jmh.annotations.Scope;
++import org.openjdk.jmh.annotations.Setup;
++import org.openjdk.jmh.annotations.State;
++import org.openjdk.jmh.annotations.Warmup;
++import org.openjdk.jmh.infra.Blackhole;
++
++import tools.jackson.core.JsonToken;
++import tools.jackson.core.ObjectReadContext;
++import tools.jackson.core.StreamReadConstraints;
++import tools.jackson.core.json.JsonFactory;
++
++/** Upstream String token completion versus complete tree construction; never skip lazy string completion. */
++@BenchmarkMode(Mode.Throughput)
++@OutputTimeUnit(TimeUnit.SECONDS)
++@Warmup(iterations = 5, time = 1)
++@Measurement(iterations = 5, time = 1)
++@Fork(3)
++public class JsonScalarConsumptionBenchmark {
++	@State(Scope.Thread)
++	public static class Scalars extends JsonComparisonBenchmark.Bodies {
++		final JsonFactory jackson = factory();
++
++		private static JsonFactory factory() {
++			var options = JsonParsingOptions.DEFAULT;
++			return JsonFactory.builder().streamReadConstraints( StreamReadConstraints.builder()
++					.maxNestingDepth( options.maxDepth() ).maxStringLength( options.maxStringLength() )
++					.maxNameLength( options.maxNameLength() ).maxNumberLength( options.maxNumberLength() )
++					.maxDocumentLength( -1 ).maxTokenCount( -1 ).build() ).build();
++		}
++
++		@Override
++		@Setup
++		public void setup() {
++			super.setup();
++			String expected = parts.get( 0 ).get( "text" ).getAsString();
++			String scalar = null;
++			int strings = 0;
++			try ( var parser = jackson.createParser( ObjectReadContext.empty(), json ) ) {
++				JsonToken token;
++				while ( ( token = parser.nextToken() ) != null ) {
++					if ( token == JsonToken.VALUE_STRING ) {
++						scalar = parser.getString();
++						strings++;
++					}
++				}
++			}
++			if ( strings != 1
++					|| !expected.equals( scalar )
++					|| !expected.equals( parsing.parse( json ).getAsJsonObject().get( "text" ).getAsString() ) ) {
++				throw new IllegalStateException( "Scalar completion mismatch" );
++			}
++		}
++	}
++
++	@Benchmark
++	public long jacksonTokens(Scalars state, Blackhole blackhole) {
++		long size = 0;
++		try ( var parser = state.jackson.createParser( ObjectReadContext.empty(), state.json ) ) {
++			JsonToken token;
++			while ( ( token = parser.nextToken() ) != null ) {
++				size++;
++				if ( token == JsonToken.PROPERTY_NAME || token.isScalarValue() ) {
++					String value = parser.getString();
++					blackhole.consume( value );
++					size += value.length();
++				}
++			}
++		}
++		return size;
++	}
++
++	@Benchmark
++	public JsonElement searchParser(Scalars state) {
++		return state.parsing.parse( state.json );
++	}
++
++	@Benchmark
++	public Object gsonParser(Scalars state) {
++		return state.gson.fromJson( state.json, com.google.gson.JsonObject.class );
++	}
++}
+diff --git a/integrationtest/performance/backend/scripts/__pycache__/json-benchmark-runner.cpython-314.pyc b/integrationtest/performance/backend/scripts/__pycache__/json-benchmark-runner.cpython-314.pyc
+new file mode 100644
+index 0000000000000000000000000000000000000000..c99a8b18039340017aba47bea0455f09a40b66cc
+GIT binary patch
+literal 17239
+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
+
+literal 0
+HcmV?d00001

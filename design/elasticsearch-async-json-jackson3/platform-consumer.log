@@ -1,0 +1,29 @@
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by org.fusesource.jansi.internal.JansiLoader in an unnamed module (file:/home/agentuser/.m2/wrapper/dists/apache-maven-3.9.16-bin/4200fbc6/apache-maven-3.9.16/lib/jansi-2.4.3.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+[INFO] Scanning for projects...
+[WARNING] This build will only read from the build cache, since the clean lifecycle is not part of the build invocation.
+[INFO]
+[INFO] ---------< org.hibernate.search.probe:jackson-platform-probe >----------
+[INFO] Building jackson-platform-probe 1
+[INFO]   from platform-consumer-pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO]
+[INFO] --- dependency:3.7.0:tree (default-cli) @ jackson-platform-probe ---
+[INFO] org.hibernate.search.probe:jackson-platform-probe:jar:1
+[INFO] +- org.hibernate.search:hibernate-search-util-json:jar:9.0.0-SNAPSHOT:compile
+[INFO] |  \- org.hibernate.search:hibernate-search-util-common:jar:9.0.0-SNAPSHOT:compile
+[INFO] |     +- org.jboss.logging:jboss-logging:jar:3.6.3.Final:compile
+[INFO] |     +- org.hibernate.accessor:hibernate-accessor:jar:0.1.0.Alpha5:compile
+[INFO] |     \- io.smallrye:jandex:jar:3.6.0:compile
+[INFO] +- com.fasterxml.jackson.core:jackson-core:jar:2.22.1:compile
+[INFO] \- tools.jackson.core:jackson-core:jar:3.2.2:compile
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.018 s
+[INFO] Finished at: 2026-10-02T15:46:16Z
+[INFO] ------------------------------------------------------------------------
+[INFO] 1 goals, 1 executed

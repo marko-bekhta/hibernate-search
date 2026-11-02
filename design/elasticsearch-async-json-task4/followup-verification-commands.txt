@@ -1,0 +1,5 @@
+./mvnw clean install -pl util/json,integrationtest/performance/backend/elasticsearch -am -Dtest=JsonModelTest,JsonParserTest,JsonAccessorTest,JsonOutputTest,JsonApiBoundaryTest,JsonOutputRetentionTest,JsonParserCleanupTest,ElasticsearchJsonBodyTest -Dsurefire.failIfNoSpecifiedTests=false -DskipITs -Dno-build-cache
+./mvnw clean install -pl util/json -am -Dtest=JsonModelTest,JsonParserTest,JsonAccessorTest,JsonOutputTest,JsonApiBoundaryTest,JsonOutputRetentionTest,JsonParserCleanupTest -Dsurefire.failIfNoSpecifiedTests=false -DskipITs -Dno-build-cache
+./mvnw clean package -pl integrationtest/performance/backend/elasticsearch -DskipTests -DskipITs -Dno-build-cache
+taskset -c 0,2 java -Djson.benchmark.cores=0,2 -cp integrationtest/performance/backend/elasticsearch/target/benchmarks.jar org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSlowConsumerHarness
+Every JMH run's exact invocation and Java command are retained in its environment.json/command.txt.

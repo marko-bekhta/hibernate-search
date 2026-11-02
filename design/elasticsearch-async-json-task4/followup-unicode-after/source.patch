@@ -1,0 +1,124 @@
+diff --git a/util/json/src/main/java/org/hibernate/search/util/json/impl/Utf8JsonWriteCursor.java b/util/json/src/main/java/org/hibernate/search/util/json/impl/Utf8JsonWriteCursor.java
+index b739ce193d..d044585f30 100644
+--- a/util/json/src/main/java/org/hibernate/search/util/json/impl/Utf8JsonWriteCursor.java
++++ b/util/json/src/main/java/org/hibernate/search/util/json/impl/Utf8JsonWriteCursor.java
+@@ -55,7 +55,7 @@ public int write(ByteBuffer destination) {
+ 		while ( destination.hasRemaining() && !complete ) {
+ 			if ( pendingOffset == pendingLength ) {
+ 				pendingOffset = pendingLength = 0;
+-				if ( writeAsciiRun( destination ) ) {
++				if ( writeAsciiRun( destination ) || writeUnicodeRun( destination ) ) {
+ 					if ( scalar == null && nextValue == null && frames.isEmpty() ) {
+ 						complete = true;
+ 						pending = null;
+@@ -122,6 +122,76 @@ private boolean writeAsciiRun(ByteBuffer destination) {
+ 		return true;
+ 	}
+ 
++	/** Encode complete units directly into caller storage; the last partial unit uses pending. */
++	private boolean writeUnicodeRun(ByteBuffer destination) {
++		if ( scalar == null
++				|| !quoted || scalarStage != 1 || !destination.hasArray()
++				|| destination.remaining() < 6 ) {
++			return false;
++		}
++		byte[] array = destination.array();
++		int base = destination.arrayOffset();
++		int position = base + destination.position();
++		int end = base + destination.limit() - 6;
++		int offset = scalarOffset;
++		String text = scalar;
++		while ( position <= end && offset < text.length() ) {
++			char character = text.charAt( offset++ );
++			if ( character < 128 && SAFE_ASCII[character] ) {
++				array[position++] = (byte) character;
++				continue;
++			}
++			char escape = switch ( character ) {
++				case '"', '\\' -> character;
++				case '\b' -> 'b';
++				case '\f' -> 'f';
++				case '\n' -> 'n';
++				case '\r' -> 'r';
++				case '\t' -> 't';
++				default -> 0;
++			};
++			if ( escape != 0 ) {
++				array[position++] = '\\';
++				array[position++] = (byte) escape;
++			}
++			else if ( character < 128
++					|| character == 0x2028 || character == 0x2029
++					|| Character.isSurrogate( character )
++							&& !( Character.isHighSurrogate( character )
++									&& offset < text.length()
++									&& Character.isLowSurrogate( text.charAt( offset ) ) ) ) {
++				array[position++] = '\\';
++				array[position++] = 'u';
++				array[position++] = (byte) HEX.charAt( character >> 12 & 0xf );
++				array[position++] = (byte) HEX.charAt( character >> 8 & 0xf );
++				array[position++] = (byte) HEX.charAt( character >> 4 & 0xf );
++				array[position++] = (byte) HEX.charAt( character & 0xf );
++			}
++			else if ( character < 0x800 ) {
++				array[position++] = (byte) ( 0xc0 | character >> 6 );
++				array[position++] = (byte) ( 0x80 | character & 0x3f );
++			}
++			else if ( Character.isHighSurrogate( character ) ) {
++				int codePoint = Character.toCodePoint( character, text.charAt( offset++ ) );
++				array[position++] = (byte) ( 0xf0 | codePoint >> 18 );
++				array[position++] = (byte) ( 0x80 | codePoint >> 12 & 0x3f );
++				array[position++] = (byte) ( 0x80 | codePoint >> 6 & 0x3f );
++				array[position++] = (byte) ( 0x80 | codePoint & 0x3f );
++			}
++			else {
++				array[position++] = (byte) ( 0xe0 | character >> 12 );
++				array[position++] = (byte) ( 0x80 | character >> 6 & 0x3f );
++				array[position++] = (byte) ( 0x80 | character & 0x3f );
++			}
++		}
++		destination.position( position - base );
++		scalarOffset = offset;
++		if ( offset == text.length() ) {
++			scalarStage = 2;
++		}
++		return true;
++	}
++
+ 	private void prepare() {
+ 		while ( pendingLength == 0 ) {
+ 			if ( scalar != null ) {
+diff --git a/util/json/src/test/java/org/hibernate/search/util/json/JsonOutputTest.java b/util/json/src/test/java/org/hibernate/search/util/json/JsonOutputTest.java
+index a1ab0522c1..09723db0a4 100644
+--- a/util/json/src/test/java/org/hibernate/search/util/json/JsonOutputTest.java
++++ b/util/json/src/test/java/org/hibernate/search/util/json/JsonOutputTest.java
+@@ -23,7 +23,7 @@
+ 
+ class JsonOutputTest {
+ 	@ParameterizedTest
+-	@ValueSource(ints = { 1, 2, 5, 8192 })
++	@ValueSource(ints = { 1, 2, 3, 4, 5, 6, 7, 11, 8192 })
+ 	void fragmentedOutputAndBufferBoundaries(int capacity) throws IOException {
+ 		JsonObject tree = fixture();
+ 		JsonBody body = JsonBodies.of( tree );
+@@ -81,6 +81,20 @@ void allCharacterEscapesAndSupplementaryPairsAgreeWithJackson() throws IOExcepti
+ 				.isEqualTo( "\"\\u003c\\u003e\\u0026\\u003d\\u0027\\u2028\\u2029é中😀\\ud800x\\udfff\"" );
+ 	}
+ 
++	@Test
++	void directUnicodeRunsYieldAtEveryEncodedUnitBoundary() throws IOException {
++		String text = "aé中😀\"\\\b\f\n\r\t\u0000<>&='\u2028\u2029\ud800x\udfff";
++		JsonObject tree = new JsonObject();
++		// Vary the prefix to exercise each remaining destination size for both names and values.
++		for ( int prefix = 0; prefix < 12; prefix++ ) {
++			tree.addProperty( "x".repeat( prefix ) + text, text.repeat( 4 ) );
++		}
++		byte[] expected = jackson( tree );
++		for ( int capacity = 1; capacity <= 32; capacity++ ) {
++			assertThat( drain( JsonBodies.of( tree ), capacity ) ).isEqualTo( expected );
++		}
++	}
++
+ 	@Test
+ 	void stableBoundedContentLengthAndExactLimit() throws IOException {
+ 		for ( int length : new int[] { 1, 8191, 8192, 8193, 1_000_000 } ) {

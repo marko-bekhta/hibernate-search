@@ -1,0 +1,411 @@
+diff --git a/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonBenchmarkFixtures.java b/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonBenchmarkFixtures.java
+index bdbecad92f..7e6175a16d 100644
+--- a/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonBenchmarkFixtures.java
++++ b/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonBenchmarkFixtures.java
+@@ -57,6 +57,17 @@ public void setup() {
+ 				}
+ 				body.add( "values", numbers );
+ 				break;
++			case "numbers-mixed-10000":
++				String[] mixed = { "-0", "-42", "0.125", "1.00", "6.022e23", "-7E-9", "9223372036854775808", "1e2147483648" };
++				StringBuilder numericDocument = new StringBuilder( "{\"values\":[" );
++				for ( int i = 0; i < 10_000; i++ ) {
++					if ( i != 0 ) {
++						numericDocument.append( ',' );
++					}
++					numericDocument.append( mixed[i % mixed.length] );
++				}
++				body = gson.fromJson( numericDocument.append( "]}" ).toString(), JsonObject.class );
++				break;
+ 			case "bulk-10000":
+ 				for ( int i = 0; i < 10_000; i++ ) {
+ 					JsonObject metadata = new JsonObject();
+diff --git a/util/json/src/main/java/org/hibernate/search/util/json/impl/JsonTreeBuilder.java b/util/json/src/main/java/org/hibernate/search/util/json/impl/JsonTreeBuilder.java
+index 4ab4b75cbe..99d5283127 100644
+--- a/util/json/src/main/java/org/hibernate/search/util/json/impl/JsonTreeBuilder.java
++++ b/util/json/src/main/java/org/hibernate/search/util/json/impl/JsonTreeBuilder.java
+@@ -21,14 +21,14 @@ void add(JsonElement value) {
+ 		}
+ 		else {
+ 			Frame frame = frames.peek();
+-			if ( frame.container.isJsonArray() ) {
+-				frame.container.getAsJsonArray().add( value );
++			if ( frame.array != null ) {
++				frame.array.add( value );
+ 			}
+ 			else {
+ 				if ( frame.name == null ) {
+ 					throw new JsonParseException( "Missing JSON member name" );
+ 				}
+-				frame.container.getAsJsonObject().add( frame.name, value );
++				frame.object.add( frame.name, value );
+ 				frame.name = null;
+ 			}
+ 		}
+@@ -70,11 +70,18 @@ void clear() {
+ 	}
+ 
+ 	private static final class Frame {
+-		private final JsonElement container;
++		private final JsonObject object;
++		private final JsonArray array;
+ 		private String name;
+ 
+-		private Frame(JsonElement container) {
+-			this.container = container;
++		private Frame(JsonObject object) {
++			this.object = object;
++			this.array = null;
++		}
++
++		private Frame(JsonArray array) {
++			this.object = null;
++			this.array = array;
+ 		}
+ 	}
+ }
+diff --git a/util/json/src/main/java/org/hibernate/search/util/json/impl/ResumableJsonFactory.java b/util/json/src/main/java/org/hibernate/search/util/json/impl/ResumableJsonFactory.java
+index 3c1f0091f0..edd7240381 100644
+--- a/util/json/src/main/java/org/hibernate/search/util/json/impl/ResumableJsonFactory.java
++++ b/util/json/src/main/java/org/hibernate/search/util/json/impl/ResumableJsonFactory.java
+@@ -1,5 +1,7 @@
+ package org.hibernate.search.util.json.impl;
+ 
++import java.nio.ByteBuffer;
++
+ import tools.jackson.core.JsonToken;
+ import tools.jackson.core.ObjectReadContext;
+ import tools.jackson.core.io.IOContext;
+@@ -25,11 +27,40 @@ NonBlockingByteBufferJsonParser createResumableByteBufferParser(ObjectReadContex
+ 	}
+ 
+ 	private static final class ResumableParser extends NonBlockingByteBufferJsonParser {
++		private byte[] inputArray;
++		private int inputArrayOffset;
++
+ 		private ResumableParser(ObjectReadContext readContext, IOContext context, int features, int formatFeatures,
+ 				ByteQuadsCanonicalizer symbols) {
+ 			super( readContext, context, features, formatFeatures, symbols );
+ 		}
+ 
++		@Override
++		public void feedInput(ByteBuffer input) {
++			super.feedInput( input );
++			// Heap slices need only their array offset; direct/read-only storage stays on Core's path.
++			// Feeding the empty ownership-handoff buffer also clears this caller-array reference.
++			inputArray = input.hasArray() ? input.array() : null;
++			inputArrayOffset = input.hasArray() ? input.arrayOffset() : 0;
++		}
++
++		@Override
++		protected byte getByteFromBuffer(int offset) {
++			return inputArray == null ? super.getByteFromBuffer( offset ) : inputArray[inputArrayOffset + offset];
++		}
++
++		@Override
++		protected byte getNextSignedByteFromBuffer() {
++			return inputArray == null ? super.getNextSignedByteFromBuffer() : inputArray[inputArrayOffset + _inputPtr++];
++		}
++
++		@Override
++		protected int getNextUnsignedByteFromBuffer() {
++			return inputArray == null
++					? super.getNextUnsignedByteFromBuffer()
++					: inputArray[inputArrayOffset + _inputPtr++] & 0xff;
++		}
++
+ 		@Override
+ 		public JsonToken nextToken() {
+ 			while ( true ) {
+diff --git a/util/json/src/main/java/org/hibernate/search/util/json/impl/Utf8Validator.java b/util/json/src/main/java/org/hibernate/search/util/json/impl/Utf8Validator.java
+index 68dcee1ee0..ed535d1c6b 100644
+--- a/util/json/src/main/java/org/hibernate/search/util/json/impl/Utf8Validator.java
++++ b/util/json/src/main/java/org/hibernate/search/util/json/impl/Utf8Validator.java
+@@ -11,8 +11,10 @@ final class Utf8Validator {
+ 	private int upper = 0xbf;
+ 
+ 	void accept(ByteBuffer input) {
+-		for ( int i = input.position(); i < input.limit(); i++ ) {
+-			int value = input.get( i ) & 0xff;
++		int offset = input.position();
++		int limit = input.limit();
++		while ( offset < limit ) {
++			int value = input.get( offset++ ) & 0xff;
+ 			if ( remaining != 0 ) {
+ 				if ( value < lower || value > upper ) {
+ 					throw new JsonParseException( "Invalid UTF-8 continuation byte" );
+@@ -22,7 +24,15 @@ void accept(ByteBuffer input) {
+ 				upper = 0xbf;
+ 			}
+ 			else if ( value <= 0x7f ) {
+-				/* ASCII, validated as JSON by the parser. */ }
++				// ASCII is validated as JSON by the parser. Skip complete ASCII runs without
++				// changing continuation state or reading beyond the caller's offered region.
++				while ( offset <= limit - Long.BYTES && ( input.getLong( offset ) & 0x8080808080808080L ) == 0 ) {
++					offset += Long.BYTES;
++				}
++				while ( offset < limit && input.get( offset ) >= 0 ) {
++					offset++;
++				}
++			}
+ 			else if ( value >= 0xc2 && value <= 0xdf ) {
+ 				remaining = 1;
+ 			}
+diff --git a/util/json/src/test/java/org/hibernate/search/util/json/JsonParserTest.java b/util/json/src/test/java/org/hibernate/search/util/json/JsonParserTest.java
+index a730beea06..e0aff2b83b 100644
+--- a/util/json/src/test/java/org/hibernate/search/util/json/JsonParserTest.java
++++ b/util/json/src/test/java/org/hibernate/search/util/json/JsonParserTest.java
+@@ -155,6 +155,38 @@ void rejectsMalformedAndTruncatedUtf8() {
+ 		}
+ 	}
+ 
++	@Test
++	void asciiRunsStillRejectNonCanonicalUtf8AtEveryBlockAlignment() {
++		for ( byte[] invalid : new byte[][] {
++				{ (byte) 0xc0, (byte) 0xaf },
++				{ (byte) 0xed, (byte) 0xa0, (byte) 0x80 },
++				{ (byte) 0xf4, (byte) 0x90, (byte) 0x80, (byte) 0x80 },
++				{ (byte) 0xe0, (byte) 0x80, (byte) 0xaf },
++				{ (byte) 0xc3, 'a' },
++				{ (byte) 0x80 } } ) {
++			for ( int alignment = 0; alignment < 16; alignment++ ) {
++				byte[] prefix = ( "\"" + "a".repeat( 16 + alignment ) ).getBytes( StandardCharsets.UTF_8 );
++				byte[] bytes = new byte[prefix.length + invalid.length + 1];
++				System.arraycopy( prefix, 0, bytes, 0, prefix.length );
++				System.arraycopy( invalid, 0, bytes, prefix.length, invalid.length );
++				bytes[bytes.length - 1] = '"';
++				for ( int kind = 0; kind < 4; kind++ ) {
++					int bufferKind = kind;
++					for ( int split = prefix.length - 1; split < bytes.length; split++ ) {
++						int boundary = split;
++						assertThatThrownBy( () -> {
++							try ( JsonParserSession parser = parsing.createParser() ) {
++								consume( parser, buffer( bytes, 0, boundary, bufferKind ) );
++								consume( parser, buffer( bytes, boundary, bytes.length - boundary, bufferKind ) );
++								parser.endOfInput();
++							}
++						} ).isInstanceOf( JsonParseException.class );
++					}
++				}
++			}
++		}
++	}
++
+ 	@Test
+ 	void completeRootStillRequiresEndAndRejectsLaterContent() {
+ 		try ( JsonParserSession parser = parsing.createParser() ) {
+diff --git a/util/json/src/test/java/org/hibernate/search/util/json/impl/JsonParserCleanupTest.java b/util/json/src/test/java/org/hibernate/search/util/json/impl/JsonParserCleanupTest.java
+index fb3830224c..1c9b641021 100644
+--- a/util/json/src/test/java/org/hibernate/search/util/json/impl/JsonParserCleanupTest.java
++++ b/util/json/src/test/java/org/hibernate/search/util/json/impl/JsonParserCleanupTest.java
+@@ -23,6 +23,7 @@ void utf8SessionsReleasePartialTreesAndParserReferencesOnEveryTerminalPath() {
+ 				.isEqualTo( parsing.parse( "{\"a\":[1]}" ) );
+ 		assertThat( cancelled ).extracting( "parser" ).extracting( "_inputBuffer" )
+ 				.satisfies( value -> assertThat( ( (ByteBuffer) value ).capacity() ).isZero() );
++		assertThat( cancelled ).extracting( "parser" ).extracting( "inputArray" ).isNull();
+ 		cancelled.close();
+ 		assertUtf8Clean( cancelled );
+ 		JsonParserSession failed = parsing.createParser();
+diff --git a/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonNumericUtf8DiagnosticBenchmark.java b/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonNumericUtf8DiagnosticBenchmark.java
+new file mode 100644
+index 0000000000..78bd14aa67
+--- /dev/null
++++ b/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonNumericUtf8DiagnosticBenchmark.java
+@@ -0,0 +1,197 @@
++package org.hibernate.search.integrationtest.performance.backend.elasticsearch;
++
++import java.nio.ByteBuffer;
++import java.nio.charset.StandardCharsets;
++import java.util.ArrayList;
++import java.util.List;
++import java.util.concurrent.TimeUnit;
++
++import org.hibernate.search.util.json.JsonArray;
++import org.hibernate.search.util.json.JsonObject;
++import org.hibernate.search.util.json.impl.JsonNumber;
++import org.hibernate.search.util.json.spi.JsonParsingOptions;
++
++import org.openjdk.jmh.annotations.Benchmark;
++import org.openjdk.jmh.annotations.BenchmarkMode;
++import org.openjdk.jmh.annotations.Fork;
++import org.openjdk.jmh.annotations.Measurement;
++import org.openjdk.jmh.annotations.Mode;
++import org.openjdk.jmh.annotations.OutputTimeUnit;
++import org.openjdk.jmh.annotations.Param;
++import org.openjdk.jmh.annotations.Scope;
++import org.openjdk.jmh.annotations.Setup;
++import org.openjdk.jmh.annotations.State;
++import org.openjdk.jmh.annotations.Warmup;
++import org.openjdk.jmh.infra.Blackhole;
++
++import tools.jackson.core.JsonParser;
++import tools.jackson.core.JsonToken;
++import tools.jackson.core.ObjectReadContext;
++import tools.jackson.core.StreamReadConstraints;
++import tools.jackson.core.async.ByteArrayFeeder;
++import tools.jackson.core.async.ByteBufferFeeder;
++import tools.jackson.core.json.JsonFactory;
++
++/** Valid numeric fixtures only: upstream feeding/completion diagnostics, not strict Search SPI competitors. */
++@BenchmarkMode(Mode.Throughput)
++@OutputTimeUnit(TimeUnit.SECONDS)
++@Warmup(iterations = 8, time = 1)
++@Measurement(iterations = 5, time = 1)
++@Fork(3)
++public class JsonNumericUtf8DiagnosticBenchmark {
++	@State(Scope.Thread)
++	public static class Input {
++		@Param({ "integers", "mixed" })
++		public String fixture;
++		@Param({ "tokens", "numbers", "tree" })
++		public String work;
++		byte[] utf8;
++		String[] lexemes;
++		JsonFactory jackson;
++
++		@Setup
++		public void setup() {
++			JsonBenchmarkSupport.verifyAffinity();
++			var options = JsonParsingOptions.DEFAULT;
++			jackson = JsonFactory.builder().streamReadConstraints( StreamReadConstraints.builder()
++					.maxNestingDepth( options.maxDepth() ).maxStringLength( options.maxStringLength() )
++					.maxNameLength( options.maxNameLength() ).maxNumberLength( options.maxNumberLength() )
++					.maxDocumentLength( -1 ).maxTokenCount( -1 ).build() ).build();
++			lexemes = new String[10_000];
++			String[] mixed = { "-42", "0.125", "1.00", "6.022e23", "-7E-9", "9223372036854775808", "1e2147483648" };
++			for ( int i = 0; i < lexemes.length; i++ ) {
++				lexemes[i] = switch ( fixture ) {
++					case "integers" -> Integer.toString( i );
++					case "mixed" -> mixed[i % mixed.length];
++					default -> throw new IllegalArgumentException( fixture );
++				};
++			}
++			utf8 = ( "{\"values\":[" + String.join( ",", lexemes ) + "]}" ).getBytes( StandardCharsets.UTF_8 );
++			if ( !List.of( "tokens", "numbers", "tree" ).contains( work ) ) {
++				throw new IllegalArgumentException( work );
++			}
++			for ( String input : List.of( "buffer", "array", "sync" ) ) {
++				List<String> actual = new ArrayList<>();
++				consume( this, input, null, actual );
++				if ( !List.of( lexemes ).equals( actual ) ) {
++					throw new IllegalStateException( "Diagnostic numeric lexeme mismatch: " + input );
++				}
++			}
++		}
++	}
++
++	@Benchmark
++	public long asyncByteBuffer(Input state, Blackhole blackhole) {
++		return consume( state, "buffer", blackhole, null );
++	}
++
++	@Benchmark
++	public long asyncByteArray(Input state, Blackhole blackhole) {
++		return consume( state, "array", blackhole, null );
++	}
++
++	@Benchmark
++	public long synchronousUtf8(Input state, Blackhole blackhole) {
++		return consume( state, "sync", blackhole, null );
++	}
++
++	@Benchmark
++	public JsonObject treeFromOwnedLexemes(Input state) {
++		JsonObject root = new JsonObject();
++		JsonArray values = new JsonArray();
++		root.add( "values", values );
++		for ( String lexeme : state.lexemes ) {
++			values.add( JsonNumber.jsonNumber( lexeme ) );
++		}
++		return root;
++	}
++
++	private static long consume(Input state, String input, Blackhole blackhole, List<String> actual) {
++		try ( JsonParser parser = switch ( input ) {
++			case "buffer" -> state.jackson.createNonBlockingByteBufferParser( ObjectReadContext.empty() );
++			case "array" -> state.jackson.createNonBlockingByteArrayParser( ObjectReadContext.empty() );
++			case "sync" -> state.jackson.createParser( ObjectReadContext.empty(), state.utf8 );
++			default -> throw new IllegalArgumentException( input );
++		} ) {
++			JsonObject root = null;
++			JsonArray values = null;
++			if ( "tree".equals( state.work ) ) {
++				root = new JsonObject();
++				values = new JsonArray();
++				root.add( "values", values );
++			}
++			long count = 0;
++			if ( "sync".equals( input ) ) {
++				count = drain( parser, state.work, values, blackhole, actual, true );
++			}
++			else {
++				for ( int offset = 0; offset < state.utf8.length; ) {
++					int end = Math.min( offset + 8192, state.utf8.length );
++					if ( "buffer".equals( input ) ) {
++						( (ByteBufferFeeder) parser.nonBlockingInputFeeder() )
++								.feedInput( ByteBuffer.wrap( state.utf8, offset, end - offset ).slice() );
++					}
++					else {
++						( (ByteArrayFeeder) parser.nonBlockingInputFeeder() ).feedInput( state.utf8, offset, end );
++					}
++					count += drain( parser, state.work, values, blackhole, actual, false );
++					offset = end;
++				}
++				parser.nonBlockingInputFeeder().endOfInput();
++				count += drain( parser, state.work, values, blackhole, actual, true );
++			}
++			if ( actual != null && values != null ) {
++				if ( values.size() != state.lexemes.length ) {
++					throw new IllegalStateException( "Incomplete diagnostic tree" );
++				}
++				for ( int i = 0; i < values.size(); i++ ) {
++					if ( !state.lexemes[i].equals( values.get( i ).getAsString() ) ) {
++						throw new IllegalStateException( "Diagnostic tree lexeme mismatch" );
++					}
++				}
++			}
++			if ( blackhole != null && root != null ) {
++				blackhole.consume( root );
++			}
++			if ( count != state.lexemes.length ) {
++				throw new IllegalStateException( "Incomplete numeric diagnostic" );
++			}
++			return count;
++		}
++	}
++
++	private static long drain(JsonParser parser, String work, JsonArray values, Blackhole blackhole,
++			List<String> actual, boolean ended) {
++		long count = 0;
++		while ( true ) {
++			JsonToken token = parser.nextToken();
++			if ( token == null ) {
++				return count;
++			}
++			if ( token == JsonToken.NOT_AVAILABLE ) {
++				if ( ended ) {
++					throw new IllegalStateException( "Incomplete numeric diagnostic at EOF" );
++				}
++				return count;
++			}
++			if ( token == JsonToken.PROPERTY_NAME ) {
++				if ( blackhole != null ) {
++					blackhole.consume( parser.currentName() );
++				}
++			}
++			else if ( token == JsonToken.VALUE_NUMBER_INT || token == JsonToken.VALUE_NUMBER_FLOAT ) {
++				String lexeme = parser.getString();
++				count++;
++				if ( actual != null ) {
++					actual.add( lexeme );
++				}
++				if ( values != null ) {
++					values.add( JsonNumber.jsonNumber( lexeme ) );
++				}
++				else if ( blackhole != null ) {
++					blackhole.consume( "numbers".equals( work ) ? JsonNumber.jsonNumber( lexeme ) : lexeme );
++				}
++			}
++		}
++	}
++}

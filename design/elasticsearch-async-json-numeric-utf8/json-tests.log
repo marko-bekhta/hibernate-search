@@ -1,0 +1,200 @@
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by org.fusesource.jansi.internal.JansiLoader in an unnamed module (file:/home/agentuser/.m2/wrapper/dists/apache-maven-3.9.16-bin/4200fbc6/apache-maven-3.9.16/lib/jansi-2.4.3.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ----------< org.hibernate.search:hibernate-search-util-json >-----------
+[INFO] Building Hibernate Search Utils - JSON 9.0.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.5.0:clean (default-clean) @ hibernate-search-util-json ---
+[INFO] Deleting /home/agentuser/hibernate-search/util/json/target
+[INFO] 
+[INFO] --- build-helper:3.6.2:rootlocation (set-root-location-property) @ hibernate-search-util-json ---
+[INFO] 
+[INFO] --- build-helper:3.6.2:parse-version (parse-project-version) @ hibernate-search-util-json ---
+[INFO] 
+[INFO] --- build-helper:3.6.2:parse-version (parse-project-previous-stable-version) @ hibernate-search-util-json ---
+[INFO] 
+[INFO] --- build-helper:3.6.2:parse-version (parse-hibernate-version) @ hibernate-search-util-json ---
+[INFO] 
+[INFO] --- build-helper:3.6.2:parse-version (parse-hibernate-orm-version) @ hibernate-search-util-json ---
+[INFO] 
+[INFO] --- build-helper:3.6.2:parse-version (parse-lucene-version) @ hibernate-search-util-json ---
+[INFO] 
+[INFO] --- build-helper:3.6.2:parse-version (parse-elasticsearch-main-compatible-version) @ hibernate-search-util-json ---
+[INFO] 
+[INFO] --- build-helper:3.6.2:parse-version (parse-opensearch-main-compatible-version) @ hibernate-search-util-json ---
+[INFO] 
+[INFO] --- build-helper:3.6.2:parse-version (parse-elasticsearch-client-version) @ hibernate-search-util-json ---
+[INFO] 
+[INFO] --- build-helper:3.6.2:parse-version (parse-elasticsearch-test-version) @ hibernate-search-util-json ---
+[INFO] 
+[INFO] --- build-helper:3.6.2:parse-version (parse-gson-version) @ hibernate-search-util-json ---
+[INFO] 
+[INFO] --- build-helper:3.6.2:parse-version (parse-jakarta-persistence-version) @ hibernate-search-util-json ---
+[INFO] 
+[INFO] --- build-helper:3.6.2:parse-version (parse-jakarta-batch-version) @ hibernate-search-util-json ---
+[INFO] 
+[INFO] --- build-helper:3.6.2:parse-version (parse-wildfly-version) @ hibernate-search-util-json ---
+[INFO] 
+[INFO] --- enforcer:3.6.3:enforce (enforce-common-rules) @ hibernate-search-util-json ---
+[INFO] Rule 0: org.apache.maven.enforcer.rules.version.RequireJavaVersion passed
+[INFO] Rule 1: org.apache.maven.enforcer.rules.version.RequireMavenVersion passed
+[INFO] Rule 2: org.apache.maven.enforcer.rules.BanDuplicatePomDependencyVersions passed
+[INFO] 
+[INFO] --- enforcer:3.6.3:enforce (enforce-dependency-convergence) @ hibernate-search-util-json ---
+[INFO] Rule 0: org.apache.maven.enforcer.rules.dependency.DependencyConvergence passed
+[INFO] 
+[INFO] --- enforcer:3.6.3:enforce (enforce-banned-dependencies-rules) @ hibernate-search-util-json ---
+[INFO] Rule 0: org.apache.maven.enforcer.rules.dependency.BannedDependencies passed
+[INFO] 
+[INFO] --- enforcer:3.6.3:enforce (enforce-custom-published-modules-rules) @ hibernate-search-util-json ---
+[INFO] Rule 0: org.hibernate.search.build.enforcer.PublicModuleIsDeployedRule passed
+[INFO] 
+[INFO] --- enforcer:3.6.3:enforce (enforce-json-dependency-boundaries) @ hibernate-search-util-json ---
+[INFO] Rule 0: org.apache.maven.enforcer.rules.dependency.BannedDependencies passed
+[INFO] 
+[INFO] --- dependency:3.11.0:properties (default) @ hibernate-search-util-json ---
+[INFO] 
+[INFO] --- spotless:3.10.2:apply (check-apply-formatting) @ hibernate-search-util-json ---
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::staticFieldBase has been called by com.diffplug.spotless.java.ModuleHelper (file:/home/agentuser/.m2/repository/com/diffplug/spotless/spotless-lib/4.10.2/spotless-lib-4.10.2.jar)
+WARNING: Please consider reporting this to the maintainers of class com.diffplug.spotless.java.ModuleHelper
+WARNING: sun.misc.Unsafe::staticFieldBase will be removed in a future release
+[INFO] Spotless.Java is keeping 55 files clean - 0 were changed to be clean, 1 were already clean, 54 were skipped because caching determined they were already clean
+[INFO] 
+[INFO] --- resources:3.5.0:copy-resources (copy-license) @ hibernate-search-util-json ---
+[INFO] Copying 1 resource from ../.. to target/classes/META-INF
+[INFO] 
+[INFO] --- resources:3.5.0:resources (default-resources) @ hibernate-search-util-json ---
+[INFO] skip non existing resourceDirectory /home/agentuser/hibernate-search/util/json/src/main/resources
+[INFO] 
+[INFO] --- flatten:1.8.0:flatten (flatten-pom) @ hibernate-search-util-json ---
+[INFO] Generating flattened POM of project org.hibernate.search:hibernate-search-util-json:jar:9.0.0-SNAPSHOT...
+[INFO] 
+[INFO] --- compiler:3.16.0:compile (default-compile) @ hibernate-search-util-json ---
+[INFO] [maven-compiler-plugin] Using executable at path '/usr/lib/jvm/java-25-openjdk/bin/javac'; resolved version: javac 25.0.4.1 openjdk version "25.0.4.1" 2026-08-18 OpenJDK Runtime Environment (Red_Hat-25.0.4.1.1-1) (build 25.0.4.1+1) OpenJDK 64-Bit Server VM (Red_Hat-25.0.4.1.1-1) (build 25.0.4.1+1, mixed mode, sharing)
+[INFO] [maven-compiler-plugin] Using executable at path '/usr/lib/jvm/java-25-openjdk/bin/javac'; resolved version: javac 25.0.4.1 openjdk version "25.0.4.1" 2026-08-18 OpenJDK Runtime Environment (Red_Hat-25.0.4.1.1-1) (build 25.0.4.1+1) OpenJDK 64-Bit Server VM (Red_Hat-25.0.4.1.1-1) (build 25.0.4.1+1, mixed mode, sharing)
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 48 source files with javac [forked debug deprecation release 17] to target/classes
+[INFO] 
+[INFO] --- forbiddenapis:3.11:check (verify-forbidden-apis-main-public) @ hibernate-search-util-json ---
+[INFO] Scanning for classes to check...
+[INFO] Reading bundled API signatures: jdk-system-out
+[INFO] Reading bundled API signatures: jdk-non-portable
+[INFO] Reading bundled API signatures: jdk-unsafe-17
+[INFO] Reading bundled API signatures: jdk-deprecated-17
+[INFO] Reading bundled API signatures: jdk-deprecated-18
+[INFO] Reading bundled API signatures: jdk-deprecated-19
+[INFO] Reading bundled API signatures: jdk-deprecated-20
+[INFO] Reading bundled API signatures: jdk-deprecated-21
+[INFO] Reading bundled API signatures: jdk-deprecated-22
+[INFO] Reading bundled API signatures: jdk-deprecated-23
+[INFO] Reading bundled API signatures: jdk-deprecated-24
+[INFO] Reading bundled API signatures: jdk-deprecated-25
+[INFO] Reading bundled API signatures: jdk-internal-17
+[INFO] Reading bundled API signatures: jdk-internal-18
+[INFO] Reading bundled API signatures: jdk-internal-19
+[INFO] Reading bundled API signatures: jdk-internal-20
+[INFO] Reading bundled API signatures: jdk-internal-21
+[INFO] Reading bundled API signatures: jdk-internal-22
+[INFO] Reading bundled API signatures: jdk-internal-23
+[INFO] Reading bundled API signatures: jdk-internal-24
+[INFO] Reading bundled API signatures: jdk-internal-25
+[INFO] Reading API signatures: jar:file:/home/agentuser/.m2/repository/org/hibernate/search/hibernate-search-build-config/9.0.0-SNAPSHOT/hibernate-search-build-config-9.0.0-SNAPSHOT.jar!/forbidden-public.txt
+[INFO] Reading API signatures: jar:file:/home/agentuser/.m2/repository/org/hibernate/search/hibernate-search-build-config/9.0.0-SNAPSHOT/hibernate-search-build-config-9.0.0-SNAPSHOT.jar!/hibernate-core-incubating.txt
+[INFO] Reading API signatures: jar:file:/home/agentuser/.m2/repository/org/hibernate/search/hibernate-search-build-config/9.0.0-SNAPSHOT/hibernate-search-build-config-9.0.0-SNAPSHOT.jar!/hibernate-core-internal-packages.txt
+[INFO] Loading classes to check...
+[INFO] Scanning classes for violations...
+[INFO] Scanned 71 class file(s) for forbidden API invocations (in 0.10s), 0 error(s).
+[INFO] 
+[INFO] --- build-helper:3.6.2:add-test-source (add-test-source-noparameters) @ hibernate-search-util-json ---
+[INFO] Test Source directory: /home/agentuser/hibernate-search/util/json/src/test/java-noparameters added.
+[INFO] 
+[INFO] --- resources:3.5.0:testResources (default-testResources) @ hibernate-search-util-json ---
+[INFO] skip non existing resourceDirectory /home/agentuser/hibernate-search/util/json/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.16.0:testCompile (default-testCompile) @ hibernate-search-util-json ---
+[INFO] [maven-compiler-plugin] Using executable at path '/usr/lib/jvm/java-25-openjdk/bin/javac'; resolved version: javac 25.0.4.1 openjdk version "25.0.4.1" 2026-08-18 OpenJDK Runtime Environment (Red_Hat-25.0.4.1.1-1) (build 25.0.4.1+1) OpenJDK 64-Bit Server VM (Red_Hat-25.0.4.1.1-1) (build 25.0.4.1+1, mixed mode, sharing)
+[INFO] [maven-compiler-plugin] Using executable at path '/usr/lib/jvm/java-25-openjdk/bin/javac'; resolved version: javac 25.0.4.1 openjdk version "25.0.4.1" 2026-08-18 OpenJDK Runtime Environment (Red_Hat-25.0.4.1.1-1) (build 25.0.4.1+1) OpenJDK 64-Bit Server VM (Red_Hat-25.0.4.1.1-1) (build 25.0.4.1+1, mixed mode, sharing)
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 7 source files with javac [forked debug deprecation release 25] to target/test-classes
+[INFO] 
+[INFO] --- compiler:3.16.0:testCompile (noparameters-testCompile) @ hibernate-search-util-json ---
+[INFO] [maven-compiler-plugin] Using executable at path '/usr/lib/jvm/java-25-openjdk/bin/javac'; resolved version: javac 25.0.4.1 openjdk version "25.0.4.1" 2026-08-18 OpenJDK Runtime Environment (Red_Hat-25.0.4.1.1-1) (build 25.0.4.1+1) OpenJDK 64-Bit Server VM (Red_Hat-25.0.4.1.1-1) (build 25.0.4.1+1, mixed mode, sharing)
+[INFO] [maven-compiler-plugin] Using executable at path '/usr/lib/jvm/java-25-openjdk/bin/javac'; resolved version: javac 25.0.4.1 openjdk version "25.0.4.1" 2026-08-18 OpenJDK Runtime Environment (Red_Hat-25.0.4.1.1-1) (build 25.0.4.1+1) OpenJDK 64-Bit Server VM (Red_Hat-25.0.4.1.1-1) (build 25.0.4.1+1, mixed mode, sharing)
+[INFO] Recompiling the module because of changed dependency.
+[INFO] 
+[INFO] --- forbiddenapis:3.11:testCheck (verify-forbidden-apis-tests) @ hibernate-search-util-json ---
+[INFO] Scanning for classes to check...
+[INFO] Reading bundled API signatures: jdk-unsafe-25
+[INFO] Reading bundled API signatures: jdk-deprecated-25
+[INFO] Reading bundled API signatures: jdk-non-portable
+[INFO] Reading bundled API signatures: jdk-internal-25
+[INFO] Reading API signatures: jar:file:/home/agentuser/.m2/repository/org/hibernate/search/hibernate-search-build-config/9.0.0-SNAPSHOT/hibernate-search-build-config-9.0.0-SNAPSHOT.jar!/forbidden-internal.txt
+[INFO] Loading classes to check...
+[INFO] Scanning classes for violations...
+[INFO] Scanned 11 class file(s) for forbidden API invocations (in 0.03s), 0 error(s).
+[INFO] 
+[INFO] --- surefire:3.5.6:test (default-test) @ hibernate-search-util-json ---
+[INFO] [maven-surefire-plugin] Using jvm at path '/usr/lib/jvm/java-25-openjdk/bin/java'; resolved version: openjdk version "25.0.4.1" 2026-08-18 OpenJDK Runtime Environment (Red_Hat-25.0.4.1.1-1) (build 25.0.4.1+1) OpenJDK 64-Bit Server VM (Red_Hat-25.0.4.1.1-1) (build 25.0.4.1+1, mixed mode, sharing)
+[INFO] [maven-surefire-plugin] Using jvm at path '/usr/lib/jvm/java-25-openjdk/bin/java'; resolved version: openjdk version "25.0.4.1" 2026-08-18 OpenJDK Runtime Environment (Red_Hat-25.0.4.1.1-1) (build 25.0.4.1+1) OpenJDK 64-Bit Server VM (Red_Hat-25.0.4.1.1-1) (build 25.0.4.1+1, mixed mode, sharing)
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running org.hibernate.search.util.json.JsonAccessorTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.086 s -- in org.hibernate.search.util.json.JsonAccessorTest
+[INFO] Running org.hibernate.search.util.json.JsonApiBoundaryTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.016 s -- in org.hibernate.search.util.json.JsonApiBoundaryTest
+[INFO] Running org.hibernate.search.util.json.JsonModelTest
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.016 s -- in org.hibernate.search.util.json.JsonModelTest
+[INFO] Running org.hibernate.search.util.json.JsonOutputTest
+[INFO] Tests run: 17, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.074 s -- in org.hibernate.search.util.json.JsonOutputTest
+[INFO] Running org.hibernate.search.util.json.JsonParserTest
+[INFO] Tests run: 59, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.156 s -- in org.hibernate.search.util.json.JsonParserTest
+[INFO] Running org.hibernate.search.util.json.impl.JsonOutputRetentionTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.280 s -- in org.hibernate.search.util.json.impl.JsonOutputRetentionTest
+[INFO] Running org.hibernate.search.util.json.impl.JsonParserCleanupTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.027 s -- in org.hibernate.search.util.json.impl.JsonParserCleanupTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 105, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- jar:3.5.1:jar (default-jar) @ hibernate-search-util-json ---
+[INFO] Building jar: /home/agentuser/hibernate-search/util/json/target/hibernate-search-util-json-9.0.0-SNAPSHOT.jar
+[INFO] 
+[INFO] --- moditect:1.3.0.Final:add-module-info (add-module-infos) @ hibernate-search-util-json ---
+[INFO] Running jdeps --generate-module-info /home/agentuser/hibernate-search/util/json/target/moditect --add-modules org.jboss.jandex,org.hibernate.search.util.common,tools.jackson.core,org.jboss.logging,org.hibernate.accessor --module-path /home/agentuser/.m2/repository/io/smallrye/jandex/3.6.0/jandex-3.6.0.jar:/home/agentuser/.m2/repository/org/hibernate/search/hibernate-search-util-common/9.0.0-SNAPSHOT/hibernate-search-util-common-9.0.0-SNAPSHOT.jar:/home/agentuser/.m2/repository/tools/jackson/core/jackson-core/3.2.2/jackson-core-3.2.2.jar:/home/agentuser/.m2/repository/org/jboss/logging/jboss-logging/3.6.3.Final/jboss-logging-3.6.3.Final.jar:/home/agentuser/.m2/repository/org/hibernate/accessor/hibernate-accessor/0.1.0.Alpha5/hibernate-accessor-0.1.0.Alpha5.jar --multi-release=17 /home/agentuser/hibernate-search/util/json/target/hibernate-search-util-json-9.0.0-SNAPSHOT.jar
+writing to /home/agentuser/hibernate-search/util/json/target/moditect/org.hibernate.search.util.json/versions/17/module-info.java
+[INFO] Created module descriptor at /home/agentuser/hibernate-search/util/json/target/moditect/generated-sources/org.hibernate.search.util.json/module-info.java
+[INFO] 
+[INFO] --- checkstyle:3.6.0:check (check-style) @ hibernate-search-util-json ---
+[INFO] You have 0 Checkstyle violations.
+[INFO] 
+[INFO] --- checkstyle:3.6.0:check (check-style-noparameters) @ hibernate-search-util-json ---
+[INFO] Skipped
+[INFO] 
+[INFO] --- source:3.4.0:jar-no-fork (attach-sources) @ hibernate-search-util-json ---
+[INFO] Building jar: /home/agentuser/hibernate-search/util/json/target/hibernate-search-util-json-9.0.0-SNAPSHOT-sources.jar
+[INFO] 
+[INFO] --- install:3.2.0:install (default-install) @ hibernate-search-util-json ---
+[INFO] Installing /home/agentuser/hibernate-search/util/json/target/.flattened-pom.xml to /home/agentuser/.m2/repository/org/hibernate/search/hibernate-search-util-json/9.0.0-SNAPSHOT/hibernate-search-util-json-9.0.0-SNAPSHOT.pom
+[INFO] Installing /home/agentuser/hibernate-search/util/json/target/hibernate-search-util-json-9.0.0-SNAPSHOT.jar to /home/agentuser/.m2/repository/org/hibernate/search/hibernate-search-util-json/9.0.0-SNAPSHOT/hibernate-search-util-json-9.0.0-SNAPSHOT.jar
+[INFO] Installing /home/agentuser/hibernate-search/util/json/target/hibernate-search-util-json-9.0.0-SNAPSHOT-sources.jar to /home/agentuser/.m2/repository/org/hibernate/search/hibernate-search-util-json/9.0.0-SNAPSHOT/hibernate-search-util-json-9.0.0-SNAPSHOT-sources.jar
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  6.326 s
+[INFO] Finished at: 2026-10-05T22:47:24Z
+[INFO] ------------------------------------------------------------------------
+[INFO] 39 goals, 39 executed

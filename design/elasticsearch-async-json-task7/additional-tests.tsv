@@ -1,0 +1,4 @@
+campaign	tests	failures	errors	skipped
+OpenSearch dummy-credential signing	1	0	0	0
+REST5 dummy-credential signing	1	0	0	0
+JPMS JSON read/export/opens contract	1	0	0	0

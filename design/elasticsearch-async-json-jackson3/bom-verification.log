@@ -1,0 +1,170 @@
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by org.fusesource.jansi.internal.JansiLoader in an unnamed module (file:/home/agentuser/.m2/wrapper/dists/apache-maven-3.9.16-bin/4200fbc6/apache-maven-3.9.16/lib/jansi-2.4.3.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+[INFO] Scanning for projects...
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Build Order:
+[INFO]
+[INFO] Hibernate Search - BOM                                             [pom]
+[INFO] Hibernate Search - Platform BOM common                             [pom]
+[INFO] Hibernate Search - Platform BOM                                    [pom]
+[INFO]
+[INFO] -------------< org.hibernate.search:hibernate-search-bom >--------------
+[INFO] Building Hibernate Search - BOM 9.0.0-SNAPSHOT                     [1/3]
+[INFO]   from pom.xml
+[INFO] --------------------------------[ pom ]---------------------------------
+[INFO]
+[INFO] --- build-helper:3.6.2:rootlocation (set-root-location-property) @ hibernate-search-bom ---
+[INFO]
+[INFO] --- build-helper:3.6.2:parse-version (parse-project-version) @ hibernate-search-bom ---
+[INFO]
+[INFO] --- build-helper:3.6.2:parse-version (parse-project-previous-stable-version) @ hibernate-search-bom ---
+[INFO]
+[INFO] --- enforcer:3.6.3:enforce (enforce-common-rules) @ hibernate-search-bom ---
+[INFO] Rule 0: org.apache.maven.enforcer.rules.version.RequireJavaVersion passed
+[INFO] Rule 1: org.apache.maven.enforcer.rules.version.RequireMavenVersion passed
+[INFO] Rule 2: org.apache.maven.enforcer.rules.BanDuplicatePomDependencyVersions passed
+[INFO]
+[INFO] --- enforcer:3.6.3:enforce (enforce-dependency-convergence) @ hibernate-search-bom ---
+[INFO] Rule 0: org.apache.maven.enforcer.rules.dependency.DependencyConvergence passed
+[INFO]
+[INFO] --- enforcer:3.6.3:enforce (enforce-custom-bom-rules) @ hibernate-search-bom ---
+[INFO] Rule 0: org.hibernate.search.build.enforcer.DependencyManagementIncludesOnlyAllPublicArtifactsRule passed
+[INFO]
+[INFO] --- resources:3.5.0:copy-resources (copy-license) @ hibernate-search-bom ---
+[INFO] Copying 1 resource from ../.. to target/classes/META-INF
+[INFO]
+[INFO] --- flatten:1.8.0:flatten (flatten-pom) @ hibernate-search-bom ---
+[INFO] Generating flattened POM of project org.hibernate.search:hibernate-search-bom:pom:9.0.0-SNAPSHOT...
+[INFO]
+[INFO] --- build-helper:3.6.2:add-test-source (add-test-source-noparameters) @ hibernate-search-bom ---
+[INFO] Test Source directory: /home/agentuser/hibernate-search/bom/public/src/test/java-noparameters added.
+[INFO]
+[INFO] --- install:3.2.0:install (default-install) @ hibernate-search-bom ---
+[INFO] Installing /home/agentuser/hibernate-search/bom/public/target/.flattened-pom.xml to /home/agentuser/.m2/repository/org/hibernate/search/hibernate-search-bom/9.0.0-SNAPSHOT/hibernate-search-bom-9.0.0-SNAPSHOT.pom
+[INFO]
+[INFO] -----< org.hibernate.search:hibernate-search-platform-common-bom >------
+[INFO] Building Hibernate Search - Platform BOM common 9.0.0-SNAPSHOT     [2/3]
+[INFO]   from /home/agentuser/hibernate-search/bom/platform-common/pom.xml
+[INFO] --------------------------------[ pom ]---------------------------------
+[INFO]
+[INFO] --- build-helper:3.6.2:rootlocation (set-root-location-property) @ hibernate-search-platform-common-bom ---
+[INFO]
+[INFO] --- build-helper:3.6.2:parse-version (parse-project-version) @ hibernate-search-platform-common-bom ---
+[INFO]
+[INFO] --- build-helper:3.6.2:parse-version (parse-project-previous-stable-version) @ hibernate-search-platform-common-bom ---
+[INFO]
+[INFO] --- enforcer:3.6.3:enforce (enforce-common-rules) @ hibernate-search-platform-common-bom ---
+[INFO] Rule 2: org.apache.maven.enforcer.rules.BanDuplicatePomDependencyVersions passed
+[INFO]
+[INFO] --- enforcer:3.6.3:enforce (enforce-dependency-convergence) @ hibernate-search-platform-common-bom ---
+[INFO] Rule 0: org.apache.maven.enforcer.rules.dependency.DependencyConvergence passed
+[INFO]
+[INFO] --- resources:3.5.0:copy-resources (copy-license) @ hibernate-search-platform-common-bom ---
+[INFO] Copying 1 resource from ../.. to target/classes/META-INF
+[INFO]
+[INFO] --- flatten:1.8.0:flatten (flatten-pom) @ hibernate-search-platform-common-bom ---
+[INFO] Generating flattened POM of project org.hibernate.search:hibernate-search-platform-common-bom:pom:9.0.0-SNAPSHOT...
+[INFO]
+[INFO] --- build-helper:3.6.2:add-test-source (add-test-source-noparameters) @ hibernate-search-platform-common-bom ---
+[INFO] Test Source directory: /home/agentuser/hibernate-search/bom/platform-common/src/test/java-noparameters added.
+[INFO]
+[INFO] --- enforcer:3.6.3:enforce (enforce-custom-bom-rules) @ hibernate-search-platform-common-bom ---
+[INFO] Rule 0: org.hibernate.search.build.enforcer.DependencyManagementIncludesAllPublicArtifactsRule passed
+[INFO] Will attempt to resolve the artifacts for the following groups: [co.elastic.clients:-:9.5.4, com.fasterxml.jackson.core:-:2.22, com.fasterxml.jackson.core:-:2.22.1, com.google.code.gson:-:2.14.0, io.smallrye:-:3.6.0, jakarta.batch:-:2.1.1, jakarta.enterprise:-:4.1.0, jakarta.inject:-:2.0.1, jakarta.persistence:-:4.0.0-M7, jakarta.transaction:-:2.0.1, jakarta.xml.bind:-:4.0.5, net.bytebuddy:-:1.18.11, org.apache.avro:-:1.12.2, org.apache.httpcomponents.client5:-:5.6.4, org.apache.httpcomponents.core5:-:5.4.4, org.apache.httpcomponents:-:4.1.5, org.apache.httpcomponents:-:4.4.16, org.apache.httpcomponents:-:4.5.14, org.elasticsearch.client:-:9.5.4, org.hibernate.accessor:-:0.1.0.Alpha5, org.hibernate.models:-:1.3.4, org.hibernate.orm:-:8.0.0.Beta3, org.hibernate.search:-:9.0.0-SNAPSHOT, org.jberet:-:3.1.0.Final, org.jboss.logging:-:3.0.4.Final, org.jboss.logging:-:3.6.3.Final, org.opensearch.client:-:3.8.0, software.amazon.awssdk:-:2.55.4, tools.jackson.core:-:3.2.2]
+[INFO] Fetching from https://status.maven.org/api/v2/summary.json
+[INFO] Fetching from https://central.sonatype.com/solrsearch/select?q=g:co.elastic.clients+AND+v:9.5.4&core=gav&start=0&rows=100&wt=json
+[INFO] Fetching from https://central.sonatype.com/solrsearch/select?q=g:com.fasterxml.jackson.core+AND+v:2.22&core=gav&start=0&rows=100&wt=json
+[INFO] Fetching from https://central.sonatype.com/solrsearch/select?q=g:com.fasterxml.jackson.core+AND+v:2.22.1&core=gav&start=0&rows=100&wt=json
+[INFO] Fetching from https://central.sonatype.com/solrsearch/select?q=g:com.google.code.gson+AND+v:2.14.0&core=gav&start=0&rows=100&wt=json
+[INFO] Fetching from https://central.sonatype.com/solrsearch/select?q=g:io.smallrye+AND+v:3.6.0&core=gav&start=0&rows=100&wt=json
+[INFO] Fetching from https://central.sonatype.com/solrsearch/select?q=g:jakarta.batch+AND+v:2.1.1&core=gav&start=0&rows=100&wt=json
+[INFO] Fetching from https://central.sonatype.com/solrsearch/select?q=g:jakarta.enterprise+AND+v:4.1.0&core=gav&start=0&rows=100&wt=json
+[INFO] Fetching from https://central.sonatype.com/solrsearch/select?q=g:jakarta.inject+AND+v:2.0.1&core=gav&start=0&rows=100&wt=json
+[INFO] Fetching from https://central.sonatype.com/solrsearch/select?q=g:jakarta.persistence+AND+v:4.0.0-M7&core=gav&start=0&rows=100&wt=json
+[INFO] Fetching from https://central.sonatype.com/solrsearch/select?q=g:jakarta.transaction+AND+v:2.0.1&core=gav&start=0&rows=100&wt=json
+[INFO] Fetching from https://central.sonatype.com/solrsearch/select?q=g:jakarta.xml.bind+AND+v:4.0.5&core=gav&start=0&rows=100&wt=json
+[INFO] Fetching from https://central.sonatype.com/solrsearch/select?q=g:net.bytebuddy+AND+v:1.18.11&core=gav&start=0&rows=100&wt=json
+[INFO] Fetching from https://central.sonatype.com/solrsearch/select?q=g:org.apache.avro+AND+v:1.12.2&core=gav&start=0&rows=100&wt=json
+[INFO] Fetching from https://central.sonatype.com/solrsearch/select?q=g:org.apache.httpcomponents.client5+AND+v:5.6.4&core=gav&start=0&rows=100&wt=json
+[INFO] Fetching from https://central.sonatype.com/solrsearch/select?q=g:org.apache.httpcomponents.core5+AND+v:5.4.4&core=gav&start=0&rows=100&wt=json
+[INFO] Fetching from https://central.sonatype.com/solrsearch/select?q=g:org.apache.httpcomponents+AND+v:4.1.5&core=gav&start=0&rows=100&wt=json
+[INFO] Fetching from https://central.sonatype.com/solrsearch/select?q=g:org.apache.httpcomponents+AND+v:4.4.16&core=gav&start=0&rows=100&wt=json
+[INFO] Fetching from https://central.sonatype.com/solrsearch/select?q=g:org.apache.httpcomponents+AND+v:4.5.14&core=gav&start=0&rows=100&wt=json
+[INFO] Fetching from https://central.sonatype.com/solrsearch/select?q=g:org.elasticsearch.client+AND+v:9.5.4&core=gav&start=0&rows=100&wt=json
+[INFO] Fetching from https://central.sonatype.com/solrsearch/select?q=g:org.hibernate.accessor+AND+v:0.1.0.Alpha5&core=gav&start=0&rows=100&wt=json
+[INFO] Fetching from https://central.sonatype.com/solrsearch/select?q=g:org.hibernate.models+AND+v:1.3.4&core=gav&start=0&rows=100&wt=json
+[INFO] Fetching from https://central.sonatype.com/solrsearch/select?q=g:org.hibernate.orm+AND+v:8.0.0.Beta3&core=gav&start=0&rows=100&wt=json
+[INFO] Fetching from https://central.sonatype.com/solrsearch/select?q=g:org.hibernate.search+AND+v:9.0.0-SNAPSHOT&core=gav&start=0&rows=100&wt=json
+[INFO] Fetching from https://central.sonatype.com/solrsearch/select?q=g:org.jberet+AND+v:3.1.0.Final&core=gav&start=0&rows=100&wt=json
+[INFO] Fetching from https://central.sonatype.com/solrsearch/select?q=g:org.jboss.logging+AND+v:3.0.4.Final&core=gav&start=0&rows=100&wt=json
+[INFO] Fetching from https://central.sonatype.com/solrsearch/select?q=g:org.jboss.logging+AND+v:3.6.3.Final&core=gav&start=0&rows=100&wt=json
+[INFO] Fetching from https://central.sonatype.com/solrsearch/select?q=g:org.opensearch.client+AND+v:3.8.0&core=gav&start=0&rows=100&wt=json
+[INFO] Fetching from https://central.sonatype.com/solrsearch/select?q=g:software.amazon.awssdk+AND+v:2.55.4&core=gav&start=0&rows=100&wt=json
+[INFO] Fetching from https://central.sonatype.com/solrsearch/select?q=g:software.amazon.awssdk+AND+v:2.55.4&core=gav&start=1&rows=100&wt=json
+[INFO] Fetching from https://central.sonatype.com/solrsearch/select?q=g:software.amazon.awssdk+AND+v:2.55.4&core=gav&start=2&rows=100&wt=json
+[INFO] Fetching from https://central.sonatype.com/solrsearch/select?q=g:software.amazon.awssdk+AND+v:2.55.4&core=gav&start=3&rows=100&wt=json
+[INFO] Fetching from https://central.sonatype.com/solrsearch/select?q=g:software.amazon.awssdk+AND+v:2.55.4&core=gav&start=4&rows=100&wt=json
+[INFO] Fetching from https://central.sonatype.com/solrsearch/select?q=g:software.amazon.awssdk+AND+v:2.55.4&core=gav&start=5&rows=100&wt=json
+[INFO] Fetching from https://central.sonatype.com/solrsearch/select?q=g:tools.jackson.core+AND+v:3.2.2&core=gav&start=0&rows=100&wt=json
+[INFO] Enforcer cache written to /home/agentuser/hibernate-search/bom/platform-common/.cache/enforcer/dependency-management-includes-all.json
+[INFO] Rule 1: org.hibernate.search.build.enforcer.DependencyManagementIncludesAllGroupIdArtifactsRule passed
+[INFO]
+[INFO] --- install:3.2.0:install (default-install) @ hibernate-search-platform-common-bom ---
+[INFO] Installing /home/agentuser/hibernate-search/bom/platform-common/target/.flattened-pom.xml to /home/agentuser/.m2/repository/org/hibernate/search/hibernate-search-platform-common-bom/9.0.0-SNAPSHOT/hibernate-search-platform-common-bom-9.0.0-SNAPSHOT.pom
+[INFO]
+[INFO] ---------< org.hibernate.search:hibernate-search-platform-bom >---------
+[INFO] Building Hibernate Search - Platform BOM 9.0.0-SNAPSHOT            [3/3]
+[INFO]   from /home/agentuser/hibernate-search/bom/platform/pom.xml
+[INFO] --------------------------------[ pom ]---------------------------------
+[INFO]
+[INFO] --- build-helper:3.6.2:rootlocation (set-root-location-property) @ hibernate-search-platform-bom ---
+[INFO]
+[INFO] --- build-helper:3.6.2:parse-version (parse-project-version) @ hibernate-search-platform-bom ---
+[INFO]
+[INFO] --- build-helper:3.6.2:parse-version (parse-project-previous-stable-version) @ hibernate-search-platform-bom ---
+[INFO]
+[INFO] --- enforcer:3.6.3:enforce (enforce-common-rules) @ hibernate-search-platform-bom ---
+[INFO] Rule 2: org.apache.maven.enforcer.rules.BanDuplicatePomDependencyVersions passed
+[INFO]
+[INFO] --- enforcer:3.6.3:enforce (enforce-dependency-convergence) @ hibernate-search-platform-bom ---
+[INFO] Rule 0: org.apache.maven.enforcer.rules.dependency.DependencyConvergence passed
+[INFO]
+[INFO] --- resources:3.5.0:copy-resources (copy-license) @ hibernate-search-platform-bom ---
+[INFO] Copying 1 resource from ../.. to target/classes/META-INF
+[INFO]
+[INFO] --- flatten:1.8.0:flatten (flatten-pom) @ hibernate-search-platform-bom ---
+[INFO] Generating flattened POM of project org.hibernate.search:hibernate-search-platform-bom:pom:9.0.0-SNAPSHOT...
+[INFO]
+[INFO] --- build-helper:3.6.2:add-test-source (add-test-source-noparameters) @ hibernate-search-platform-bom ---
+[INFO] Test Source directory: /home/agentuser/hibernate-search/bom/platform/src/test/java-noparameters added.
+[INFO]
+[INFO] --- enforcer:3.6.3:enforce (enforce-custom-bom-rules) @ hibernate-search-platform-bom ---
+[INFO] Rule 0: org.hibernate.search.build.enforcer.DependencyManagementIncludesAllPublicArtifactsRule passed
+[INFO] Will attempt to resolve the artifacts for the following groups: [com.carrotsearch:-:0.10.0, org.apache.lucene:-:9.12.3, org.hibernate.search:-:9.0.0-SNAPSHOT, org.jboss.logging:-:3.0.4.Final, org.jboss.logging:-:3.6.3.Final]
+[INFO] Fetching from https://status.maven.org/api/v2/summary.json
+[INFO] Fetching from https://central.sonatype.com/solrsearch/select?q=g:com.carrotsearch+AND+v:0.10.0&core=gav&start=0&rows=100&wt=json
+[INFO] Fetching from https://central.sonatype.com/solrsearch/select?q=g:org.apache.lucene+AND+v:9.12.3&core=gav&start=0&rows=100&wt=json
+[INFO] Fetching from https://central.sonatype.com/solrsearch/select?q=g:org.hibernate.search+AND+v:9.0.0-SNAPSHOT&core=gav&start=0&rows=100&wt=json
+[INFO] Fetching from https://central.sonatype.com/solrsearch/select?q=g:org.jboss.logging+AND+v:3.0.4.Final&core=gav&start=0&rows=100&wt=json
+[INFO] Fetching from https://central.sonatype.com/solrsearch/select?q=g:org.jboss.logging+AND+v:3.6.3.Final&core=gav&start=0&rows=100&wt=json
+[INFO] Enforcer cache written to /home/agentuser/hibernate-search/bom/platform/.cache/enforcer/dependency-management-includes-all.json
+[INFO] Rule 1: org.hibernate.search.build.enforcer.DependencyManagementIncludesAllGroupIdArtifactsRule passed
+[INFO]
+[INFO] --- install:3.2.0:install (default-install) @ hibernate-search-platform-bom ---
+[INFO] Installing /home/agentuser/hibernate-search/bom/platform/target/.flattened-pom.xml to /home/agentuser/.m2/repository/org/hibernate/search/hibernate-search-platform-bom/9.0.0-SNAPSHOT/hibernate-search-platform-bom-9.0.0-SNAPSHOT.pom
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary for Hibernate Search - BOM 9.0.0-SNAPSHOT:
+[INFO]
+[INFO] Hibernate Search - BOM ............................. SUCCESS [  0.409 s]
+[INFO] Hibernate Search - Platform BOM common ............. SUCCESS [ 13.013 s]
+[INFO] Hibernate Search - Platform BOM .................... SUCCESS [  1.770 s]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  15.870 s
+[INFO] Finished at: 2026-10-02T15:40:33Z
+[INFO] ------------------------------------------------------------------------
+[INFO] 30 goals, 30 executed

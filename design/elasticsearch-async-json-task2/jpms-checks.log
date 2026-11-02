@@ -1,0 +1,15 @@
+org.hibernate.search.util.json@9.0.0-SNAPSHOT jar:file:///home/agentuser/hibernate-search/util/json/target/hibernate-search-util-json-9.0.0-SNAPSHOT.jar!/module-info.class
+exports org.hibernate.search.util.json
+exports org.hibernate.search.util.json.spi
+requires com.fasterxml.jackson.core
+requires java.base mandated
+requires org.hibernate.search.util.common transitive
+qualified exports org.hibernate.search.util.json.impl to org.hibernate.search.engine
+
+Public model/SPI named-module compilation and runtime smoke: PASS
+Implementation import rejected for external named module: PASS
+/tmp/json-task2-jpms-v8wocb12/src/smoke/Main.java:1: error: package org.hibernate.search.util.json.impl is not visible
+package smoke; import org.hibernate.search.util.json.impl.JacksonJsonParserFactory; public class Main { JacksonJsonParserFactory implementation; }
+                                                    ^
+  (package org.hibernate.search.util.json.impl is declared in module org.hibernate.search.util.json, which does not export it to module smoke)
+1 error

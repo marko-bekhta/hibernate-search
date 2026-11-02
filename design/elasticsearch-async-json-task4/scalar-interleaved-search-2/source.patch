@@ -1,0 +1,1760 @@
+diff --git a/integrationtest/performance/backend/README.md b/integrationtest/performance/backend/README.md
+index 7cc2c829ac..c37ea1f98a 100644
+--- a/integrationtest/performance/backend/README.md
++++ b/integrationtest/performance/backend/README.md
+@@ -99,3 +99,127 @@ For best results disable features such as power management, dynamic CPU scaling,
+ and run it on a dedicated box which has no other significant services running.
+ 
+ In particular the "run it from your IDE" approach is just meant for development of new tests.
++
++## Server-independent JSON comparisons
++
++`JsonComparisonBenchmark` compares complete NDJSON output from the legacy Gson
++HTTP provider, direct Jackson Core 3, synchronous cursor drain, incremental cursor
++and a benchmark-only worker bridge. No Elasticsearch server is needed. The
++Jackson comparison accesses the JSON module's internal implementation on the JMH
++classpath; it does not add a public library API or a Jackson production dependency
++to the backend.
++
++```shell
++./mvnw clean install -pl integrationtest/performance/backend/elasticsearch -am \
++  -DskipTests -DskipITs -Dno-build-cache
++integrationtest/performance/backend/scripts/run-json-benchmarks.sh \
++  --skip-build --out /tmp/json-primary --cores 0,2
++```
++
++The runner requires Linux, Python 3, `taskset`, Java and the Maven wrapper. Omit
++`--cores` to select two allowed online physical cores with the same reported
++core-type/maximum-frequency class and exclude SMT siblings. Inspect its recorded
++topology on machines where these hints are unavailable; maximum frequency alone
++does not prove a hybrid-core class. An explicit selection must be within process
++affinity. Choose at least two physical cores for the worker scenario. Affinity is
++inherited by JMH forks and checked in benchmark and worker threads. Pinning is
++not an exclusive CPU reservation. The runner does not change governors, turbo,
++perf permissions, scheduler settings or any other host controls.
++
++Defaults: one JMH thread, three independent forks, five one-second warmup and
++five one-second measurement iterations, 1 GiB fixed heap, G1,
++`ActiveProcessorCount` equal to selected logical CPUs. Every comparison uses
++these same resources, including two CPUs for worker runs. Fixture construction,
++tree conversion and exact full-byte validation run in trial setup. The sink
++observes byte counts and boundary bytes without hashing every byte in timing.
++No random generation or logging occurs in measured methods. `--quick` is a
++one-fork smoke check and cannot establish the gate.
++
++Fixtures (`--fixtures`): `small`, `mapping`, `unicode`, `nested`, `scalar-1m`,
++`scalar-8m`, `bulk-10000`. Shared builders retain both trees outside timing.
++Every body part has a final newline. `--lifecycle fresh` includes provider/body
++construction and probing for every writer; Jackson and worker use the same
++cursor probe as the candidate body. Legacy Gson probes a complete first part
++and retains that encoding; the candidate probes at most 8 KiB and discards it.
++`--lifecycle reused` excludes those costs for every writer and measures complete
++serialization of an already constructed source. Reused incremental cursors also
++reuse the caller's 8 KiB destination; synchronous adapters allocate their own.
++The worker is a reusable single-thread executor with two circulating 8 KiB arrays
++and bounded queues. Each invocation waits for full delivery and task completion;
++worker creation belongs to trial setup. It is an experiment, not a production
++scheduling proposal.
++
++```shell
++# Raw serialization lifecycle, then independent allocation profiling:
++integrationtest/performance/backend/scripts/run-json-benchmarks.sh --skip-build \
++  --out /tmp/json-reused --lifecycle reused
++integrationtest/performance/backend/scripts/run-json-benchmarks.sh --skip-build \
++  --out /tmp/json-allocation --profiler gc
++# Strict/explicit singleton-array accessors; no body fixture parameters:
++integrationtest/performance/backend/scripts/run-json-benchmarks.sh --skip-build \
++  --out /tmp/json-accessors --fixtures '' \
++  --pattern 'JsonComparisonBenchmark.*Accessor$'
++# Same materialized string input for both parsers:
++integrationtest/performance/backend/scripts/run-json-benchmarks.sh --skip-build \
++  --out /tmp/json-parsers --fixtures small,unicode,scalar-1m \
++  --pattern 'JsonComparisonBenchmark.(gsonParser|searchParser)$'
++# Portable stack sampling fallback; diagnostic timing is separate:
++integrationtest/performance/backend/scripts/run-json-benchmarks.sh --skip-build \
++  --out /tmp/json-stack --fixtures scalar-1m \
++  --pattern 'JsonComparisonBenchmark.synchronousCursor$' --profiler stack
++# Existing async-profiler installation, without automatic downloads/sysctl:
++integrationtest/performance/backend/scripts/run-json-benchmarks.sh --skip-build \
++  --out /tmp/json-cpu --profiler \
++  "async:libPath=${ASYNC_PROFILER_HOME}/lib/libasyncProfiler.so;event=cpu;output=jfr;dir=/tmp/json-jfr"
++```
++
++The runner saves exact commands, Java/GC/heap settings, source/JAR SHA-256,
++revision and dirty patch, topology/frequencies/governor/turbo, allowed affinity,
++cgroup quotas/memory/cpuset and before/after load/CPU pressure. It refuses an
++existing output directory. Retain raw JSON with per-fork samples. Run profiling
++separately from primary timing and record unavailable controls. Do not run builds
++or tests alongside timing. A repeatable regression above 5% triggers investigation;
++it is not statistical proof and is never a hard assertion in a correctness test.
++
++Independent byte/retention/backpressure/cancellation checks and a controlled
++100 microsecond pause per worker chunk (actual waits depend on the scheduler):
++
++```shell
++taskset -c 0,2 java -Djson.benchmark.cores=0,2 \
++  -cp integrationtest/performance/backend/elasticsearch/target/benchmarks.jar \
++  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSlowConsumerHarness
++java -cp integrationtest/performance/backend/elasticsearch/target/benchmarks.jar \
++  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonBufferRetentionProbe
++```
++
++The harness verifies complete bytes at capacities 1/2/5/8192 and cursor
++cancellation release independently of throughput. Encoded cursor state is at
++most six bytes; the worker owns two 8 KiB arrays, including queued/in-flight
++storage. Source trees, generators, destination buffers and diagnostic capture
++are accounted separately. The slow harness deliberately captures a full body
++for correctness; production and JMH output do not. Lone-surrogate output policy
++is tested separately: Gson replaces with `?`, whereas new output uses `\\uXXXX`.
++No byte-equivalence claim covers that intentional policy difference.
++
++`--skip-build` rejects a JAR older than JSON/backend/benchmark Java sources.
++The recorded patch includes untracked benchmark source files as well as tracked
++changes. Factory-only benchmarks use affinity-only setup so they do not initialize
++factories before measuring. Cold single-shot factory context (three samples are
++not a dependable startup confidence interval):
++
++```shell
++integrationtest/performance/backend/scripts/run-json-benchmarks.sh --skip-build \
++  --out /tmp/json-factories-cold --cores 0,2 --cold --fixtures '' \
++  --pattern '(JsonBaselineBenchmark.initializeProvider|JsonComparisonBenchmark.initializeParser)$'
++```
++
++Parser selectors compare the retained String convenience API with the same
++already materialized input, not transport ingress. The optimized convenience
++path uses Core's character parser and the same tree builder. It validates raw
++UTF-16, counts UTF-8 when a byte limit is configured, retains decoded UTF-8 name
++limits and rejects broken escaped name surrogates. It creates no secondary
++whole-body String or byte array. Network parsing still consumes bounded byte
++slices. Do not infer network throughput or large-token event-loop latency from
++these String API numbers. Numeric nodes retain exact lexemes and cache an
++in-range integral value; decimal/overflow narrowing still uses BigDecimal.
++Caching adds fixed tree storage, which is separate from retained encoded output.
+diff --git a/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonBaselineBenchmark.java b/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonBaselineBenchmark.java
+index 44c76dc25d..1d3121b9d3 100644
+--- a/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonBaselineBenchmark.java
++++ b/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonBaselineBenchmark.java
+@@ -3,9 +3,6 @@
+ import java.io.IOException;
+ import java.io.OutputStream;
+ import java.nio.ByteBuffer;
+-import java.nio.charset.StandardCharsets;
+-import java.util.ArrayList;
+-import java.util.List;
+ import java.util.concurrent.TimeUnit;
+ 
+ import org.hibernate.search.backend.elasticsearch.client.common.gson.entity.spi.ContentEncoder;
+@@ -43,72 +40,15 @@
+ public class JsonBaselineBenchmark {
+ 
+ 	@State(Scope.Thread)
+-	public static class Bodies {
++	public static class Bodies extends JsonBenchmarkFixtures {
+ 		@Param({ "small", "mapping", "unicode", "nested", "scalar-1m", "scalar-8m", "bulk-10000" })
+ 		public String fixture;
+ 
+-		public Gson gson;
+-		public List<JsonObject> parts;
+-		public String json;
+-		public long encodedBytes;
+-
+ 		@Setup
++		@Override
+ 		public void setup() {
+-			gson = GsonProviderHelper.create( GsonBuilder::new, false ).getGson();
+-			parts = new ArrayList<>();
+-			JsonObject body = new JsonObject();
+-			switch ( fixture ) {
+-				case "small":
+-					body = gson.fromJson( "{\"query\":{\"term\":{\"name\":\"test\"}},\"size\":10}", JsonObject.class );
+-					break;
+-				case "mapping":
+-					body = gson.fromJson( "{\"dynamic\":\"strict\",\"_routing\":{\"required\":true},"
+-							+ "\"properties\":{\"name\":{\"type\":\"keyword\"},\"time\":{\"type\":\"date\","
+-							+ "\"format\":\"strict_date_optional_time||epoch_millis\"}}}", JsonObject.class );
+-					break;
+-				case "unicode":
+-					body.addProperty( "text", "é漢😀\n\"\\".repeat( 256 ) );
+-					break;
+-				case "nested":
+-					JsonObject current = body;
+-					for ( int i = 0; i < 32; i++ ) {
+-						JsonObject child = new JsonObject();
+-						current.add( "child", child );
+-						current = child;
+-					}
+-					current.addProperty( "value", 9007199254740993L );
+-					break;
+-				case "scalar-1m":
+-					body.addProperty( "text", "x".repeat( 1024 * 1024 ) );
+-					break;
+-				case "scalar-8m":
+-					body.addProperty( "text", "x".repeat( 8 * 1024 * 1024 ) );
+-					break;
+-				case "bulk-10000":
+-					for ( int i = 0; i < 10_000; i++ ) {
+-						JsonObject metadata = new JsonObject();
+-						JsonObject index = new JsonObject();
+-						index.addProperty( "_index", "benchmark" );
+-						index.addProperty( "_id", i );
+-						metadata.add( "index", index );
+-						parts.add( metadata );
+-						JsonObject document = new JsonObject();
+-						document.addProperty( "text", "x".repeat( 256 ) );
+-						document.addProperty( "number", i );
+-						parts.add( document );
+-					}
+-					break;
+-				default:
+-					throw new IllegalArgumentException( fixture );
+-			}
+-			if ( parts.isEmpty() ) {
+-				parts.add( body );
+-			}
+-			json = gson.toJson( parts.get( 0 ) );
+-			encodedBytes = 0;
+-			for ( JsonObject part : parts ) {
+-				encodedBytes += gson.toJson( part ).getBytes( StandardCharsets.UTF_8 ).length + 1;
+-			}
++			super.fixture = fixture;
++			super.setup();
+ 		}
+ 	}
+ 
+@@ -145,7 +85,7 @@ public JsonObject parseFirstPart(Bodies bodies) {
+ 	}
+ 
+ 	@Benchmark
+-	public GsonProvider initializeProvider() {
++	public GsonProvider initializeProvider(JsonBenchmarkAffinity affinity) {
+ 		return GsonProviderHelper.create( GsonBuilder::new, false );
+ 	}
+ 
+diff --git a/util/json/src/main/java/org/hibernate/search/util/json/JsonPrimitive.java b/util/json/src/main/java/org/hibernate/search/util/json/JsonPrimitive.java
+index c0a7918636..5e78befe2a 100644
+--- a/util/json/src/main/java/org/hibernate/search/util/json/JsonPrimitive.java
++++ b/util/json/src/main/java/org/hibernate/search/util/json/JsonPrimitive.java
+@@ -2,13 +2,11 @@
+ 
+ import java.math.BigInteger;
+ import java.util.Objects;
+-import java.util.regex.Pattern;
+ 
+ import org.hibernate.search.util.json.impl.JsonNumber;
+ 
+ /** An immutable string, boolean or number. Numeric equality is exact and ignores decimal scale. */
+ public final class JsonPrimitive extends JsonElement {
+-	private static final Pattern JSON_NUMBER = Pattern.compile( "-?(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?(?:[eE][+-]?[0-9]+)?" );
+ 	private final Object value;
+ 
+ 	public JsonPrimitive(String value) {
+@@ -24,15 +22,19 @@ public JsonPrimitive(Boolean value) {
+ 	}
+ 
+ 	public JsonPrimitive(Number value) {
+-		this.value = new JsonNumber( Objects.requireNonNull( value ).toString() );
+-		if ( !JSON_NUMBER.matcher( this.value.toString() ).matches() ) {
+-			throw new IllegalArgumentException( "Not a finite JSON number: " + value );
++		Objects.requireNonNull( value );
++		if ( value instanceof JsonNumber number && number.isValidated() ) {
++			// Immutable parser numbers already contain a validated snapshot; no regex or second wrapper.
++			this.value = number;
++		}
++		else {
++			this.value = JsonNumber.jsonNumber( value.toString() );
+ 		}
+ 	}
+ 
+ 	/** Create a number preserving its original JSON lexeme. */
+ 	public static JsonPrimitive number(String lexeme) {
+-		return new JsonPrimitive( new JsonNumber( lexeme ) );
++		return new JsonPrimitive( JsonNumber.jsonNumber( lexeme ) );
+ 	}
+ 
+ 	public boolean isString() {
+diff --git a/util/json/src/main/java/org/hibernate/search/util/json/impl/JacksonJsonParserFactory.java b/util/json/src/main/java/org/hibernate/search/util/json/impl/JacksonJsonParserFactory.java
+index 046e0eb96b..8353645589 100644
+--- a/util/json/src/main/java/org/hibernate/search/util/json/impl/JacksonJsonParserFactory.java
++++ b/util/json/src/main/java/org/hibernate/search/util/json/impl/JacksonJsonParserFactory.java
+@@ -4,10 +4,15 @@
+ import java.nio.charset.StandardCharsets;
+ import java.util.Objects;
+ 
++import org.hibernate.search.util.json.JsonElement;
++import org.hibernate.search.util.json.JsonNull;
++import org.hibernate.search.util.json.JsonPrimitive;
+ import org.hibernate.search.util.json.spi.JsonParseException;
+ import org.hibernate.search.util.json.spi.JsonParserSession;
+ import org.hibernate.search.util.json.spi.JsonParsingOptions;
+ 
++import tools.jackson.core.JsonParser;
++import tools.jackson.core.JsonToken;
+ import tools.jackson.core.ObjectReadContext;
+ import tools.jackson.core.StreamReadConstraints;
+ import tools.jackson.core.json.JsonFactory;
+@@ -24,6 +29,119 @@ public JacksonJsonParserFactory(JsonParsingOptions options) {
+ 				.maxDocumentLength( -1 ).maxTokenCount( -1 ).build() ).build() );
+ 	}
+ 
++	/** Character input is already owned/materialized; Core retains it only for this synchronous call. */
++	public JsonElement parse(String json) {
++		if ( options.maxInputBytes() == 0 ) {
++			validateUtf16( json );
++		}
++		else if ( utf8Length( json ) > options.maxInputBytes() ) {
++			throw new JsonParseException( "JSON input exceeds byte limit " + options.maxInputBytes() );
++		}
++		JsonTreeBuilder builder = new JsonTreeBuilder();
++		try ( JsonParser parser = factory.createParser( ObjectReadContext.empty(), json ) ) {
++			JsonToken token;
++			while ( ( token = parser.nextToken() ) != null ) {
++				switch ( token ) {
++					case START_OBJECT:
++						builder.startObject();
++						break;
++					case START_ARRAY:
++						builder.startArray();
++						break;
++					case END_OBJECT:
++					case END_ARRAY:
++						builder.endContainer();
++						break;
++					case PROPERTY_NAME:
++						String name = parser.currentName();
++						// The async parser constrains names by decoded UTF-8 byte length, not UTF-16 units.
++						if ( utf8Length( name ) > options.maxNameLength() ) {
++							throw new JsonParseException( "JSON name exceeds length limit " + options.maxNameLength() );
++						}
++						builder.name( name );
++						break;
++					case VALUE_STRING:
++						String value = parser.getString();
++						factory.streamReadConstraints().validateStringLength( value.length() );
++						builder.add( new JsonPrimitive( value ) );
++						break;
++					case VALUE_NUMBER_INT:
++					case VALUE_NUMBER_FLOAT:
++						String number = parser.getString();
++						long offset = parser.currentTokenLocation().getCharOffset();
++						if ( "0".equals( number ) && offset >= 0 && json.charAt( (int) offset ) == '-' ) {
++							number = "-0";
++						}
++						builder.add( new JsonPrimitive( JsonNumber.fromParser( number ) ) );
++						break;
++					case VALUE_TRUE:
++						builder.add( new JsonPrimitive( true ) );
++						break;
++					case VALUE_FALSE:
++						builder.add( new JsonPrimitive( false ) );
++						break;
++					case VALUE_NULL:
++						builder.add( JsonNull.INSTANCE );
++						break;
++					default:
++						throw new JsonParseException( "Unexpected JSON token " + token );
++				}
++			}
++			return builder.finish();
++		}
++		catch (JsonParseException e) {
++			throw e;
++		}
++		catch (RuntimeException e) {
++			throw new JsonParseException( "Invalid JSON input: " + e.getMessage(), e );
++		}
++		finally {
++			builder.clear();
++		}
++	}
++
++	private static void validateUtf16(String text) {
++		int index = 0;
++		while ( index < text.length() ) {
++			char character = text.charAt( index++ );
++			if ( Character.isSurrogate( character ) ) {
++				if ( !Character.isHighSurrogate( character )
++						|| index == text.length()
++						|| !Character.isLowSurrogate( text.charAt( index++ ) ) ) {
++					throw new JsonParseException( "Invalid Unicode input" );
++				}
++			}
++		}
++	}
++
++	/** Validate raw UTF-16 and count its UTF-8 representation without allocating another input. */
++	private static long utf8Length(String text) {
++		long result = 0;
++		int index = 0;
++		while ( index < text.length() ) {
++			char character = text.charAt( index++ );
++			if ( character < 0x80 ) {
++				result++;
++			}
++			else if ( character < 0x800 ) {
++				result += 2;
++			}
++			else if ( Character.isHighSurrogate( character )
++					&& index < text.length()
++					&& Character.isLowSurrogate( text.charAt( index ) ) ) {
++				index++;
++				result += 4;
++			}
++			else if ( Character.isSurrogate( character ) ) {
++				throw new JsonParseException( "Invalid Unicode input" );
++			}
++			else {
++				result += 3;
++			}
++		}
++		return result;
++	}
++
+ 	public JsonParserSession createParser() {
+ 		try {
+ 			return new JacksonJsonParserSession( factory.createResumableByteBufferParser( ObjectReadContext.empty() ),
+diff --git a/util/json/src/main/java/org/hibernate/search/util/json/impl/JacksonJsonParserSession.java b/util/json/src/main/java/org/hibernate/search/util/json/impl/JacksonJsonParserSession.java
+index c754f051ed..c7a9d6c8d5 100644
+--- a/util/json/src/main/java/org/hibernate/search/util/json/impl/JacksonJsonParserSession.java
++++ b/util/json/src/main/java/org/hibernate/search/util/json/impl/JacksonJsonParserSession.java
+@@ -116,7 +116,7 @@ private void drain(boolean ended) {
+ 									- parser.currentTokenLocation().getByteOffset() == 1 ) {
+ 						number = "-0";
+ 					}
+-					builder.add( JsonPrimitive.number( number ) );
++					builder.add( new JsonPrimitive( JsonNumber.fromParser( number ) ) );
+ 					break;
+ 				case VALUE_TRUE:
+ 					builder.add( new JsonPrimitive( true ) );
+diff --git a/util/json/src/main/java/org/hibernate/search/util/json/impl/JsonBodyOutput.java b/util/json/src/main/java/org/hibernate/search/util/json/impl/JsonBodyOutput.java
+index 258a4c5b07..763627b801 100644
+--- a/util/json/src/main/java/org/hibernate/search/util/json/impl/JsonBodyOutput.java
++++ b/util/json/src/main/java/org/hibernate/search/util/json/impl/JsonBodyOutput.java
+@@ -18,7 +18,11 @@ private JsonBodyOutput() {
+ 	public static void writeTo(JsonBody source, OutputStream destination) throws IOException {
+ 		Objects.requireNonNull( destination );
+ 		try ( JsonWriteCursor cursor = source.openCursor() ) {
+-			ByteBuffer buffer = ByteBuffer.allocate( JsonBodies.DEFAULT_BUFFER_SIZE );
++			long length = source.contentLength();
++			int capacity = length >= 0
++					? (int) Math.min( Math.max( length, 1 ), JsonBodies.DEFAULT_BUFFER_SIZE )
++					: JsonBodies.DEFAULT_BUFFER_SIZE;
++			ByteBuffer buffer = ByteBuffer.allocate( capacity );
+ 			while ( !cursor.isComplete() ) {
+ 				cursor.write( buffer );
+ 				destination.write( buffer.array(), 0, buffer.position() );
+@@ -29,7 +33,7 @@ public static void writeTo(JsonBody source, OutputStream destination) throws IOE
+ 
+ 	public static long probeLength(JsonBody source, int maximumBytes) {
+ 		try ( JsonWriteCursor cursor = source.openCursor() ) {
+-			ByteBuffer buffer = ByteBuffer.allocate( Math.min( maximumBytes, JsonBodies.DEFAULT_BUFFER_SIZE ) );
++			ByteBuffer buffer = ByteBuffer.allocate( Math.min( maximumBytes, 1024 ) );
+ 			long written = 0;
+ 			while ( written < maximumBytes && !cursor.isComplete() ) {
+ 				buffer.clear();
+diff --git a/util/json/src/main/java/org/hibernate/search/util/json/impl/JsonNumber.java b/util/json/src/main/java/org/hibernate/search/util/json/impl/JsonNumber.java
+index 73271895a4..fd173e8e05 100644
+--- a/util/json/src/main/java/org/hibernate/search/util/json/impl/JsonNumber.java
++++ b/util/json/src/main/java/org/hibernate/search/util/json/impl/JsonNumber.java
+@@ -5,19 +5,116 @@
+ /** Immutable number retaining its lexical representation and narrowing without a double round trip. */
+ public final class JsonNumber extends Number {
+ 	private final String lexeme;
++	private final boolean validated;
++	private final boolean hasLong;
++	private final long integral;
+ 
+ 	public JsonNumber(String lexeme) {
++		this( lexeme, false );
++	}
++
++	private JsonNumber(String lexeme, boolean validated) {
+ 		this.lexeme = lexeme;
++		this.validated = validated;
++		int length = lexeme.length();
++		int offset = 0;
++		boolean negative = length != 0 && lexeme.charAt( 0 ) == '-';
++		if ( negative || length != 0 && lexeme.charAt( 0 ) == '+' ) {
++			offset++;
++		}
++		boolean fits = offset < length;
++		long limit = negative ? Long.MIN_VALUE : -Long.MAX_VALUE;
++		long multiplicationLimit = limit / 10;
++		long result = 0;
++		while ( fits && offset < length ) {
++			int digit = lexeme.charAt( offset++ ) - '0';
++			if ( digit < 0 || digit > 9 || result < multiplicationLimit ) {
++				fits = false;
++			}
++			else {
++				result *= 10;
++				if ( result < limit + digit ) {
++					fits = false;
++				}
++				else {
++					result -= digit;
++				}
++			}
++		}
++		hasLong = fits;
++		integral = negative ? result : -result;
++	}
++
++	static JsonNumber fromParser(String lexeme) {
++		return jsonNumber( lexeme );
++	}
++
++	/** Internal factory shared with the public model's validated-number construction. */
++	public static JsonNumber jsonNumber(String lexeme) {
++		int offset = lexeme.startsWith( "-" ) ? 1 : 0;
++		int length = lexeme.length();
++		if ( offset == length ) {
++			throw invalid( lexeme );
++		}
++		if ( lexeme.charAt( offset ) == '0' ) {
++			offset++;
++		}
++		else {
++			char digit = lexeme.charAt( offset );
++			if ( digit < '1' || digit > '9' ) {
++				throw invalid( lexeme );
++			}
++			offset = digitsEnd( lexeme, offset );
++		}
++		if ( offset < length && lexeme.charAt( offset ) == '.' ) {
++			int start = offset + 1;
++			offset = digitsEnd( lexeme, start );
++			if ( offset == start ) {
++				throw invalid( lexeme );
++			}
++		}
++		if ( offset < length && ( lexeme.charAt( offset ) == 'e' || lexeme.charAt( offset ) == 'E' ) ) {
++			offset++;
++			if ( offset < length && ( lexeme.charAt( offset ) == '+' || lexeme.charAt( offset ) == '-' ) ) {
++				offset++;
++			}
++			int start = offset;
++			offset = digitsEnd( lexeme, start );
++			if ( offset == start ) {
++				throw invalid( lexeme );
++			}
++		}
++		if ( offset != length ) {
++			throw invalid( lexeme );
++		}
++		return new JsonNumber( lexeme, true );
++	}
++
++	private static int digitsEnd(String text, int start) {
++		int offset = start;
++		while ( offset < text.length() && text.charAt( offset ) >= '0' && text.charAt( offset ) <= '9' ) {
++			offset++;
++		}
++		return offset;
++	}
++
++	private static IllegalArgumentException invalid(String lexeme) {
++		return new IllegalArgumentException( "Not a finite JSON number: " + lexeme );
++	}
++
++	/** Internal immutable marker: JSON-number grammar has been validated. */
++	public boolean isValidated() {
++		return validated;
+ 	}
+ 
+ 	@Override
+ 	public int intValue() {
+-		return new BigDecimal( lexeme ).intValue();
++		return (int) longValue();
+ 	}
+ 
+ 	@Override
+ 	public long longValue() {
+-		return new BigDecimal( lexeme ).longValue();
++		return hasLong ? integral : new BigDecimal( lexeme ).longValue();
+ 	}
+ 
+ 	@Override
+diff --git a/util/json/src/main/java/org/hibernate/search/util/json/impl/Utf8JsonWriteCursor.java b/util/json/src/main/java/org/hibernate/search/util/json/impl/Utf8JsonWriteCursor.java
+index 101a7a5422..b739ce193d 100644
+--- a/util/json/src/main/java/org/hibernate/search/util/json/impl/Utf8JsonWriteCursor.java
++++ b/util/json/src/main/java/org/hibernate/search/util/json/impl/Utf8JsonWriteCursor.java
+@@ -15,6 +15,17 @@
+ /** Iterative traversal retaining only source references and at most one encoded character/escape. */
+ public final class Utf8JsonWriteCursor implements JsonWriteCursor {
+ 	private static final String HEX = "0123456789abcdef";
++	private static final boolean[] SAFE_ASCII = safeAscii();
++
++	private static boolean[] safeAscii() {
++		boolean[] result = new boolean[128];
++		java.util.Arrays.fill( result, 0x20, 128, true );
++		for ( char character : new char[] { '"', '\\', '<', '>', '&', '=', '\'' } ) {
++			result[character] = false;
++		}
++		return result;
++	}
++
+ 	private ArrayDeque<Frame> frames = new ArrayDeque<>();
+ 	private JsonElement nextValue;
+ 	private String scalar;
+@@ -44,6 +55,14 @@ public int write(ByteBuffer destination) {
+ 		while ( destination.hasRemaining() && !complete ) {
+ 			if ( pendingOffset == pendingLength ) {
+ 				pendingOffset = pendingLength = 0;
++				if ( writeAsciiRun( destination ) ) {
++					if ( scalar == null && nextValue == null && frames.isEmpty() ) {
++						complete = true;
++						pending = null;
++						frames = null;
++					}
++					continue;
++				}
+ 				prepare();
+ 			}
+ 			int count = Math.min( destination.remaining(), pendingLength - pendingOffset );
+@@ -58,6 +77,51 @@ public int write(ByteBuffer destination) {
+ 		return destination.position() - start;
+ 	}
+ 
++	/** Copy only the caller's available region; no encoded token or body is materialized. */
++	private boolean writeAsciiRun(ByteBuffer destination) {
++		if ( scalar == null || scalarStage != 1 || scalarOffset == scalar.length() ) {
++			return false;
++		}
++		int end = scalarOffset + Math.min( destination.remaining(), scalar.length() - scalarOffset );
++		int offset = scalarOffset;
++		if ( destination.hasArray() ) {
++			byte[] array = destination.array();
++			int position = destination.arrayOffset() + destination.position();
++			while ( offset < end ) {
++				char character = scalar.charAt( offset );
++				if ( quoted && ( character >= 128 || !SAFE_ASCII[character] ) ) {
++					break;
++				}
++				array[position++] = (byte) character;
++				offset++;
++			}
++			destination.position( destination.position() + offset - scalarOffset );
++		}
++		else {
++			while ( offset < end ) {
++				char character = scalar.charAt( offset );
++				if ( quoted && ( character >= 128 || !SAFE_ASCII[character] ) ) {
++					break;
++				}
++				destination.put( (byte) character );
++				offset++;
++			}
++		}
++		if ( offset == scalarOffset ) {
++			return false;
++		}
++		scalarOffset = offset;
++		if ( offset == scalar.length() ) {
++			if ( quoted ) {
++				scalarStage = 2;
++			}
++			else {
++				scalar = null;
++			}
++		}
++		return true;
++	}
++
+ 	private void prepare() {
+ 		while ( pendingLength == 0 ) {
+ 			if ( scalar != null ) {
+diff --git a/util/json/src/main/java/org/hibernate/search/util/json/spi/JsonParsing.java b/util/json/src/main/java/org/hibernate/search/util/json/spi/JsonParsing.java
+index f55133695c..fbad74722b 100644
+--- a/util/json/src/main/java/org/hibernate/search/util/json/spi/JsonParsing.java
++++ b/util/json/src/main/java/org/hibernate/search/util/json/spi/JsonParsing.java
+@@ -1,12 +1,6 @@
+ package org.hibernate.search.util.json.spi;
+ 
+-import java.nio.ByteBuffer;
+-import java.nio.CharBuffer;
+-import java.nio.charset.CharacterCodingException;
+ import java.nio.charset.Charset;
+-import java.nio.charset.CoderResult;
+-import java.nio.charset.CodingErrorAction;
+-import java.nio.charset.StandardCharsets;
+ 
+ import org.hibernate.search.util.json.JsonElement;
+ import org.hibernate.search.util.json.impl.JacksonJsonParserFactory;
+@@ -32,30 +26,8 @@ public JsonParserSession createParser(Charset charset) {
+ 		return implementation.createParser( charset );
+ 	}
+ 
+-	/** Parse an already materialized string, encoding UTF-8 in bounded chunks. */
++	/** Parse an already materialized string without creating a secondary encoded body. */
+ 	public JsonElement parse(String json) {
+-		try ( JsonParserSession parser = createParser() ) {
+-			var encoder = StandardCharsets.UTF_8.newEncoder().onMalformedInput( CodingErrorAction.REPORT );
+-			CharBuffer chars = CharBuffer.wrap( json );
+-			ByteBuffer bytes = ByteBuffer.allocate( 8192 );
+-			while ( true ) {
+-				CoderResult result = encoder.encode( chars, bytes, true );
+-				if ( result.isError() ) {
+-					result.throwException();
+-				}
+-				bytes.flip();
+-				while ( bytes.hasRemaining() ) {
+-					parser.feed( bytes );
+-				}
+-				bytes.clear();
+-				if ( result.isUnderflow() ) {
+-					break;
+-				}
+-			}
+-			return parser.endOfInput();
+-		}
+-		catch (CharacterCodingException e) {
+-			throw new JsonParseException( "Invalid Unicode input", e );
+-		}
++		return implementation.parse( json );
+ 	}
+ }
+diff --git a/util/json/src/test/java/org/hibernate/search/util/json/JsonModelTest.java b/util/json/src/test/java/org/hibernate/search/util/json/JsonModelTest.java
+index 0c98d3dea6..abc71e005f 100644
+--- a/util/json/src/test/java/org/hibernate/search/util/json/JsonModelTest.java
++++ b/util/json/src/test/java/org/hibernate/search/util/json/JsonModelTest.java
+@@ -28,6 +28,47 @@ void orderedMembersDuplicateReplacementNullAndIndependentCopies() {
+ 		assertThat( root.remove( "javaNull" ) ).isSameAs( JsonNull.INSTANCE );
+ 	}
+ 
++	@Test
++	void integralFastPathMatchesDecimalNarrowing() {
++		for ( String number : new String[] {
++				"0",
++				"-0",
++				"42",
++				"-42",
++				"2147483647",
++				"2147483648",
++				"-2147483649",
++				"9223372036854775807",
++				"-9223372036854775808",
++				"9223372036854775808",
++				"-9223372036854775809",
++				"18446744073709551617",
++				"-18446744073709551617",
++				"9999999999999999999999999999999999999",
++				"1.9",
++				"-1.9",
++				"1e20",
++				"1e-20",
++				"1.23000e+03" } ) {
++			BigDecimal reference = new BigDecimal( number );
++			JsonPrimitive primitive = JsonPrimitive.number( number );
++			assertThat( primitive.getAsLong() ).isEqualTo( reference.longValue() );
++			assertThat( primitive.getAsInt() ).isEqualTo( reference.intValue() );
++			assertThat( primitive.getAsShort() ).isEqualTo( reference.shortValue() );
++			assertThat( primitive.getAsByte() ).isEqualTo( reference.byteValue() );
++			assertThat( primitive.getAsString() ).isEqualTo( number );
++		}
++		for ( String text : new String[] { "+42", "00042", "+1.9", "+1e+3" } ) {
++			Number actual = new JsonPrimitive( text ).getAsNumber();
++			assertThat( actual.longValue() ).isEqualTo( new BigDecimal( text ).longValue() );
++			assertThat( actual.intValue() ).isEqualTo( new BigDecimal( text ).intValue() );
++		}
++		for ( String text : new String[] { "", "-", "+", " 42", "NaN", "--42" } ) {
++			Number actual = new JsonPrimitive( text ).getAsNumber();
++			assertThatThrownBy( actual::longValue ).isInstanceOf( NumberFormatException.class );
++		}
++	}
++
+ 	@Test
+ 	void numbersPreserveLexemesAndNarrowing() {
+ 		for ( String number : new String[] { "-0", "1.2300e+04", "1.0E-04", "9007199254740993", "0.000", "-1e+0003" } ) {
+diff --git a/util/json/src/test/java/org/hibernate/search/util/json/JsonParserTest.java b/util/json/src/test/java/org/hibernate/search/util/json/JsonParserTest.java
+index 4820bb0f26..a730beea06 100644
+--- a/util/json/src/test/java/org/hibernate/search/util/json/JsonParserTest.java
++++ b/util/json/src/test/java/org/hibernate/search/util/json/JsonParserTest.java
+@@ -101,6 +101,7 @@ void randomFragmentationOfLargeTokens() {
+ 			"{\"\\uD800\":1}",
+ 			"{\"\\uDC00\":1}" })
+ 	void rejectsEmptyMalformedTruncatedAndTrailingInput(String json) {
++		assertThatThrownBy( () -> parsing.parse( json ) ).isInstanceOf( JsonParseException.class );
+ 		JsonParserSession parser = parsing.createParser();
+ 		assertThatThrownBy( () -> {
+ 			consume( parser, ByteBuffer.wrap( json.getBytes( StandardCharsets.UTF_8 ) ) );
+@@ -111,6 +112,27 @@ void rejectsEmptyMalformedTruncatedAndTrailingInput(String json) {
+ 		parser.close();
+ 	}
+ 
++	@Test
++	void stringInputPreservesUtf8LimitsAndUnicodePolicy() {
++		String json = "{\"😀\":0}";
++		int bytes = json.getBytes( StandardCharsets.UTF_8 ).length;
++		assertThat( new JsonParsing( JsonParsingOptions.DEFAULT.withMaxInputBytes( bytes ) ).parse( json ) )
++				.isEqualTo( parsing.parse( json ) );
++		assertThatThrownBy( () -> new JsonParsing( JsonParsingOptions.DEFAULT.withMaxInputBytes( bytes - 1 ) ).parse( json ) )
++				.isInstanceOf( JsonParseException.class ).hasMessageContaining( "byte limit" );
++		JsonParsing names = new JsonParsing( new JsonParsingOptions( 20, 100, 3, 100, 8192, 0 ) );
++		assertThatThrownBy( () -> names.parse( json ) ).isInstanceOf( JsonParseException.class );
++		assertThatThrownBy( () -> {
++			try ( JsonParserSession parser = names.createParser() ) {
++				consume( parser, ByteBuffer.wrap( json.getBytes( StandardCharsets.UTF_8 ) ) );
++				parser.endOfInput();
++			}
++		} ).isInstanceOf( JsonParseException.class );
++		for ( String broken : new String[] { "\"\ud800\"", "{\"\udc00\":0}" } ) {
++			assertThatThrownBy( () -> parsing.parse( broken ) ).isInstanceOf( JsonParseException.class );
++		}
++	}
++
+ 	@Test
+ 	void rejectsMalformedAndTruncatedUtf8() {
+ 		for ( byte[] bytes : new byte[][] {
+diff --git a/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonBenchmarkAffinity.java b/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonBenchmarkAffinity.java
+new file mode 100644
+index 0000000000..5117dd534c
+--- /dev/null
++++ b/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonBenchmarkAffinity.java
+@@ -0,0 +1,14 @@
++package org.hibernate.search.integrationtest.performance.backend.elasticsearch;
++
++import org.openjdk.jmh.annotations.Scope;
++import org.openjdk.jmh.annotations.Setup;
++import org.openjdk.jmh.annotations.State;
++
++/** Affinity-only setup for factory comparisons, without pre-initializing the factories. */
++@State(Scope.Thread)
++public class JsonBenchmarkAffinity {
++	@Setup
++	public void verify() {
++		JsonBenchmarkSupport.verifyAffinity();
++	}
++}
+diff --git a/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonBenchmarkFixtures.java b/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonBenchmarkFixtures.java
+new file mode 100644
+index 0000000000..79e3903c79
+--- /dev/null
++++ b/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonBenchmarkFixtures.java
+@@ -0,0 +1,78 @@
++package org.hibernate.search.integrationtest.performance.backend.elasticsearch;
++
++import java.nio.charset.StandardCharsets;
++import java.util.ArrayList;
++import java.util.List;
++
++import org.hibernate.search.backend.elasticsearch.gson.spi.GsonProviderHelper;
++
++import com.google.gson.Gson;
++import com.google.gson.GsonBuilder;
++import com.google.gson.JsonObject;
++
++/** Shared server-independent JSON workloads; setup is never timed. */
++public class JsonBenchmarkFixtures {
++	public String fixture;
++	public Gson gson;
++	public List<JsonObject> parts;
++	public String json;
++	public long encodedBytes;
++
++	public void setup() {
++		gson = GsonProviderHelper.create( GsonBuilder::new, false ).getGson();
++		parts = new ArrayList<>();
++		JsonObject body = new JsonObject();
++		switch ( fixture ) {
++			case "small":
++				body = gson.fromJson( "{\"query\":{\"term\":{\"name\":\"test\"}},\"size\":10}", JsonObject.class );
++				break;
++			case "mapping":
++				body = gson.fromJson( "{\"dynamic\":\"strict\",\"_routing\":{\"required\":true},"
++						+ "\"properties\":{\"name\":{\"type\":\"keyword\"},\"time\":{\"type\":\"date\","
++						+ "\"format\":\"strict_date_optional_time||epoch_millis\"}}}", JsonObject.class );
++				break;
++			case "unicode":
++				body.addProperty( "text", "é漢😀\n\"\\".repeat( 256 ) );
++				break;
++			case "nested":
++				JsonObject current = body;
++				for ( int i = 0; i < 32; i++ ) {
++					JsonObject child = new JsonObject();
++					current.add( "child", child );
++					current = child;
++				}
++				current.addProperty( "value", 9007199254740993L );
++				break;
++			case "scalar-1m":
++				body.addProperty( "text", "x".repeat( 1024 * 1024 ) );
++				break;
++			case "scalar-8m":
++				body.addProperty( "text", "x".repeat( 8 * 1024 * 1024 ) );
++				break;
++			case "bulk-10000":
++				for ( int i = 0; i < 10_000; i++ ) {
++					JsonObject metadata = new JsonObject();
++					JsonObject index = new JsonObject();
++					index.addProperty( "_index", "benchmark" );
++					index.addProperty( "_id", i );
++					metadata.add( "index", index );
++					parts.add( metadata );
++					JsonObject document = new JsonObject();
++					document.addProperty( "text", "x".repeat( 256 ) );
++					document.addProperty( "number", i );
++					parts.add( document );
++				}
++				break;
++			default:
++				throw new IllegalArgumentException( fixture );
++		}
++		if ( parts.isEmpty() ) {
++			parts.add( body );
++		}
++		json = gson.toJson( parts.get( 0 ) );
++		encodedBytes = 0;
++		for ( JsonObject part : parts ) {
++			encodedBytes += gson.toJson( part ).getBytes( StandardCharsets.UTF_8 ).length + 1;
++		}
++	}
++}
+diff --git a/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonBenchmarkSupport.java b/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonBenchmarkSupport.java
+new file mode 100644
+index 0000000000..bcfe084922
+--- /dev/null
++++ b/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonBenchmarkSupport.java
+@@ -0,0 +1,119 @@
++package org.hibernate.search.integrationtest.performance.backend.elasticsearch;
++
++import java.io.ByteArrayOutputStream;
++import java.io.IOException;
++import java.io.OutputStream;
++import java.io.UncheckedIOException;
++import java.nio.ByteBuffer;
++import java.nio.file.Files;
++import java.nio.file.Path;
++import java.util.ArrayList;
++import java.util.Arrays;
++import java.util.List;
++
++import org.hibernate.search.backend.elasticsearch.client.common.gson.entity.spi.GsonHttpEntityContentProvider;
++import org.hibernate.search.backend.elasticsearch.client.common.json.impl.ElasticsearchJsonBody;
++import org.hibernate.search.util.json.JsonElement;
++import org.hibernate.search.util.json.impl.JacksonJsonBodyWriter;
++import org.hibernate.search.util.json.spi.JsonBody;
++import org.hibernate.search.util.json.spi.JsonParsing;
++import org.hibernate.search.util.json.spi.JsonWriteCursor;
++
++final class JsonBenchmarkSupport {
++	private JsonBenchmarkSupport() {
++	}
++
++	interface Writer {
++		void write(OutputStream output) throws Exception;
++	}
++
++	static List<JsonElement> convert(JsonBenchmarkFixtures fixture) {
++		JsonParsing parser = new JsonParsing();
++		List<JsonElement> parts = new ArrayList<>();
++		for ( var part : fixture.parts ) {
++			parts.add( parser.parse( fixture.gson.toJson( part ) ) );
++		}
++		return parts;
++	}
++
++	static void jackson(List<JsonElement> parts, OutputStream output) throws IOException {
++		for ( JsonElement part : parts ) {
++			JacksonJsonBodyWriter.write( part, output );
++			output.write( '\n' );
++		}
++	}
++
++	static void incremental(JsonBody body, OutputStream output, ByteBuffer buffer) throws IOException {
++		try ( JsonWriteCursor cursor = body.openCursor() ) {
++			while ( !cursor.isComplete() ) {
++				buffer.clear();
++				cursor.write( buffer );
++				output.write( buffer.array(), 0, buffer.position() );
++			}
++		}
++	}
++
++	static byte[] bytes(Writer writer) throws Exception {
++		ByteArrayOutputStream output = new ByteArrayOutputStream();
++		writer.write( output );
++		return output.toByteArray();
++	}
++
++	static void verify(JsonBenchmarkFixtures fixture, List<JsonElement> parts, JsonBoundedWorker worker) throws Exception {
++		byte[] expected = bytes( output -> new GsonHttpEntityContentProvider( fixture.gson, fixture.parts ).writeTo( output ) );
++		JsonBody body = ElasticsearchJsonBody.ndjson( parts );
++		List<byte[]> results = List.of( bytes( output -> jackson( parts, output ) ), bytes( body::writeTo ),
++				bytes( output -> incremental( body, output, ByteBuffer.allocate( 8192 ) ) ),
++				bytes( output -> worker.write( destination -> jackson( parts, destination ), output ) ) );
++		for ( byte[] result : results ) {
++			if ( !Arrays.equals( expected, result ) ) {
++				throw new IllegalStateException( "Full byte mismatch: " + fixture.fixture );
++			}
++		}
++		if ( expected.length != fixture.encodedBytes ) {
++			throw new IllegalStateException( "Incomplete consumption" );
++		}
++	}
++
++	static void verifyAffinity() {
++		String expected = System.getProperty( "json.benchmark.cores" );
++		if ( expected == null ) {
++			return;
++		}
++		try {
++			String status = Files.readString( Path.of( "/proc/thread-self/status" ) );
++			String actual = status.lines().filter( line -> line.startsWith( "Cpus_allowed_list:" ) )
++					.findFirst().orElseThrow().split( ":" )[1].trim();
++			if ( !expected.equals( actual ) ) {
++				throw new IllegalStateException( "Affinity mismatch: expected " + expected + ", actual " + actual );
++			}
++			System.err.println( "Verified fork/thread affinity " + actual + " thread=" + Thread.currentThread().getName() );
++		}
++		catch (IOException e) {
++			throw new UncheckedIOException( e );
++		}
++	}
++
++	static final class Sink extends OutputStream {
++		long count;
++		long sample;
++
++		@Override
++		public void write(int value) {
++			count++;
++			sample += value;
++		}
++
++		@Override
++		public void write(byte[] bytes, int offset, int length) {
++			count += length;
++			if ( length > 0 ) {
++				sample += bytes[offset] + bytes[offset + length - 1];
++			}
++		}
++
++		long result() {
++			return count ^ sample;
++		}
++	}
++}
+diff --git a/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonBoundedWorker.java b/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonBoundedWorker.java
+new file mode 100644
+index 0000000000..7ea159e4bd
+--- /dev/null
++++ b/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonBoundedWorker.java
+@@ -0,0 +1,148 @@
++package org.hibernate.search.integrationtest.performance.backend.elasticsearch;
++
++import java.io.IOException;
++import java.io.OutputStream;
++import java.util.concurrent.ArrayBlockingQueue;
++import java.util.concurrent.ExecutorService;
++import java.util.concurrent.Executors;
++import java.util.concurrent.Future;
++
++/** Benchmark-only bridge. Two owned 8 KiB arrays circulate; no unbounded payload queue. */
++final class JsonBoundedWorker implements AutoCloseable {
++	private final ExecutorService executor = Executors.newSingleThreadExecutor();
++	private final ArrayBlockingQueue<byte[]> free = new ArrayBlockingQueue<>( 2 );
++	private final ArrayBlockingQueue<Chunk> ready = new ArrayBlockingQueue<>( 2 );
++	private Future<?> task;
++	private byte[][] owned = { new byte[8192], new byte[8192] };
++
++	JsonBoundedWorker() throws Exception {
++		free.add( owned[0] );
++		free.add( owned[1] );
++		executor.submit( JsonBenchmarkSupport::verifyAffinity ).get();
++	}
++
++	void write(JsonBenchmarkSupport.Writer writer, OutputStream destination) throws Exception {
++		task = executor.submit( () -> {
++			try {
++				try ( OutputStream output = new OutputStream() {
++					private byte[] buffer;
++					private int position;
++
++					@Override
++					public void write(int value) throws IOException {
++						try {
++							if ( buffer == null ) {
++								buffer = free.take();
++							}
++							buffer[position++] = (byte) value;
++							if ( position == buffer.length ) {
++								flush();
++							}
++						}
++						catch (InterruptedException e) {
++							Thread.currentThread().interrupt();
++							throw new IOException( e );
++						}
++					}
++
++					@Override
++					public void write(byte[] bytes, int offset, int length) throws IOException {
++						try {
++							while ( length > 0 ) {
++								if ( buffer == null ) {
++									buffer = free.take();
++								}
++								int count = Math.min( length, buffer.length - position );
++								System.arraycopy( bytes, offset, buffer, position, count );
++								position += count;
++								offset += count;
++								length -= count;
++								if ( position == buffer.length ) {
++									flush();
++								}
++							}
++						}
++						catch (InterruptedException e) {
++							Thread.currentThread().interrupt();
++							throw new IOException( e );
++						}
++					}
++
++					@Override
++					public void flush() throws IOException {
++						if ( position > 0 ) {
++							try {
++								ready.put( new Chunk( buffer, position, null ) );
++								buffer = null;
++								position = 0;
++							}
++							catch (InterruptedException e) {
++								Thread.currentThread().interrupt();
++								throw new IOException( e );
++							}
++						}
++					}
++
++					@Override
++					public void close() throws IOException {
++						flush();
++					}
++				} ) {
++					writer.write( output );
++				}
++				ready.put( new Chunk( null, 0, null ) );
++			}
++			catch (Exception e) {
++				if ( !Thread.currentThread().isInterrupted() ) {
++					try {
++						ready.put( new Chunk( null, 0, e ) );
++					}
++					catch (InterruptedException interrupted) {
++						Thread.currentThread().interrupt();
++					}
++				}
++			}
++		} );
++		try {
++			while ( true ) {
++				Chunk chunk = ready.take();
++				if ( chunk.error != null ) {
++					throw chunk.error;
++				}
++				if ( chunk.bytes == null ) {
++					break;
++				}
++				destination.write( chunk.bytes, 0, chunk.length );
++				free.put( chunk.bytes );
++			}
++			task.get();
++		}
++		finally {
++			if ( !task.isDone() ) {
++				task.cancel( true );
++			}
++		}
++	}
++
++	int encodedCapacity() {
++		return owned == null ? 0 : owned[0].length + owned[1].length;
++	}
++
++	@Override
++	public void close() throws InterruptedException {
++		if ( task != null ) {
++			task.cancel( true );
++		}
++		executor.shutdownNow();
++		if ( !executor.awaitTermination( 10, java.util.concurrent.TimeUnit.SECONDS ) ) {
++			throw new IllegalStateException( "Worker did not terminate" );
++		}
++		ready.clear();
++		free.clear();
++		owned = null;
++		task = null;
++	}
++
++	private record Chunk(byte[] bytes, int length, Exception error) {
++	}
++}
+diff --git a/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonComparisonBenchmark.java b/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonComparisonBenchmark.java
+new file mode 100644
+index 0000000000..8933dd1c44
+--- /dev/null
++++ b/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonComparisonBenchmark.java
+@@ -0,0 +1,181 @@
++package org.hibernate.search.integrationtest.performance.backend.elasticsearch;
++
++import java.nio.ByteBuffer;
++import java.util.List;
++import java.util.concurrent.TimeUnit;
++
++import org.hibernate.search.backend.elasticsearch.client.common.gson.entity.spi.GsonHttpEntityContentProvider;
++import org.hibernate.search.backend.elasticsearch.client.common.json.impl.ElasticsearchJsonBody;
++import org.hibernate.search.util.json.JsonElement;
++import org.hibernate.search.util.json.spi.JsonBody;
++import org.hibernate.search.util.json.spi.JsonParsing;
++
++import org.openjdk.jmh.annotations.Benchmark;
++import org.openjdk.jmh.annotations.BenchmarkMode;
++import org.openjdk.jmh.annotations.Fork;
++import org.openjdk.jmh.annotations.Measurement;
++import org.openjdk.jmh.annotations.Mode;
++import org.openjdk.jmh.annotations.OutputTimeUnit;
++import org.openjdk.jmh.annotations.Param;
++import org.openjdk.jmh.annotations.Scope;
++import org.openjdk.jmh.annotations.Setup;
++import org.openjdk.jmh.annotations.State;
++import org.openjdk.jmh.annotations.TearDown;
++import org.openjdk.jmh.annotations.Warmup;
++
++/** Complete NDJSON writes. Fresh includes construction/probe; reused excludes them for every writer. */
++@BenchmarkMode(Mode.Throughput)
++@OutputTimeUnit(TimeUnit.SECONDS)
++@Warmup(iterations = 5, time = 1)
++@Measurement(iterations = 5, time = 1)
++@Fork(3)
++public class JsonComparisonBenchmark {
++	@State(Scope.Thread)
++	public static class Bodies extends JsonBenchmarkFixtures {
++		@Param({ "small", "mapping", "unicode", "nested", "scalar-1m", "scalar-8m", "bulk-10000" })
++		public String fixture;
++		@Param({ "fresh", "reused" })
++		public String lifecycle;
++		List<JsonElement> searchParts;
++		JsonBody body;
++		GsonHttpEntityContentProvider provider;
++		JsonBoundedWorker worker;
++		final ByteBuffer buffer = ByteBuffer.allocate( 8192 );
++		final JsonParsing parsing = new JsonParsing();
++
++		@Setup
++		@Override
++		public void setup() {
++			super.fixture = fixture;
++			super.setup();
++			JsonBenchmarkSupport.verifyAffinity();
++			try {
++				searchParts = JsonBenchmarkSupport.convert( this );
++				body = ElasticsearchJsonBody.ndjson( searchParts );
++				provider = new GsonHttpEntityContentProvider( gson, parts );
++				worker = new JsonBoundedWorker();
++				JsonBenchmarkSupport.verify( this, searchParts, worker );
++			}
++			catch (Exception e) {
++				throw new IllegalStateException( e );
++			}
++		}
++
++		JsonBody selectedBody() {
++			return "fresh".equals( lifecycle ) ? ElasticsearchJsonBody.ndjson( searchParts ) : body;
++		}
++
++		@TearDown
++		public void close() throws Exception {
++			worker.close();
++		}
++	}
++
++	@Benchmark
++	public long gson(Bodies state) throws Exception {
++		var sink = new JsonBenchmarkSupport.Sink();
++		GsonHttpEntityContentProvider provider = "fresh".equals( state.lifecycle )
++				? new GsonHttpEntityContentProvider( state.gson, state.parts )
++				: state.provider;
++		provider.writeTo( sink );
++		return sink.result() ^ provider.getContentLength();
++	}
++
++	@Benchmark
++	public long jackson(Bodies state) throws Exception {
++		JsonBody body = state.selectedBody();
++		var sink = new JsonBenchmarkSupport.Sink();
++		JsonBenchmarkSupport.jackson( state.searchParts, sink );
++		return sink.result() ^ body.contentLength();
++	}
++
++	@Benchmark
++	public long synchronousCursor(Bodies state) throws Exception {
++		JsonBody body = state.selectedBody();
++		var sink = new JsonBenchmarkSupport.Sink();
++		body.writeTo( sink );
++		return sink.result() ^ body.contentLength();
++	}
++
++	@Benchmark
++	public long incrementalCursor(Bodies state) throws Exception {
++		JsonBody body = state.selectedBody();
++		var sink = new JsonBenchmarkSupport.Sink();
++		JsonBenchmarkSupport.incremental( body, sink, state.buffer );
++		return sink.result() ^ body.contentLength();
++	}
++
++	@Benchmark
++	public long boundedWorker(Bodies state) throws Exception {
++		JsonBody body = state.selectedBody();
++		var sink = new JsonBenchmarkSupport.Sink();
++		state.worker.write( output -> JsonBenchmarkSupport.jackson( state.searchParts, output ), sink );
++		return sink.result() ^ body.contentLength();
++	}
++
++	@Benchmark
++	public JsonElement searchParser(Bodies state) {
++		return state.parsing.parse( state.json );
++	}
++
++	@Benchmark
++	public Object gsonParser(Bodies state) {
++		return state.gson.fromJson( state.json, com.google.gson.JsonObject.class );
++	}
++
++	@State(Scope.Thread)
++	public static class Accessors {
++		final org.hibernate.search.backend.elasticsearch.gson.impl.JsonAccessor<Long> gsonAccessor =
++				org.hibernate.search.backend.elasticsearch.gson.impl.JsonAccessor.root()
++						.property( "hits" ).property( "total" ).property( "value" ).asLong();
++		final org.hibernate.search.util.json.spi.JsonAccessor<Long> strict =
++				org.hibernate.search.util.json.spi.JsonAccessor.root().property( "hits" ).property( "total" )
++						.property( "value" ).asLong();
++		final org.hibernate.search.util.json.spi.JsonAccessor<Long> adapted =
++				org.hibernate.search.util.json.spi.JsonAccessor.root().property( "hits" ).unwrapSingletonArrays()
++						.property( "total" ).unwrapSingletonArrays().property( "value" ).unwrapSingletonArrays().asLong();
++		final String plain = "{\"hits\":{\"total\":{\"value\":42}}}";
++		final String arrays = "{\"hits\":[[{\"total\":[{\"value\":[[42]]}]}]]}";
++		final com.google.gson.JsonObject gsonPlain =
++				new com.google.gson.Gson().fromJson( plain, com.google.gson.JsonObject.class );
++		final com.google.gson.JsonObject gsonArrays =
++				new com.google.gson.Gson().fromJson( arrays, com.google.gson.JsonObject.class );
++		final org.hibernate.search.util.json.JsonObject searchPlain = new JsonParsing().parse( plain ).getAsJsonObject();
++		final org.hibernate.search.util.json.JsonObject searchArrays = new JsonParsing().parse( arrays ).getAsJsonObject();
++
++		@Setup
++		public void verify() {
++			JsonBenchmarkSupport.verifyAffinity();
++			if ( gsonAccessor.get( gsonPlain ).orElseThrow() != 42
++					|| gsonAccessor.get( gsonArrays ).orElseThrow() != 42
++					|| strict.get( searchPlain ).orElseThrow() != 42 || adapted.get( searchArrays ).orElseThrow() != 42 ) {
++				throw new IllegalStateException( "Accessor mismatch" );
++			}
++		}
++	}
++
++	@Benchmark
++	public long gsonAccessor(Accessors state) {
++		return state.gsonAccessor.get( state.gsonPlain ).orElseThrow();
++	}
++
++	@Benchmark
++	public long gsonAdaptedAccessor(Accessors state) {
++		return state.gsonAccessor.get( state.gsonArrays ).orElseThrow();
++	}
++
++	@Benchmark
++	public long searchAccessor(Accessors state) {
++		return state.strict.get( state.searchPlain ).orElseThrow();
++	}
++
++	@Benchmark
++	public long searchAdaptedAccessor(Accessors state) {
++		return state.adapted.get( state.searchArrays ).orElseThrow();
++	}
++
++	@Benchmark
++	public JsonParsing initializeParser(JsonBenchmarkAffinity affinity) {
++		return new JsonParsing();
++	}
++}
+diff --git a/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonSlowConsumerHarness.java b/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonSlowConsumerHarness.java
+new file mode 100644
+index 0000000000..4f27581f2f
+--- /dev/null
++++ b/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonSlowConsumerHarness.java
+@@ -0,0 +1,141 @@
++package org.hibernate.search.integrationtest.performance.backend.elasticsearch;
++
++import java.io.ByteArrayOutputStream;
++import java.io.FileDescriptor;
++import java.io.FileOutputStream;
++import java.io.IOException;
++import java.io.OutputStream;
++import java.io.PrintWriter;
++import java.lang.management.ManagementFactory;
++import java.lang.management.ThreadMXBean;
++import java.lang.reflect.Field;
++import java.nio.ByteBuffer;
++import java.nio.charset.StandardCharsets;
++import java.util.Arrays;
++import java.util.Locale;
++import java.util.concurrent.locks.LockSupport;
++
++import org.hibernate.search.backend.elasticsearch.client.common.json.impl.ElasticsearchJsonBody;
++import org.hibernate.search.util.json.spi.JsonBodies;
++import org.hibernate.search.util.json.spi.JsonWriteCursor;
++
++/** Independent exact-byte/retention/cancellation assertions and untimed slow-consumer diagnostics. */
++public final class JsonSlowConsumerHarness {
++	private JsonSlowConsumerHarness() {
++	}
++
++	public static void main(String[] args) throws Exception {
++		PrintWriter output = new PrintWriter( new FileOutputStream( FileDescriptor.out ), true, StandardCharsets.UTF_8 );
++		JsonBenchmarkSupport.verifyAffinity();
++		output.println(
++				"fixture,encodedBytes,cursorEncodedBound,workerArrayBound,slowWallMs,totalCpuMs,workerCpuMs,workerBusyMs,workerCpuOccupancy" );
++		ThreadMXBean threads = ManagementFactory.getThreadMXBean();
++		threads.setThreadCpuTimeEnabled( true );
++		for ( String name : new String[] { "small", "mapping", "unicode", "nested", "scalar-1m", "scalar-8m", "bulk-10000" } ) {
++			JsonBenchmarkFixtures fixture = new JsonBenchmarkFixtures();
++			fixture.fixture = name;
++			fixture.setup();
++			var parts = JsonBenchmarkSupport.convert( fixture );
++			var body = ElasticsearchJsonBody.ndjson( parts );
++			byte[] expected = JsonBenchmarkSupport.bytes( body::writeTo );
++			try ( JsonBoundedWorker worker = new JsonBoundedWorker() ) {
++				JsonBenchmarkSupport.verify( fixture, parts, worker );
++				if ( worker.encodedCapacity() != 16384 ) {
++					throw new IllegalStateException( "Worker storage bound changed" );
++				}
++				for ( int capacity : new int[] { 1, 2, 5, 8192 } ) {
++					byte[] actual = JsonBenchmarkSupport
++							.bytes( sink -> JsonBenchmarkSupport.incremental( body, sink, ByteBuffer.allocate( capacity ) ) );
++					if ( !Arrays.equals( expected, actual ) ) {
++						throw new IllegalStateException( "Capacity mismatch " + capacity );
++					}
++				}
++				for ( var part : parts ) {
++					try ( JsonWriteCursor cursor = JsonBodies.openCursor( part ) ) {
++						if ( cursor.write( ByteBuffer.allocate( 0 ) ) != 0 ) {
++							throw new IllegalStateException( "Zero capacity progress" );
++						}
++						cursor.write( ByteBuffer.allocate( 5 ) );
++						Field field = cursor.getClass().getDeclaredField( "pending" );
++						field.setAccessible( true );
++						byte[] pending = (byte[]) field.get( cursor );
++						if ( pending != null && pending.length > 6 ) {
++							throw new IllegalStateException( "Unbounded cursor" );
++						}
++						cursor.close();
++						if ( field.get( cursor ) != null ) {
++							throw new IllegalStateException( "Cancelled cursor retains encoded output" );
++						}
++					}
++				}
++				ByteArrayOutputStream received = new ByteArrayOutputStream();
++				long cpuBefore = cpu( threads );
++				long start = System.nanoTime();
++				long[] workerTime = new long[2];
++				worker.write( sink -> {
++					long workerStart = System.nanoTime();
++					long workerCpu = threads.getCurrentThreadCpuTime();
++					JsonBenchmarkSupport.jackson( parts, sink );
++					workerTime[0] = threads.getCurrentThreadCpuTime() - workerCpu;
++					workerTime[1] = System.nanoTime() - workerStart;
++				}, new OutputStream() {
++					@Override
++					public void write(int value) {
++						received.write( value );
++					}
++
++					@Override
++					public void write(byte[] bytes, int offset, int length) {
++						LockSupport.parkNanos( 100_000 );
++						received.write( bytes, offset, length );
++					}
++				} );
++				long wall = System.nanoTime() - start;
++				long cpu = cpu( threads ) - cpuBefore;
++				if ( !Arrays.equals( expected, received.toByteArray() ) ) {
++					throw new IllegalStateException( "Slow consumer incomplete" );
++				}
++				output.printf( Locale.ROOT, "%s,%d,6,16384,%.3f,%.3f,%.3f,%.3f,%.3f%n", name, expected.length,
++						wall / 1e6, cpu / 1e6, workerTime[0] / 1e6, workerTime[1] / 1e6, (double) workerTime[0] / wall );
++			}
++			try ( JsonBoundedWorker worker = new JsonBoundedWorker() ) {
++				try {
++					worker.write( sink -> JsonBenchmarkSupport.jackson( parts, sink ), new OutputStream() {
++						@Override
++						public void write(int value) throws IOException {
++							throw new IOException( "intentional consumer cancellation" );
++						}
++
++						@Override
++						public void write(byte[] bytes, int offset, int length) throws IOException {
++							throw new IOException( "intentional consumer cancellation" );
++						}
++					} );
++					throw new IllegalStateException( "Consumer failure ignored" );
++				}
++				catch (IOException expectedFailure) {
++					// close cancels any blocked producer and asserts termination.
++				}
++			}
++		}
++		// Lone surrogates intentionally differ from legacy UTF-8 replacement; outside byte-equivalent fixtures.
++		var lone = new org.hibernate.search.util.json.JsonObject();
++		lone.addProperty( "text", "\ud800" );
++		String loneOutput = new String( JsonBenchmarkSupport.bytes( JsonBodies.of( lone )::writeTo ), StandardCharsets.UTF_8 );
++		if ( !"{\"text\":\"\\ud800\"}".equals( loneOutput ) ) {
++			throw new IllegalStateException( "Surrogate policy mismatch" );
++		}
++		output.println( "All full-byte, capacity, cancellation and surrogate-policy assertions passed." );
++	}
++
++	private static long cpu(ThreadMXBean threads) {
++		long total = 0;
++		for ( long id : threads.getAllThreadIds() ) {
++			long value = threads.getThreadCpuTime( id );
++			if ( value > 0 ) {
++				total += value;
++			}
++		}
++		return total;
++	}
++}
+diff --git a/integrationtest/performance/backend/scripts/json-benchmark-runner.py b/integrationtest/performance/backend/scripts/json-benchmark-runner.py
+new file mode 100644
+index 0000000000..0b31b69bb1
+--- /dev/null
++++ b/integrationtest/performance/backend/scripts/json-benchmark-runner.py
+@@ -0,0 +1,184 @@
++#!/usr/bin/env python3
++# SPDX-License-Identifier: Apache-2.0
++# Copyright Red Hat Inc. and Hibernate Authors
++"""Linux-only controlled runner. Never changes host settings or downloads executables."""
++import argparse
++import hashlib
++import json
++import os
++from pathlib import Path
++import shlex
++import subprocess
++import time
++
++ROOT = Path(__file__).resolve().parents[4]
++JAR = ROOT / 'integrationtest/performance/backend/elasticsearch/target/benchmarks.jar'
++
++
++def read(path):
++    try:
++        return Path(path).read_text().strip()
++    except (OSError, UnicodeError):
++        return 'unavailable'
++
++
++def capture(command):
++    result = subprocess.run(command, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
++    return result.stdout.strip()
++
++
++def positive(value):
++    number = int(value)
++    if number < 1:
++        raise argparse.ArgumentTypeError('must be positive')
++    return number
++
++
++def cores(spec):
++    result = set()
++    for component in spec.split(','):
++        limits = component.split('-')
++        if len(limits) == 1:
++            result.add(int(limits[0]))
++        elif len(limits) == 2:
++            low, high = map(int, limits)
++            if low > high:
++                raise ValueError('reversed CPU range')
++            result.update(range(low, high + 1))
++        else:
++            raise ValueError('invalid CPU range')
++    return result
++
++
++def main():
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument('--cores', help='allowed online CPUs, e.g. 0,2 (two distinct physical cores recommended)')
++    parser.add_argument('--out', required=True, type=Path)
++    parser.add_argument('--skip-build', action='store_true')
++    parser.add_argument('--forks', type=positive, default=3)
++    parser.add_argument('--warmup', type=positive, default=5)
++    parser.add_argument('--iterations', type=positive, default=5)
++    parser.add_argument('--seconds', type=positive, default=1)
++    parser.add_argument('--quick', action='store_true', help='non-gating: one fork, one warmup/measurement')
++    parser.add_argument('--cold', action='store_true', help='non-gating: one un-warmed single-shot factory invocation per fork')
++    parser.add_argument('--pattern', default='JsonComparisonBenchmark.(gson|jackson|synchronousCursor|incrementalCursor|boundedWorker)$')
++    parser.add_argument('--fixtures', default='small,mapping,unicode,nested,scalar-1m,scalar-8m,bulk-10000')
++    parser.add_argument('--lifecycle', choices=['fresh', 'reused'], default='fresh')
++    parser.add_argument('--profiler', help='optional JMH profiler specification; separate diagnostic run')
++    parser.add_argument('--jvm-args', default='', help='additional fork JVM arguments (recorded verbatim)')
++    args = parser.parse_args()
++    if args.quick and args.cold:
++        parser.error('--quick and --cold are mutually exclusive')
++    if not os.sys.platform.startswith('linux'):
++        parser.error('Linux is required for affinity verification')
++    allowed = os.sched_getaffinity(0)
++    online = cores(read('/sys/devices/system/cpu/online'))
++    topology = []
++    for cpu in sorted(allowed & online):
++        base = f'/sys/devices/system/cpu/cpu{cpu}'
++        topology.append(dict(cpu=cpu, socket=read(base + '/topology/physical_package_id'),
++                             core=read(base + '/topology/core_id'), siblings=read(base + '/topology/thread_siblings_list'),
++                             core_type=read(base + '/topology/core_type'),
++                             max_frequency=read(base + '/cpufreq/cpuinfo_max_freq'),
++                             base_frequency=read(base + '/cpufreq/base_frequency'),
++                             governor=read(base + '/cpufreq/scaling_governor'),
++                             current_frequency=read(base + '/cpufreq/scaling_cur_freq')))
++    if args.cores:
++        selected = cores(args.cores)
++    else:
++        # Same topology class/frequency, one logical CPU per physical core.
++        groups = {}
++        seen = set()
++        for entry in topology:
++            identity = (entry['socket'], entry['core'])
++            if identity in seen:
++                continue
++            seen.add(identity)
++            key = (entry['core_type'], entry['max_frequency'])
++            groups.setdefault(key, []).append(entry['cpu'])
++        group = max(groups.values(), key=len)
++        selected = set(group[:2])
++    if not selected or not selected <= (allowed & online):
++        parser.error('selected CPUs must be online and in process affinity')
++    if len(selected) < 2 and 'boundedWorker' in args.pattern:
++        parser.error('worker comparison requires at least two allowed CPUs')
++    args.out.mkdir(parents=True, exist_ok=False)
++    if not args.skip_build:
++        with (args.out / 'build.log').open('w') as output:
++            subprocess.run([str(ROOT / 'mvnw'), 'clean', 'install', '-pl',
++                            'integrationtest/performance/backend/elasticsearch', '-am', '-DskipTests',
++                            '-DskipITs', '-Dno-build-cache'], cwd=ROOT, stdout=output, stderr=subprocess.STDOUT, check=True)
++    if not JAR.is_file():
++        parser.error('missing benchmark JAR; build first or omit --skip-build')
++    if args.skip_build:
++        newest = max(p.stat().st_mtime_ns
++                     for directory in ['util/json/src/main', 'backend/elasticsearch/src/main',
++                                       'integrationtest/performance/backend/elasticsearch/src/main']
++                     for p in (ROOT / directory).rglob('*.java'))
++        if newest > JAR.stat().st_mtime_ns:
++            parser.error('benchmark JAR predates source changes; rebuild before --skip-build')
++    affinity = capture(['taskset', '-c', ','.join(map(str, sorted(selected))), 'sh', '-c',
++                        "sed -n 's/^Cpus_allowed_list:[[:space:]]*//p' /proc/self/status"])
++    jvm = f'-Xms1g -Xmx1g -XX:+UseG1GC -XX:ActiveProcessorCount={len(selected)} -Djson.benchmark.cores={affinity} {args.jvm_args}'.strip()
++    if args.quick:
++        args.forks = args.warmup = args.iterations = 1
++    if args.cold:
++        args.warmup = 0
++        args.iterations = 1
++    command = ['taskset', '-c', affinity, 'java', '-jar', str(JAR), args.pattern,
++               '-f', str(args.forks), '-wi', str(args.warmup), '-i', str(args.iterations),
++               '-w', f'{args.seconds}s', '-r', f'{args.seconds}s', '-t', '1', '-jvmArgs', jvm,
++               '-rf', 'json', '-rff', str(args.out.resolve() / 'jmh.json')]
++    if args.cold:
++        command += ['-bm', 'ss']
++    if args.fixtures:
++        command += ['-p', f'fixture={args.fixtures}', '-p', f'lifecycle={args.lifecycle}']
++    if args.profiler:
++        command += ['-prof', args.profiler]
++    patch = capture(['git', '-C', str(ROOT), 'diff', 'HEAD', '--binary'])
++    untracked = capture(['git', '-C', str(ROOT), 'ls-files', '--others', '--exclude-standard', '--',
++                         'integrationtest/performance/backend/elasticsearch/src',
++                         'integrationtest/performance/backend/scripts', 'util/json/src'])
++    for source in untracked.splitlines():
++        patch += '\n' + capture(['git', '-C', str(ROOT), 'diff', '--no-index', '--binary', '--', '/dev/null', source])
++    (args.out / 'source.patch').write_text(patch + '\n')
++    environment = dict(timestamp=time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
++                       gating=not args.quick and not args.profiler and not args.cold, command=command,
++                       invocation=shlex.join(os.sys.argv), jvm=jvm,
++                       revision=capture(['git', '-C', str(ROOT), 'rev-parse', 'HEAD']),
++                       status=capture(['git', '-C', str(ROOT), 'status', '--short']),
++                       patch_sha256=hashlib.sha256((patch + '\n').encode()).hexdigest(),
++                       artifact_sha256=hashlib.sha256(JAR.read_bytes()).hexdigest(),
++                       java=capture(['java', '-version']), uname=capture(['uname', '-a']),
++                       cpu=capture(['lscpu']), topology=topology, allowed=sorted(allowed), selected=sorted(selected),
++                       cgroup=read('/proc/self/cgroup'), cpu_max=read('/sys/fs/cgroup/cpu.max'),
++                       cpu_stat_before=read('/sys/fs/cgroup/cpu.stat'), memory_max=read('/sys/fs/cgroup/memory.max'),
++                       cpuset=read('/sys/fs/cgroup/cpuset.cpus.effective'),
++                       load_before=read('/proc/loadavg'), pressure_before=read('/proc/pressure/cpu'),
++                       turbo=read('/sys/devices/system/cpu/intel_pstate/no_turbo'),
++                       boost=read('/sys/devices/system/cpu/cpufreq/boost'),
++                       perf_event_paranoid=read('/proc/sys/kernel/perf_event_paranoid'),
++                       exclusive_reservation=False)
++    # Hash untracked benchmark sources too: git diff does not contain them.
++    environment['source_hashes'] = {str(p.relative_to(ROOT)): hashlib.sha256(p.read_bytes()).hexdigest()
++                                    for directory in ['integrationtest/performance/backend/elasticsearch/src',
++                                                      'integrationtest/performance/backend/scripts', 'util/json/src']
++                                    for p in (ROOT / directory).rglob('*') if p.is_file()}
++    (args.out / 'environment.json').write_text(json.dumps(environment, indent=2) + '\n')
++    (args.out / 'command.txt').write_text(shlex.join(command) + '\n')
++    print(shlex.join(command), flush=True)
++    with (args.out / 'console.log').open('w') as output:
++        result = subprocess.run(command, cwd=ROOT, stdout=output, stderr=subprocess.STDOUT)
++    environment.update(load_after=read('/proc/loadavg'), pressure_after=read('/proc/pressure/cpu'),
++                       cpu_stat_after=read('/sys/fs/cgroup/cpu.stat'), exit_code=result.returncode)
++    (args.out / 'environment.json').write_text(json.dumps(environment, indent=2) + '\n')
++    # JMH can exit zero when individual forks fail.
++    results = json.loads((args.out / 'jmh.json').read_text())
++    console = (args.out / 'console.log').read_text()
++    if result.returncode or not results or '<failure>' in console or 'ERROR:' in console:
++        raise SystemExit('Benchmark failed; inspect console.log')
++    print(f'{len(results)} results in {args.out}', flush=True)
++
++
++if __name__ == '__main__':
++    main()
+diff --git a/integrationtest/performance/backend/scripts/run-json-benchmarks.sh b/integrationtest/performance/backend/scripts/run-json-benchmarks.sh
+new file mode 100755
+index 0000000000..6039efa0d7
+--- /dev/null
++++ b/integrationtest/performance/backend/scripts/run-json-benchmarks.sh
+@@ -0,0 +1,5 @@
++#!/usr/bin/env bash
++# SPDX-License-Identifier: Apache-2.0
++# Copyright Red Hat Inc. and Hibernate Authors
++set -euo pipefail
++exec python3 "$(dirname "${BASH_SOURCE[0]}")/json-benchmark-runner.py" "$@"
+diff --git a/integrationtest/performance/backend/scripts/summarize-json-results.py b/integrationtest/performance/backend/scripts/summarize-json-results.py
+new file mode 100644
+index 0000000000..279c24c504
+--- /dev/null
++++ b/integrationtest/performance/backend/scripts/summarize-json-results.py
+@@ -0,0 +1,29 @@
++#!/usr/bin/env python3
++# SPDX-License-Identifier: Apache-2.0
++# Copyright Red Hat Inc. and Hibernate Authors
++"""Print primary scores and independent fork means; preserve original JMH uncertainty."""
++import argparse
++import csv
++import json
++import math
++from pathlib import Path
++import statistics
++import sys
++
++parser = argparse.ArgumentParser(description=__doc__)
++parser.add_argument('results', type=Path, nargs='+')
++args = parser.parse_args()
++writer = csv.writer(sys.stdout)
++writer.writerow(['run', 'benchmark', 'fixture', 'lifecycle', 'score', 'jmh_99.9_error',
++                 'units', 'fork_means', 'fork_cv_percent', 'allocation_B_per_op'])
++for path in args.results:
++    for result in json.loads(path.read_text()):
++        metric = result['primaryMetric']
++        means = [statistics.mean(fork) for fork in metric.get('rawData', [])]
++        cv = statistics.stdev(means) / statistics.mean(means) * 100 if len(means) > 1 else math.nan
++        writer.writerow([path.parent.name, result['benchmark'].split('.')[-1],
++                         result.get('params', {}).get('fixture', ''),
++                         result.get('params', {}).get('lifecycle', ''),
++                         metric['score'], metric['scoreError'], metric['scoreUnit'],
++                         ';'.join(f'{mean:.6g}' for mean in means), cv,
++                         result.get('secondaryMetrics', {}).get('gc.alloc.rate.norm', {}).get('score', '')])

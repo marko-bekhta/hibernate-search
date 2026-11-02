@@ -1,0 +1,3141 @@
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# JMH version: 1.37
+# VM version: JDK 25.0.4.1, OpenJDK 64-Bit Server VM, 25.0.4.1+1
+# VM invoker: /usr/lib/jvm/java-25-openjdk/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseG1GC -XX:ActiveProcessorCount=2 -Djson.benchmark.cores=0,2
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.boundedWorker
+# Parameters: (fixture = small, lifecycle = fresh, observation = sampled)
+
+# Run progress: 0.00% complete, ETA 00:20:00
+# Fork: 1 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.boundedWorker-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+187232.630 ops/s
+# Warmup Iteration   2: 202226.420 ops/s
+# Warmup Iteration   3: 211429.733 ops/s
+# Warmup Iteration   4: 217801.094 ops/s
+# Warmup Iteration   5: 221187.479 ops/s
+Iteration   1: 220687.919 ops/s
+Iteration   2: 219020.603 ops/s
+Iteration   3: 210625.511 ops/s
+Iteration   4: 216360.872 ops/s
+Iteration   5: 219455.341 ops/s
+
+# Run progress: 0.83% complete, ETA 00:20:20
+# Fork: 2 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.boundedWorker-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+182683.342 ops/s
+# Warmup Iteration   2: 198664.962 ops/s
+# Warmup Iteration   3: 199572.931 ops/s
+# Warmup Iteration   4: 210543.959 ops/s
+# Warmup Iteration   5: 227519.085 ops/s
+Iteration   1: 213429.582 ops/s
+Iteration   2: 213644.523 ops/s
+Iteration   3: 213812.278 ops/s
+Iteration   4: 211253.380 ops/s
+Iteration   5: 212568.603 ops/s
+
+# Run progress: 1.67% complete, ETA 00:20:07
+# Fork: 3 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.boundedWorker-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+175531.515 ops/s
+# Warmup Iteration   2: 196553.631 ops/s
+# Warmup Iteration   3: 207946.100 ops/s
+# Warmup Iteration   4: 214640.420 ops/s
+# Warmup Iteration   5: 214112.172 ops/s
+Iteration   1: 217456.244 ops/s
+Iteration   2: 217540.875 ops/s
+Iteration   3: 217179.480 ops/s
+Iteration   4: 217580.804 ops/s
+Iteration   5: 217146.212 ops/s
+
+
+Result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.boundedWorker":
+  215850.815 ±(99.9%) 3290.935 ops/s [Average]
+  (min, avg, max) = (210625.511, 215850.815, 220687.919), stdev = 3078.343
+  CI (99.9%): [212559.880, 219141.750] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 25.0.4.1, OpenJDK 64-Bit Server VM, 25.0.4.1+1
+# VM invoker: /usr/lib/jvm/java-25-openjdk/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseG1GC -XX:ActiveProcessorCount=2 -Djson.benchmark.cores=0,2
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.boundedWorker
+# Parameters: (fixture = small, lifecycle = fresh, observation = opaque)
+
+# Run progress: 2.50% complete, ETA 00:19:57
+# Fork: 1 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.boundedWorker-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+185192.959 ops/s
+# Warmup Iteration   2: 198287.898 ops/s
+# Warmup Iteration   3: 198144.234 ops/s
+# Warmup Iteration   4: 206523.346 ops/s
+# Warmup Iteration   5: 212731.289 ops/s
+Iteration   1: 213975.133 ops/s
+Iteration   2: 213311.989 ops/s
+Iteration   3: 213808.865 ops/s
+Iteration   4: 214044.400 ops/s
+Iteration   5: 213171.268 ops/s
+
+# Run progress: 3.33% complete, ETA 00:19:47
+# Fork: 2 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.boundedWorker-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+174519.335 ops/s
+# Warmup Iteration   2: 176170.344 ops/s
+# Warmup Iteration   3: 214843.309 ops/s
+# Warmup Iteration   4: 213194.120 ops/s
+# Warmup Iteration   5: 210878.199 ops/s
+Iteration   1: 220725.304 ops/s
+Iteration   2: 218015.410 ops/s
+Iteration   3: 216702.712 ops/s
+Iteration   4: 215468.511 ops/s
+Iteration   5: 209585.394 ops/s
+
+# Run progress: 4.17% complete, ETA 00:19:36
+# Fork: 3 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.boundedWorker-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+183857.167 ops/s
+# Warmup Iteration   2: 199281.559 ops/s
+# Warmup Iteration   3: 198168.603 ops/s
+# Warmup Iteration   4: 200653.693 ops/s
+# Warmup Iteration   5: 210014.995 ops/s
+Iteration   1: 218176.313 ops/s
+Iteration   2: 217343.537 ops/s
+Iteration   3: 211747.739 ops/s
+Iteration   4: 212015.556 ops/s
+Iteration   5: 210930.334 ops/s
+
+
+Result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.boundedWorker":
+  214601.498 ±(99.9%) 3296.674 ops/s [Average]
+  (min, avg, max) = (209585.394, 214601.498, 220725.304), stdev = 3083.711
+  CI (99.9%): [211304.824, 217898.172] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 25.0.4.1, OpenJDK 64-Bit Server VM, 25.0.4.1+1
+# VM invoker: /usr/lib/jvm/java-25-openjdk/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseG1GC -XX:ActiveProcessorCount=2 -Djson.benchmark.cores=0,2
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.boundedWorker
+# Parameters: (fixture = unicode, lifecycle = fresh, observation = sampled)
+
+# Run progress: 5.00% complete, ETA 00:19:26
+# Fork: 1 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.boundedWorker-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+37059.076 ops/s
+# Warmup Iteration   2: 40400.907 ops/s
+# Warmup Iteration   3: 41327.345 ops/s
+# Warmup Iteration   4: 43084.615 ops/s
+# Warmup Iteration   5: 43463.724 ops/s
+Iteration   1: 43382.259 ops/s
+Iteration   2: 42691.323 ops/s
+Iteration   3: 43193.807 ops/s
+Iteration   4: 43872.418 ops/s
+Iteration   5: 43936.765 ops/s
+
+# Run progress: 5.83% complete, ETA 00:19:16
+# Fork: 2 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.boundedWorker-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+39211.131 ops/s
+# Warmup Iteration   2: 41220.925 ops/s
+# Warmup Iteration   3: 41929.663 ops/s
+# Warmup Iteration   4: 43275.085 ops/s
+# Warmup Iteration   5: 43562.005 ops/s
+Iteration   1: 43561.917 ops/s
+Iteration   2: 42907.040 ops/s
+Iteration   3: 43142.252 ops/s
+Iteration   4: 44171.094 ops/s
+Iteration   5: 44152.222 ops/s
+
+# Run progress: 6.67% complete, ETA 00:19:05
+# Fork: 3 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.boundedWorker-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+34686.540 ops/s
+# Warmup Iteration   2: 41051.071 ops/s
+# Warmup Iteration   3: 39679.136 ops/s
+# Warmup Iteration   4: 43333.034 ops/s
+# Warmup Iteration   5: 43363.935 ops/s
+Iteration   1: 43842.941 ops/s
+Iteration   2: 42605.514 ops/s
+Iteration   3: 42703.332 ops/s
+Iteration   4: 43565.257 ops/s
+Iteration   5: 43742.306 ops/s
+
+
+Result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.boundedWorker":
+  43431.363 ±(99.9%) 571.073 ops/s [Average]
+  (min, avg, max) = (42605.514, 43431.363, 44171.094), stdev = 534.182
+  CI (99.9%): [42860.290, 44002.437] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 25.0.4.1, OpenJDK 64-Bit Server VM, 25.0.4.1+1
+# VM invoker: /usr/lib/jvm/java-25-openjdk/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseG1GC -XX:ActiveProcessorCount=2 -Djson.benchmark.cores=0,2
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.boundedWorker
+# Parameters: (fixture = unicode, lifecycle = fresh, observation = opaque)
+
+# Run progress: 7.50% complete, ETA 00:18:55
+# Fork: 1 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.boundedWorker-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+34634.061 ops/s
+# Warmup Iteration   2: 37247.855 ops/s
+# Warmup Iteration   3: 39843.963 ops/s
+# Warmup Iteration   4: 40484.530 ops/s
+# Warmup Iteration   5: 41058.409 ops/s
+Iteration   1: 41249.712 ops/s
+Iteration   2: 40313.517 ops/s
+Iteration   3: 40321.820 ops/s
+Iteration   4: 41175.008 ops/s
+Iteration   5: 41559.992 ops/s
+
+# Run progress: 8.33% complete, ETA 00:18:44
+# Fork: 2 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.boundedWorker-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+36841.557 ops/s
+# Warmup Iteration   2: 41583.342 ops/s
+# Warmup Iteration   3: 40342.210 ops/s
+# Warmup Iteration   4: 43339.156 ops/s
+# Warmup Iteration   5: 42571.603 ops/s
+Iteration   1: 43028.099 ops/s
+Iteration   2: 43278.800 ops/s
+Iteration   3: 43789.054 ops/s
+Iteration   4: 44116.491 ops/s
+Iteration   5: 42889.233 ops/s
+
+# Run progress: 9.17% complete, ETA 00:18:34
+# Fork: 3 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.boundedWorker-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+38192.154 ops/s
+# Warmup Iteration   2: 40829.557 ops/s
+# Warmup Iteration   3: 41443.208 ops/s
+# Warmup Iteration   4: 43230.499 ops/s
+# Warmup Iteration   5: 43797.828 ops/s
+Iteration   1: 43467.028 ops/s
+Iteration   2: 42437.829 ops/s
+Iteration   3: 43047.694 ops/s
+Iteration   4: 43823.881 ops/s
+Iteration   5: 43869.171 ops/s
+
+
+Result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.boundedWorker":
+  42557.822 ±(99.9%) 1395.505 ops/s [Average]
+  (min, avg, max) = (40313.517, 42557.822, 44116.491), stdev = 1305.356
+  CI (99.9%): [41162.317, 43953.326] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 25.0.4.1, OpenJDK 64-Bit Server VM, 25.0.4.1+1
+# VM invoker: /usr/lib/jvm/java-25-openjdk/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseG1GC -XX:ActiveProcessorCount=2 -Djson.benchmark.cores=0,2
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.boundedWorker
+# Parameters: (fixture = scalar-1m, lifecycle = fresh, observation = sampled)
+
+# Run progress: 10.00% complete, ETA 00:18:24
+# Fork: 1 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.boundedWorker-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+1654.418 ops/s
+# Warmup Iteration   2: 1834.823 ops/s
+# Warmup Iteration   3: 1875.351 ops/s
+# Warmup Iteration   4: 1663.253 ops/s
+# Warmup Iteration   5: 1752.356 ops/s
+Iteration   1: 1709.009 ops/s
+Iteration   2: 1709.803 ops/s
+Iteration   3: 1718.781 ops/s
+Iteration   4: 1710.831 ops/s
+Iteration   5: 1707.923 ops/s
+
+# Run progress: 10.83% complete, ETA 00:18:14
+# Fork: 2 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.boundedWorker-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+1656.382 ops/s
+# Warmup Iteration   2: 1859.081 ops/s
+# Warmup Iteration   3: 1844.954 ops/s
+# Warmup Iteration   4: 1507.881 ops/s
+# Warmup Iteration   5: 1700.638 ops/s
+Iteration   1: 1691.992 ops/s
+Iteration   2: 1695.347 ops/s
+Iteration   3: 1698.255 ops/s
+Iteration   4: 1694.585 ops/s
+Iteration   5: 1684.056 ops/s
+
+# Run progress: 11.67% complete, ETA 00:18:05
+# Fork: 3 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.boundedWorker-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+1649.962 ops/s
+# Warmup Iteration   2: 1809.074 ops/s
+# Warmup Iteration   3: 1900.597 ops/s
+# Warmup Iteration   4: 1645.756 ops/s
+# Warmup Iteration   5: 1910.702 ops/s
+Iteration   1: 1913.801 ops/s
+Iteration   2: 1908.768 ops/s
+Iteration   3: 1914.610 ops/s
+Iteration   4: 1892.745 ops/s
+Iteration   5: 1907.042 ops/s
+
+
+Result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.boundedWorker":
+  1770.503 ±(99.9%) 107.626 ops/s [Average]
+  (min, avg, max) = (1684.056, 1770.503, 1914.610), stdev = 100.673
+  CI (99.9%): [1662.877, 1878.129] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 25.0.4.1, OpenJDK 64-Bit Server VM, 25.0.4.1+1
+# VM invoker: /usr/lib/jvm/java-25-openjdk/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseG1GC -XX:ActiveProcessorCount=2 -Djson.benchmark.cores=0,2
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.boundedWorker
+# Parameters: (fixture = scalar-1m, lifecycle = fresh, observation = opaque)
+
+# Run progress: 12.50% complete, ETA 00:17:55
+# Fork: 1 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.boundedWorker-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+1629.250 ops/s
+# Warmup Iteration   2: 1823.156 ops/s
+# Warmup Iteration   3: 1866.787 ops/s
+# Warmup Iteration   4: 1428.413 ops/s
+# Warmup Iteration   5: 1670.694 ops/s
+Iteration   1: 1652.316 ops/s
+Iteration   2: 1660.244 ops/s
+Iteration   3: 1665.322 ops/s
+Iteration   4: 1653.322 ops/s
+Iteration   5: 1653.926 ops/s
+
+# Run progress: 13.33% complete, ETA 00:17:45
+# Fork: 2 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.boundedWorker-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+1598.243 ops/s
+# Warmup Iteration   2: 1854.143 ops/s
+# Warmup Iteration   3: 1862.483 ops/s
+# Warmup Iteration   4: 1429.151 ops/s
+# Warmup Iteration   5: 1646.815 ops/s
+Iteration   1: 1636.261 ops/s
+Iteration   2: 1649.330 ops/s
+Iteration   3: 1660.404 ops/s
+Iteration   4: 1662.255 ops/s
+Iteration   5: 1663.520 ops/s
+
+# Run progress: 14.17% complete, ETA 00:17:35
+# Fork: 3 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.boundedWorker-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+1652.674 ops/s
+# Warmup Iteration   2: 1853.094 ops/s
+# Warmup Iteration   3: 1840.061 ops/s
+# Warmup Iteration   4: 1694.770 ops/s
+# Warmup Iteration   5: 1893.227 ops/s
+Iteration   1: 1882.696 ops/s
+Iteration   2: 1878.351 ops/s
+Iteration   3: 1887.666 ops/s
+Iteration   4: 1828.349 ops/s
+Iteration   5: 1761.967 ops/s
+
+
+Result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.boundedWorker":
+  1719.729 ±(99.9%) 105.055 ops/s [Average]
+  (min, avg, max) = (1636.261, 1719.729, 1887.666), stdev = 98.268
+  CI (99.9%): [1614.674, 1824.783] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 25.0.4.1, OpenJDK 64-Bit Server VM, 25.0.4.1+1
+# VM invoker: /usr/lib/jvm/java-25-openjdk/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseG1GC -XX:ActiveProcessorCount=2 -Djson.benchmark.cores=0,2
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.boundedWorker
+# Parameters: (fixture = bulk-10000, lifecycle = fresh, observation = sampled)
+
+# Run progress: 15.00% complete, ETA 00:17:25
+# Fork: 1 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.boundedWorker-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+171.472 ops/s
+# Warmup Iteration   2: 238.229 ops/s
+# Warmup Iteration   3: 255.891 ops/s
+# Warmup Iteration   4: 253.102 ops/s
+# Warmup Iteration   5: 255.767 ops/s
+Iteration   1: 256.209 ops/s
+Iteration   2: 253.844 ops/s
+Iteration   3: 252.843 ops/s
+Iteration   4: 249.346 ops/s
+Iteration   5: 252.062 ops/s
+
+# Run progress: 15.83% complete, ETA 00:17:17
+# Fork: 2 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.boundedWorker-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+169.365 ops/s
+# Warmup Iteration   2: 235.320 ops/s
+# Warmup Iteration   3: 256.706 ops/s
+# Warmup Iteration   4: 254.542 ops/s
+# Warmup Iteration   5: 257.274 ops/s
+Iteration   1: 260.748 ops/s
+Iteration   2: 246.960 ops/s
+Iteration   3: 243.147 ops/s
+Iteration   4: 240.667 ops/s
+Iteration   5: 237.295 ops/s
+
+# Run progress: 16.67% complete, ETA 00:17:08
+# Fork: 3 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.boundedWorker-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+166.445 ops/s
+# Warmup Iteration   2: 238.213 ops/s
+# Warmup Iteration   3: 251.912 ops/s
+# Warmup Iteration   4: 254.227 ops/s
+# Warmup Iteration   5: 256.714 ops/s
+Iteration   1: 253.892 ops/s
+Iteration   2: 254.937 ops/s
+Iteration   3: 254.186 ops/s
+Iteration   4: 256.417 ops/s
+Iteration   5: 255.338 ops/s
+
+
+Result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.boundedWorker":
+  251.193 ±(99.9%) 6.950 ops/s [Average]
+  (min, avg, max) = (237.295, 251.193, 260.748), stdev = 6.501
+  CI (99.9%): [244.243, 258.143] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 25.0.4.1, OpenJDK 64-Bit Server VM, 25.0.4.1+1
+# VM invoker: /usr/lib/jvm/java-25-openjdk/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseG1GC -XX:ActiveProcessorCount=2 -Djson.benchmark.cores=0,2
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.boundedWorker
+# Parameters: (fixture = bulk-10000, lifecycle = fresh, observation = opaque)
+
+# Run progress: 17.50% complete, ETA 00:16:59
+# Fork: 1 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.boundedWorker-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+177.408 ops/s
+# Warmup Iteration   2: 237.450 ops/s
+# Warmup Iteration   3: 253.019 ops/s
+# Warmup Iteration   4: 252.408 ops/s
+# Warmup Iteration   5: 255.955 ops/s
+Iteration   1: 255.786 ops/s
+Iteration   2: 250.769 ops/s
+Iteration   3: 246.790 ops/s
+Iteration   4: 247.620 ops/s
+Iteration   5: 248.498 ops/s
+
+# Run progress: 18.33% complete, ETA 00:16:51
+# Fork: 2 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.boundedWorker-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+168.943 ops/s
+# Warmup Iteration   2: 240.563 ops/s
+# Warmup Iteration   3: 253.534 ops/s
+# Warmup Iteration   4: 248.182 ops/s
+# Warmup Iteration   5: 252.899 ops/s
+Iteration   1: 249.191 ops/s
+Iteration   2: 257.814 ops/s
+Iteration   3: 257.165 ops/s
+Iteration   4: 254.486 ops/s
+Iteration   5: 255.096 ops/s
+
+# Run progress: 19.17% complete, ETA 00:16:42
+# Fork: 3 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.boundedWorker-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+164.110 ops/s
+# Warmup Iteration   2: 237.532 ops/s
+# Warmup Iteration   3: 256.337 ops/s
+# Warmup Iteration   4: 253.134 ops/s
+# Warmup Iteration   5: 254.680 ops/s
+Iteration   1: 255.234 ops/s
+Iteration   2: 252.415 ops/s
+Iteration   3: 249.976 ops/s
+Iteration   4: 251.912 ops/s
+Iteration   5: 250.515 ops/s
+
+
+Result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.boundedWorker":
+  252.218 ±(99.9%) 3.778 ops/s [Average]
+  (min, avg, max) = (246.790, 252.218, 257.814), stdev = 3.534
+  CI (99.9%): [248.440, 255.995] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 25.0.4.1, OpenJDK 64-Bit Server VM, 25.0.4.1+1
+# VM invoker: /usr/lib/jvm/java-25-openjdk/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseG1GC -XX:ActiveProcessorCount=2 -Djson.benchmark.cores=0,2
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.gson
+# Parameters: (fixture = small, lifecycle = fresh, observation = sampled)
+
+# Run progress: 20.00% complete, ETA 00:16:32
+# Fork: 1 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.gson-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+928892.656 ops/s
+# Warmup Iteration   2: 1197535.656 ops/s
+# Warmup Iteration   3: 1204955.652 ops/s
+# Warmup Iteration   4: 1201431.499 ops/s
+# Warmup Iteration   5: 1204787.496 ops/s
+Iteration   1: 1203992.904 ops/s
+Iteration   2: 1200741.413 ops/s
+Iteration   3: 1198145.931 ops/s
+Iteration   4: 1199245.430 ops/s
+Iteration   5: 1201981.229 ops/s
+
+# Run progress: 20.83% complete, ETA 00:16:22
+# Fork: 2 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.gson-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+797692.542 ops/s
+# Warmup Iteration   2: 1106095.964 ops/s
+# Warmup Iteration   3: 1105730.994 ops/s
+# Warmup Iteration   4: 1111075.324 ops/s
+# Warmup Iteration   5: 1111268.692 ops/s
+Iteration   1: 1106944.056 ops/s
+Iteration   2: 1098997.204 ops/s
+Iteration   3: 1105874.290 ops/s
+Iteration   4: 1104569.106 ops/s
+Iteration   5: 1104949.047 ops/s
+
+# Run progress: 21.67% complete, ETA 00:16:11
+# Fork: 3 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.gson-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+936761.415 ops/s
+# Warmup Iteration   2: 1185137.411 ops/s
+# Warmup Iteration   3: 1191391.552 ops/s
+# Warmup Iteration   4: 1189684.778 ops/s
+# Warmup Iteration   5: 1188231.199 ops/s
+Iteration   1: 1190342.483 ops/s
+Iteration   2: 1185603.634 ops/s
+Iteration   3: 1194280.695 ops/s
+Iteration   4: 1189261.009 ops/s
+Iteration   5: 1190282.389 ops/s
+
+
+Result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.gson":
+  1165014.055 ±(99.9%) 47869.173 ops/s [Average]
+  (min, avg, max) = (1098997.204, 1165014.055, 1203992.904), stdev = 44776.854
+  CI (99.9%): [1117144.882, 1212883.227] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 25.0.4.1, OpenJDK 64-Bit Server VM, 25.0.4.1+1
+# VM invoker: /usr/lib/jvm/java-25-openjdk/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseG1GC -XX:ActiveProcessorCount=2 -Djson.benchmark.cores=0,2
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.gson
+# Parameters: (fixture = small, lifecycle = fresh, observation = opaque)
+
+# Run progress: 22.50% complete, ETA 00:16:00
+# Fork: 1 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.gson-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+833173.133 ops/s
+# Warmup Iteration   2: 1109998.998 ops/s
+# Warmup Iteration   3: 1104495.785 ops/s
+# Warmup Iteration   4: 1099615.654 ops/s
+# Warmup Iteration   5: 1089915.190 ops/s
+Iteration   1: 1083159.536 ops/s
+Iteration   2: 1043536.781 ops/s
+Iteration   3: 1115078.157 ops/s
+Iteration   4: 1112557.756 ops/s
+Iteration   5: 1111656.401 ops/s
+
+# Run progress: 23.33% complete, ETA 00:15:50
+# Fork: 2 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.gson-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+823007.689 ops/s
+# Warmup Iteration   2: 1078679.917 ops/s
+# Warmup Iteration   3: 1117300.778 ops/s
+# Warmup Iteration   4: 1112426.563 ops/s
+# Warmup Iteration   5: 1113861.613 ops/s
+Iteration   1: 1116214.847 ops/s
+Iteration   2: 1114268.151 ops/s
+Iteration   3: 1116333.545 ops/s
+Iteration   4: 1117212.247 ops/s
+Iteration   5: 1104677.278 ops/s
+
+# Run progress: 24.17% complete, ETA 00:15:39
+# Fork: 3 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.gson-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+910473.758 ops/s
+# Warmup Iteration   2: 1174809.856 ops/s
+# Warmup Iteration   3: 1183364.151 ops/s
+# Warmup Iteration   4: 1175446.252 ops/s
+# Warmup Iteration   5: 1175515.216 ops/s
+Iteration   1: 1174489.113 ops/s
+Iteration   2: 1170170.858 ops/s
+Iteration   3: 1163628.284 ops/s
+Iteration   4: 1181974.611 ops/s
+Iteration   5: 1173316.174 ops/s
+
+
+Result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.gson":
+  1126551.583 ±(99.9%) 41488.720 ops/s [Average]
+  (min, avg, max) = (1043536.781, 1126551.583, 1181974.611), stdev = 38808.575
+  CI (99.9%): [1085062.862, 1168040.303] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 25.0.4.1, OpenJDK 64-Bit Server VM, 25.0.4.1+1
+# VM invoker: /usr/lib/jvm/java-25-openjdk/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseG1GC -XX:ActiveProcessorCount=2 -Djson.benchmark.cores=0,2
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.gson
+# Parameters: (fixture = unicode, lifecycle = fresh, observation = sampled)
+
+# Run progress: 25.00% complete, ETA 00:15:28
+# Fork: 1 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.gson-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+25949.351 ops/s
+# Warmup Iteration   2: 32944.111 ops/s
+# Warmup Iteration   3: 32272.210 ops/s
+# Warmup Iteration   4: 32515.405 ops/s
+# Warmup Iteration   5: 32511.730 ops/s
+Iteration   1: 33128.525 ops/s
+Iteration   2: 33333.104 ops/s
+Iteration   3: 32998.856 ops/s
+Iteration   4: 33081.454 ops/s
+Iteration   5: 33188.183 ops/s
+
+# Run progress: 25.83% complete, ETA 00:15:18
+# Fork: 2 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.gson-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+25457.295 ops/s
+# Warmup Iteration   2: 32463.483 ops/s
+# Warmup Iteration   3: 32512.599 ops/s
+# Warmup Iteration   4: 31806.046 ops/s
+# Warmup Iteration   5: 33114.282 ops/s
+Iteration   1: 33749.264 ops/s
+Iteration   2: 33266.769 ops/s
+Iteration   3: 32890.195 ops/s
+Iteration   4: 33098.793 ops/s
+Iteration   5: 32964.293 ops/s
+
+# Run progress: 26.67% complete, ETA 00:15:07
+# Fork: 3 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.gson-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+25877.156 ops/s
+# Warmup Iteration   2: 33515.693 ops/s
+# Warmup Iteration   3: 33544.662 ops/s
+# Warmup Iteration   4: 33695.494 ops/s
+# Warmup Iteration   5: 33711.068 ops/s
+Iteration   1: 33649.152 ops/s
+Iteration   2: 33937.898 ops/s
+Iteration   3: 33769.990 ops/s
+Iteration   4: 33738.054 ops/s
+Iteration   5: 33951.678 ops/s
+
+
+Result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.gson":
+  33383.081 ±(99.9%) 400.849 ops/s [Average]
+  (min, avg, max) = (32890.195, 33383.081, 33951.678), stdev = 374.954
+  CI (99.9%): [32982.232, 33783.929] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 25.0.4.1, OpenJDK 64-Bit Server VM, 25.0.4.1+1
+# VM invoker: /usr/lib/jvm/java-25-openjdk/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseG1GC -XX:ActiveProcessorCount=2 -Djson.benchmark.cores=0,2
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.gson
+# Parameters: (fixture = unicode, lifecycle = fresh, observation = opaque)
+
+# Run progress: 27.50% complete, ETA 00:14:57
+# Fork: 1 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.gson-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+26442.647 ops/s
+# Warmup Iteration   2: 33377.464 ops/s
+# Warmup Iteration   3: 33062.462 ops/s
+# Warmup Iteration   4: 33213.372 ops/s
+# Warmup Iteration   5: 33408.733 ops/s
+Iteration   1: 33361.285 ops/s
+Iteration   2: 33280.661 ops/s
+Iteration   3: 33200.270 ops/s
+Iteration   4: 32862.869 ops/s
+Iteration   5: 33305.258 ops/s
+
+# Run progress: 28.33% complete, ETA 00:14:46
+# Fork: 2 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.gson-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+26485.940 ops/s
+# Warmup Iteration   2: 33417.744 ops/s
+# Warmup Iteration   3: 33269.455 ops/s
+# Warmup Iteration   4: 33427.718 ops/s
+# Warmup Iteration   5: 33761.218 ops/s
+Iteration   1: 33965.587 ops/s
+Iteration   2: 33852.313 ops/s
+Iteration   3: 33766.310 ops/s
+Iteration   4: 33571.912 ops/s
+Iteration   5: 33680.917 ops/s
+
+# Run progress: 29.17% complete, ETA 00:14:36
+# Fork: 3 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.gson-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+26140.544 ops/s
+# Warmup Iteration   2: 33798.585 ops/s
+# Warmup Iteration   3: 33838.256 ops/s
+# Warmup Iteration   4: 33684.834 ops/s
+# Warmup Iteration   5: 34183.223 ops/s
+Iteration   1: 34036.737 ops/s
+Iteration   2: 33690.945 ops/s
+Iteration   3: 33793.790 ops/s
+Iteration   4: 33800.687 ops/s
+Iteration   5: 33896.666 ops/s
+
+
+Result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.gson":
+  33604.414 ±(99.9%) 355.240 ops/s [Average]
+  (min, avg, max) = (32862.869, 33604.414, 34036.737), stdev = 332.292
+  CI (99.9%): [33249.173, 33959.654] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 25.0.4.1, OpenJDK 64-Bit Server VM, 25.0.4.1+1
+# VM invoker: /usr/lib/jvm/java-25-openjdk/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseG1GC -XX:ActiveProcessorCount=2 -Djson.benchmark.cores=0,2
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.gson
+# Parameters: (fixture = scalar-1m, lifecycle = fresh, observation = sampled)
+
+# Run progress: 30.00% complete, ETA 00:14:25
+# Fork: 1 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.gson-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+383.431 ops/s
+# Warmup Iteration   2: 423.755 ops/s
+# Warmup Iteration   3: 436.161 ops/s
+# Warmup Iteration   4: 444.733 ops/s
+# Warmup Iteration   5: 458.929 ops/s
+Iteration   1: 466.236 ops/s
+Iteration   2: 463.695 ops/s
+Iteration   3: 465.026 ops/s
+Iteration   4: 458.408 ops/s
+Iteration   5: 460.248 ops/s
+
+# Run progress: 30.83% complete, ETA 00:14:15
+# Fork: 2 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.gson-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+379.282 ops/s
+# Warmup Iteration   2: 415.361 ops/s
+# Warmup Iteration   3: 427.199 ops/s
+# Warmup Iteration   4: 442.638 ops/s
+# Warmup Iteration   5: 453.413 ops/s
+Iteration   1: 454.737 ops/s
+Iteration   2: 455.555 ops/s
+Iteration   3: 458.747 ops/s
+Iteration   4: 460.648 ops/s
+Iteration   5: 461.518 ops/s
+
+# Run progress: 31.67% complete, ETA 00:14:05
+# Fork: 3 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.gson-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+392.857 ops/s
+# Warmup Iteration   2: 432.351 ops/s
+# Warmup Iteration   3: 445.156 ops/s
+# Warmup Iteration   4: 458.230 ops/s
+# Warmup Iteration   5: 473.244 ops/s
+Iteration   1: 472.875 ops/s
+Iteration   2: 478.315 ops/s
+Iteration   3: 485.301 ops/s
+Iteration   4: 484.668 ops/s
+Iteration   5: 485.979 ops/s
+
+
+Result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.gson":
+  467.464 ±(99.9%) 11.854 ops/s [Average]
+  (min, avg, max) = (454.737, 467.464, 485.979), stdev = 11.088
+  CI (99.9%): [455.610, 479.318] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 25.0.4.1, OpenJDK 64-Bit Server VM, 25.0.4.1+1
+# VM invoker: /usr/lib/jvm/java-25-openjdk/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseG1GC -XX:ActiveProcessorCount=2 -Djson.benchmark.cores=0,2
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.gson
+# Parameters: (fixture = scalar-1m, lifecycle = fresh, observation = opaque)
+
+# Run progress: 32.50% complete, ETA 00:13:54
+# Fork: 1 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.gson-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+375.264 ops/s
+# Warmup Iteration   2: 428.311 ops/s
+# Warmup Iteration   3: 442.121 ops/s
+# Warmup Iteration   4: 456.130 ops/s
+# Warmup Iteration   5: 463.805 ops/s
+Iteration   1: 467.086 ops/s
+Iteration   2: 464.190 ops/s
+Iteration   3: 464.678 ops/s
+Iteration   4: 469.780 ops/s
+Iteration   5: 467.959 ops/s
+
+# Run progress: 33.33% complete, ETA 00:13:44
+# Fork: 2 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.gson-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+378.439 ops/s
+# Warmup Iteration   2: 426.086 ops/s
+# Warmup Iteration   3: 439.309 ops/s
+# Warmup Iteration   4: 450.270 ops/s
+# Warmup Iteration   5: 461.997 ops/s
+Iteration   1: 463.530 ops/s
+Iteration   2: 464.270 ops/s
+Iteration   3: 465.524 ops/s
+Iteration   4: 463.074 ops/s
+Iteration   5: 464.672 ops/s
+
+# Run progress: 34.17% complete, ETA 00:13:34
+# Fork: 3 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.gson-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+391.087 ops/s
+# Warmup Iteration   2: 443.072 ops/s
+# Warmup Iteration   3: 457.781 ops/s
+# Warmup Iteration   4: 469.185 ops/s
+# Warmup Iteration   5: 475.212 ops/s
+Iteration   1: 476.658 ops/s
+Iteration   2: 479.002 ops/s
+Iteration   3: 479.401 ops/s
+Iteration   4: 478.521 ops/s
+Iteration   5: 478.570 ops/s
+
+
+Result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.gson":
+  469.794 ±(99.9%) 7.028 ops/s [Average]
+  (min, avg, max) = (463.074, 469.794, 479.401), stdev = 6.574
+  CI (99.9%): [462.766, 476.822] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 25.0.4.1, OpenJDK 64-Bit Server VM, 25.0.4.1+1
+# VM invoker: /usr/lib/jvm/java-25-openjdk/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseG1GC -XX:ActiveProcessorCount=2 -Djson.benchmark.cores=0,2
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.gson
+# Parameters: (fixture = bulk-10000, lifecycle = fresh, observation = sampled)
+
+# Run progress: 35.00% complete, ETA 00:13:24
+# Fork: 1 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.gson-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+86.339 ops/s
+# Warmup Iteration   2: 105.115 ops/s
+# Warmup Iteration   3: 109.141 ops/s
+# Warmup Iteration   4: 108.675 ops/s
+# Warmup Iteration   5: 108.958 ops/s
+Iteration   1: 109.363 ops/s
+Iteration   2: 108.826 ops/s
+Iteration   3: 108.744 ops/s
+Iteration   4: 108.841 ops/s
+Iteration   5: 109.077 ops/s
+
+# Run progress: 35.83% complete, ETA 00:13:14
+# Fork: 2 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.gson-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+56.426 ops/s
+# Warmup Iteration   2: 74.946 ops/s
+# Warmup Iteration   3: 74.643 ops/s
+# Warmup Iteration   4: 76.209 ops/s
+# Warmup Iteration   5: 75.890 ops/s
+Iteration   1: 76.250 ops/s
+Iteration   2: 76.046 ops/s
+Iteration   3: 76.284 ops/s
+Iteration   4: 76.174 ops/s
+Iteration   5: 76.400 ops/s
+
+# Run progress: 36.67% complete, ETA 00:13:04
+# Fork: 3 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.gson-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+86.344 ops/s
+# Warmup Iteration   2: 113.466 ops/s
+# Warmup Iteration   3: 115.477 ops/s
+# Warmup Iteration   4: 116.102 ops/s
+# Warmup Iteration   5: 115.901 ops/s
+Iteration   1: 115.999 ops/s
+Iteration   2: 115.402 ops/s
+Iteration   3: 115.435 ops/s
+Iteration   4: 114.933 ops/s
+Iteration   5: 115.153 ops/s
+
+
+Result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.gson":
+  100.195 ±(99.9%) 18.976 ops/s [Average]
+  (min, avg, max) = (76.046, 100.195, 115.999), stdev = 17.750
+  CI (99.9%): [81.219, 119.171] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 25.0.4.1, OpenJDK 64-Bit Server VM, 25.0.4.1+1
+# VM invoker: /usr/lib/jvm/java-25-openjdk/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseG1GC -XX:ActiveProcessorCount=2 -Djson.benchmark.cores=0,2
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.gson
+# Parameters: (fixture = bulk-10000, lifecycle = fresh, observation = opaque)
+
+# Run progress: 37.50% complete, ETA 00:12:55
+# Fork: 1 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.gson-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+75.886 ops/s
+# Warmup Iteration   2: 107.643 ops/s
+# Warmup Iteration   3: 110.178 ops/s
+# Warmup Iteration   4: 111.653 ops/s
+# Warmup Iteration   5: 113.198 ops/s
+Iteration   1: 112.972 ops/s
+Iteration   2: 112.293 ops/s
+Iteration   3: 112.275 ops/s
+Iteration   4: 112.674 ops/s
+Iteration   5: 112.500 ops/s
+
+# Run progress: 38.33% complete, ETA 00:12:45
+# Fork: 2 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.gson-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+86.874 ops/s
+# Warmup Iteration   2: 111.522 ops/s
+# Warmup Iteration   3: 113.624 ops/s
+# Warmup Iteration   4: 115.152 ops/s
+# Warmup Iteration   5: 114.377 ops/s
+Iteration   1: 114.397 ops/s
+Iteration   2: 115.019 ops/s
+Iteration   3: 115.029 ops/s
+Iteration   4: 114.640 ops/s
+Iteration   5: 114.857 ops/s
+
+# Run progress: 39.17% complete, ETA 00:12:35
+# Fork: 3 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.gson-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+70.758 ops/s
+# Warmup Iteration   2: 105.017 ops/s
+# Warmup Iteration   3: 107.829 ops/s
+# Warmup Iteration   4: 109.183 ops/s
+# Warmup Iteration   5: 109.526 ops/s
+Iteration   1: 108.820 ops/s
+Iteration   2: 108.551 ops/s
+Iteration   3: 108.885 ops/s
+Iteration   4: 109.026 ops/s
+Iteration   5: 109.597 ops/s
+
+
+Result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.gson":
+  112.102 ±(99.9%) 2.667 ops/s [Average]
+  (min, avg, max) = (108.551, 112.102, 115.029), stdev = 2.495
+  CI (99.9%): [109.435, 114.770] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 25.0.4.1, OpenJDK 64-Bit Server VM, 25.0.4.1+1
+# VM invoker: /usr/lib/jvm/java-25-openjdk/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseG1GC -XX:ActiveProcessorCount=2 -Djson.benchmark.cores=0,2
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.incrementalCursor
+# Parameters: (fixture = small, lifecycle = fresh, observation = sampled)
+
+# Run progress: 40.00% complete, ETA 00:12:25
+# Fork: 1 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.incrementalCursor-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+1511419.428 ops/s
+# Warmup Iteration   2: 1820848.158 ops/s
+# Warmup Iteration   3: 1815635.573 ops/s
+# Warmup Iteration   4: 1829275.123 ops/s
+# Warmup Iteration   5: 1816724.476 ops/s
+Iteration   1: 1827076.575 ops/s
+Iteration   2: 1832913.114 ops/s
+Iteration   3: 1804532.630 ops/s
+Iteration   4: 1814215.594 ops/s
+Iteration   5: 1823217.066 ops/s
+
+# Run progress: 40.83% complete, ETA 00:12:15
+# Fork: 2 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.incrementalCursor-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+1512890.257 ops/s
+# Warmup Iteration   2: 1791563.996 ops/s
+# Warmup Iteration   3: 1798012.710 ops/s
+# Warmup Iteration   4: 1818324.291 ops/s
+# Warmup Iteration   5: 1830500.871 ops/s
+Iteration   1: 1811484.835 ops/s
+Iteration   2: 1819013.950 ops/s
+Iteration   3: 1824096.372 ops/s
+Iteration   4: 1815818.928 ops/s
+Iteration   5: 1818166.278 ops/s
+
+# Run progress: 41.67% complete, ETA 00:12:04
+# Fork: 3 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.incrementalCursor-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+1486984.163 ops/s
+# Warmup Iteration   2: 1764343.330 ops/s
+# Warmup Iteration   3: 1770691.792 ops/s
+# Warmup Iteration   4: 1768850.346 ops/s
+# Warmup Iteration   5: 1769155.612 ops/s
+Iteration   1: 1789800.601 ops/s
+Iteration   2: 1774778.026 ops/s
+Iteration   3: 1765124.530 ops/s
+Iteration   4: 1764350.791 ops/s
+Iteration   5: 1777061.731 ops/s
+
+
+Result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.incrementalCursor":
+  1804110.068 ±(99.9%) 25124.562 ops/s [Average]
+  (min, avg, max) = (1764350.791, 1804110.068, 1832913.114), stdev = 23501.531
+  CI (99.9%): [1778985.506, 1829234.630] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 25.0.4.1, OpenJDK 64-Bit Server VM, 25.0.4.1+1
+# VM invoker: /usr/lib/jvm/java-25-openjdk/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseG1GC -XX:ActiveProcessorCount=2 -Djson.benchmark.cores=0,2
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.incrementalCursor
+# Parameters: (fixture = small, lifecycle = fresh, observation = opaque)
+
+# Run progress: 42.50% complete, ETA 00:11:54
+# Fork: 1 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.incrementalCursor-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+1489650.653 ops/s
+# Warmup Iteration   2: 1779956.602 ops/s
+# Warmup Iteration   3: 1787244.690 ops/s
+# Warmup Iteration   4: 1791809.351 ops/s
+# Warmup Iteration   5: 1802123.364 ops/s
+Iteration   1: 1802391.092 ops/s
+Iteration   2: 1793228.618 ops/s
+Iteration   3: 1799290.410 ops/s
+Iteration   4: 1809413.235 ops/s
+Iteration   5: 1805011.991 ops/s
+
+# Run progress: 43.33% complete, ETA 00:11:43
+# Fork: 2 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.incrementalCursor-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+1472576.022 ops/s
+# Warmup Iteration   2: 1779193.363 ops/s
+# Warmup Iteration   3: 1779140.477 ops/s
+# Warmup Iteration   4: 1789239.324 ops/s
+# Warmup Iteration   5: 1785003.667 ops/s
+Iteration   1: 1790701.841 ops/s
+Iteration   2: 1803768.482 ops/s
+Iteration   3: 1800579.758 ops/s
+Iteration   4: 1780670.224 ops/s
+Iteration   5: 1786975.476 ops/s
+
+# Run progress: 44.17% complete, ETA 00:11:33
+# Fork: 3 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.incrementalCursor-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+1486275.515 ops/s
+# Warmup Iteration   2: 1792071.685 ops/s
+# Warmup Iteration   3: 1773779.218 ops/s
+# Warmup Iteration   4: 1804296.755 ops/s
+# Warmup Iteration   5: 1802688.027 ops/s
+Iteration   1: 1810122.889 ops/s
+Iteration   2: 1805059.400 ops/s
+Iteration   3: 1797890.995 ops/s
+Iteration   4: 1814944.470 ops/s
+Iteration   5: 1813289.230 ops/s
+
+
+Result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.incrementalCursor":
+  1800889.207 ±(99.9%) 10422.547 ops/s [Average]
+  (min, avg, max) = (1780670.224, 1800889.207, 1814944.470), stdev = 9749.257
+  CI (99.9%): [1790466.661, 1811311.754] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 25.0.4.1, OpenJDK 64-Bit Server VM, 25.0.4.1+1
+# VM invoker: /usr/lib/jvm/java-25-openjdk/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseG1GC -XX:ActiveProcessorCount=2 -Djson.benchmark.cores=0,2
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.incrementalCursor
+# Parameters: (fixture = unicode, lifecycle = fresh, observation = sampled)
+
+# Run progress: 45.00% complete, ETA 00:11:22
+# Fork: 1 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.incrementalCursor-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+28966.979 ops/s
+# Warmup Iteration   2: 30244.951 ops/s
+# Warmup Iteration   3: 30188.401 ops/s
+# Warmup Iteration   4: 29688.981 ops/s
+# Warmup Iteration   5: 30174.141 ops/s
+Iteration   1: 30429.447 ops/s
+Iteration   2: 30302.703 ops/s
+Iteration   3: 30403.561 ops/s
+Iteration   4: 30485.111 ops/s
+Iteration   5: 30294.575 ops/s
+
+# Run progress: 45.83% complete, ETA 00:11:12
+# Fork: 2 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.incrementalCursor-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+32887.003 ops/s
+# Warmup Iteration   2: 34484.165 ops/s
+# Warmup Iteration   3: 34058.384 ops/s
+# Warmup Iteration   4: 34145.518 ops/s
+# Warmup Iteration   5: 34227.575 ops/s
+Iteration   1: 34657.773 ops/s
+Iteration   2: 34628.684 ops/s
+Iteration   3: 34649.578 ops/s
+Iteration   4: 34464.806 ops/s
+Iteration   5: 34114.764 ops/s
+
+# Run progress: 46.67% complete, ETA 00:11:01
+# Fork: 3 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.incrementalCursor-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+32575.143 ops/s
+# Warmup Iteration   2: 34344.212 ops/s
+# Warmup Iteration   3: 33942.337 ops/s
+# Warmup Iteration   4: 34096.944 ops/s
+# Warmup Iteration   5: 34449.310 ops/s
+Iteration   1: 34875.401 ops/s
+Iteration   2: 34980.627 ops/s
+Iteration   3: 34778.299 ops/s
+Iteration   4: 33977.693 ops/s
+Iteration   5: 34432.058 ops/s
+
+
+Result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.incrementalCursor":
+  33165.005 ±(99.9%) 2194.265 ops/s [Average]
+  (min, avg, max) = (30294.575, 33165.005, 34980.627), stdev = 2052.517
+  CI (99.9%): [30970.740, 35359.270] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 25.0.4.1, OpenJDK 64-Bit Server VM, 25.0.4.1+1
+# VM invoker: /usr/lib/jvm/java-25-openjdk/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseG1GC -XX:ActiveProcessorCount=2 -Djson.benchmark.cores=0,2
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.incrementalCursor
+# Parameters: (fixture = unicode, lifecycle = fresh, observation = opaque)
+
+# Run progress: 47.50% complete, ETA 00:10:51
+# Fork: 1 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.incrementalCursor-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+28752.947 ops/s
+# Warmup Iteration   2: 30395.301 ops/s
+# Warmup Iteration   3: 30196.663 ops/s
+# Warmup Iteration   4: 30163.095 ops/s
+# Warmup Iteration   5: 30209.876 ops/s
+Iteration   1: 30435.206 ops/s
+Iteration   2: 30591.343 ops/s
+Iteration   3: 30441.691 ops/s
+Iteration   4: 30528.581 ops/s
+Iteration   5: 30367.809 ops/s
+
+# Run progress: 48.33% complete, ETA 00:10:40
+# Fork: 2 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.incrementalCursor-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+33126.832 ops/s
+# Warmup Iteration   2: 34391.237 ops/s
+# Warmup Iteration   3: 34157.228 ops/s
+# Warmup Iteration   4: 34176.637 ops/s
+# Warmup Iteration   5: 34548.265 ops/s
+Iteration   1: 34652.767 ops/s
+Iteration   2: 34646.545 ops/s
+Iteration   3: 34392.821 ops/s
+Iteration   4: 34156.789 ops/s
+Iteration   5: 34154.731 ops/s
+
+# Run progress: 49.17% complete, ETA 00:10:30
+# Fork: 3 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.incrementalCursor-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+32793.873 ops/s
+# Warmup Iteration   2: 34319.636 ops/s
+# Warmup Iteration   3: 33833.773 ops/s
+# Warmup Iteration   4: 33988.074 ops/s
+# Warmup Iteration   5: 34097.613 ops/s
+Iteration   1: 34736.996 ops/s
+Iteration   2: 34747.708 ops/s
+Iteration   3: 34700.181 ops/s
+Iteration   4: 34684.999 ops/s
+Iteration   5: 34043.797 ops/s
+
+
+Result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.incrementalCursor":
+  33152.131 ±(99.9%) 2110.436 ops/s [Average]
+  (min, avg, max) = (30367.809, 33152.131, 34747.708), stdev = 1974.103
+  CI (99.9%): [31041.695, 35262.567] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 25.0.4.1, OpenJDK 64-Bit Server VM, 25.0.4.1+1
+# VM invoker: /usr/lib/jvm/java-25-openjdk/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseG1GC -XX:ActiveProcessorCount=2 -Djson.benchmark.cores=0,2
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.incrementalCursor
+# Parameters: (fixture = scalar-1m, lifecycle = fresh, observation = sampled)
+
+# Run progress: 50.00% complete, ETA 00:10:19
+# Fork: 1 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.incrementalCursor-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+2453.261 ops/s
+# Warmup Iteration   2: 2459.028 ops/s
+# Warmup Iteration   3: 2451.233 ops/s
+# Warmup Iteration   4: 2451.585 ops/s
+# Warmup Iteration   5: 2438.871 ops/s
+Iteration   1: 2446.488 ops/s
+Iteration   2: 2439.255 ops/s
+Iteration   3: 2385.694 ops/s
+Iteration   4: 2444.960 ops/s
+Iteration   5: 2447.657 ops/s
+
+# Run progress: 50.83% complete, ETA 00:10:09
+# Fork: 2 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.incrementalCursor-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+2468.530 ops/s
+# Warmup Iteration   2: 2454.147 ops/s
+# Warmup Iteration   3: 2469.665 ops/s
+# Warmup Iteration   4: 2470.615 ops/s
+# Warmup Iteration   5: 2465.193 ops/s
+Iteration   1: 2468.808 ops/s
+Iteration   2: 2468.483 ops/s
+Iteration   3: 2480.673 ops/s
+Iteration   4: 2480.959 ops/s
+Iteration   5: 2476.531 ops/s
+
+# Run progress: 51.67% complete, ETA 00:09:59
+# Fork: 3 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.incrementalCursor-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+2462.532 ops/s
+# Warmup Iteration   2: 2469.147 ops/s
+# Warmup Iteration   3: 2468.817 ops/s
+# Warmup Iteration   4: 2488.229 ops/s
+# Warmup Iteration   5: 2482.647 ops/s
+Iteration   1: 2476.420 ops/s
+Iteration   2: 2468.360 ops/s
+Iteration   3: 2487.811 ops/s
+Iteration   4: 2484.145 ops/s
+Iteration   5: 2488.178 ops/s
+
+
+Result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.incrementalCursor":
+  2462.961 ±(99.9%) 28.800 ops/s [Average]
+  (min, avg, max) = (2385.694, 2462.961, 2488.178), stdev = 26.940
+  CI (99.9%): [2434.161, 2491.762] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 25.0.4.1, OpenJDK 64-Bit Server VM, 25.0.4.1+1
+# VM invoker: /usr/lib/jvm/java-25-openjdk/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseG1GC -XX:ActiveProcessorCount=2 -Djson.benchmark.cores=0,2
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.incrementalCursor
+# Parameters: (fixture = scalar-1m, lifecycle = fresh, observation = opaque)
+
+# Run progress: 52.50% complete, ETA 00:09:48
+# Fork: 1 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.incrementalCursor-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+2467.256 ops/s
+# Warmup Iteration   2: 2475.008 ops/s
+# Warmup Iteration   3: 2465.944 ops/s
+# Warmup Iteration   4: 2438.995 ops/s
+# Warmup Iteration   5: 2387.468 ops/s
+Iteration   1: 2476.955 ops/s
+Iteration   2: 2466.050 ops/s
+Iteration   3: 2477.098 ops/s
+Iteration   4: 2486.261 ops/s
+Iteration   5: 2485.004 ops/s
+
+# Run progress: 53.33% complete, ETA 00:09:38
+# Fork: 2 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.incrementalCursor-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+2478.435 ops/s
+# Warmup Iteration   2: 2473.237 ops/s
+# Warmup Iteration   3: 2453.737 ops/s
+# Warmup Iteration   4: 2469.964 ops/s
+# Warmup Iteration   5: 2480.721 ops/s
+Iteration   1: 2483.540 ops/s
+Iteration   2: 2471.273 ops/s
+Iteration   3: 2483.667 ops/s
+Iteration   4: 2490.028 ops/s
+Iteration   5: 2499.028 ops/s
+
+# Run progress: 54.17% complete, ETA 00:09:28
+# Fork: 3 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.incrementalCursor-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+2462.641 ops/s
+# Warmup Iteration   2: 2478.356 ops/s
+# Warmup Iteration   3: 2476.733 ops/s
+# Warmup Iteration   4: 2473.589 ops/s
+# Warmup Iteration   5: 2478.283 ops/s
+Iteration   1: 2476.353 ops/s
+Iteration   2: 2462.747 ops/s
+Iteration   3: 2482.185 ops/s
+Iteration   4: 2482.746 ops/s
+Iteration   5: 2481.002 ops/s
+
+
+Result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.incrementalCursor":
+  2480.263 ±(99.9%) 9.750 ops/s [Average]
+  (min, avg, max) = (2462.747, 2480.263, 2499.028), stdev = 9.120
+  CI (99.9%): [2470.512, 2490.013] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 25.0.4.1, OpenJDK 64-Bit Server VM, 25.0.4.1+1
+# VM invoker: /usr/lib/jvm/java-25-openjdk/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseG1GC -XX:ActiveProcessorCount=2 -Djson.benchmark.cores=0,2
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.incrementalCursor
+# Parameters: (fixture = bulk-10000, lifecycle = fresh, observation = sampled)
+
+# Run progress: 55.00% complete, ETA 00:09:17
+# Fork: 1 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.incrementalCursor-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+174.478 ops/s
+# Warmup Iteration   2: 195.393 ops/s
+# Warmup Iteration   3: 198.440 ops/s
+# Warmup Iteration   4: 205.656 ops/s
+# Warmup Iteration   5: 203.837 ops/s
+Iteration   1: 203.667 ops/s
+Iteration   2: 203.127 ops/s
+Iteration   3: 200.174 ops/s
+Iteration   4: 205.934 ops/s
+Iteration   5: 204.685 ops/s
+
+# Run progress: 55.83% complete, ETA 00:09:07
+# Fork: 2 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.incrementalCursor-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+186.187 ops/s
+# Warmup Iteration   2: 221.471 ops/s
+# Warmup Iteration   3: 224.845 ops/s
+# Warmup Iteration   4: 224.894 ops/s
+# Warmup Iteration   5: 225.224 ops/s
+Iteration   1: 225.197 ops/s
+Iteration   2: 224.533 ops/s
+Iteration   3: 228.039 ops/s
+Iteration   4: 228.041 ops/s
+Iteration   5: 228.143 ops/s
+
+# Run progress: 56.67% complete, ETA 00:08:57
+# Fork: 3 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.incrementalCursor-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+178.901 ops/s
+# Warmup Iteration   2: 218.119 ops/s
+# Warmup Iteration   3: 220.942 ops/s
+# Warmup Iteration   4: 220.930 ops/s
+# Warmup Iteration   5: 221.835 ops/s
+Iteration   1: 219.562 ops/s
+Iteration   2: 221.710 ops/s
+Iteration   3: 219.591 ops/s
+Iteration   4: 224.601 ops/s
+Iteration   5: 226.470 ops/s
+
+
+Result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.incrementalCursor":
+  217.565 ±(99.9%) 11.420 ops/s [Average]
+  (min, avg, max) = (200.174, 217.565, 228.143), stdev = 10.682
+  CI (99.9%): [206.145, 228.984] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 25.0.4.1, OpenJDK 64-Bit Server VM, 25.0.4.1+1
+# VM invoker: /usr/lib/jvm/java-25-openjdk/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseG1GC -XX:ActiveProcessorCount=2 -Djson.benchmark.cores=0,2
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.incrementalCursor
+# Parameters: (fixture = bulk-10000, lifecycle = fresh, observation = opaque)
+
+# Run progress: 57.50% complete, ETA 00:08:47
+# Fork: 1 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.incrementalCursor-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+173.654 ops/s
+# Warmup Iteration   2: 203.530 ops/s
+# Warmup Iteration   3: 206.342 ops/s
+# Warmup Iteration   4: 204.280 ops/s
+# Warmup Iteration   5: 205.647 ops/s
+Iteration   1: 205.104 ops/s
+Iteration   2: 205.044 ops/s
+Iteration   3: 205.406 ops/s
+Iteration   4: 205.822 ops/s
+Iteration   5: 207.088 ops/s
+
+# Run progress: 58.33% complete, ETA 00:08:37
+# Fork: 2 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.incrementalCursor-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+175.655 ops/s
+# Warmup Iteration   2: 193.691 ops/s
+# Warmup Iteration   3: 203.191 ops/s
+# Warmup Iteration   4: 205.128 ops/s
+# Warmup Iteration   5: 203.410 ops/s
+Iteration   1: 203.712 ops/s
+Iteration   2: 204.942 ops/s
+Iteration   3: 203.549 ops/s
+Iteration   4: 205.295 ops/s
+Iteration   5: 204.296 ops/s
+
+# Run progress: 59.17% complete, ETA 00:08:27
+# Fork: 3 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.incrementalCursor-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+176.480 ops/s
+# Warmup Iteration   2: 197.241 ops/s
+# Warmup Iteration   3: 205.774 ops/s
+# Warmup Iteration   4: 208.395 ops/s
+# Warmup Iteration   5: 208.055 ops/s
+Iteration   1: 208.159 ops/s
+Iteration   2: 204.677 ops/s
+Iteration   3: 207.420 ops/s
+Iteration   4: 208.354 ops/s
+Iteration   5: 193.677 ops/s
+
+
+Result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.incrementalCursor":
+  204.836 ±(99.9%) 3.665 ops/s [Average]
+  (min, avg, max) = (193.677, 204.836, 208.354), stdev = 3.428
+  CI (99.9%): [201.171, 208.502] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 25.0.4.1, OpenJDK 64-Bit Server VM, 25.0.4.1+1
+# VM invoker: /usr/lib/jvm/java-25-openjdk/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseG1GC -XX:ActiveProcessorCount=2 -Djson.benchmark.cores=0,2
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.jackson
+# Parameters: (fixture = small, lifecycle = fresh, observation = sampled)
+
+# Run progress: 60.00% complete, ETA 00:08:16
+# Fork: 1 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.jackson-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+1629623.864 ops/s
+# Warmup Iteration   2: 2350984.392 ops/s
+# Warmup Iteration   3: 2371376.115 ops/s
+# Warmup Iteration   4: 2365204.250 ops/s
+# Warmup Iteration   5: 2370744.693 ops/s
+Iteration   1: 2389961.922 ops/s
+Iteration   2: 2390628.230 ops/s
+Iteration   3: 2368490.021 ops/s
+Iteration   4: 2376868.236 ops/s
+Iteration   5: 2386097.622 ops/s
+
+# Run progress: 60.83% complete, ETA 00:08:06
+# Fork: 2 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.jackson-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+1511928.385 ops/s
+# Warmup Iteration   2: 2309230.324 ops/s
+# Warmup Iteration   3: 2300782.013 ops/s
+# Warmup Iteration   4: 2301282.330 ops/s
+# Warmup Iteration   5: 2319604.081 ops/s
+Iteration   1: 2323366.319 ops/s
+Iteration   2: 2333139.379 ops/s
+Iteration   3: 2322886.399 ops/s
+Iteration   4: 2328875.331 ops/s
+Iteration   5: 2334497.630 ops/s
+
+# Run progress: 61.67% complete, ETA 00:07:56
+# Fork: 3 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.jackson-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+1685265.307 ops/s
+# Warmup Iteration   2: 2427267.542 ops/s
+# Warmup Iteration   3: 2399621.926 ops/s
+# Warmup Iteration   4: 2406957.094 ops/s
+# Warmup Iteration   5: 2412520.392 ops/s
+Iteration   1: 2402347.658 ops/s
+Iteration   2: 2401991.667 ops/s
+Iteration   3: 2396108.396 ops/s
+Iteration   4: 2400297.896 ops/s
+Iteration   5: 2391532.175 ops/s
+
+
+Result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.jackson":
+  2369805.925 ±(99.9%) 33770.256 ops/s [Average]
+  (min, avg, max) = (2322886.399, 2369805.925, 2402347.658), stdev = 31588.719
+  CI (99.9%): [2336035.669, 2403576.182] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 25.0.4.1, OpenJDK 64-Bit Server VM, 25.0.4.1+1
+# VM invoker: /usr/lib/jvm/java-25-openjdk/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseG1GC -XX:ActiveProcessorCount=2 -Djson.benchmark.cores=0,2
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.jackson
+# Parameters: (fixture = small, lifecycle = fresh, observation = opaque)
+
+# Run progress: 62.50% complete, ETA 00:07:45
+# Fork: 1 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.jackson-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+1618758.039 ops/s
+# Warmup Iteration   2: 2399652.925 ops/s
+# Warmup Iteration   3: 2379762.927 ops/s
+# Warmup Iteration   4: 2371643.902 ops/s
+# Warmup Iteration   5: 2392445.279 ops/s
+Iteration   1: 2391294.551 ops/s
+Iteration   2: 2386443.887 ops/s
+Iteration   3: 2406912.267 ops/s
+Iteration   4: 2387946.204 ops/s
+Iteration   5: 2400942.431 ops/s
+
+# Run progress: 63.33% complete, ETA 00:07:35
+# Fork: 2 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.jackson-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+1734734.638 ops/s
+# Warmup Iteration   2: 2526278.460 ops/s
+# Warmup Iteration   3: 2515786.012 ops/s
+# Warmup Iteration   4: 2544014.588 ops/s
+# Warmup Iteration   5: 2530447.487 ops/s
+Iteration   1: 2512775.789 ops/s
+Iteration   2: 2519704.267 ops/s
+Iteration   3: 2539741.905 ops/s
+Iteration   4: 2526073.242 ops/s
+Iteration   5: 2528064.443 ops/s
+
+# Run progress: 64.17% complete, ETA 00:07:24
+# Fork: 3 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.jackson-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+1576906.676 ops/s
+# Warmup Iteration   2: 2346614.302 ops/s
+# Warmup Iteration   3: 2339513.573 ops/s
+# Warmup Iteration   4: 2339427.037 ops/s
+# Warmup Iteration   5: 2339489.637 ops/s
+Iteration   1: 2352378.978 ops/s
+Iteration   2: 2352853.660 ops/s
+Iteration   3: 2349077.488 ops/s
+Iteration   4: 2342648.851 ops/s
+Iteration   5: 2362693.274 ops/s
+
+
+Result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.jackson":
+  2423970.083 ±(99.9%) 82051.404 ops/s [Average]
+  (min, avg, max) = (2342648.851, 2423970.083, 2539741.905), stdev = 76750.935
+  CI (99.9%): [2341918.678, 2506021.487] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 25.0.4.1, OpenJDK 64-Bit Server VM, 25.0.4.1+1
+# VM invoker: /usr/lib/jvm/java-25-openjdk/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseG1GC -XX:ActiveProcessorCount=2 -Djson.benchmark.cores=0,2
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.jackson
+# Parameters: (fixture = unicode, lifecycle = fresh, observation = sampled)
+
+# Run progress: 65.00% complete, ETA 00:07:14
+# Fork: 1 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.jackson-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+51292.501 ops/s
+# Warmup Iteration   2: 53954.973 ops/s
+# Warmup Iteration   3: 54607.312 ops/s
+# Warmup Iteration   4: 55824.645 ops/s
+# Warmup Iteration   5: 55676.619 ops/s
+Iteration   1: 54186.209 ops/s
+Iteration   2: 54496.429 ops/s
+Iteration   3: 55752.981 ops/s
+Iteration   4: 55741.306 ops/s
+Iteration   5: 55711.115 ops/s
+
+# Run progress: 65.83% complete, ETA 00:07:04
+# Fork: 2 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.jackson-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+46340.741 ops/s
+# Warmup Iteration   2: 48815.444 ops/s
+# Warmup Iteration   3: 48485.082 ops/s
+# Warmup Iteration   4: 50397.948 ops/s
+# Warmup Iteration   5: 50719.232 ops/s
+Iteration   1: 50080.388 ops/s
+Iteration   2: 48344.238 ops/s
+Iteration   3: 48720.276 ops/s
+Iteration   4: 50613.902 ops/s
+Iteration   5: 50607.557 ops/s
+
+# Run progress: 66.67% complete, ETA 00:06:53
+# Fork: 3 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.jackson-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+50753.263 ops/s
+# Warmup Iteration   2: 54054.369 ops/s
+# Warmup Iteration   3: 54548.189 ops/s
+# Warmup Iteration   4: 55721.994 ops/s
+# Warmup Iteration   5: 55612.136 ops/s
+Iteration   1: 54149.659 ops/s
+Iteration   2: 54280.787 ops/s
+Iteration   3: 55557.207 ops/s
+Iteration   4: 55836.555 ops/s
+Iteration   5: 55894.756 ops/s
+
+
+Result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.jackson":
+  53331.558 ±(99.9%) 3000.750 ops/s [Average]
+  (min, avg, max) = (48344.238, 53331.558, 55894.756), stdev = 2806.903
+  CI (99.9%): [50330.808, 56332.307] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 25.0.4.1, OpenJDK 64-Bit Server VM, 25.0.4.1+1
+# VM invoker: /usr/lib/jvm/java-25-openjdk/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseG1GC -XX:ActiveProcessorCount=2 -Djson.benchmark.cores=0,2
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.jackson
+# Parameters: (fixture = unicode, lifecycle = fresh, observation = opaque)
+
+# Run progress: 67.50% complete, ETA 00:06:43
+# Fork: 1 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.jackson-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+50423.520 ops/s
+# Warmup Iteration   2: 53662.228 ops/s
+# Warmup Iteration   3: 54657.652 ops/s
+# Warmup Iteration   4: 55901.075 ops/s
+# Warmup Iteration   5: 55424.289 ops/s
+Iteration   1: 54042.307 ops/s
+Iteration   2: 54867.543 ops/s
+Iteration   3: 55909.883 ops/s
+Iteration   4: 56080.091 ops/s
+Iteration   5: 56087.965 ops/s
+
+# Run progress: 68.33% complete, ETA 00:06:32
+# Fork: 2 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.jackson-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+51306.134 ops/s
+# Warmup Iteration   2: 54026.161 ops/s
+# Warmup Iteration   3: 54607.149 ops/s
+# Warmup Iteration   4: 55930.704 ops/s
+# Warmup Iteration   5: 55835.806 ops/s
+Iteration   1: 54418.884 ops/s
+Iteration   2: 54269.793 ops/s
+Iteration   3: 55748.482 ops/s
+Iteration   4: 55615.375 ops/s
+Iteration   5: 55521.304 ops/s
+
+# Run progress: 69.17% complete, ETA 00:06:22
+# Fork: 3 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.jackson-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+49776.526 ops/s
+# Warmup Iteration   2: 52832.124 ops/s
+# Warmup Iteration   3: 53384.430 ops/s
+# Warmup Iteration   4: 54442.270 ops/s
+# Warmup Iteration   5: 54172.829 ops/s
+Iteration   1: 52918.906 ops/s
+Iteration   2: 53234.715 ops/s
+Iteration   3: 54455.088 ops/s
+Iteration   4: 54349.958 ops/s
+Iteration   5: 54491.310 ops/s
+
+
+Result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.jackson":
+  54800.774 ±(99.9%) 1069.996 ops/s [Average]
+  (min, avg, max) = (52918.906, 54800.774, 56087.965), stdev = 1000.875
+  CI (99.9%): [53730.778, 55870.770] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 25.0.4.1, OpenJDK 64-Bit Server VM, 25.0.4.1+1
+# VM invoker: /usr/lib/jvm/java-25-openjdk/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseG1GC -XX:ActiveProcessorCount=2 -Djson.benchmark.cores=0,2
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.jackson
+# Parameters: (fixture = scalar-1m, lifecycle = fresh, observation = sampled)
+
+# Run progress: 70.00% complete, ETA 00:06:12
+# Fork: 1 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.jackson-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+2309.455 ops/s
+# Warmup Iteration   2: 2374.387 ops/s
+# Warmup Iteration   3: 2217.703 ops/s
+# Warmup Iteration   4: 2001.149 ops/s
+# Warmup Iteration   5: 1996.847 ops/s
+Iteration   1: 2009.721 ops/s
+Iteration   2: 1996.647 ops/s
+Iteration   3: 2002.339 ops/s
+Iteration   4: 1976.561 ops/s
+Iteration   5: 1982.486 ops/s
+
+# Run progress: 70.83% complete, ETA 00:06:01
+# Fork: 2 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.jackson-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+2324.991 ops/s
+# Warmup Iteration   2: 2368.961 ops/s
+# Warmup Iteration   3: 2214.280 ops/s
+# Warmup Iteration   4: 2019.925 ops/s
+# Warmup Iteration   5: 2015.003 ops/s
+Iteration   1: 2017.266 ops/s
+Iteration   2: 1992.592 ops/s
+Iteration   3: 2027.220 ops/s
+Iteration   4: 2049.773 ops/s
+Iteration   5: 2055.073 ops/s
+
+# Run progress: 71.67% complete, ETA 00:05:51
+# Fork: 3 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.jackson-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+2262.702 ops/s
+# Warmup Iteration   2: 2343.695 ops/s
+# Warmup Iteration   3: 2328.064 ops/s
+# Warmup Iteration   4: 2169.500 ops/s
+# Warmup Iteration   5: 2173.101 ops/s
+Iteration   1: 2169.136 ops/s
+Iteration   2: 2161.534 ops/s
+Iteration   3: 2199.276 ops/s
+Iteration   4: 2200.296 ops/s
+Iteration   5: 2201.655 ops/s
+
+
+Result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.jackson":
+  2069.438 ±(99.9%) 94.952 ops/s [Average]
+  (min, avg, max) = (1976.561, 2069.438, 2201.655), stdev = 88.818
+  CI (99.9%): [1974.487, 2164.390] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 25.0.4.1, OpenJDK 64-Bit Server VM, 25.0.4.1+1
+# VM invoker: /usr/lib/jvm/java-25-openjdk/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseG1GC -XX:ActiveProcessorCount=2 -Djson.benchmark.cores=0,2
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.jackson
+# Parameters: (fixture = scalar-1m, lifecycle = fresh, observation = opaque)
+
+# Run progress: 72.50% complete, ETA 00:05:41
+# Fork: 1 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.jackson-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+2341.932 ops/s
+# Warmup Iteration   2: 2371.217 ops/s
+# Warmup Iteration   3: 2362.018 ops/s
+# Warmup Iteration   4: 2309.358 ops/s
+# Warmup Iteration   5: 2310.997 ops/s
+Iteration   1: 2287.827 ops/s
+Iteration   2: 2301.439 ops/s
+Iteration   3: 2287.959 ops/s
+Iteration   4: 2296.877 ops/s
+Iteration   5: 2313.954 ops/s
+
+# Run progress: 73.33% complete, ETA 00:05:30
+# Fork: 2 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.jackson-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+2336.675 ops/s
+# Warmup Iteration   2: 2370.485 ops/s
+# Warmup Iteration   3: 2362.886 ops/s
+# Warmup Iteration   4: 2306.405 ops/s
+# Warmup Iteration   5: 2305.117 ops/s
+Iteration   1: 2303.738 ops/s
+Iteration   2: 2301.581 ops/s
+Iteration   3: 2311.826 ops/s
+Iteration   4: 2306.803 ops/s
+Iteration   5: 2285.389 ops/s
+
+# Run progress: 74.17% complete, ETA 00:05:20
+# Fork: 3 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.jackson-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+2308.408 ops/s
+# Warmup Iteration   2: 2369.852 ops/s
+# Warmup Iteration   3: 2377.505 ops/s
+# Warmup Iteration   4: 2382.013 ops/s
+# Warmup Iteration   5: 2376.036 ops/s
+Iteration   1: 2384.751 ops/s
+Iteration   2: 2375.042 ops/s
+Iteration   3: 2388.816 ops/s
+Iteration   4: 2363.299 ops/s
+Iteration   5: 2367.741 ops/s
+
+
+Result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.jackson":
+  2325.136 ±(99.9%) 41.144 ops/s [Average]
+  (min, avg, max) = (2285.389, 2325.136, 2388.816), stdev = 38.486
+  CI (99.9%): [2283.992, 2366.280] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 25.0.4.1, OpenJDK 64-Bit Server VM, 25.0.4.1+1
+# VM invoker: /usr/lib/jvm/java-25-openjdk/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseG1GC -XX:ActiveProcessorCount=2 -Djson.benchmark.cores=0,2
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.jackson
+# Parameters: (fixture = bulk-10000, lifecycle = fresh, observation = sampled)
+
+# Run progress: 75.00% complete, ETA 00:05:09
+# Fork: 1 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.jackson-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+159.199 ops/s
+# Warmup Iteration   2: 264.036 ops/s
+# Warmup Iteration   3: 270.891 ops/s
+# Warmup Iteration   4: 273.488 ops/s
+# Warmup Iteration   5: 273.501 ops/s
+Iteration   1: 271.232 ops/s
+Iteration   2: 267.028 ops/s
+Iteration   3: 265.920 ops/s
+Iteration   4: 268.494 ops/s
+Iteration   5: 268.433 ops/s
+
+# Run progress: 75.83% complete, ETA 00:04:59
+# Fork: 2 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.jackson-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+155.739 ops/s
+# Warmup Iteration   2: 265.695 ops/s
+# Warmup Iteration   3: 279.254 ops/s
+# Warmup Iteration   4: 275.558 ops/s
+# Warmup Iteration   5: 279.259 ops/s
+Iteration   1: 275.033 ops/s
+Iteration   2: 266.597 ops/s
+Iteration   3: 260.488 ops/s
+Iteration   4: 260.613 ops/s
+Iteration   5: 262.545 ops/s
+
+# Run progress: 76.67% complete, ETA 00:04:49
+# Fork: 3 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.jackson-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+158.297 ops/s
+# Warmup Iteration   2: 278.819 ops/s
+# Warmup Iteration   3: 274.274 ops/s
+# Warmup Iteration   4: 271.695 ops/s
+# Warmup Iteration   5: 277.857 ops/s
+Iteration   1: 276.688 ops/s
+Iteration   2: 263.944 ops/s
+Iteration   3: 261.329 ops/s
+Iteration   4: 261.330 ops/s
+Iteration   5: 261.335 ops/s
+
+
+Result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.jackson":
+  266.067 ±(99.9%) 5.552 ops/s [Average]
+  (min, avg, max) = (260.488, 266.067, 276.688), stdev = 5.194
+  CI (99.9%): [260.515, 271.620] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 25.0.4.1, OpenJDK 64-Bit Server VM, 25.0.4.1+1
+# VM invoker: /usr/lib/jvm/java-25-openjdk/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseG1GC -XX:ActiveProcessorCount=2 -Djson.benchmark.cores=0,2
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.jackson
+# Parameters: (fixture = bulk-10000, lifecycle = fresh, observation = opaque)
+
+# Run progress: 77.50% complete, ETA 00:04:39
+# Fork: 1 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.jackson-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+199.598 ops/s
+# Warmup Iteration   2: 269.716 ops/s
+# Warmup Iteration   3: 268.482 ops/s
+# Warmup Iteration   4: 273.736 ops/s
+# Warmup Iteration   5: 273.963 ops/s
+Iteration   1: 273.336 ops/s
+Iteration   2: 268.492 ops/s
+Iteration   3: 270.533 ops/s
+Iteration   4: 273.291 ops/s
+Iteration   5: 270.962 ops/s
+
+# Run progress: 78.33% complete, ETA 00:04:28
+# Fork: 2 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.jackson-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+150.723 ops/s
+# Warmup Iteration   2: 264.453 ops/s
+# Warmup Iteration   3: 274.740 ops/s
+# Warmup Iteration   4: 273.253 ops/s
+# Warmup Iteration   5: 273.158 ops/s
+Iteration   1: 271.635 ops/s
+Iteration   2: 271.685 ops/s
+Iteration   3: 270.491 ops/s
+Iteration   4: 271.486 ops/s
+Iteration   5: 270.595 ops/s
+
+# Run progress: 79.17% complete, ETA 00:04:18
+# Fork: 3 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.jackson-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+155.200 ops/s
+# Warmup Iteration   2: 254.416 ops/s
+# Warmup Iteration   3: 273.389 ops/s
+# Warmup Iteration   4: 272.780 ops/s
+# Warmup Iteration   5: 275.218 ops/s
+Iteration   1: 274.991 ops/s
+Iteration   2: 258.235 ops/s
+Iteration   3: 255.926 ops/s
+Iteration   4: 259.732 ops/s
+Iteration   5: 261.809 ops/s
+
+
+Result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.jackson":
+  268.213 ±(99.9%) 6.514 ops/s [Average]
+  (min, avg, max) = (255.926, 268.213, 274.991), stdev = 6.093
+  CI (99.9%): [261.699, 274.728] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 25.0.4.1, OpenJDK 64-Bit Server VM, 25.0.4.1+1
+# VM invoker: /usr/lib/jvm/java-25-openjdk/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseG1GC -XX:ActiveProcessorCount=2 -Djson.benchmark.cores=0,2
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.synchronousCursor
+# Parameters: (fixture = small, lifecycle = fresh, observation = sampled)
+
+# Run progress: 80.00% complete, ETA 00:04:08
+# Fork: 1 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.synchronousCursor-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+1466351.628 ops/s
+# Warmup Iteration   2: 1759982.615 ops/s
+# Warmup Iteration   3: 1765250.019 ops/s
+# Warmup Iteration   4: 1780632.105 ops/s
+# Warmup Iteration   5: 1776804.386 ops/s
+Iteration   1: 1781753.523 ops/s
+Iteration   2: 1776545.582 ops/s
+Iteration   3: 1786269.527 ops/s
+Iteration   4: 1758355.124 ops/s
+Iteration   5: 1765196.506 ops/s
+
+# Run progress: 80.83% complete, ETA 00:03:58
+# Fork: 2 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.synchronousCursor-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+1452310.419 ops/s
+# Warmup Iteration   2: 1738016.070 ops/s
+# Warmup Iteration   3: 1749783.683 ops/s
+# Warmup Iteration   4: 1748589.075 ops/s
+# Warmup Iteration   5: 1763086.975 ops/s
+Iteration   1: 1753181.198 ops/s
+Iteration   2: 1753324.278 ops/s
+Iteration   3: 1754670.082 ops/s
+Iteration   4: 1762932.086 ops/s
+Iteration   5: 1760957.650 ops/s
+
+# Run progress: 81.67% complete, ETA 00:03:47
+# Fork: 3 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.synchronousCursor-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+1475844.595 ops/s
+# Warmup Iteration   2: 1777394.669 ops/s
+# Warmup Iteration   3: 1784298.421 ops/s
+# Warmup Iteration   4: 1798824.814 ops/s
+# Warmup Iteration   5: 1792339.056 ops/s
+Iteration   1: 1789879.915 ops/s
+Iteration   2: 1789508.496 ops/s
+Iteration   3: 1802447.609 ops/s
+Iteration   4: 1796122.217 ops/s
+Iteration   5: 1791567.342 ops/s
+
+
+Result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.synchronousCursor":
+  1774847.409 ±(99.9%) 18418.853 ops/s [Average]
+  (min, avg, max) = (1753181.198, 1774847.409, 1802447.609), stdev = 17229.007
+  CI (99.9%): [1756428.556, 1793266.262] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 25.0.4.1, OpenJDK 64-Bit Server VM, 25.0.4.1+1
+# VM invoker: /usr/lib/jvm/java-25-openjdk/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseG1GC -XX:ActiveProcessorCount=2 -Djson.benchmark.cores=0,2
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.synchronousCursor
+# Parameters: (fixture = small, lifecycle = fresh, observation = opaque)
+
+# Run progress: 82.50% complete, ETA 00:03:37
+# Fork: 1 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.synchronousCursor-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+1451005.462 ops/s
+# Warmup Iteration   2: 1740615.734 ops/s
+# Warmup Iteration   3: 1740148.850 ops/s
+# Warmup Iteration   4: 1754952.007 ops/s
+# Warmup Iteration   5: 1749112.149 ops/s
+Iteration   1: 1723245.503 ops/s
+Iteration   2: 1721662.046 ops/s
+Iteration   3: 1731314.602 ops/s
+Iteration   4: 1743986.297 ops/s
+Iteration   5: 1748113.973 ops/s
+
+# Run progress: 83.33% complete, ETA 00:03:26
+# Fork: 2 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.synchronousCursor-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+1427066.027 ops/s
+# Warmup Iteration   2: 1716164.198 ops/s
+# Warmup Iteration   3: 1730896.083 ops/s
+# Warmup Iteration   4: 1733496.810 ops/s
+# Warmup Iteration   5: 1739410.615 ops/s
+Iteration   1: 1734352.678 ops/s
+Iteration   2: 1742210.589 ops/s
+Iteration   3: 1733021.640 ops/s
+Iteration   4: 1722431.873 ops/s
+Iteration   5: 1741655.119 ops/s
+
+# Run progress: 84.17% complete, ETA 00:03:16
+# Fork: 3 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.synchronousCursor-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+1449264.798 ops/s
+# Warmup Iteration   2: 1746899.901 ops/s
+# Warmup Iteration   3: 1737234.574 ops/s
+# Warmup Iteration   4: 1732463.180 ops/s
+# Warmup Iteration   5: 1733987.188 ops/s
+Iteration   1: 1733513.835 ops/s
+Iteration   2: 1733765.209 ops/s
+Iteration   3: 1724481.086 ops/s
+Iteration   4: 1730993.102 ops/s
+Iteration   5: 1740146.019 ops/s
+
+
+Result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.synchronousCursor":
+  1733659.571 ±(99.9%) 8902.878 ops/s [Average]
+  (min, avg, max) = (1721662.046, 1733659.571, 1748113.973), stdev = 8327.757
+  CI (99.9%): [1724756.694, 1742562.449] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 25.0.4.1, OpenJDK 64-Bit Server VM, 25.0.4.1+1
+# VM invoker: /usr/lib/jvm/java-25-openjdk/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseG1GC -XX:ActiveProcessorCount=2 -Djson.benchmark.cores=0,2
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.synchronousCursor
+# Parameters: (fixture = unicode, lifecycle = fresh, observation = sampled)
+
+# Run progress: 85.00% complete, ETA 00:03:06
+# Fork: 1 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.synchronousCursor-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+28001.807 ops/s
+# Warmup Iteration   2: 29354.533 ops/s
+# Warmup Iteration   3: 29862.147 ops/s
+# Warmup Iteration   4: 29113.222 ops/s
+# Warmup Iteration   5: 29764.528 ops/s
+Iteration   1: 29984.057 ops/s
+Iteration   2: 29767.649 ops/s
+Iteration   3: 29117.182 ops/s
+Iteration   4: 30147.542 ops/s
+Iteration   5: 30068.290 ops/s
+
+# Run progress: 85.83% complete, ETA 00:02:55
+# Fork: 2 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.synchronousCursor-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+28284.660 ops/s
+# Warmup Iteration   2: 29264.997 ops/s
+# Warmup Iteration   3: 29838.458 ops/s
+# Warmup Iteration   4: 29649.225 ops/s
+# Warmup Iteration   5: 30210.764 ops/s
+Iteration   1: 30114.745 ops/s
+Iteration   2: 29454.941 ops/s
+Iteration   3: 29743.950 ops/s
+Iteration   4: 30360.959 ops/s
+Iteration   5: 30277.966 ops/s
+
+# Run progress: 86.67% complete, ETA 00:02:45
+# Fork: 3 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.synchronousCursor-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+31952.571 ops/s
+# Warmup Iteration   2: 33369.959 ops/s
+# Warmup Iteration   3: 33644.810 ops/s
+# Warmup Iteration   4: 33122.595 ops/s
+# Warmup Iteration   5: 34157.677 ops/s
+Iteration   1: 33835.682 ops/s
+Iteration   2: 32669.817 ops/s
+Iteration   3: 33911.522 ops/s
+Iteration   4: 34220.210 ops/s
+Iteration   5: 34339.399 ops/s
+
+
+Result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.synchronousCursor":
+  31200.927 ±(99.9%) 2091.626 ops/s [Average]
+  (min, avg, max) = (29117.182, 31200.927, 34339.399), stdev = 1956.508
+  CI (99.9%): [29109.301, 33292.553] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 25.0.4.1, OpenJDK 64-Bit Server VM, 25.0.4.1+1
+# VM invoker: /usr/lib/jvm/java-25-openjdk/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseG1GC -XX:ActiveProcessorCount=2 -Djson.benchmark.cores=0,2
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.synchronousCursor
+# Parameters: (fixture = unicode, lifecycle = fresh, observation = opaque)
+
+# Run progress: 87.50% complete, ETA 00:02:35
+# Fork: 1 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.synchronousCursor-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+32387.401 ops/s
+# Warmup Iteration   2: 33862.876 ops/s
+# Warmup Iteration   3: 34009.571 ops/s
+# Warmup Iteration   4: 33823.880 ops/s
+# Warmup Iteration   5: 34570.228 ops/s
+Iteration   1: 34061.060 ops/s
+Iteration   2: 33252.521 ops/s
+Iteration   3: 34432.973 ops/s
+Iteration   4: 34413.660 ops/s
+Iteration   5: 34407.398 ops/s
+
+# Run progress: 88.33% complete, ETA 00:02:24
+# Fork: 2 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.synchronousCursor-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+28411.782 ops/s
+# Warmup Iteration   2: 29222.240 ops/s
+# Warmup Iteration   3: 29565.506 ops/s
+# Warmup Iteration   4: 28784.027 ops/s
+# Warmup Iteration   5: 30004.202 ops/s
+Iteration   1: 30059.254 ops/s
+Iteration   2: 29650.244 ops/s
+Iteration   3: 29306.170 ops/s
+Iteration   4: 30141.741 ops/s
+Iteration   5: 30236.615 ops/s
+
+# Run progress: 89.17% complete, ETA 00:02:14
+# Fork: 3 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.synchronousCursor-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+31278.207 ops/s
+# Warmup Iteration   2: 33084.269 ops/s
+# Warmup Iteration   3: 33189.519 ops/s
+# Warmup Iteration   4: 33058.837 ops/s
+# Warmup Iteration   5: 33904.071 ops/s
+Iteration   1: 33878.978 ops/s
+Iteration   2: 32763.242 ops/s
+Iteration   3: 33652.594 ops/s
+Iteration   4: 33843.181 ops/s
+Iteration   5: 34234.968 ops/s
+
+
+Result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.synchronousCursor":
+  32555.640 ±(99.9%) 2158.455 ops/s [Average]
+  (min, avg, max) = (29306.170, 32555.640, 34432.973), stdev = 2019.020
+  CI (99.9%): [30397.185, 34714.095] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 25.0.4.1, OpenJDK 64-Bit Server VM, 25.0.4.1+1
+# VM invoker: /usr/lib/jvm/java-25-openjdk/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseG1GC -XX:ActiveProcessorCount=2 -Djson.benchmark.cores=0,2
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.synchronousCursor
+# Parameters: (fixture = scalar-1m, lifecycle = fresh, observation = sampled)
+
+# Run progress: 90.00% complete, ETA 00:02:04
+# Fork: 1 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.synchronousCursor-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+2450.832 ops/s
+# Warmup Iteration   2: 2445.998 ops/s
+# Warmup Iteration   3: 2475.553 ops/s
+# Warmup Iteration   4: 2486.120 ops/s
+# Warmup Iteration   5: 2470.425 ops/s
+Iteration   1: 2478.534 ops/s
+Iteration   2: 2484.743 ops/s
+Iteration   3: 2480.592 ops/s
+Iteration   4: 2465.166 ops/s
+Iteration   5: 2468.275 ops/s
+
+# Run progress: 90.83% complete, ETA 00:01:53
+# Fork: 2 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.synchronousCursor-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+2452.054 ops/s
+# Warmup Iteration   2: 2473.520 ops/s
+# Warmup Iteration   3: 2477.686 ops/s
+# Warmup Iteration   4: 2466.561 ops/s
+# Warmup Iteration   5: 2474.842 ops/s
+Iteration   1: 2479.425 ops/s
+Iteration   2: 2474.921 ops/s
+Iteration   3: 2473.753 ops/s
+Iteration   4: 2474.105 ops/s
+Iteration   5: 2481.087 ops/s
+
+# Run progress: 91.67% complete, ETA 00:01:43
+# Fork: 3 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.synchronousCursor-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+2463.157 ops/s
+# Warmup Iteration   2: 2359.744 ops/s
+# Warmup Iteration   3: 2436.920 ops/s
+# Warmup Iteration   4: 2482.659 ops/s
+# Warmup Iteration   5: 2490.919 ops/s
+Iteration   1: 2495.739 ops/s
+Iteration   2: 2496.883 ops/s
+Iteration   3: 2507.372 ops/s
+Iteration   4: 2500.223 ops/s
+Iteration   5: 2515.957 ops/s
+
+
+Result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.synchronousCursor":
+  2485.118 ±(99.9%) 15.842 ops/s [Average]
+  (min, avg, max) = (2465.166, 2485.118, 2515.957), stdev = 14.819
+  CI (99.9%): [2469.276, 2500.961] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 25.0.4.1, OpenJDK 64-Bit Server VM, 25.0.4.1+1
+# VM invoker: /usr/lib/jvm/java-25-openjdk/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseG1GC -XX:ActiveProcessorCount=2 -Djson.benchmark.cores=0,2
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.synchronousCursor
+# Parameters: (fixture = scalar-1m, lifecycle = fresh, observation = opaque)
+
+# Run progress: 92.50% complete, ETA 00:01:33
+# Fork: 1 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.synchronousCursor-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+2423.568 ops/s
+# Warmup Iteration   2: 2464.544 ops/s
+# Warmup Iteration   3: 2488.122 ops/s
+# Warmup Iteration   4: 2481.242 ops/s
+# Warmup Iteration   5: 2504.686 ops/s
+Iteration   1: 2503.627 ops/s
+Iteration   2: 2499.647 ops/s
+Iteration   3: 2469.825 ops/s
+Iteration   4: 2425.637 ops/s
+Iteration   5: 2431.601 ops/s
+
+# Run progress: 93.33% complete, ETA 00:01:22
+# Fork: 2 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.synchronousCursor-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+2282.738 ops/s
+# Warmup Iteration   2: 2303.159 ops/s
+# Warmup Iteration   3: 2319.069 ops/s
+# Warmup Iteration   4: 2326.703 ops/s
+# Warmup Iteration   5: 2305.494 ops/s
+Iteration   1: 2343.749 ops/s
+Iteration   2: 2363.371 ops/s
+Iteration   3: 2366.290 ops/s
+Iteration   4: 2363.178 ops/s
+Iteration   5: 2354.895 ops/s
+
+# Run progress: 94.17% complete, ETA 00:01:12
+# Fork: 3 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.synchronousCursor-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+2370.268 ops/s
+# Warmup Iteration   2: 2370.038 ops/s
+# Warmup Iteration   3: 2402.867 ops/s
+# Warmup Iteration   4: 2391.734 ops/s
+# Warmup Iteration   5: 2378.774 ops/s
+Iteration   1: 2372.351 ops/s
+Iteration   2: 2372.917 ops/s
+Iteration   3: 2380.329 ops/s
+Iteration   4: 2385.726 ops/s
+Iteration   5: 2396.069 ops/s
+
+
+Result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.synchronousCursor":
+  2401.947 ±(99.9%) 55.901 ops/s [Average]
+  (min, avg, max) = (2343.749, 2401.947, 2503.627), stdev = 52.290
+  CI (99.9%): [2346.046, 2457.849] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 25.0.4.1, OpenJDK 64-Bit Server VM, 25.0.4.1+1
+# VM invoker: /usr/lib/jvm/java-25-openjdk/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseG1GC -XX:ActiveProcessorCount=2 -Djson.benchmark.cores=0,2
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.synchronousCursor
+# Parameters: (fixture = bulk-10000, lifecycle = fresh, observation = sampled)
+
+# Run progress: 95.00% complete, ETA 00:01:02
+# Fork: 1 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.synchronousCursor-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+169.431 ops/s
+# Warmup Iteration   2: 199.590 ops/s
+# Warmup Iteration   3: 200.460 ops/s
+# Warmup Iteration   4: 200.041 ops/s
+# Warmup Iteration   5: 200.977 ops/s
+Iteration   1: 198.838 ops/s
+Iteration   2: 196.876 ops/s
+Iteration   3: 196.426 ops/s
+Iteration   4: 202.125 ops/s
+Iteration   5: 197.345 ops/s
+
+# Run progress: 95.83% complete, ETA 00:00:51
+# Fork: 2 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.synchronousCursor-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+137.726 ops/s
+# Warmup Iteration   2: 212.319 ops/s
+# Warmup Iteration   3: 218.063 ops/s
+# Warmup Iteration   4: 219.116 ops/s
+# Warmup Iteration   5: 218.943 ops/s
+Iteration   1: 217.875 ops/s
+Iteration   2: 219.055 ops/s
+Iteration   3: 217.745 ops/s
+Iteration   4: 221.651 ops/s
+Iteration   5: 221.311 ops/s
+
+# Run progress: 96.67% complete, ETA 00:00:41
+# Fork: 3 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.synchronousCursor-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+177.220 ops/s
+# Warmup Iteration   2: 200.150 ops/s
+# Warmup Iteration   3: 209.799 ops/s
+# Warmup Iteration   4: 209.791 ops/s
+# Warmup Iteration   5: 205.251 ops/s
+Iteration   1: 208.810 ops/s
+Iteration   2: 204.480 ops/s
+Iteration   3: 206.922 ops/s
+Iteration   4: 209.972 ops/s
+Iteration   5: 210.266 ops/s
+
+
+Result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.synchronousCursor":
+  208.647 ±(99.9%) 9.835 ops/s [Average]
+  (min, avg, max) = (196.426, 208.647, 221.651), stdev = 9.200
+  CI (99.9%): [198.812, 218.482] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 25.0.4.1, OpenJDK 64-Bit Server VM, 25.0.4.1+1
+# VM invoker: /usr/lib/jvm/java-25-openjdk/bin/java
+# VM options: -Xms1g -Xmx1g -XX:+UseG1GC -XX:ActiveProcessorCount=2 -Djson.benchmark.cores=0,2
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.synchronousCursor
+# Parameters: (fixture = bulk-10000, lifecycle = fresh, observation = opaque)
+
+# Run progress: 97.50% complete, ETA 00:00:31
+# Fork: 1 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.synchronousCursor-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+172.303 ops/s
+# Warmup Iteration   2: 192.839 ops/s
+# Warmup Iteration   3: 202.230 ops/s
+# Warmup Iteration   4: 203.059 ops/s
+# Warmup Iteration   5: 195.677 ops/s
+Iteration   1: 202.201 ops/s
+Iteration   2: 200.969 ops/s
+Iteration   3: 201.658 ops/s
+Iteration   4: 203.254 ops/s
+Iteration   5: 203.958 ops/s
+
+# Run progress: 98.33% complete, ETA 00:00:20
+# Fork: 2 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.synchronousCursor-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+173.634 ops/s
+# Warmup Iteration   2: 201.387 ops/s
+# Warmup Iteration   3: 209.590 ops/s
+# Warmup Iteration   4: 201.431 ops/s
+# Warmup Iteration   5: 206.355 ops/s
+Iteration   1: 205.851 ops/s
+Iteration   2: 204.625 ops/s
+Iteration   3: 207.577 ops/s
+Iteration   4: 208.861 ops/s
+Iteration   5: 206.877 ops/s
+
+# Run progress: 99.17% complete, ETA 00:00:10
+# Fork: 3 of 3
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/agentuser/hibernate-search/integrationtest/performance/backend/elasticsearch/target/benchmarks.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: Verified fork/thread affinity 0,2 thread=org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.synchronousCursor-jmh-worker-1
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+167.703 ops/s
+# Warmup Iteration   2: 201.556 ops/s
+# Warmup Iteration   3: 206.629 ops/s
+# Warmup Iteration   4: 205.077 ops/s
+# Warmup Iteration   5: 205.204 ops/s
+Iteration   1: 203.706 ops/s
+Iteration   2: 203.613 ops/s
+Iteration   3: 204.043 ops/s
+Iteration   4: 206.138 ops/s
+Iteration   5: 206.628 ops/s
+
+
+Result "org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonSinkSensitivityBenchmark.synchronousCursor":
+  204.664 ±(99.9%) 2.426 ops/s [Average]
+  (min, avg, max) = (200.969, 204.664, 208.861), stdev = 2.269
+  CI (99.9%): [202.238, 207.090] (assumes normal distribution)
+
+
+# Run complete. Total time: 00:20:42
+
+REMEMBER: The numbers below are just data. To gain reusable insights, you need to follow up on
+why the numbers are the way they are. Use profilers (see -prof, -lprof), design factorial
+experiments, perform baseline and negative tests that provide experimental control, make sure
+the benchmarking environment is safe on JVM/OS/HW level, ask for reviews from the domain experts.
+Do not assume the numbers tell you what you want them to tell.
+
+NOTE: Current JVM experimentally supports Compiler Blackholes, and they are in use. Please exercise
+extra caution when trusting the results, look into the generated code to check the benchmark still
+works, and factor in a small probability of new VM bugs. Additionally, while comparisons between
+different JVMs are already problematic, the performance difference caused by different Blackhole
+modes can be very significant. Please make sure you use the consistent Blackhole mode for comparisons.
+
+Benchmark                                        (fixture)  (lifecycle)  (observation)   Mode  Cnt        Score       Error  Units
+JsonSinkSensitivityBenchmark.boundedWorker           small        fresh        sampled  thrpt   15   215850.815 ±  3290.935  ops/s
+JsonSinkSensitivityBenchmark.boundedWorker           small        fresh         opaque  thrpt   15   214601.498 ±  3296.674  ops/s
+JsonSinkSensitivityBenchmark.boundedWorker         unicode        fresh        sampled  thrpt   15    43431.363 ±   571.073  ops/s
+JsonSinkSensitivityBenchmark.boundedWorker         unicode        fresh         opaque  thrpt   15    42557.822 ±  1395.505  ops/s
+JsonSinkSensitivityBenchmark.boundedWorker       scalar-1m        fresh        sampled  thrpt   15     1770.503 ±   107.626  ops/s
+JsonSinkSensitivityBenchmark.boundedWorker       scalar-1m        fresh         opaque  thrpt   15     1719.729 ±   105.055  ops/s
+JsonSinkSensitivityBenchmark.boundedWorker      bulk-10000        fresh        sampled  thrpt   15      251.193 ±     6.950  ops/s
+JsonSinkSensitivityBenchmark.boundedWorker      bulk-10000        fresh         opaque  thrpt   15      252.218 ±     3.778  ops/s
+JsonSinkSensitivityBenchmark.gson                    small        fresh        sampled  thrpt   15  1165014.055 ± 47869.173  ops/s
+JsonSinkSensitivityBenchmark.gson                    small        fresh         opaque  thrpt   15  1126551.583 ± 41488.720  ops/s
+JsonSinkSensitivityBenchmark.gson                  unicode        fresh        sampled  thrpt   15    33383.081 ±   400.849  ops/s
+JsonSinkSensitivityBenchmark.gson                  unicode        fresh         opaque  thrpt   15    33604.414 ±   355.240  ops/s
+JsonSinkSensitivityBenchmark.gson                scalar-1m        fresh        sampled  thrpt   15      467.464 ±    11.854  ops/s
+JsonSinkSensitivityBenchmark.gson                scalar-1m        fresh         opaque  thrpt   15      469.794 ±     7.028  ops/s
+JsonSinkSensitivityBenchmark.gson               bulk-10000        fresh        sampled  thrpt   15      100.195 ±    18.976  ops/s
+JsonSinkSensitivityBenchmark.gson               bulk-10000        fresh         opaque  thrpt   15      112.102 ±     2.667  ops/s
+JsonSinkSensitivityBenchmark.incrementalCursor       small        fresh        sampled  thrpt   15  1804110.068 ± 25124.562  ops/s
+JsonSinkSensitivityBenchmark.incrementalCursor       small        fresh         opaque  thrpt   15  1800889.207 ± 10422.547  ops/s
+JsonSinkSensitivityBenchmark.incrementalCursor     unicode        fresh        sampled  thrpt   15    33165.005 ±  2194.265  ops/s
+JsonSinkSensitivityBenchmark.incrementalCursor     unicode        fresh         opaque  thrpt   15    33152.131 ±  2110.436  ops/s
+JsonSinkSensitivityBenchmark.incrementalCursor   scalar-1m        fresh        sampled  thrpt   15     2462.961 ±    28.800  ops/s
+JsonSinkSensitivityBenchmark.incrementalCursor   scalar-1m        fresh         opaque  thrpt   15     2480.263 ±     9.750  ops/s
+JsonSinkSensitivityBenchmark.incrementalCursor  bulk-10000        fresh        sampled  thrpt   15      217.565 ±    11.420  ops/s
+JsonSinkSensitivityBenchmark.incrementalCursor  bulk-10000        fresh         opaque  thrpt   15      204.836 ±     3.665  ops/s
+JsonSinkSensitivityBenchmark.jackson                 small        fresh        sampled  thrpt   15  2369805.925 ± 33770.256  ops/s
+JsonSinkSensitivityBenchmark.jackson                 small        fresh         opaque  thrpt   15  2423970.083 ± 82051.404  ops/s
+JsonSinkSensitivityBenchmark.jackson               unicode        fresh        sampled  thrpt   15    53331.558 ±  3000.750  ops/s
+JsonSinkSensitivityBenchmark.jackson               unicode        fresh         opaque  thrpt   15    54800.774 ±  1069.996  ops/s
+JsonSinkSensitivityBenchmark.jackson             scalar-1m        fresh        sampled  thrpt   15     2069.438 ±    94.952  ops/s
+JsonSinkSensitivityBenchmark.jackson             scalar-1m        fresh         opaque  thrpt   15     2325.136 ±    41.144  ops/s
+JsonSinkSensitivityBenchmark.jackson            bulk-10000        fresh        sampled  thrpt   15      266.067 ±     5.552  ops/s
+JsonSinkSensitivityBenchmark.jackson            bulk-10000        fresh         opaque  thrpt   15      268.213 ±     6.514  ops/s
+JsonSinkSensitivityBenchmark.synchronousCursor       small        fresh        sampled  thrpt   15  1774847.409 ± 18418.853  ops/s
+JsonSinkSensitivityBenchmark.synchronousCursor       small        fresh         opaque  thrpt   15  1733659.571 ±  8902.878  ops/s
+JsonSinkSensitivityBenchmark.synchronousCursor     unicode        fresh        sampled  thrpt   15    31200.927 ±  2091.626  ops/s
+JsonSinkSensitivityBenchmark.synchronousCursor     unicode        fresh         opaque  thrpt   15    32555.640 ±  2158.455  ops/s
+JsonSinkSensitivityBenchmark.synchronousCursor   scalar-1m        fresh        sampled  thrpt   15     2485.118 ±    15.842  ops/s
+JsonSinkSensitivityBenchmark.synchronousCursor   scalar-1m        fresh         opaque  thrpt   15     2401.947 ±    55.901  ops/s
+JsonSinkSensitivityBenchmark.synchronousCursor  bulk-10000        fresh        sampled  thrpt   15      208.647 ±     9.835  ops/s
+JsonSinkSensitivityBenchmark.synchronousCursor  bulk-10000        fresh         opaque  thrpt   15      204.664 ±     2.426  ops/s
+
+Benchmark result is saved to /home/agentuser/hibernate-search/design/elasticsearch-async-json-task4/sink-sensitivity/jmh.json

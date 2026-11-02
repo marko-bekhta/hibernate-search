@@ -1,0 +1,4 @@
+# Preserve raw diff, JMH JSON and tool-log whitespace exactly as recorded.
+*/source.patch -whitespace
+*/jmh.json -whitespace
+*.log -whitespace

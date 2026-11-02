@@ -1,0 +1,27 @@
+file	line	reference
+backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/gson/GsonJsonConversion.java	18	public final class GsonJsonConversion {
+backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/gson/GsonJsonConversion.java	19	private GsonJsonConversion() {
+backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/gson/GsonJsonConversion.java	22	public static JsonElement fromGson(com.google.gson.JsonElement value) {
+backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/gson/GsonJsonConversion.java	41	public static JsonObject fromGson(com.google.gson.JsonObject value) {
+backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/gson/GsonJsonConversion.java	50	public static JsonArray fromGson(com.google.gson.JsonArray value) {
+backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/gson/GsonJsonConversion.java	59	public static com.google.gson.JsonElement toGson(JsonElement value) {
+backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/gson/GsonJsonConversion.java	64	return com.google.gson.JsonNull.INSTANCE;
+backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/gson/GsonJsonConversion.java	73	return p.isNumber() ? new com.google.gson.JsonPrimitive( new LexemeNumber( p.getAsString() ) )
+backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/gson/GsonJsonConversion.java	74	: p.isBoolean() ? new com.google.gson.JsonPrimitive( p.getAsBoolean() )
+backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/gson/GsonJsonConversion.java	75	: new com.google.gson.JsonPrimitive( p.getAsString() );
+backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/gson/GsonJsonConversion.java	78	public static com.google.gson.JsonObject toGson(JsonObject value) {
+backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/gson/GsonJsonConversion.java	82	var result = new com.google.gson.JsonObject();
+backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/gson/GsonJsonConversion.java	87	public static com.google.gson.JsonArray toGson(JsonArray value) {
+backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/gson/GsonJsonConversion.java	91	var result = new com.google.gson.JsonArray();
+backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/search/aggregation/dsl/ElasticsearchSearchAggregationFactory.java	41	* This bridge and GsonJsonConversion will be removed together in a future breaking release.
+backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/search/aggregation/dsl/ElasticsearchSearchAggregationFactory.java	46	default AggregationFinalStep<JsonObject> fromJson(com.google.gson.JsonObject jsonObject) {
+backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/search/aggregation/dsl/ElasticsearchSearchAggregationFactory.java	47	return fromJson( org.hibernate.search.backend.elasticsearch.gson.GsonJsonConversion.fromGson( jsonObject ) );
+backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/search/predicate/dsl/ElasticsearchSearchPredicateFactory.java	38	* This bridge and GsonJsonConversion will be removed together in a future breaking release.
+backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/search/predicate/dsl/ElasticsearchSearchPredicateFactory.java	43	default PredicateFinalStep fromJson(com.google.gson.JsonObject jsonObject) {
+backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/search/predicate/dsl/ElasticsearchSearchPredicateFactory.java	44	return fromJson( org.hibernate.search.backend.elasticsearch.gson.GsonJsonConversion.fromGson( jsonObject ) );
+backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/search/sort/dsl/ElasticsearchSearchSortFactory.java	40	* This bridge and GsonJsonConversion will be removed together in a future breaking release.
+backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/search/sort/dsl/ElasticsearchSearchSortFactory.java	45	default SortThenStep<SR> fromJson(com.google.gson.JsonObject jsonObject) {
+backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/search/sort/dsl/ElasticsearchSearchSortFactory.java	46	return fromJson( org.hibernate.search.backend.elasticsearch.gson.GsonJsonConversion.fromGson( jsonObject ) );
+backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/types/dsl/ElasticsearchNativeIndexFieldTypeMappingStep.java	25	* This bridge and GsonJsonConversion will be removed together in a future breaking release.
+backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/types/dsl/ElasticsearchNativeIndexFieldTypeMappingStep.java	30	default ElasticsearchNativeIndexFieldTypeOptionsStep<?> mapping(com.google.gson.JsonObject jsonObject) {
+backend/elasticsearch/src/main/java/org/hibernate/search/backend/elasticsearch/types/dsl/ElasticsearchNativeIndexFieldTypeMappingStep.java	31	return mapping( org.hibernate.search.backend.elasticsearch.gson.GsonJsonConversion.fromGson( jsonObject ) );

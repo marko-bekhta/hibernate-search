@@ -1,0 +1,2 @@
+jfr print --json --events jdk.ExecutionSample,jdk.NativeMethodSample --stack-depth 64 /tmp/numeric-array-jfr/org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.searchParser-Throughput-feedSize-8192-fixture-numbers-10000-lifecycle-fresh/profile.jfr > /tmp/numeric-array-jfr-samples.json
+python3 integrationtest/performance/backend/scripts/summarize-json-jfr.py /tmp/numeric-array-jfr-samples.json > /tmp/numeric-array-jfr-profile.txt

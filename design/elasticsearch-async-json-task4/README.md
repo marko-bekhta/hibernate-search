@@ -1,0 +1,124 @@
+# Task 4 measurement evidence
+
+The [checkpoint report](../elasticsearch-async-json-task4.md) explains controls,
+correctness, lifecycle definitions and the incomplete gate. Every retained run
+has raw JMH JSON, exact Java/JMH command, environment/source/artifact hashes,
+dirty patch and console. Profiles and smoke/cold runs do not establish the gate.
+Early `gating` metadata only excluded smoke/profiling; current runner also requires
+at least three forks and five warmup/measurement iterations. The six independent
+one-fork interleaved files corroborate the three-fork primary parser result as a
+group; no single one-fork file establishes the gate.
+
+| Run | Purpose | Evidence |
+| --- | --- | --- |
+| accessor-allocation-final | Separate final accessor allocation profile; adapted fork variability retained. | [raw](accessor-allocation-final/jmh.json) · [command](accessor-allocation-final/command.txt) · [environment](accessor-allocation-final/environment.json) · [source](accessor-allocation-final/source.patch) · [console](accessor-allocation-final/console.log) |
+| accessor-profile-before | Separate accessor allocation diagnostic before the integral cache. | [raw](accessor-profile-before/jmh.json) · [command](accessor-profile-before/command.txt) · [environment](accessor-profile-before/environment.json) · [source](accessor-profile-before/source.patch) · [console](accessor-profile-before/console.log) |
+| accessors | Initial strict/adapted accessor regressions. | [raw](accessors/jmh.json) · [command](accessors/command.txt) · [environment](accessors/environment.json) · [source](accessors/source.patch) · [console](accessors/console.log) |
+| accessors-final | Final primary accessor comparison, eight one-second warmups. | [raw](accessors-final/jmh.json) · [command](accessors-final/command.txt) · [environment](accessors-final/environment.json) · [source](accessors-final/source.patch) · [console](accessors-final/console.log) |
+| allocation | Separate three-fork output GC allocation profile; non-gating. | [raw](allocation/jmh.json) · [command](allocation/command.txt) · [environment](allocation/environment.json) · [source](allocation/source.patch) · [console](allocation/console.log) |
+| before | Initial pinned writer regression, before cursor optimization. | [raw](before/jmh.json) · [command](before/command.txt) · [environment](before/environment.json) · [source](before/source.patch) · [console](before/console.log) |
+| factories-cold | Three cold single-shot factory samples; descriptive, non-gating. | [raw](factories-cold/jmh.json) · [command](factories-cold/command.txt) · [environment](factories-cold/environment.json) · [source](factories-cold/source.patch) · [console](factories-cold/console.log) |
+| factories-final | Warm factory-only context with affinity-only setup. | [raw](factories-final/jmh.json) · [command](factories-final/command.txt) · [environment](factories-final/environment.json) · [source](factories-final/source.patch) · [console](factories-final/console.log) |
+| final-writers | Final-production sampled-sink writer matrix; superseded for affected gate estimates by opaque reruns. | [raw](final-writers/jmh.json) · [command](final-writers/command.txt) · [environment](final-writers/environment.json) · [source](final-writers/source.patch) · [console](final-writers/console.log) |
+| parser-profile-before | Separate initial parser GC allocation diagnostic. | [raw](parser-profile-before/jmh.json) · [command](parser-profile-before/command.txt) · [environment](parser-profile-before/environment.json) · [source](parser-profile-before/source.patch) · [console](parser-profile-before/console.log) |
+| parser-stack-final | Separate coarse long-String stack profile. | [raw](parser-stack-final/jmh.json) · [command](parser-stack-final/command.txt) · [environment](parser-stack-final/environment.json) · [source](parser-stack-final/source.patch) · [console](parser-stack-final/console.log) |
+| parsers | Initial String parser regression before character/numeric optimization. | [raw](parsers/jmh.json) · [command](parsers/command.txt) · [environment](parsers/environment.json) · [source](parsers/source.patch) · [console](parsers/console.log) |
+| parsers-final | Final String convenience comparison; material scalar regression remains. | [raw](parsers-final/jmh.json) · [command](parsers-final/command.txt) · [environment](parsers-final/environment.json) · [source](parsers-final/source.patch) · [console](parsers-final/console.log) |
+| primary-fresh | First full sampled-sink fresh writer matrix, before parser/accessor fixes. | [raw](primary-fresh/jmh.json) · [command](primary-fresh/command.txt) · [environment](primary-fresh/environment.json) · [source](primary-fresh/source.patch) · [console](primary-fresh/console.log) |
+| primary-opaque | Consistent opaque sink gate rerun after sensitivity changed some estimates. | [raw](primary-opaque/jmh.json) · [command](primary-opaque/command.txt) · [environment](primary-opaque/environment.json) · [source](primary-opaque/source.patch) · [console](primary-opaque/console.log) |
+| primary-reused | Complete reused-body Gson/cursor comparison; sampled sink. | [raw](primary-reused/jmh.json) · [command](primary-reused/command.txt) · [environment](primary-reused/environment.json) · [source](primary-reused/source.patch) · [console](primary-reused/console.log) |
+| profile-before | Separate portable stack localization before optimization; non-gating. | [raw](profile-before/jmh.json) · [command](profile-before/command.txt) · [environment](profile-before/environment.json) · [source](profile-before/source.patch) · [console](profile-before/console.log) |
+| read-allocation-final | Separate final String parser allocation profile. | [raw](read-allocation-final/jmh.json) · [command](read-allocation-final/command.txt) · [environment](read-allocation-final/environment.json) · [source](read-allocation-final/source.patch) · [console](read-allocation-final/console.log) |
+| scalar-interleaved-gson-1 | One independent fork in controlled Search/Gson scalar-String interleaved reruns. | [raw](scalar-interleaved-gson-1/jmh.json) · [command](scalar-interleaved-gson-1/command.txt) · [environment](scalar-interleaved-gson-1/environment.json) · [source](scalar-interleaved-gson-1/source.patch) · [console](scalar-interleaved-gson-1/console.log) |
+| scalar-interleaved-gson-2 | One independent fork in controlled Search/Gson scalar-String interleaved reruns. | [raw](scalar-interleaved-gson-2/jmh.json) · [command](scalar-interleaved-gson-2/command.txt) · [environment](scalar-interleaved-gson-2/environment.json) · [source](scalar-interleaved-gson-2/source.patch) · [console](scalar-interleaved-gson-2/console.log) |
+| scalar-interleaved-gson-3 | One independent fork in controlled Search/Gson scalar-String interleaved reruns. | [raw](scalar-interleaved-gson-3/jmh.json) · [command](scalar-interleaved-gson-3/command.txt) · [environment](scalar-interleaved-gson-3/environment.json) · [source](scalar-interleaved-gson-3/source.patch) · [console](scalar-interleaved-gson-3/console.log) |
+| scalar-interleaved-search-1 | One independent fork in controlled Search/Gson scalar-String interleaved reruns. | [raw](scalar-interleaved-search-1/jmh.json) · [command](scalar-interleaved-search-1/command.txt) · [environment](scalar-interleaved-search-1/environment.json) · [source](scalar-interleaved-search-1/source.patch) · [console](scalar-interleaved-search-1/console.log) |
+| scalar-interleaved-search-2 | One independent fork in controlled Search/Gson scalar-String interleaved reruns. | [raw](scalar-interleaved-search-2/jmh.json) · [command](scalar-interleaved-search-2/command.txt) · [environment](scalar-interleaved-search-2/environment.json) · [source](scalar-interleaved-search-2/source.patch) · [console](scalar-interleaved-search-2/console.log) |
+| scalar-interleaved-search-3 | One independent fork in controlled Search/Gson scalar-String interleaved reruns. | [raw](scalar-interleaved-search-3/jmh.json) · [command](scalar-interleaved-search-3/command.txt) · [environment](scalar-interleaved-search-3/environment.json) · [source](scalar-interleaved-search-3/source.patch) · [console](scalar-interleaved-search-3/console.log) |
+| sink-sensitivity | All five complete writers, four fixtures, sampled and opaque observation. | [raw](sink-sensitivity/jmh.json) · [command](sink-sensitivity/command.txt) · [environment](sink-sensitivity/environment.json) · [source](sink-sensitivity/source.patch) · [console](sink-sensitivity/console.log) |
+| smoke-new-harnesses | Single-fork sensitivity/UTF-8 correctness smoke; non-gating. | [raw](smoke-new-harnesses/jmh.json) · [command](smoke-new-harnesses/command.txt) · [environment](smoke-new-harnesses/environment.json) · [source](smoke-new-harnesses/source.patch) · [console](smoke-new-harnesses/console.log) |
+| smoke-optimized | Single-fork output smoke; non-gating. | [raw](smoke-optimized/jmh.json) · [command](smoke-optimized/command.txt) · [environment](smoke-optimized/environment.json) · [source](smoke-optimized/source.patch) · [console](smoke-optimized/console.log) |
+| utf8-ingress | Matched full UTF-8 decoding/feed/tree construction; distinct from String API. | [raw](utf8-ingress/jmh.json) · [command](utf8-ingress/command.txt) · [environment](utf8-ingress/environment.json) · [source](utf8-ingress/source.patch) · [console](utf8-ingress/console.log) |
+| numeric-parsers | Final numeric/UTF-8 allocation or primary comparison; see checkpoint. | [raw](numeric-parsers/jmh.json) · [command](numeric-parsers/command.txt) · [environment](numeric-parsers/environment.json) · [source](numeric-parsers/source.patch) · [console](numeric-parsers/console.log) |
+| numeric-string-allocation | Final numeric/UTF-8 allocation or primary comparison; see checkpoint. | [raw](numeric-string-allocation/jmh.json) · [command](numeric-string-allocation/command.txt) · [environment](numeric-string-allocation/environment.json) · [source](numeric-string-allocation/source.patch) · [console](numeric-string-allocation/console.log) |
+| numeric-utf8-stack | Separate portable stack diagnostic; non-gating. | [raw](numeric-utf8-stack/jmh.json) · [command](numeric-utf8-stack/command.txt) · [environment](numeric-utf8-stack/environment.json) · [source](numeric-utf8-stack/source.patch) · [console](numeric-utf8-stack/console.log) |
+| unicode-interleaved-cursor-1 | Controlled Unicode interleaved corroboration; one fork, non-gating alone. | [raw](unicode-interleaved-cursor-1/jmh.json) · [command](unicode-interleaved-cursor-1/command.txt) · [environment](unicode-interleaved-cursor-1/environment.json) · [source](unicode-interleaved-cursor-1/source.patch) · [console](unicode-interleaved-cursor-1/console.log) |
+| unicode-interleaved-cursor-2 | Controlled Unicode interleaved corroboration; one fork, non-gating alone. | [raw](unicode-interleaved-cursor-2/jmh.json) · [command](unicode-interleaved-cursor-2/command.txt) · [environment](unicode-interleaved-cursor-2/environment.json) · [source](unicode-interleaved-cursor-2/source.patch) · [console](unicode-interleaved-cursor-2/console.log) |
+| unicode-interleaved-cursor-3 | Controlled Unicode interleaved corroboration; one fork, non-gating alone. | [raw](unicode-interleaved-cursor-3/jmh.json) · [command](unicode-interleaved-cursor-3/command.txt) · [environment](unicode-interleaved-cursor-3/environment.json) · [source](unicode-interleaved-cursor-3/source.patch) · [console](unicode-interleaved-cursor-3/console.log) |
+| unicode-interleaved-gson-1 | Controlled Unicode interleaved corroboration; one fork, non-gating alone. | [raw](unicode-interleaved-gson-1/jmh.json) · [command](unicode-interleaved-gson-1/command.txt) · [environment](unicode-interleaved-gson-1/environment.json) · [source](unicode-interleaved-gson-1/source.patch) · [console](unicode-interleaved-gson-1/console.log) |
+| unicode-interleaved-gson-2 | Controlled Unicode interleaved corroboration; one fork, non-gating alone. | [raw](unicode-interleaved-gson-2/jmh.json) · [command](unicode-interleaved-gson-2/command.txt) · [environment](unicode-interleaved-gson-2/environment.json) · [source](unicode-interleaved-gson-2/source.patch) · [console](unicode-interleaved-gson-2/console.log) |
+| unicode-interleaved-gson-3 | Controlled Unicode interleaved corroboration; one fork, non-gating alone. | [raw](unicode-interleaved-gson-3/jmh.json) · [command](unicode-interleaved-gson-3/command.txt) · [environment](unicode-interleaved-gson-3/environment.json) · [source](unicode-interleaved-gson-3/source.patch) · [console](unicode-interleaved-gson-3/console.log) |
+| unicode-stack | Separate portable stack diagnostic; non-gating. | [raw](unicode-stack/jmh.json) · [command](unicode-stack/command.txt) · [environment](unicode-stack/environment.json) · [source](unicode-stack/source.patch) · [console](unicode-stack/console.log) |
+| utf8-allocation | Final numeric/UTF-8 allocation or primary comparison; see checkpoint. | [raw](utf8-allocation/jmh.json) · [command](utf8-allocation/command.txt) · [environment](utf8-allocation/environment.json) · [source](utf8-allocation/source.patch) · [console](utf8-allocation/console.log) |
+
+[Runner rejection/patch integrity checks](runner-checks.log),
+[Verification commands](verification-commands.txt), [clean scoped verification](final-verification.log),
+[all 95 JSON tests](final-json-tests.log), [final benchmark package build](final-opaque-build.log),
+[independent byte/retention/cancellation/slow-consumer assertions](final-correctness-and-slow-consumer.log),
+[legacy retention inspection](final-baseline-retention.log), and [per-fork summary CSV](summary.csv)
+complete the evidence. Build/profiler binaries are excluded.
+
+Early runs hash untracked source files but omit them from their patch; later
+snapshots include the full untracked Java/script diff. An exact earlier binary
+rebuild is not promised. Production source hashes identify unchanged algorithms
+across benchmark-only additions. The artifact hash changes when the benchmark
+JAR is rebuilt; never substitute a stale JAR for a new candidate. A stale smoke
+run was rejected/discarded during development and is excluded from this index.
+
+## Follow-up evidence
+
+[Follow-up report](../elasticsearch-async-json-task4-followup.md) distinguishes
+experimental parser runs with duplicated inherited setup from corrected final
+controls. Writer states are unaffected. Raw evidence is retained; runner gating
+metadata alone does not certify every harness condition.
+
+| Run | Purpose | Evidence |
+| --- | --- | --- |
+| followup-ascii-control | Opaque small/large ASCII output controls. | [raw](followup-ascii-control/jmh.json) · [command](followup-ascii-control/command.txt) · [environment](followup-ascii-control/environment.json) · [source](followup-ascii-control/source.patch) · [console](followup-ascii-control/console.log) |
+| followup-fragment-boundary-smoke | Corrected tiny-feed complete-content smoke; non-gating. | [raw](followup-fragment-boundary-smoke/jmh.json) · [command](followup-fragment-boundary-smoke/command.txt) · [environment](followup-fragment-boundary-smoke/environment.json) · [source](followup-fragment-boundary-smoke/source.patch) · [console](followup-fragment-boundary-smoke/console.log) |
+| followup-fragments | Matched 64/1024/8192-byte fragments; historical duplicated setup. | [raw](followup-fragments/jmh.json) · [command](followup-fragments/command.txt) · [environment](followup-fragments/environment.json) · [source](followup-fragments/source.patch) · [console](followup-fragments/console.log) |
+| followup-numeric-before | Original eager cache, no/selected/repeated reads; historical duplicated setup. | [raw](followup-numeric-before/jmh.json) · [command](followup-numeric-before/command.txt) · [environment](followup-numeric-before/environment.json) · [source](followup-numeric-before/source.patch) · [console](followup-numeric-before/console.log) |
+| followup-numeric-combined | Combined grammar/accumulation; historical duplicated setup. | [raw](followup-numeric-combined/jmh.json) · [command](followup-numeric-combined/command.txt) · [environment](followup-numeric-combined/environment.json) · [source](followup-numeric-combined/source.patch) · [console](followup-numeric-combined/console.log) |
+| followup-numeric-final | Corrected single-setup final numeric gate controls. | [raw](followup-numeric-final/jmh.json) · [command](followup-numeric-final/command.txt) · [environment](followup-numeric-final/environment.json) · [source](followup-numeric-final/source.patch) · [console](followup-numeric-final/console.log) |
+| followup-numeric-final-allocation | Separate final eager cache allocation diagnostic. | [raw](followup-numeric-final-allocation/jmh.json) · [command](followup-numeric-final-allocation/command.txt) · [environment](followup-numeric-final-allocation/environment.json) · [source](followup-numeric-final-allocation/source.patch) · [console](followup-numeric-final-allocation/console.log) |
+| followup-numeric-final-stack | Separate final numeric UTF-8 stack diagnostic. | [raw](followup-numeric-final-stack/jmh.json) · [command](followup-numeric-final-stack/command.txt) · [environment](followup-numeric-final-stack/environment.json) · [source](followup-numeric-final-stack/source.patch) · [console](followup-numeric-final-stack/console.log) |
+| followup-numeric-on-demand | Immutable conversion-on-demand experiment; historical duplicated setup. | [raw](followup-numeric-on-demand/jmh.json) · [command](followup-numeric-on-demand/command.txt) · [environment](followup-numeric-on-demand/environment.json) · [source](followup-numeric-on-demand/source.patch) · [console](followup-numeric-on-demand/console.log) |
+| followup-numeric-on-demand-allocation | Separate on-demand allocation diagnostic. | [raw](followup-numeric-on-demand-allocation/jmh.json) · [command](followup-numeric-on-demand-allocation/command.txt) · [environment](followup-numeric-on-demand-allocation/environment.json) · [source](followup-numeric-on-demand-allocation/source.patch) · [console](followup-numeric-on-demand-allocation/console.log) |
+| followup-numeric-token-final | Corrected single-setup fully consumed numeric token controls. | [raw](followup-numeric-token-final/jmh.json) · [command](followup-numeric-token-final/command.txt) · [environment](followup-numeric-token-final/environment.json) · [source](followup-numeric-token-final/source.patch) · [console](followup-numeric-token-final/console.log) |
+| followup-numeric-token-isolation | Initial numeric token baselines; historical duplicated setup. | [raw](followup-numeric-token-isolation/jmh.json) · [command](followup-numeric-token-isolation/command.txt) · [environment](followup-numeric-token-isolation/environment.json) · [source](followup-numeric-token-isolation/source.patch) · [console](followup-numeric-token-isolation/console.log) |
+| followup-scalar-final | Corrected single-setup large scalar/core token controls. | [raw](followup-scalar-final/jmh.json) · [command](followup-scalar-final/command.txt) · [environment](followup-scalar-final/environment.json) · [source](followup-scalar-final/source.patch) · [console](followup-scalar-final/console.log) |
+| followup-scalar-final-stack | Separate final String stack diagnostic. | [raw](followup-scalar-final-stack/jmh.json) · [command](followup-scalar-final-stack/command.txt) · [environment](followup-scalar-final-stack/environment.json) · [source](followup-scalar-final-stack/source.patch) · [console](followup-scalar-final-stack/console.log) |
+| followup-scalar-isolation | Initial fully consumed token baselines; historical duplicated setup. | [raw](followup-scalar-isolation/jmh.json) · [command](followup-scalar-isolation/command.txt) · [environment](followup-scalar-isolation/environment.json) · [source](followup-scalar-isolation/source.patch) · [console](followup-scalar-isolation/console.log) |
+| followup-unicode-after | Direct Unicode/escape loop, fresh opaque output. | [raw](followup-unicode-after/jmh.json) · [command](followup-unicode-after/command.txt) · [environment](followup-unicode-after/environment.json) · [source](followup-unicode-after/source.patch) · [console](followup-unicode-after/console.log) |
+| followup-unicode-before | Longer-warmup original writer comparison. | [raw](followup-unicode-before/jmh.json) · [command](followup-unicode-before/command.txt) · [environment](followup-unicode-before/environment.json) · [source](followup-unicode-before/source.patch) · [console](followup-unicode-before/console.log) |
+| followup-unicode-compilation | Separate C2/compilation diagnostic, non-gating. | [raw](followup-unicode-compilation/jmh.json) · [command](followup-unicode-compilation/command.txt) · [environment](followup-unicode-compilation/environment.json) · [source](followup-unicode-compilation/source.patch) · [console](followup-unicode-compilation/console.log) |
+| followup-unicode-reused | Raw output excluding matched probes. | [raw](followup-unicode-reused/jmh.json) · [command](followup-unicode-reused/command.txt) · [environment](followup-unicode-reused/environment.json) · [source](followup-unicode-reused/source.patch) · [console](followup-unicode-reused/console.log) |
+| followup-utf8-final | Corrected single-setup 8192-byte UTF-8 controls. | [raw](followup-utf8-final/jmh.json) · [command](followup-utf8-final/command.txt) · [environment](followup-utf8-final/environment.json) · [source](followup-utf8-final/source.patch) · [console](followup-utf8-final/console.log) |
+| followup-utf8-scalar-repeat | Independent corrected scalar UTF-8 corroboration. | [raw](followup-utf8-scalar-repeat/jmh.json) · [command](followup-utf8-scalar-repeat/command.txt) · [environment](followup-utf8-scalar-repeat/environment.json) · [source](followup-utf8-scalar-repeat/source.patch) · [console](followup-utf8-scalar-repeat/console.log) |
+
+| followup-utf8-scalar-compilation | Separate corrected scalar UTF-8 C2 diagnostic, non-gating. | [raw](followup-utf8-scalar-compilation/jmh.json) · [command](followup-utf8-scalar-compilation/command.txt) · [environment](followup-utf8-scalar-compilation/environment.json) · [source](followup-utf8-scalar-compilation/source.patch) · [console](followup-utf8-scalar-compilation/console.log) |
+
+[Summary with fork means](followup-summary.csv) ·
+[Generated setup lifecycle check](followup-harness-lifecycle-check.txt) ·
+[Correctness/slow consumer](followup-correctness-and-slow-consumer.log) ·
+[Final JSON verification](followup-final-json-build.log) ·
+[Corrected benchmark build](followup-corrected-harness-build.log).
+
+[Final complete-byte correctness](followup-final-correctness.log) ·
+[Runner argument rejection](followup-runner-checks.txt) ·
+[Verification commands](followup-verification-commands.txt).
+
+## Owned-String UTF-8 experiment
+
+The focused [String-input report](../elasticsearch-async-json-string-utf8.md) and
+[separate evidence index](../elasticsearch-async-json-string-utf8/README.md) compare
+Gson, the current character path, bounded String-backed UTF-8 encoding and one
+fixed array-backed staging optimization. All same-work competitors begin with
+String and build complete trees; encoding-only diagnostics are separate.
+Production retains the character path after measured small/Unicode regressions.
+Task 4 remains open, and Tasks 5/6 have not started.
+
+The [parsing reference](../elasticsearch-json-parsing-reference.md) curates these
+campaigns alongside the String-input experiment, with practical API snippets and
+the accepted character-path decision. It keeps UTF-8/tree/token/read workloads
+separate and preserves both corrected scalar UTF-8 outcomes.

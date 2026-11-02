@@ -1,0 +1,56 @@
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by org.fusesource.jansi.internal.JansiLoader in an unnamed module (file:/home/agentuser/.m2/wrapper/dists/apache-maven-3.9.16-bin/4200fbc6/apache-maven-3.9.16/lib/jansi-2.4.3.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+[INFO] Scanning for projects...
+[INFO]
+[INFO] ------< org.hibernate.search:hibernate-search-platform-next-bom >-------
+[INFO] Building Hibernate Search - Platform Lucene 10 BOM 9.0.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ pom ]---------------------------------
+[INFO]
+[INFO] --- build-helper:3.6.2:rootlocation (set-root-location-property) @ hibernate-search-platform-next-bom ---
+[INFO]
+[INFO] --- build-helper:3.6.2:parse-version (parse-project-version) @ hibernate-search-platform-next-bom ---
+[INFO]
+[INFO] --- build-helper:3.6.2:parse-version (parse-project-previous-stable-version) @ hibernate-search-platform-next-bom ---
+[INFO]
+[INFO] --- enforcer:3.6.3:enforce (enforce-common-rules) @ hibernate-search-platform-next-bom ---
+[INFO] Rule 0: org.apache.maven.enforcer.rules.version.RequireJavaVersion passed
+[INFO] Rule 1: org.apache.maven.enforcer.rules.version.RequireMavenVersion passed
+[INFO] Rule 2: org.apache.maven.enforcer.rules.BanDuplicatePomDependencyVersions passed
+[INFO]
+[INFO] --- enforcer:3.6.3:enforce (enforce-dependency-convergence) @ hibernate-search-platform-next-bom ---
+[INFO] Rule 0: org.apache.maven.enforcer.rules.dependency.DependencyConvergence passed
+[INFO]
+[INFO] --- resources:3.5.0:copy-resources (copy-license) @ hibernate-search-platform-next-bom ---
+[INFO] Copying 1 resource from ../.. to target/classes/META-INF
+[INFO]
+[INFO] --- flatten:1.8.0:flatten (flatten-pom) @ hibernate-search-platform-next-bom ---
+[INFO] Generating flattened POM of project org.hibernate.search:hibernate-search-platform-next-bom:pom:9.0.0-SNAPSHOT...
+[INFO]
+[INFO] --- build-helper:3.6.2:add-test-source (add-test-source-noparameters) @ hibernate-search-platform-next-bom ---
+[INFO] Test Source directory: /home/agentuser/hibernate-search/bom/platform-next/src/test/java-noparameters added.
+[INFO]
+[INFO] --- enforcer:3.6.3:enforce (enforce-custom-bom-rules) @ hibernate-search-platform-next-bom ---
+[INFO] Rule 0: org.hibernate.search.build.enforcer.DependencyManagementIncludesAllPublicArtifactsRule passed
+[INFO] Will attempt to resolve the artifacts for the following groups: [com.carrotsearch:-:0.11.1, org.apache.lucene:-:10.5.1, org.hibernate.search:-:9.0.0-SNAPSHOT, org.jboss.logging:-:3.0.4.Final, org.jboss.logging:-:3.6.3.Final]
+[INFO] Fetching from https://status.maven.org/api/v2/summary.json
+[INFO] Fetching from https://central.sonatype.com/solrsearch/select?q=g:com.carrotsearch+AND+v:0.11.1&core=gav&start=0&rows=100&wt=json
+[INFO] Fetching from https://central.sonatype.com/solrsearch/select?q=g:org.apache.lucene+AND+v:10.5.1&core=gav&start=0&rows=100&wt=json
+[INFO] Fetching from https://central.sonatype.com/solrsearch/select?q=g:org.hibernate.search+AND+v:9.0.0-SNAPSHOT&core=gav&start=0&rows=100&wt=json
+[INFO] Fetching from https://central.sonatype.com/solrsearch/select?q=g:org.jboss.logging+AND+v:3.0.4.Final&core=gav&start=0&rows=100&wt=json
+[INFO] Fetching from https://central.sonatype.com/solrsearch/select?q=g:org.jboss.logging+AND+v:3.6.3.Final&core=gav&start=0&rows=100&wt=json
+[INFO] Enforcer cache written to /home/agentuser/hibernate-search/bom/platform-next/.cache/enforcer/dependency-management-includes-all.json
+[INFO] Rule 1: org.hibernate.search.build.enforcer.DependencyManagementIncludesAllGroupIdArtifactsRule passed
+[INFO]
+[INFO] --- install:3.2.0:install (default-install) @ hibernate-search-platform-next-bom ---
+[INFO] Installing /home/agentuser/hibernate-search/bom/platform-next/target/.flattened-pom.xml to /home/agentuser/.m2/repository/org/hibernate/search/hibernate-search-platform-next-bom/9.0.0-SNAPSHOT/hibernate-search-platform-next-bom-9.0.0-SNAPSHOT.pom
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  3.296 s
+[INFO] Finished at: 2026-10-02T15:41:45Z
+[INFO] ------------------------------------------------------------------------
+[INFO] 10 goals, 10 executed

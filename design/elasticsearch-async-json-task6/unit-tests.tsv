@@ -1,0 +1,6 @@
+campaign	tests	failures	errors	skipped	log evidence
+processor	5	0	0	0	task6-json-processor-aws-unit.log
+JSON	105	0	0	0	task6-json-unit-fresh.log
+adapters	519	0	0	0	task6-final-adapter-checks.log
+adapters	129	0	0	0	task6-final-adapter-checks.log
+adapters	129	0	0	0	task6-final-adapter-checks.log

@@ -1,0 +1,16 @@
+generated_source	field_codecs	direct_decodes	direct_encodes	text_parse_routes
+org/hibernate/search/backend/elasticsearch/lowlevel/index/aliases/impl/GeneratedIndexAliasDefinitionJsonCodec.java	1	1	1	0
+org/hibernate/search/backend/elasticsearch/lowlevel/index/analysis/impl/GeneratedAnalyzerDefinitionJsonCodec.java	4	4	4	0
+org/hibernate/search/backend/elasticsearch/lowlevel/index/analysis/impl/GeneratedCharFilterDefinitionJsonCodec.java	1	1	1	0
+org/hibernate/search/backend/elasticsearch/lowlevel/index/analysis/impl/GeneratedNormalizerDefinitionJsonCodec.java	3	3	3	0
+org/hibernate/search/backend/elasticsearch/lowlevel/index/analysis/impl/GeneratedTokenFilterDefinitionJsonCodec.java	1	1	1	0
+org/hibernate/search/backend/elasticsearch/lowlevel/index/analysis/impl/GeneratedTokenizerDefinitionJsonCodec.java	1	1	1	0
+org/hibernate/search/backend/elasticsearch/lowlevel/index/impl/GeneratedIndexMetadataJsonCodec.java	3	3	3	0
+org/hibernate/search/backend/elasticsearch/lowlevel/index/mapping/impl/GeneratedDynamicTemplateJsonCodec.java	3	3	3	0
+org/hibernate/search/backend/elasticsearch/lowlevel/index/mapping/impl/GeneratedElasticsearchDenseVectorIndexOptionsJsonCodec.java	3	3	3	0
+org/hibernate/search/backend/elasticsearch/lowlevel/index/mapping/impl/GeneratedOpenSearchVectorTypeMethodJsonCodec.java	4	4	4	0
+org/hibernate/search/backend/elasticsearch/lowlevel/index/mapping/impl/GeneratedOpenSearchVectorTypeMethod_ParametersJsonCodec.java	2	2	2	0
+org/hibernate/search/backend/elasticsearch/lowlevel/index/mapping/impl/GeneratedPropertyMappingJsonCodec.java	20	20	20	0
+org/hibernate/search/backend/elasticsearch/lowlevel/index/mapping/impl/GeneratedRootTypeMappingJsonCodec.java	4	4	4	0
+org/hibernate/search/backend/elasticsearch/lowlevel/index/settings/impl/GeneratedAnalysisJsonCodec.java	5	5	5	0
+org/hibernate/search/backend/elasticsearch/lowlevel/index/settings/impl/GeneratedIndexSettingsJsonCodec.java	3	3	3	0

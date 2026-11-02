@@ -1,0 +1,1064 @@
+Execution/native samples; diagnostic counts, not exact CPU fractions.
+Input: /tmp/numeric-array-jfr-samples.json
+Input SHA-256: 6dc6aa2c0d86cb207b3bd944afac8e46c65848c9eaf629546bd9daeceba32f7d
+Thread substring: searchParser-jmh-worker
+Total events: 482; selected stacks: 479; empty: 0; truncated: 0
+
+Top frame
+   76 org.hibernate.search.util.json.impl.JsonNumber.jsonNumber
+   62 tools.jackson.core.json.async.NonBlockingUtf8JsonParserBase._startPositiveNumber
+   37 java.util.ArrayList.add
+   37 tools.jackson.core.util.TextBuffer.contentsAsString
+   26 java.lang.StringUTF16.compress
+   25 org.hibernate.search.util.json.impl.JacksonJsonParserSession.drain
+   23 org.hibernate.search.util.json.impl.Utf8Validator.accept
+   20 org.hibernate.search.util.json.JsonArray.add
+   20 org.hibernate.search.util.json.JsonElement.getAsJsonArray
+   19 tools.jackson.core.json.async.NonBlockingUtf8JsonParserBase._startValueExpectComma
+   16 tools.jackson.core.json.async.NonBlockingUtf8JsonParserBase.nextToken
+   14 tools.jackson.core.util.TextBuffer.emptyAndGetCurrentSegment
+   12 org.hibernate.search.util.json.impl.JsonTreeBuilder.add
+    9 tools.jackson.core.StreamReadConstraints.validateStringLength
+    8 org.hibernate.search.util.json.impl.ResumableJsonFactory$ResumableParser.getByteFromBuffer
+    8 tools.jackson.core.json.async.NonBlockingJsonParserBase._updateTokenLocation
+    7 java.util.ArrayDeque.elementAt
+    7 tools.jackson.core.base.ParserMinimalBase._updateToken
+    6 java.util.Arrays.copyOf
+    6 org.hibernate.search.util.json.JsonPrimitive.<init>
+    5 java.lang.String.equals
+    4 java.lang.String.length
+    4 java.lang.StringLatin1.charAt
+    4 org.hibernate.search.util.json.impl.ResumableJsonFactory$ResumableParser.getNextUnsignedByteFromBuffer
+    4 tools.jackson.core.json.async.NonBlockingJsonParserBase._getText2
+    3 jdk.internal.util.Preconditions.checkFromIndexSize
+    3 tools.jackson.core.JsonToken.id
+    3 tools.jackson.core.json.async.NonBlockingJsonParserBase._valueComplete
+    2 java.util.concurrent.ConcurrentLinkedDeque.pollFirst
+    2 org.hibernate.search.util.json.impl.JsonNumber.fromParser
+    2 tools.jackson.core.json.async.NonBlockingJsonParserBase.getString
+    2 tools.jackson.core.util.ReadConstrainedTextBuffer.validateStringLength
+    1 java.lang.String.<init>
+    1 java.lang.String.isLatin1
+    1 org.hibernate.search.util.json.JsonArray.<init>
+
+Inclusive (one count per frame name per sample)
+  479 java.lang.Thread.run
+  479 java.lang.Thread.runWith
+  479 java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial
+  479 java.lang.invoke.LambdaForm$MH.0x000000001b061000.invoke
+  479 java.lang.invoke.LambdaForm$MH.0x000000001b061400.invokeExact_MT
+  479 java.lang.reflect.Method.invoke
+  479 java.util.concurrent.Executors$RunnableAdapter.call
+  479 java.util.concurrent.FutureTask.run
+  479 java.util.concurrent.ThreadPoolExecutor$Worker.run
+  479 java.util.concurrent.ThreadPoolExecutor.runWorker
+  479 jdk.internal.reflect.DirectMethodHandleAccessor.invoke
+  479 jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl
+  479 org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.parseSearch
+  479 org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.searchParser
+  479 org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_Throughput
+  479 org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_thrpt_jmhStub
+  479 org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  477 org.hibernate.search.util.json.impl.JacksonJsonParserSession.feed
+  454 org.hibernate.search.util.json.impl.JacksonJsonParserSession.drain
+  141 org.hibernate.search.util.json.impl.ResumableJsonFactory$ResumableParser.nextToken
+  141 tools.jackson.core.json.async.NonBlockingUtf8JsonParserBase.nextToken
+  121 tools.jackson.core.json.async.NonBlockingUtf8JsonParserBase._startValueExpectComma
+  102 org.hibernate.search.util.json.impl.JsonTreeBuilder.add
+   87 org.hibernate.search.util.json.impl.JsonNumber.fromParser
+   87 tools.jackson.core.json.async.NonBlockingJsonParserBase.getString
+   86 tools.jackson.core.json.async.NonBlockingUtf8JsonParserBase._startPositiveNumber
+   85 org.hibernate.search.util.json.impl.JsonNumber.jsonNumber
+   85 tools.jackson.core.json.async.NonBlockingJsonParserBase._getText2
+   78 tools.jackson.core.util.TextBuffer.contentsAsString
+   63 org.hibernate.search.util.json.JsonArray.add
+   43 java.util.ArrayList.add
+   30 java.lang.String.<init>
+   26 java.lang.StringUTF16.compress
+   23 org.hibernate.search.util.json.impl.Utf8Validator.accept
+   20 org.hibernate.search.util.json.JsonElement.getAsJsonArray
+   14 tools.jackson.core.util.TextBuffer.emptyAndGetCurrentSegment
+   11 tools.jackson.core.util.ReadConstrainedTextBuffer.validateStringLength
+   10 tools.jackson.core.json.async.NonBlockingJsonParserBase._valueComplete
+    9 tools.jackson.core.StreamReadConstraints.validateStringLength
+    8 org.hibernate.search.util.json.impl.ResumableJsonFactory$ResumableParser.getByteFromBuffer
+    8 tools.jackson.core.json.async.NonBlockingJsonParserBase._updateTokenLocation
+    7 java.util.ArrayDeque.elementAt
+    7 java.util.ArrayDeque.peek
+    7 java.util.ArrayDeque.peekFirst
+    7 tools.jackson.core.base.ParserMinimalBase._updateToken
+    6 java.util.ArrayList.grow
+    6 java.util.Arrays.copyOf
+    6 org.hibernate.search.util.json.JsonPrimitive.<init>
+    5 java.lang.String.charAt
+    5 java.lang.String.equals
+    4 java.lang.String.length
+    4 java.lang.String.startsWith
+    4 java.lang.StringLatin1.charAt
+    4 org.hibernate.search.util.json.impl.ResumableJsonFactory$ResumableParser.getNextUnsignedByteFromBuffer
+    3 java.lang.String.checkBoundsOffCount
+    3 java.lang.String.rangeCheck
+    3 jdk.internal.util.Preconditions.checkFromIndexSize
+    3 tools.jackson.core.JsonToken.id
+    2 java.util.concurrent.ConcurrentLinkedDeque.pollFirst
+    2 org.hibernate.search.util.json.impl.JacksonJsonParserFactory.createParser
+    2 org.hibernate.search.util.json.impl.ResumableJsonFactory.createResumableByteBufferParser
+    2 org.hibernate.search.util.json.spi.JsonParsing.createParser
+    2 tools.jackson.core.TokenStreamFactory._getBufferRecycler
+    2 tools.jackson.core.json.JsonFactory._createNonBlockingContext
+    2 tools.jackson.core.util.RecyclerPool$ConcurrentDequePoolBase.acquirePooled
+    2 tools.jackson.core.util.RecyclerPool.acquireAndLinkPooled
+    1 java.lang.String.isLatin1
+    1 org.hibernate.search.util.json.JsonArray.<init>
+    1 org.hibernate.search.util.json.impl.JsonTreeBuilder.startArray
+
+All unique selected stacks (count followed by full frame names)
+
+76 samples
+  org.hibernate.search.util.json.impl.JsonNumber.jsonNumber
+  org.hibernate.search.util.json.impl.JsonNumber.fromParser
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.drain
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.feed
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.parseSearch
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.searchParser
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_thrpt_jmhStub
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_Throughput
+  java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial
+  java.lang.invoke.LambdaForm$MH.0x000000001b061000.invoke
+  java.lang.invoke.LambdaForm$MH.0x000000001b061400.invokeExact_MT
+  jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl
+  jdk.internal.reflect.DirectMethodHandleAccessor.invoke
+  java.lang.reflect.Method.invoke
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.Executors$RunnableAdapter.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.ThreadPoolExecutor.runWorker
+  java.util.concurrent.ThreadPoolExecutor$Worker.run
+  java.lang.Thread.runWith
+  java.lang.Thread.run
+
+62 samples
+  tools.jackson.core.json.async.NonBlockingUtf8JsonParserBase._startPositiveNumber
+  tools.jackson.core.json.async.NonBlockingUtf8JsonParserBase._startValueExpectComma
+  tools.jackson.core.json.async.NonBlockingUtf8JsonParserBase.nextToken
+  org.hibernate.search.util.json.impl.ResumableJsonFactory$ResumableParser.nextToken
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.drain
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.feed
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.parseSearch
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.searchParser
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_thrpt_jmhStub
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_Throughput
+  java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial
+  java.lang.invoke.LambdaForm$MH.0x000000001b061000.invoke
+  java.lang.invoke.LambdaForm$MH.0x000000001b061400.invokeExact_MT
+  jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl
+  jdk.internal.reflect.DirectMethodHandleAccessor.invoke
+  java.lang.reflect.Method.invoke
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.Executors$RunnableAdapter.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.ThreadPoolExecutor.runWorker
+  java.util.concurrent.ThreadPoolExecutor$Worker.run
+  java.lang.Thread.runWith
+  java.lang.Thread.run
+
+37 samples
+  tools.jackson.core.util.TextBuffer.contentsAsString
+  tools.jackson.core.json.async.NonBlockingJsonParserBase._getText2
+  tools.jackson.core.json.async.NonBlockingJsonParserBase.getString
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.drain
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.feed
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.parseSearch
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.searchParser
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_thrpt_jmhStub
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_Throughput
+  java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial
+  java.lang.invoke.LambdaForm$MH.0x000000001b061000.invoke
+  java.lang.invoke.LambdaForm$MH.0x000000001b061400.invokeExact_MT
+  jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl
+  jdk.internal.reflect.DirectMethodHandleAccessor.invoke
+  java.lang.reflect.Method.invoke
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.Executors$RunnableAdapter.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.ThreadPoolExecutor.runWorker
+  java.util.concurrent.ThreadPoolExecutor$Worker.run
+  java.lang.Thread.runWith
+  java.lang.Thread.run
+
+29 samples
+  java.util.ArrayList.add
+  java.util.ArrayList.add
+  org.hibernate.search.util.json.JsonArray.add
+  org.hibernate.search.util.json.impl.JsonTreeBuilder.add
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.drain
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.feed
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.parseSearch
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.searchParser
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_thrpt_jmhStub
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_Throughput
+  java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial
+  java.lang.invoke.LambdaForm$MH.0x000000001b061000.invoke
+  java.lang.invoke.LambdaForm$MH.0x000000001b061400.invokeExact_MT
+  jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl
+  jdk.internal.reflect.DirectMethodHandleAccessor.invoke
+  java.lang.reflect.Method.invoke
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.Executors$RunnableAdapter.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.ThreadPoolExecutor.runWorker
+  java.util.concurrent.ThreadPoolExecutor$Worker.run
+  java.lang.Thread.runWith
+  java.lang.Thread.run
+
+26 samples
+  java.lang.StringUTF16.compress
+  java.lang.String.<init>
+  java.lang.String.<init>
+  tools.jackson.core.util.TextBuffer.contentsAsString
+  tools.jackson.core.json.async.NonBlockingJsonParserBase._getText2
+  tools.jackson.core.json.async.NonBlockingJsonParserBase.getString
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.drain
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.feed
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.parseSearch
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.searchParser
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_thrpt_jmhStub
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_Throughput
+  java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial
+  java.lang.invoke.LambdaForm$MH.0x000000001b061000.invoke
+  java.lang.invoke.LambdaForm$MH.0x000000001b061400.invokeExact_MT
+  jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl
+  jdk.internal.reflect.DirectMethodHandleAccessor.invoke
+  java.lang.reflect.Method.invoke
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.Executors$RunnableAdapter.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.ThreadPoolExecutor.runWorker
+  java.util.concurrent.ThreadPoolExecutor$Worker.run
+  java.lang.Thread.runWith
+  java.lang.Thread.run
+
+25 samples
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.drain
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.feed
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.parseSearch
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.searchParser
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_thrpt_jmhStub
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_Throughput
+  java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial
+  java.lang.invoke.LambdaForm$MH.0x000000001b061000.invoke
+  java.lang.invoke.LambdaForm$MH.0x000000001b061400.invokeExact_MT
+  jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl
+  jdk.internal.reflect.DirectMethodHandleAccessor.invoke
+  java.lang.reflect.Method.invoke
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.Executors$RunnableAdapter.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.ThreadPoolExecutor.runWorker
+  java.util.concurrent.ThreadPoolExecutor$Worker.run
+  java.lang.Thread.runWith
+  java.lang.Thread.run
+
+23 samples
+  org.hibernate.search.util.json.impl.Utf8Validator.accept
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.feed
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.parseSearch
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.searchParser
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_thrpt_jmhStub
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_Throughput
+  java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial
+  java.lang.invoke.LambdaForm$MH.0x000000001b061000.invoke
+  java.lang.invoke.LambdaForm$MH.0x000000001b061400.invokeExact_MT
+  jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl
+  jdk.internal.reflect.DirectMethodHandleAccessor.invoke
+  java.lang.reflect.Method.invoke
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.Executors$RunnableAdapter.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.ThreadPoolExecutor.runWorker
+  java.util.concurrent.ThreadPoolExecutor$Worker.run
+  java.lang.Thread.runWith
+  java.lang.Thread.run
+
+20 samples
+  org.hibernate.search.util.json.JsonArray.add
+  org.hibernate.search.util.json.impl.JsonTreeBuilder.add
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.drain
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.feed
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.parseSearch
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.searchParser
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_thrpt_jmhStub
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_Throughput
+  java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial
+  java.lang.invoke.LambdaForm$MH.0x000000001b061000.invoke
+  java.lang.invoke.LambdaForm$MH.0x000000001b061400.invokeExact_MT
+  jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl
+  jdk.internal.reflect.DirectMethodHandleAccessor.invoke
+  java.lang.reflect.Method.invoke
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.Executors$RunnableAdapter.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.ThreadPoolExecutor.runWorker
+  java.util.concurrent.ThreadPoolExecutor$Worker.run
+  java.lang.Thread.runWith
+  java.lang.Thread.run
+
+20 samples
+  org.hibernate.search.util.json.JsonElement.getAsJsonArray
+  org.hibernate.search.util.json.impl.JsonTreeBuilder.add
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.drain
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.feed
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.parseSearch
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.searchParser
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_thrpt_jmhStub
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_Throughput
+  java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial
+  java.lang.invoke.LambdaForm$MH.0x000000001b061000.invoke
+  java.lang.invoke.LambdaForm$MH.0x000000001b061400.invokeExact_MT
+  jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl
+  jdk.internal.reflect.DirectMethodHandleAccessor.invoke
+  java.lang.reflect.Method.invoke
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.Executors$RunnableAdapter.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.ThreadPoolExecutor.runWorker
+  java.util.concurrent.ThreadPoolExecutor$Worker.run
+  java.lang.Thread.runWith
+  java.lang.Thread.run
+
+19 samples
+  tools.jackson.core.json.async.NonBlockingUtf8JsonParserBase._startValueExpectComma
+  tools.jackson.core.json.async.NonBlockingUtf8JsonParserBase.nextToken
+  org.hibernate.search.util.json.impl.ResumableJsonFactory$ResumableParser.nextToken
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.drain
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.feed
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.parseSearch
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.searchParser
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_thrpt_jmhStub
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_Throughput
+  java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial
+  java.lang.invoke.LambdaForm$MH.0x000000001b061000.invoke
+  java.lang.invoke.LambdaForm$MH.0x000000001b061400.invokeExact_MT
+  jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl
+  jdk.internal.reflect.DirectMethodHandleAccessor.invoke
+  java.lang.reflect.Method.invoke
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.Executors$RunnableAdapter.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.ThreadPoolExecutor.runWorker
+  java.util.concurrent.ThreadPoolExecutor$Worker.run
+  java.lang.Thread.runWith
+  java.lang.Thread.run
+
+16 samples
+  tools.jackson.core.json.async.NonBlockingUtf8JsonParserBase.nextToken
+  org.hibernate.search.util.json.impl.ResumableJsonFactory$ResumableParser.nextToken
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.drain
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.feed
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.parseSearch
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.searchParser
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_thrpt_jmhStub
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_Throughput
+  java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial
+  java.lang.invoke.LambdaForm$MH.0x000000001b061000.invoke
+  java.lang.invoke.LambdaForm$MH.0x000000001b061400.invokeExact_MT
+  jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl
+  jdk.internal.reflect.DirectMethodHandleAccessor.invoke
+  java.lang.reflect.Method.invoke
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.Executors$RunnableAdapter.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.ThreadPoolExecutor.runWorker
+  java.util.concurrent.ThreadPoolExecutor$Worker.run
+  java.lang.Thread.runWith
+  java.lang.Thread.run
+
+14 samples
+  tools.jackson.core.util.TextBuffer.emptyAndGetCurrentSegment
+  tools.jackson.core.json.async.NonBlockingUtf8JsonParserBase._startPositiveNumber
+  tools.jackson.core.json.async.NonBlockingUtf8JsonParserBase._startValueExpectComma
+  tools.jackson.core.json.async.NonBlockingUtf8JsonParserBase.nextToken
+  org.hibernate.search.util.json.impl.ResumableJsonFactory$ResumableParser.nextToken
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.drain
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.feed
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.parseSearch
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.searchParser
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_thrpt_jmhStub
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_Throughput
+  java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial
+  java.lang.invoke.LambdaForm$MH.0x000000001b061000.invoke
+  java.lang.invoke.LambdaForm$MH.0x000000001b061400.invokeExact_MT
+  jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl
+  jdk.internal.reflect.DirectMethodHandleAccessor.invoke
+  java.lang.reflect.Method.invoke
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.Executors$RunnableAdapter.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.ThreadPoolExecutor.runWorker
+  java.util.concurrent.ThreadPoolExecutor$Worker.run
+  java.lang.Thread.runWith
+  java.lang.Thread.run
+
+12 samples
+  org.hibernate.search.util.json.impl.JsonTreeBuilder.add
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.drain
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.feed
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.parseSearch
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.searchParser
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_thrpt_jmhStub
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_Throughput
+  java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial
+  java.lang.invoke.LambdaForm$MH.0x000000001b061000.invoke
+  java.lang.invoke.LambdaForm$MH.0x000000001b061400.invokeExact_MT
+  jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl
+  jdk.internal.reflect.DirectMethodHandleAccessor.invoke
+  java.lang.reflect.Method.invoke
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.Executors$RunnableAdapter.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.ThreadPoolExecutor.runWorker
+  java.util.concurrent.ThreadPoolExecutor$Worker.run
+  java.lang.Thread.runWith
+  java.lang.Thread.run
+
+9 samples
+  tools.jackson.core.StreamReadConstraints.validateStringLength
+  tools.jackson.core.util.ReadConstrainedTextBuffer.validateStringLength
+  tools.jackson.core.util.TextBuffer.contentsAsString
+  tools.jackson.core.json.async.NonBlockingJsonParserBase._getText2
+  tools.jackson.core.json.async.NonBlockingJsonParserBase.getString
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.drain
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.feed
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.parseSearch
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.searchParser
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_thrpt_jmhStub
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_Throughput
+  java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial
+  java.lang.invoke.LambdaForm$MH.0x000000001b061000.invoke
+  java.lang.invoke.LambdaForm$MH.0x000000001b061400.invokeExact_MT
+  jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl
+  jdk.internal.reflect.DirectMethodHandleAccessor.invoke
+  java.lang.reflect.Method.invoke
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.Executors$RunnableAdapter.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.ThreadPoolExecutor.runWorker
+  java.util.concurrent.ThreadPoolExecutor$Worker.run
+  java.lang.Thread.runWith
+  java.lang.Thread.run
+
+8 samples
+  java.util.ArrayList.add
+  org.hibernate.search.util.json.JsonArray.add
+  org.hibernate.search.util.json.impl.JsonTreeBuilder.add
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.drain
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.feed
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.parseSearch
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.searchParser
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_thrpt_jmhStub
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_Throughput
+  java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial
+  java.lang.invoke.LambdaForm$MH.0x000000001b061000.invoke
+  java.lang.invoke.LambdaForm$MH.0x000000001b061400.invokeExact_MT
+  jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl
+  jdk.internal.reflect.DirectMethodHandleAccessor.invoke
+  java.lang.reflect.Method.invoke
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.Executors$RunnableAdapter.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.ThreadPoolExecutor.runWorker
+  java.util.concurrent.ThreadPoolExecutor$Worker.run
+  java.lang.Thread.runWith
+  java.lang.Thread.run
+
+8 samples
+  org.hibernate.search.util.json.impl.ResumableJsonFactory$ResumableParser.getByteFromBuffer
+  tools.jackson.core.json.async.NonBlockingUtf8JsonParserBase._startValueExpectComma
+  tools.jackson.core.json.async.NonBlockingUtf8JsonParserBase.nextToken
+  org.hibernate.search.util.json.impl.ResumableJsonFactory$ResumableParser.nextToken
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.drain
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.feed
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.parseSearch
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.searchParser
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_thrpt_jmhStub
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_Throughput
+  java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial
+  java.lang.invoke.LambdaForm$MH.0x000000001b061000.invoke
+  java.lang.invoke.LambdaForm$MH.0x000000001b061400.invokeExact_MT
+  jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl
+  jdk.internal.reflect.DirectMethodHandleAccessor.invoke
+  java.lang.reflect.Method.invoke
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.Executors$RunnableAdapter.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.ThreadPoolExecutor.runWorker
+  java.util.concurrent.ThreadPoolExecutor$Worker.run
+  java.lang.Thread.runWith
+  java.lang.Thread.run
+
+8 samples
+  tools.jackson.core.json.async.NonBlockingJsonParserBase._updateTokenLocation
+  tools.jackson.core.json.async.NonBlockingUtf8JsonParserBase._startValueExpectComma
+  tools.jackson.core.json.async.NonBlockingUtf8JsonParserBase.nextToken
+  org.hibernate.search.util.json.impl.ResumableJsonFactory$ResumableParser.nextToken
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.drain
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.feed
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.parseSearch
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.searchParser
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_thrpt_jmhStub
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_Throughput
+  java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial
+  java.lang.invoke.LambdaForm$MH.0x000000001b061000.invoke
+  java.lang.invoke.LambdaForm$MH.0x000000001b061400.invokeExact_MT
+  jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl
+  jdk.internal.reflect.DirectMethodHandleAccessor.invoke
+  java.lang.reflect.Method.invoke
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.Executors$RunnableAdapter.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.ThreadPoolExecutor.runWorker
+  java.util.concurrent.ThreadPoolExecutor$Worker.run
+  java.lang.Thread.runWith
+  java.lang.Thread.run
+
+7 samples
+  java.util.ArrayDeque.elementAt
+  java.util.ArrayDeque.peekFirst
+  java.util.ArrayDeque.peek
+  org.hibernate.search.util.json.impl.JsonTreeBuilder.add
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.drain
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.feed
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.parseSearch
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.searchParser
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_thrpt_jmhStub
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_Throughput
+  java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial
+  java.lang.invoke.LambdaForm$MH.0x000000001b061000.invoke
+  java.lang.invoke.LambdaForm$MH.0x000000001b061400.invokeExact_MT
+  jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl
+  jdk.internal.reflect.DirectMethodHandleAccessor.invoke
+  java.lang.reflect.Method.invoke
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.Executors$RunnableAdapter.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.ThreadPoolExecutor.runWorker
+  java.util.concurrent.ThreadPoolExecutor$Worker.run
+  java.lang.Thread.runWith
+  java.lang.Thread.run
+
+7 samples
+  tools.jackson.core.base.ParserMinimalBase._updateToken
+  tools.jackson.core.json.async.NonBlockingJsonParserBase._valueComplete
+  tools.jackson.core.json.async.NonBlockingUtf8JsonParserBase._startPositiveNumber
+  tools.jackson.core.json.async.NonBlockingUtf8JsonParserBase._startValueExpectComma
+  tools.jackson.core.json.async.NonBlockingUtf8JsonParserBase.nextToken
+  org.hibernate.search.util.json.impl.ResumableJsonFactory$ResumableParser.nextToken
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.drain
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.feed
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.parseSearch
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.searchParser
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_thrpt_jmhStub
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_Throughput
+  java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial
+  java.lang.invoke.LambdaForm$MH.0x000000001b061000.invoke
+  java.lang.invoke.LambdaForm$MH.0x000000001b061400.invokeExact_MT
+  jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl
+  jdk.internal.reflect.DirectMethodHandleAccessor.invoke
+  java.lang.reflect.Method.invoke
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.Executors$RunnableAdapter.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.ThreadPoolExecutor.runWorker
+  java.util.concurrent.ThreadPoolExecutor$Worker.run
+  java.lang.Thread.runWith
+  java.lang.Thread.run
+
+6 samples
+  java.util.Arrays.copyOf
+  java.util.ArrayList.grow
+  java.util.ArrayList.grow
+  java.util.ArrayList.add
+  java.util.ArrayList.add
+  org.hibernate.search.util.json.JsonArray.add
+  org.hibernate.search.util.json.impl.JsonTreeBuilder.add
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.drain
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.feed
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.parseSearch
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.searchParser
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_thrpt_jmhStub
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_Throughput
+  java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial
+  java.lang.invoke.LambdaForm$MH.0x000000001b061000.invoke
+  java.lang.invoke.LambdaForm$MH.0x000000001b061400.invokeExact_MT
+  jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl
+  jdk.internal.reflect.DirectMethodHandleAccessor.invoke
+  java.lang.reflect.Method.invoke
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.Executors$RunnableAdapter.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.ThreadPoolExecutor.runWorker
+  java.util.concurrent.ThreadPoolExecutor$Worker.run
+  java.lang.Thread.runWith
+  java.lang.Thread.run
+
+6 samples
+  org.hibernate.search.util.json.JsonPrimitive.<init>
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.drain
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.feed
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.parseSearch
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.searchParser
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_thrpt_jmhStub
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_Throughput
+  java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial
+  java.lang.invoke.LambdaForm$MH.0x000000001b061000.invoke
+  java.lang.invoke.LambdaForm$MH.0x000000001b061400.invokeExact_MT
+  jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl
+  jdk.internal.reflect.DirectMethodHandleAccessor.invoke
+  java.lang.reflect.Method.invoke
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.Executors$RunnableAdapter.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.ThreadPoolExecutor.runWorker
+  java.util.concurrent.ThreadPoolExecutor$Worker.run
+  java.lang.Thread.runWith
+  java.lang.Thread.run
+
+5 samples
+  java.lang.String.equals
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.drain
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.feed
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.parseSearch
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.searchParser
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_thrpt_jmhStub
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_Throughput
+  java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial
+  java.lang.invoke.LambdaForm$MH.0x000000001b061000.invoke
+  java.lang.invoke.LambdaForm$MH.0x000000001b061400.invokeExact_MT
+  jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl
+  jdk.internal.reflect.DirectMethodHandleAccessor.invoke
+  java.lang.reflect.Method.invoke
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.Executors$RunnableAdapter.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.ThreadPoolExecutor.runWorker
+  java.util.concurrent.ThreadPoolExecutor$Worker.run
+  java.lang.Thread.runWith
+  java.lang.Thread.run
+
+4 samples
+  java.lang.String.length
+  java.lang.String.startsWith
+  java.lang.String.startsWith
+  org.hibernate.search.util.json.impl.JsonNumber.jsonNumber
+  org.hibernate.search.util.json.impl.JsonNumber.fromParser
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.drain
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.feed
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.parseSearch
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.searchParser
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_thrpt_jmhStub
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_Throughput
+  java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial
+  java.lang.invoke.LambdaForm$MH.0x000000001b061000.invoke
+  java.lang.invoke.LambdaForm$MH.0x000000001b061400.invokeExact_MT
+  jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl
+  jdk.internal.reflect.DirectMethodHandleAccessor.invoke
+  java.lang.reflect.Method.invoke
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.Executors$RunnableAdapter.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.ThreadPoolExecutor.runWorker
+  java.util.concurrent.ThreadPoolExecutor$Worker.run
+  java.lang.Thread.runWith
+  java.lang.Thread.run
+
+4 samples
+  java.lang.StringLatin1.charAt
+  java.lang.String.charAt
+  org.hibernate.search.util.json.impl.JsonNumber.jsonNumber
+  org.hibernate.search.util.json.impl.JsonNumber.fromParser
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.drain
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.feed
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.parseSearch
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.searchParser
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_thrpt_jmhStub
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_Throughput
+  java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial
+  java.lang.invoke.LambdaForm$MH.0x000000001b061000.invoke
+  java.lang.invoke.LambdaForm$MH.0x000000001b061400.invokeExact_MT
+  jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl
+  jdk.internal.reflect.DirectMethodHandleAccessor.invoke
+  java.lang.reflect.Method.invoke
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.Executors$RunnableAdapter.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.ThreadPoolExecutor.runWorker
+  java.util.concurrent.ThreadPoolExecutor$Worker.run
+  java.lang.Thread.runWith
+  java.lang.Thread.run
+
+4 samples
+  org.hibernate.search.util.json.impl.ResumableJsonFactory$ResumableParser.getNextUnsignedByteFromBuffer
+  tools.jackson.core.json.async.NonBlockingUtf8JsonParserBase.nextToken
+  org.hibernate.search.util.json.impl.ResumableJsonFactory$ResumableParser.nextToken
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.drain
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.feed
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.parseSearch
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.searchParser
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_thrpt_jmhStub
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_Throughput
+  java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial
+  java.lang.invoke.LambdaForm$MH.0x000000001b061000.invoke
+  java.lang.invoke.LambdaForm$MH.0x000000001b061400.invokeExact_MT
+  jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl
+  jdk.internal.reflect.DirectMethodHandleAccessor.invoke
+  java.lang.reflect.Method.invoke
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.Executors$RunnableAdapter.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.ThreadPoolExecutor.runWorker
+  java.util.concurrent.ThreadPoolExecutor$Worker.run
+  java.lang.Thread.runWith
+  java.lang.Thread.run
+
+4 samples
+  tools.jackson.core.json.async.NonBlockingJsonParserBase._getText2
+  tools.jackson.core.json.async.NonBlockingJsonParserBase.getString
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.drain
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.feed
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.parseSearch
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.searchParser
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_thrpt_jmhStub
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_Throughput
+  java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial
+  java.lang.invoke.LambdaForm$MH.0x000000001b061000.invoke
+  java.lang.invoke.LambdaForm$MH.0x000000001b061400.invokeExact_MT
+  jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl
+  jdk.internal.reflect.DirectMethodHandleAccessor.invoke
+  java.lang.reflect.Method.invoke
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.Executors$RunnableAdapter.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.ThreadPoolExecutor.runWorker
+  java.util.concurrent.ThreadPoolExecutor$Worker.run
+  java.lang.Thread.runWith
+  java.lang.Thread.run
+
+3 samples
+  jdk.internal.util.Preconditions.checkFromIndexSize
+  java.lang.String.checkBoundsOffCount
+  java.lang.String.rangeCheck
+  java.lang.String.<init>
+  tools.jackson.core.util.TextBuffer.contentsAsString
+  tools.jackson.core.json.async.NonBlockingJsonParserBase._getText2
+  tools.jackson.core.json.async.NonBlockingJsonParserBase.getString
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.drain
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.feed
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.parseSearch
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.searchParser
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_thrpt_jmhStub
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_Throughput
+  java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial
+  java.lang.invoke.LambdaForm$MH.0x000000001b061000.invoke
+  java.lang.invoke.LambdaForm$MH.0x000000001b061400.invokeExact_MT
+  jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl
+  jdk.internal.reflect.DirectMethodHandleAccessor.invoke
+  java.lang.reflect.Method.invoke
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.Executors$RunnableAdapter.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.ThreadPoolExecutor.runWorker
+  java.util.concurrent.ThreadPoolExecutor$Worker.run
+  java.lang.Thread.runWith
+  java.lang.Thread.run
+
+3 samples
+  tools.jackson.core.JsonToken.id
+  tools.jackson.core.json.async.NonBlockingJsonParserBase._getText2
+  tools.jackson.core.json.async.NonBlockingJsonParserBase.getString
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.drain
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.feed
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.parseSearch
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.searchParser
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_thrpt_jmhStub
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_Throughput
+  java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial
+  java.lang.invoke.LambdaForm$MH.0x000000001b061000.invoke
+  java.lang.invoke.LambdaForm$MH.0x000000001b061400.invokeExact_MT
+  jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl
+  jdk.internal.reflect.DirectMethodHandleAccessor.invoke
+  java.lang.reflect.Method.invoke
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.Executors$RunnableAdapter.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.ThreadPoolExecutor.runWorker
+  java.util.concurrent.ThreadPoolExecutor$Worker.run
+  java.lang.Thread.runWith
+  java.lang.Thread.run
+
+3 samples
+  tools.jackson.core.json.async.NonBlockingJsonParserBase._valueComplete
+  tools.jackson.core.json.async.NonBlockingUtf8JsonParserBase._startPositiveNumber
+  tools.jackson.core.json.async.NonBlockingUtf8JsonParserBase._startValueExpectComma
+  tools.jackson.core.json.async.NonBlockingUtf8JsonParserBase.nextToken
+  org.hibernate.search.util.json.impl.ResumableJsonFactory$ResumableParser.nextToken
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.drain
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.feed
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.parseSearch
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.searchParser
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_thrpt_jmhStub
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_Throughput
+  java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial
+  java.lang.invoke.LambdaForm$MH.0x000000001b061000.invoke
+  java.lang.invoke.LambdaForm$MH.0x000000001b061400.invokeExact_MT
+  jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl
+  jdk.internal.reflect.DirectMethodHandleAccessor.invoke
+  java.lang.reflect.Method.invoke
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.Executors$RunnableAdapter.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.ThreadPoolExecutor.runWorker
+  java.util.concurrent.ThreadPoolExecutor$Worker.run
+  java.lang.Thread.runWith
+  java.lang.Thread.run
+
+2 samples
+  java.util.concurrent.ConcurrentLinkedDeque.pollFirst
+  tools.jackson.core.util.RecyclerPool$ConcurrentDequePoolBase.acquirePooled
+  tools.jackson.core.util.RecyclerPool.acquireAndLinkPooled
+  tools.jackson.core.TokenStreamFactory._getBufferRecycler
+  tools.jackson.core.json.JsonFactory._createNonBlockingContext
+  org.hibernate.search.util.json.impl.ResumableJsonFactory.createResumableByteBufferParser
+  org.hibernate.search.util.json.impl.JacksonJsonParserFactory.createParser
+  org.hibernate.search.util.json.spi.JsonParsing.createParser
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.parseSearch
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.searchParser
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_thrpt_jmhStub
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_Throughput
+  java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial
+  java.lang.invoke.LambdaForm$MH.0x000000001b061000.invoke
+  java.lang.invoke.LambdaForm$MH.0x000000001b061400.invokeExact_MT
+  jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl
+  jdk.internal.reflect.DirectMethodHandleAccessor.invoke
+  java.lang.reflect.Method.invoke
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.Executors$RunnableAdapter.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.ThreadPoolExecutor.runWorker
+  java.util.concurrent.ThreadPoolExecutor$Worker.run
+  java.lang.Thread.runWith
+  java.lang.Thread.run
+
+2 samples
+  org.hibernate.search.util.json.impl.JsonNumber.fromParser
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.drain
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.feed
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.parseSearch
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.searchParser
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_thrpt_jmhStub
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_Throughput
+  java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial
+  java.lang.invoke.LambdaForm$MH.0x000000001b061000.invoke
+  java.lang.invoke.LambdaForm$MH.0x000000001b061400.invokeExact_MT
+  jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl
+  jdk.internal.reflect.DirectMethodHandleAccessor.invoke
+  java.lang.reflect.Method.invoke
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.Executors$RunnableAdapter.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.ThreadPoolExecutor.runWorker
+  java.util.concurrent.ThreadPoolExecutor$Worker.run
+  java.lang.Thread.runWith
+  java.lang.Thread.run
+
+2 samples
+  tools.jackson.core.json.async.NonBlockingJsonParserBase.getString
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.drain
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.feed
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.parseSearch
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.searchParser
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_thrpt_jmhStub
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_Throughput
+  java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial
+  java.lang.invoke.LambdaForm$MH.0x000000001b061000.invoke
+  java.lang.invoke.LambdaForm$MH.0x000000001b061400.invokeExact_MT
+  jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl
+  jdk.internal.reflect.DirectMethodHandleAccessor.invoke
+  java.lang.reflect.Method.invoke
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.Executors$RunnableAdapter.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.ThreadPoolExecutor.runWorker
+  java.util.concurrent.ThreadPoolExecutor$Worker.run
+  java.lang.Thread.runWith
+  java.lang.Thread.run
+
+2 samples
+  tools.jackson.core.util.ReadConstrainedTextBuffer.validateStringLength
+  tools.jackson.core.util.TextBuffer.contentsAsString
+  tools.jackson.core.json.async.NonBlockingJsonParserBase._getText2
+  tools.jackson.core.json.async.NonBlockingJsonParserBase.getString
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.drain
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.feed
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.parseSearch
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.searchParser
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_thrpt_jmhStub
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_Throughput
+  java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial
+  java.lang.invoke.LambdaForm$MH.0x000000001b061000.invoke
+  java.lang.invoke.LambdaForm$MH.0x000000001b061400.invokeExact_MT
+  jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl
+  jdk.internal.reflect.DirectMethodHandleAccessor.invoke
+  java.lang.reflect.Method.invoke
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.Executors$RunnableAdapter.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.ThreadPoolExecutor.runWorker
+  java.util.concurrent.ThreadPoolExecutor$Worker.run
+  java.lang.Thread.runWith
+  java.lang.Thread.run
+
+1 samples
+  java.lang.String.<init>
+  java.lang.String.<init>
+  tools.jackson.core.util.TextBuffer.contentsAsString
+  tools.jackson.core.json.async.NonBlockingJsonParserBase._getText2
+  tools.jackson.core.json.async.NonBlockingJsonParserBase.getString
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.drain
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.feed
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.parseSearch
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.searchParser
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_thrpt_jmhStub
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_Throughput
+  java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial
+  java.lang.invoke.LambdaForm$MH.0x000000001b061000.invoke
+  java.lang.invoke.LambdaForm$MH.0x000000001b061400.invokeExact_MT
+  jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl
+  jdk.internal.reflect.DirectMethodHandleAccessor.invoke
+  java.lang.reflect.Method.invoke
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.Executors$RunnableAdapter.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.ThreadPoolExecutor.runWorker
+  java.util.concurrent.ThreadPoolExecutor$Worker.run
+  java.lang.Thread.runWith
+  java.lang.Thread.run
+
+1 samples
+  java.lang.String.isLatin1
+  java.lang.String.charAt
+  org.hibernate.search.util.json.impl.JsonNumber.jsonNumber
+  org.hibernate.search.util.json.impl.JsonNumber.fromParser
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.drain
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.feed
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.parseSearch
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.searchParser
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_thrpt_jmhStub
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_Throughput
+  java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial
+  java.lang.invoke.LambdaForm$MH.0x000000001b061000.invoke
+  java.lang.invoke.LambdaForm$MH.0x000000001b061400.invokeExact_MT
+  jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl
+  jdk.internal.reflect.DirectMethodHandleAccessor.invoke
+  java.lang.reflect.Method.invoke
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.Executors$RunnableAdapter.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.ThreadPoolExecutor.runWorker
+  java.util.concurrent.ThreadPoolExecutor$Worker.run
+  java.lang.Thread.runWith
+  java.lang.Thread.run
+
+1 samples
+  org.hibernate.search.util.json.JsonArray.<init>
+  org.hibernate.search.util.json.impl.JsonTreeBuilder.startArray
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.drain
+  org.hibernate.search.util.json.impl.JacksonJsonParserSession.feed
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.parseSearch
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.JsonUtf8IngressBenchmark.searchParser
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_thrpt_jmhStub
+  org.hibernate.search.integrationtest.performance.backend.elasticsearch.jmh_generated.JsonUtf8IngressBenchmark_searchParser_jmhTest.searchParser_Throughput
+  java.lang.invoke.DirectMethodHandle$Holder.invokeSpecial
+  java.lang.invoke.LambdaForm$MH.0x000000001b061000.invoke
+  java.lang.invoke.LambdaForm$MH.0x000000001b061400.invokeExact_MT
+  jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl
+  jdk.internal.reflect.DirectMethodHandleAccessor.invoke
+  java.lang.reflect.Method.invoke
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.Executors$RunnableAdapter.call
+  java.util.concurrent.FutureTask.run
+  java.util.concurrent.ThreadPoolExecutor.runWorker
+  java.util.concurrent.ThreadPoolExecutor$Worker.run
+  java.lang.Thread.runWith
+  java.lang.Thread.run

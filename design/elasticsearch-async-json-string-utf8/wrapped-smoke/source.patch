@@ -1,0 +1,374 @@
+
+diff --git a/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonStringUtf8Benchmark.java b/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonStringUtf8Benchmark.java
+new file mode 100644
+index 0000000000..c69f0aa096
+--- /dev/null
++++ b/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonStringUtf8Benchmark.java
+@@ -0,0 +1,137 @@
++package org.hibernate.search.integrationtest.performance.backend.elasticsearch;
++
++import java.util.concurrent.TimeUnit;
++
++import org.hibernate.search.backend.elasticsearch.gson.spi.GsonProviderHelper;
++import org.hibernate.search.util.json.JsonElement;
++import org.hibernate.search.util.json.JsonObject;
++import org.hibernate.search.util.json.JsonPrimitive;
++import org.hibernate.search.util.json.spi.JsonParsing;
++
++import com.google.gson.Gson;
++import com.google.gson.GsonBuilder;
++
++import org.openjdk.jmh.annotations.Benchmark;
++import org.openjdk.jmh.annotations.BenchmarkMode;
++import org.openjdk.jmh.annotations.Fork;
++import org.openjdk.jmh.annotations.Measurement;
++import org.openjdk.jmh.annotations.Mode;
++import org.openjdk.jmh.annotations.OutputTimeUnit;
++import org.openjdk.jmh.annotations.Param;
++import org.openjdk.jmh.annotations.Scope;
++import org.openjdk.jmh.annotations.Setup;
++import org.openjdk.jmh.annotations.State;
++import org.openjdk.jmh.annotations.Warmup;
++import org.openjdk.jmh.infra.Blackhole;
++
++/** Already materialized String to complete tree; valid-input Gson acceptance policy differs. */
++@BenchmarkMode(Mode.Throughput)
++@OutputTimeUnit(TimeUnit.SECONDS)
++@Warmup(iterations = 8, time = 1)
++@Measurement(iterations = 5, time = 1)
++@Fork(3)
++public class JsonStringUtf8Benchmark {
++	@State(Scope.Thread)
++	public static class Input {
++		@Param({ "scalar-1m", "unicode-1m", "small", "fields-1m" })
++		public String fixture;
++		final JsonParsing parsing = new JsonParsing();
++		Gson gson;
++		String json;
++
++		@Setup
++		public void setup() {
++			JsonBenchmarkSupport.verifyAffinity();
++			gson = GsonProviderHelper.create( GsonBuilder::new, false ).getGson();
++			JsonObject expected = new JsonObject();
++			switch ( fixture ) {
++				case "scalar-1m":
++					String ascii = "x".repeat( 1024 * 1024 );
++					json = "{\"text\":\"" + ascii + "\"}";
++					expected.addProperty( "text", ascii );
++					break;
++				case "unicode-1m":
++					String unit = "é漢😀\n\"\\";
++					json = "{\"text\":\"" + "é漢😀\\n\\\"\\\\".repeat( 100_000 ) + "\"}";
++					expected.addProperty( "text", unit.repeat( 100_000 ) );
++					break;
++				case "small":
++					json = "{\"query\":{\"term\":{\"name\":\"test\"}},\"size\":10}";
++					JsonObject query = new JsonObject();
++					JsonObject term = new JsonObject();
++					term.addProperty( "name", "test" );
++					query.add( "term", term );
++					expected.add( "query", query );
++					expected.addProperty( "size", 10 );
++					break;
++				case "fields-1m":
++					StringBuilder document = new StringBuilder( "{" );
++					String value = "short-value-" + "x".repeat( 36 );
++					for ( int i = 0; i < 18_000; i++ ) {
++						if ( i != 0 ) {
++							document.append( ',' );
++						}
++						String name = "field" + i;
++						document.append( '"' ).append( name ).append( "\":\"" ).append( value ).append( '"' );
++						expected.addProperty( name, value );
++					}
++					json = document.append( '}' ).toString();
++					break;
++				default:
++					throw new IllegalArgumentException( fixture );
++			}
++			verify( expected, parsing.parse( json ) );
++			verify( expected, JsonStringUtf8Encoding.parse( parsing, json, JsonStringUtf8Encoding.BYTE_CAPACITY ) );
++			verifyGson( expected, gson.fromJson( json, com.google.gson.JsonElement.class ) );
++			// Lexical/escape invariants independently checked even on fixtures with no numeric fields.
++			JsonStringUtf8Verification.verifyLexemes( parsing );
++		}
++
++		private static void verify(JsonElement expected, JsonElement actual) {
++			if ( !expected.equals( actual ) || !expected.toString().equals( actual.toString() ) ) {
++				throw new IllegalStateException( "Complete String fixture mismatch" );
++			}
++		}
++
++		private static void verifyGson(JsonElement expected, com.google.gson.JsonElement actual) {
++			if ( expected.isJsonObject() ) {
++				var object = actual.getAsJsonObject();
++				if ( expected.getAsJsonObject().size() != object.size() ) {
++					throw new IllegalStateException( "Gson member count mismatch" );
++				}
++				for ( var entry : expected.getAsJsonObject().entrySet() ) {
++					verifyGson( entry.getValue(), object.get( entry.getKey() ) );
++				}
++			}
++			else if ( expected.isJsonPrimitive() ) {
++				JsonPrimitive scalar = expected.getAsJsonPrimitive();
++				if ( !scalar.getAsString().equals( actual.getAsString() ) ) {
++					throw new IllegalStateException( "Gson scalar mismatch" );
++				}
++			}
++			else {
++				throw new IllegalStateException( "Unexpected fixture kind" );
++			}
++		}
++	}
++
++	@Benchmark
++	public void gsonString(Input state, Blackhole blackhole) {
++		blackhole.consume( state.gson.fromJson( state.json, com.google.gson.JsonObject.class ) );
++	}
++
++	@Benchmark
++	public void searchCharacterString(Input state, Blackhole blackhole) {
++		blackhole.consume( state.parsing.parse( state.json ) );
++	}
++
++	@Benchmark
++	public void searchEncodedString(Input state, Blackhole blackhole) {
++		blackhole.consume( JsonStringUtf8Encoding.parse( state.parsing, state.json, JsonStringUtf8Encoding.BYTE_CAPACITY ) );
++	}
++
++	@Benchmark
++	public long diagnosticEncodingOnly(Input state, Blackhole blackhole) {
++		return JsonStringUtf8Encoding.encode( state.json, null, JsonStringUtf8Encoding.BYTE_CAPACITY, blackhole );
++	}
++}
+diff --git a/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonStringUtf8Encoding.java b/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonStringUtf8Encoding.java
+new file mode 100644
+index 0000000000..f8600cf1a5
+--- /dev/null
++++ b/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonStringUtf8Encoding.java
+@@ -0,0 +1,89 @@
++package org.hibernate.search.integrationtest.performance.backend.elasticsearch;
++
++import java.nio.ByteBuffer;
++import java.nio.CharBuffer;
++import java.nio.charset.CharacterCodingException;
++import java.nio.charset.CharsetEncoder;
++import java.nio.charset.CoderResult;
++import java.nio.charset.CodingErrorAction;
++import java.nio.charset.StandardCharsets;
++
++import org.hibernate.search.util.json.JsonElement;
++import org.hibernate.search.util.json.spi.JsonParseException;
++import org.hibernate.search.util.json.spi.JsonParserSession;
++import org.hibernate.search.util.json.spi.JsonParsing;
++
++import org.openjdk.jmh.infra.Blackhole;
++
++/** Experiment only: standard UTF-8 encoding with fixed scratch, never an encoded whole body. */
++final class JsonStringUtf8Encoding {
++	static final int BYTE_CAPACITY = 8192;
++
++	private JsonStringUtf8Encoding() {
++	}
++
++	static JsonElement parse(JsonParsing parsing, String json, int byteCapacity) {
++		try ( JsonParserSession parser = parsing.createParser() ) {
++			encode( json, parser, byteCapacity );
++			return parser.endOfInput();
++		}
++	}
++
++	/** A null parser measures encoding alone, a diagnostic rather than a full-tree competitor. */
++	static long encode(String json, JsonParserSession parser, int byteCapacity) {
++		return encode( json, parser, byteCapacity, null );
++	}
++
++	static long encode(String json, JsonParserSession parser, int byteCapacity, Blackhole blackhole) {
++		if ( byteCapacity < 4 ) {
++			throw new IllegalArgumentException( "UTF-8 output must hold one supplementary code point" );
++		}
++		CharsetEncoder encoder = StandardCharsets.UTF_8.newEncoder()
++				.onMalformedInput( CodingErrorAction.REPORT ).onUnmappableCharacter( CodingErrorAction.REPORT );
++		CharBuffer chars = CharBuffer.wrap( json );
++		ByteBuffer bytes = ByteBuffer.allocate( byteCapacity );
++		long count = 0;
++		while ( true ) {
++			CoderResult result = encoder.encode( chars, bytes, true );
++			check( result );
++			count += drain( bytes, parser, blackhole );
++			if ( result.isUnderflow() ) {
++				break;
++			}
++		}
++		while ( true ) {
++			CoderResult result = encoder.flush( bytes );
++			check( result );
++			count += drain( bytes, parser, blackhole );
++			if ( result.isUnderflow() ) {
++				return count;
++			}
++		}
++	}
++
++	private static long drain(ByteBuffer bytes, JsonParserSession parser, Blackhole blackhole) {
++		bytes.flip();
++		int count = bytes.remaining();
++		if ( parser != null ) {
++			while ( bytes.hasRemaining() ) {
++				parser.feed( bytes );
++			}
++		}
++		if ( blackhole != null ) {
++			blackhole.consume( bytes.array() );
++		}
++		bytes.clear();
++		return count;
++	}
++
++	private static void check(CoderResult result) {
++		if ( result.isError() ) {
++			try {
++				result.throwException();
++			}
++			catch (CharacterCodingException e) {
++				throw new JsonParseException( "Invalid Unicode input", e );
++			}
++		}
++	}
++}
+diff --git a/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonStringUtf8Verification.java b/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonStringUtf8Verification.java
+new file mode 100644
+index 0000000000..ca2b48aaf5
+--- /dev/null
++++ b/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonStringUtf8Verification.java
+@@ -0,0 +1,129 @@
++package org.hibernate.search.integrationtest.performance.backend.elasticsearch;
++
++import java.nio.ByteBuffer;
++import java.nio.charset.StandardCharsets;
++
++import org.hibernate.search.util.json.JsonElement;
++import org.hibernate.search.util.json.spi.JsonParseException;
++import org.hibernate.search.util.json.spi.JsonParserSession;
++import org.hibernate.search.util.json.spi.JsonParsing;
++import org.hibernate.search.util.json.spi.JsonParsingOptions;
++
++/** Standalone correctness checks for the experiment; run from the benchmark JAR, outside timing. */
++public final class JsonStringUtf8Verification {
++	private JsonStringUtf8Verification() {
++	}
++
++	static void verifyLexemes(JsonParsing parsing) {
++		String json = "{\"\\uD83D\\uDE00\":[-0,1.2300e+04,9007199254740993,1e999999999],"
++				+ "\"escaped\":\"\\uD800\\n\\u0041\\\"\\\\\"}";
++		String expected = "{\"\\ud83d\\ude00\":[-0,1.2300e+04,9007199254740993,1e999999999],"
++				+ "\"escaped\":\"\\ud800\\nA\\\"\\\\\"}";
++		JsonElement actual = JsonStringUtf8Encoding.parse( parsing, json, 4 );
++		if ( !expected.equals( actual.toString() ) || !parsing.parse( json ).equals( actual ) ) {
++			throw new IllegalStateException( "Numeric lexeme or escaped-surrogate mismatch: " + actual );
++		}
++	}
++
++	public static void main(String[] args) {
++		JsonParsing parsing = new JsonParsing();
++		verifyLexemes( parsing );
++		int cases = 1;
++		for ( int capacity : new int[] { 4, 5, 7, 16, 8192 } ) {
++			for ( int padding = 0; padding < 20; padding++ ) {
++				String text = "x".repeat( padding ) + "é漢😀" + "x".repeat( 8190 ) + "😀é漢";
++				String json = "{\"nameé😀\":\"" + text + "\\n\\uD83D\\uDE00\",\"n\":-0}";
++				JsonElement actual = JsonStringUtf8Encoding.parse( parsing, json, capacity );
++				if ( !parsing.parse( json ).equals( actual )
++						|| !( text + "\n😀" ).equals( actual.getAsJsonObject().get( "nameé😀" ).getAsString() ) ) {
++					throw new IllegalStateException( "Unicode boundary mismatch" );
++				}
++				try ( TrackingSession parser = new TrackingSession( parsing.createParser(), capacity ) ) {
++					long encoded = JsonStringUtf8Encoding.encode( json, parser, capacity );
++					if ( encoded != json.getBytes( StandardCharsets.UTF_8 ).length
++							|| encoded != parser.inputBytes() || !actual.equals( parser.endOfInput() ) ) {
++						throw new IllegalStateException( "Bounded feed/count/EOF mismatch" );
++					}
++				}
++				cases++;
++			}
++			for ( String invalid : new String[] {
++					"",
++					"{",
++					"[1,",
++					"{}{}",
++					"\"x",
++					"\"\uD800\"",
++					"\"\uDC00\"",
++					"\"\uD800x\"",
++					"\"x\uD800",
++					"01",
++					"[true,]" } ) {
++				expectFailure( parsing, invalid, capacity );
++				cases++;
++			}
++		}
++		String json = "{\"é\":\"😀\"}";
++		long count = json.getBytes( StandardCharsets.UTF_8 ).length;
++		if ( !parsing.parse( json ).equals( JsonStringUtf8Encoding.parse(
++				new JsonParsing( JsonParsingOptions.DEFAULT.withMaxInputBytes( count ) ), json, 4 ) ) ) {
++			throw new IllegalStateException( "Exact byte limit mismatch" );
++		}
++		expectFailure( new JsonParsing( JsonParsingOptions.DEFAULT.withMaxInputBytes( count - 1 ) ), json, 4 );
++		expectFailure( new JsonParsing( new JsonParsingOptions( 1, 10, 10, 10, 1, 0 ) ), "[[1]]", 4 );
++		expectFailure( new JsonParsing( new JsonParsingOptions( 10, 2, 10, 10, 1, 0 ) ), "\"abc\"", 4 );
++		expectFailure( new JsonParsing( new JsonParsingOptions( 10, 10, 2, 10, 1, 0 ) ), "{\"éé\":1}", 4 );
++		expectFailure( new JsonParsing( new JsonParsingOptions( 10, 10, 10, 2, 1, 0 ) ), "123", 4 );
++		System.out.println( "String UTF-8 verification passed: " + ( cases + 6 ) + " cases; fixed byte bounds 4..8192" );
++	}
++
++	private static void expectFailure(JsonParsing parsing, String json, int capacity) {
++		TrackingSession parser = new TrackingSession( parsing.createParser(), capacity );
++		boolean failed = false;
++		try ( parser ) {
++			JsonStringUtf8Encoding.encode( json, parser, capacity );
++			parser.endOfInput();
++		}
++		catch (JsonParseException expected) {
++			failed = true;
++		}
++		if ( !failed || !parser.closed ) {
++			throw new IllegalStateException( "Missing rejection/cleanup for " + json );
++		}
++	}
++
++	private static final class TrackingSession implements JsonParserSession {
++		private final JsonParserSession delegate;
++		private final int capacity;
++		private boolean closed;
++
++		private TrackingSession(JsonParserSession delegate, int capacity) {
++			this.delegate = delegate;
++			this.capacity = capacity;
++		}
++
++		@Override
++		public void feed(ByteBuffer input) {
++			if ( input.capacity() != capacity || input.remaining() > capacity ) {
++				throw new IllegalStateException( "Unbounded encoded scratch" );
++			}
++			delegate.feed( input );
++		}
++
++		@Override
++		public JsonElement endOfInput() {
++			return delegate.endOfInput();
++		}
++
++		@Override
++		public long inputBytes() {
++			return delegate.inputBytes();
++		}
++
++		@Override
++		public void close() {
++			delegate.close();
++			closed = true;
++		}
++	}
++}

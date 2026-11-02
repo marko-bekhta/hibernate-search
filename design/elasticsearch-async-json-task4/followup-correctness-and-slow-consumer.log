@@ -1,0 +1,24 @@
+Verified fork/thread affinity 0,2 thread=main
+fixture,encodedBytes,cursorEncodedBound,workerArrayBound,slowWallMs,totalCpuMs,workerCpuMs,workerBusyMs,workerCpuOccupancy
+Verified fork/thread affinity 0,2 thread=pool-1-thread-1
+small,45,6,16384,2.169,0.593,0.097,0.105,0.045
+Verified fork/thread affinity 0,2 thread=pool-2-thread-1
+Verified fork/thread affinity 0,2 thread=pool-3-thread-1
+mapping,165,6,16384,0.320,0.125,0.049,0.055,0.154
+Verified fork/thread affinity 0,2 thread=pool-4-thread-1
+Verified fork/thread affinity 0,2 thread=pool-5-thread-1
+unicode,3852,6,16384,0.315,0.193,0.136,0.137,0.432
+Verified fork/thread affinity 0,2 thread=pool-6-thread-1
+Verified fork/thread affinity 0,2 thread=pool-7-thread-1
+nested,347,6,16384,0.260,0.125,0.072,0.073,0.279
+Verified fork/thread affinity 0,2 thread=pool-8-thread-1
+Verified fork/thread affinity 0,2 thread=pool-9-thread-1
+scalar-1m,1048588,6,16384,21.164,3.428,1.685,20.037,0.080
+Verified fork/thread affinity 0,2 thread=pool-10-thread-1
+Verified fork/thread affinity 0,2 thread=pool-11-thread-1
+scalar-8m,8388620,6,16384,161.769,17.296,9.727,158.199,0.060
+Verified fork/thread affinity 0,2 thread=pool-12-thread-1
+Verified fork/thread affinity 0,2 thread=pool-13-thread-1
+bulk-10000,3257780,6,16384,63.191,16.411,12.973,62.878,0.205
+Verified fork/thread affinity 0,2 thread=pool-14-thread-1
+All full-byte, capacity, cancellation and surrogate-policy assertions passed.

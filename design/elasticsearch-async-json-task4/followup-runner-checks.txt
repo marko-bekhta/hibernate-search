@@ -1,0 +1,9 @@
+Malformed --param rejected with exit 2 before creating output directory.
+usage: json-benchmark-runner.py [-h] [--cores CORES] --out OUT [--skip-build]
+                                [--forks FORKS] [--warmup WARMUP]
+                                [--iterations ITERATIONS] [--seconds SECONDS]
+                                [--quick] [--cold] [--pattern PATTERN]
+                                [--fixtures FIXTURES]
+                                [--lifecycle {fresh,reused}] [--param PARAM]
+                                [--profiler PROFILER] [--jvm-args JVM_ARGS]
+json-benchmark-runner.py: error: --param requires a nonempty name=value

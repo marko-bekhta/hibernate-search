@@ -1,0 +1,9 @@
+distribution	client	reports	tests	failures	errors	skipped
+elastic-9.5.4	elasticsearch-jdk	10	80	0	0	1
+elastic-9.5.4	elasticsearch-rest	10	80	0	0	1
+elastic-9.5.4	elasticsearch-rest5	10	80	0	0	1
+elastic-9.5.4	opensearch-rest	10	80	0	0	1
+opensearch-3.8.0	elasticsearch-jdk	10	80	0	0	1
+opensearch-3.8.0	elasticsearch-rest	10	80	0	0	1
+opensearch-3.8.0	elasticsearch-rest5	10	80	0	0	1
+opensearch-3.8.0	opensearch-rest	10	80	0	0	1

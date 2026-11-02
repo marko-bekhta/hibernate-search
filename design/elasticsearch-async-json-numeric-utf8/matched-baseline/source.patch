@@ -1,0 +1,419 @@
+diff --git a/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonBenchmarkFixtures.java b/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonBenchmarkFixtures.java
+index bdbecad92f..7e6175a16d 100644
+--- a/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonBenchmarkFixtures.java
++++ b/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonBenchmarkFixtures.java
+@@ -57,6 +57,17 @@ public void setup() {
+ 				}
+ 				body.add( "values", numbers );
+ 				break;
++			case "numbers-mixed-10000":
++				String[] mixed = { "-0", "-42", "0.125", "1.00", "6.022e23", "-7E-9", "9223372036854775808", "1e2147483648" };
++				StringBuilder numericDocument = new StringBuilder( "{\"values\":[" );
++				for ( int i = 0; i < 10_000; i++ ) {
++					if ( i != 0 ) {
++						numericDocument.append( ',' );
++					}
++					numericDocument.append( mixed[i % mixed.length] );
++				}
++				body = gson.fromJson( numericDocument.append( "]}" ).toString(), JsonObject.class );
++				break;
+ 			case "bulk-10000":
+ 				for ( int i = 0; i < 10_000; i++ ) {
+ 					JsonObject metadata = new JsonObject();
+diff --git a/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonUtf8IngressBenchmark.java b/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonUtf8IngressBenchmark.java
+index c5692a4025..2704ab233d 100644
+--- a/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonUtf8IngressBenchmark.java
++++ b/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonUtf8IngressBenchmark.java
+@@ -34,6 +34,9 @@ public static class Bodies extends JsonComparisonBenchmark.Bodies {
+ 		byte[] input;
+ 		@Param({ "8192" })
+ 		public int feedSize;
++		@Param({ "heap" })
++		public String bufferKind;
++		ByteBuffer prepared;
+ 
+ 		// The inherited @Setup invokes this override; annotating it too schedules it twice.
+ 		@Override
+@@ -43,6 +46,12 @@ public void setup() {
+ 				throw new IllegalArgumentException( "Feed size must be positive" );
+ 			}
+ 			input = json.getBytes( StandardCharsets.UTF_8 );
++			prepared = switch ( bufferKind ) {
++				case "heap" -> null;
++				case "readonly" -> ByteBuffer.wrap( input ).asReadOnlyBuffer();
++				case "direct" -> ByteBuffer.allocateDirect( input.length ).put( input ).flip();
++				default -> throw new IllegalArgumentException( bufferKind );
++			};
+ 			try {
+ 				JsonElement search = parseSearch( this );
+ 				var gsonResult = parseGson( this );
+@@ -70,7 +79,7 @@ public com.google.gson.JsonObject gsonParser(Bodies state) throws IOException {
+ 
+ 	private static JsonElement parseSearch(Bodies state) {
+ 		try ( var session = state.parsing.createParser() ) {
+-			ByteBuffer input = ByteBuffer.wrap( state.input );
++			ByteBuffer input = state.prepared == null ? ByteBuffer.wrap( state.input ) : state.prepared.duplicate();
+ 			while ( input.position() < state.input.length ) {
+ 				input.limit( Math.min( input.position() + state.feedSize, state.input.length ) );
+ 				session.feed( input );
+diff --git a/util/json/src/test/java/org/hibernate/search/util/json/JsonParserTest.java b/util/json/src/test/java/org/hibernate/search/util/json/JsonParserTest.java
+index a730beea06..efcf3425ea 100644
+--- a/util/json/src/test/java/org/hibernate/search/util/json/JsonParserTest.java
++++ b/util/json/src/test/java/org/hibernate/search/util/json/JsonParserTest.java
+@@ -23,6 +23,7 @@ class JsonParserTest {
+ 	@ParameterizedTest
+ 	@ValueSource(strings = {
+ 			"null",
++			"{\"long-ascii-property\":\"aaaaaaaaaaaaaaaaéaaaaaaaaaaaaaaaa😀\"}",
+ 			"\"\\uD800\"",
+ 			"{\"\\uD83D\\uDE00\":1}",
+ 			"true",
+@@ -155,6 +156,38 @@ void rejectsMalformedAndTruncatedUtf8() {
+ 		}
+ 	}
+ 
++	@Test
++	void longAsciiRunsDoNotMaskNonCanonicalUtf8() {
++		for ( byte[] invalid : new byte[][] {
++				{ (byte) 0xc0, (byte) 0xaf },
++				{ (byte) 0xed, (byte) 0xa0, (byte) 0x80 },
++				{ (byte) 0xf4, (byte) 0x90, (byte) 0x80, (byte) 0x80 },
++				{ (byte) 0xe0, (byte) 0x80, (byte) 0xaf },
++				{ (byte) 0xc3, 'a' },
++				{ (byte) 0x80 } } ) {
++			for ( int alignment = 0; alignment < 16; alignment++ ) {
++				byte[] prefix = ( "\"" + "a".repeat( 16 + alignment ) ).getBytes( StandardCharsets.UTF_8 );
++				byte[] bytes = new byte[prefix.length + invalid.length + 1];
++				System.arraycopy( prefix, 0, bytes, 0, prefix.length );
++				System.arraycopy( invalid, 0, bytes, prefix.length, invalid.length );
++				bytes[bytes.length - 1] = '"';
++				for ( int kind = 0; kind < 4; kind++ ) {
++					int bufferKind = kind;
++					for ( int split = prefix.length - 1; split < bytes.length; split++ ) {
++						int boundary = split;
++						assertThatThrownBy( () -> {
++							try ( JsonParserSession parser = parsing.createParser() ) {
++								consume( parser, buffer( bytes, 0, boundary, bufferKind ) );
++								consume( parser, buffer( bytes, boundary, bytes.length - boundary, bufferKind ) );
++								parser.endOfInput();
++							}
++						} ).isInstanceOf( JsonParseException.class );
++					}
++				}
++			}
++		}
++	}
++
+ 	@Test
+ 	void completeRootStillRequiresEndAndRejectsLaterContent() {
+ 		try ( JsonParserSession parser = parsing.createParser() ) {
+diff --git a/util/json/src/test/java/org/hibernate/search/util/json/impl/JsonParserCleanupTest.java b/util/json/src/test/java/org/hibernate/search/util/json/impl/JsonParserCleanupTest.java
+index fb3830224c..6a6e21ebdf 100644
+--- a/util/json/src/test/java/org/hibernate/search/util/json/impl/JsonParserCleanupTest.java
++++ b/util/json/src/test/java/org/hibernate/search/util/json/impl/JsonParserCleanupTest.java
+@@ -23,6 +23,7 @@ void utf8SessionsReleasePartialTreesAndParserReferencesOnEveryTerminalPath() {
+ 				.isEqualTo( parsing.parse( "{\"a\":[1]}" ) );
+ 		assertThat( cancelled ).extracting( "parser" ).extracting( "_inputBuffer" )
+ 				.satisfies( value -> assertThat( ( (ByteBuffer) value ).capacity() ).isZero() );
++		assertThat( cancelled ).extracting( "parser" ).extracting( "inputArray" ).isNull();
+ 		cancelled.close();
+ 		assertUtf8Clean( cancelled );
+ 		JsonParserSession failed = parsing.createParser();
+@@ -35,6 +36,32 @@ void utf8SessionsReleasePartialTreesAndParserReferencesOnEveryTerminalPath() {
+ 		assertUtf8Clean( completed );
+ 	}
+ 
++	@Test
++	void mixedBufferKindsReturnCallerOwnershipAfterEveryFeed() {
++		JsonParsing parsing = new JsonParsing();
++		String json = "{\"\\uD83D\\uDE00\":[-0,9223372036854775808,1.00,-7E-9,1e2147483648],\"text\":\"aaaaaaaaaaaaaaaaé漢😀\"}";
++		byte[] bytes = json.getBytes( StandardCharsets.UTF_8 );
++		try ( JsonParserSession parser = parsing.createParser() ) {
++			for ( int offset = 0, kind = 0; offset < bytes.length; kind++ ) {
++				int count = Math.min( 3, bytes.length - offset );
++				ByteBuffer storage = kind % 3 == 1 ? ByteBuffer.allocateDirect( count + 4 ) : ByteBuffer.allocate( count + 4 );
++				storage.position( 2 );
++				storage.put( bytes, offset, count ).flip().position( 2 );
++				ByteBuffer offered = kind % 3 == 2 ? storage.asReadOnlyBuffer() : storage.slice();
++				parser.feed( offered );
++				assertThat( offered.hasRemaining() ).isFalse();
++				assertThat( parser ).extracting( "parser" ).extracting( "inputArray" ).isNull();
++				assertThat( parser ).extracting( "parser" ).extracting( "_inputBuffer" )
++						.satisfies( value -> assertThat( ( (ByteBuffer) value ).capacity() ).isZero() );
++				for ( int i = 2; i < storage.limit(); i++ ) {
++					storage.put( i, (byte) '!' );
++				}
++				offset += count;
++			}
++			assertThat( parser.endOfInput().toString() ).isEqualTo( parsing.parse( json ).toString() );
++		}
++	}
++
+ 	@Test
+ 	void transcodingSessionsReleaseAllBuffersOnCancellationFailureAndCompletion() {
+ 		JsonParsing parsing = new JsonParsing();
+diff --git a/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonNumericUtf8DiagnosticBenchmark.java b/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonNumericUtf8DiagnosticBenchmark.java
+new file mode 100644
+index 0000000000..78bd14aa67
+--- /dev/null
++++ b/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonNumericUtf8DiagnosticBenchmark.java
+@@ -0,0 +1,197 @@
++package org.hibernate.search.integrationtest.performance.backend.elasticsearch;
++
++import java.nio.ByteBuffer;
++import java.nio.charset.StandardCharsets;
++import java.util.ArrayList;
++import java.util.List;
++import java.util.concurrent.TimeUnit;
++
++import org.hibernate.search.util.json.JsonArray;
++import org.hibernate.search.util.json.JsonObject;
++import org.hibernate.search.util.json.impl.JsonNumber;
++import org.hibernate.search.util.json.spi.JsonParsingOptions;
++
++import org.openjdk.jmh.annotations.Benchmark;
++import org.openjdk.jmh.annotations.BenchmarkMode;
++import org.openjdk.jmh.annotations.Fork;
++import org.openjdk.jmh.annotations.Measurement;
++import org.openjdk.jmh.annotations.Mode;
++import org.openjdk.jmh.annotations.OutputTimeUnit;
++import org.openjdk.jmh.annotations.Param;
++import org.openjdk.jmh.annotations.Scope;
++import org.openjdk.jmh.annotations.Setup;
++import org.openjdk.jmh.annotations.State;
++import org.openjdk.jmh.annotations.Warmup;
++import org.openjdk.jmh.infra.Blackhole;
++
++import tools.jackson.core.JsonParser;
++import tools.jackson.core.JsonToken;
++import tools.jackson.core.ObjectReadContext;
++import tools.jackson.core.StreamReadConstraints;
++import tools.jackson.core.async.ByteArrayFeeder;
++import tools.jackson.core.async.ByteBufferFeeder;
++import tools.jackson.core.json.JsonFactory;
++
++/** Valid numeric fixtures only: upstream feeding/completion diagnostics, not strict Search SPI competitors. */
++@BenchmarkMode(Mode.Throughput)
++@OutputTimeUnit(TimeUnit.SECONDS)
++@Warmup(iterations = 8, time = 1)
++@Measurement(iterations = 5, time = 1)
++@Fork(3)
++public class JsonNumericUtf8DiagnosticBenchmark {
++	@State(Scope.Thread)
++	public static class Input {
++		@Param({ "integers", "mixed" })
++		public String fixture;
++		@Param({ "tokens", "numbers", "tree" })
++		public String work;
++		byte[] utf8;
++		String[] lexemes;
++		JsonFactory jackson;
++
++		@Setup
++		public void setup() {
++			JsonBenchmarkSupport.verifyAffinity();
++			var options = JsonParsingOptions.DEFAULT;
++			jackson = JsonFactory.builder().streamReadConstraints( StreamReadConstraints.builder()
++					.maxNestingDepth( options.maxDepth() ).maxStringLength( options.maxStringLength() )
++					.maxNameLength( options.maxNameLength() ).maxNumberLength( options.maxNumberLength() )
++					.maxDocumentLength( -1 ).maxTokenCount( -1 ).build() ).build();
++			lexemes = new String[10_000];
++			String[] mixed = { "-42", "0.125", "1.00", "6.022e23", "-7E-9", "9223372036854775808", "1e2147483648" };
++			for ( int i = 0; i < lexemes.length; i++ ) {
++				lexemes[i] = switch ( fixture ) {
++					case "integers" -> Integer.toString( i );
++					case "mixed" -> mixed[i % mixed.length];
++					default -> throw new IllegalArgumentException( fixture );
++				};
++			}
++			utf8 = ( "{\"values\":[" + String.join( ",", lexemes ) + "]}" ).getBytes( StandardCharsets.UTF_8 );
++			if ( !List.of( "tokens", "numbers", "tree" ).contains( work ) ) {
++				throw new IllegalArgumentException( work );
++			}
++			for ( String input : List.of( "buffer", "array", "sync" ) ) {
++				List<String> actual = new ArrayList<>();
++				consume( this, input, null, actual );
++				if ( !List.of( lexemes ).equals( actual ) ) {
++					throw new IllegalStateException( "Diagnostic numeric lexeme mismatch: " + input );
++				}
++			}
++		}
++	}
++
++	@Benchmark
++	public long asyncByteBuffer(Input state, Blackhole blackhole) {
++		return consume( state, "buffer", blackhole, null );
++	}
++
++	@Benchmark
++	public long asyncByteArray(Input state, Blackhole blackhole) {
++		return consume( state, "array", blackhole, null );
++	}
++
++	@Benchmark
++	public long synchronousUtf8(Input state, Blackhole blackhole) {
++		return consume( state, "sync", blackhole, null );
++	}
++
++	@Benchmark
++	public JsonObject treeFromOwnedLexemes(Input state) {
++		JsonObject root = new JsonObject();
++		JsonArray values = new JsonArray();
++		root.add( "values", values );
++		for ( String lexeme : state.lexemes ) {
++			values.add( JsonNumber.jsonNumber( lexeme ) );
++		}
++		return root;
++	}
++
++	private static long consume(Input state, String input, Blackhole blackhole, List<String> actual) {
++		try ( JsonParser parser = switch ( input ) {
++			case "buffer" -> state.jackson.createNonBlockingByteBufferParser( ObjectReadContext.empty() );
++			case "array" -> state.jackson.createNonBlockingByteArrayParser( ObjectReadContext.empty() );
++			case "sync" -> state.jackson.createParser( ObjectReadContext.empty(), state.utf8 );
++			default -> throw new IllegalArgumentException( input );
++		} ) {
++			JsonObject root = null;
++			JsonArray values = null;
++			if ( "tree".equals( state.work ) ) {
++				root = new JsonObject();
++				values = new JsonArray();
++				root.add( "values", values );
++			}
++			long count = 0;
++			if ( "sync".equals( input ) ) {
++				count = drain( parser, state.work, values, blackhole, actual, true );
++			}
++			else {
++				for ( int offset = 0; offset < state.utf8.length; ) {
++					int end = Math.min( offset + 8192, state.utf8.length );
++					if ( "buffer".equals( input ) ) {
++						( (ByteBufferFeeder) parser.nonBlockingInputFeeder() )
++								.feedInput( ByteBuffer.wrap( state.utf8, offset, end - offset ).slice() );
++					}
++					else {
++						( (ByteArrayFeeder) parser.nonBlockingInputFeeder() ).feedInput( state.utf8, offset, end );
++					}
++					count += drain( parser, state.work, values, blackhole, actual, false );
++					offset = end;
++				}
++				parser.nonBlockingInputFeeder().endOfInput();
++				count += drain( parser, state.work, values, blackhole, actual, true );
++			}
++			if ( actual != null && values != null ) {
++				if ( values.size() != state.lexemes.length ) {
++					throw new IllegalStateException( "Incomplete diagnostic tree" );
++				}
++				for ( int i = 0; i < values.size(); i++ ) {
++					if ( !state.lexemes[i].equals( values.get( i ).getAsString() ) ) {
++						throw new IllegalStateException( "Diagnostic tree lexeme mismatch" );
++					}
++				}
++			}
++			if ( blackhole != null && root != null ) {
++				blackhole.consume( root );
++			}
++			if ( count != state.lexemes.length ) {
++				throw new IllegalStateException( "Incomplete numeric diagnostic" );
++			}
++			return count;
++		}
++	}
++
++	private static long drain(JsonParser parser, String work, JsonArray values, Blackhole blackhole,
++			List<String> actual, boolean ended) {
++		long count = 0;
++		while ( true ) {
++			JsonToken token = parser.nextToken();
++			if ( token == null ) {
++				return count;
++			}
++			if ( token == JsonToken.NOT_AVAILABLE ) {
++				if ( ended ) {
++					throw new IllegalStateException( "Incomplete numeric diagnostic at EOF" );
++				}
++				return count;
++			}
++			if ( token == JsonToken.PROPERTY_NAME ) {
++				if ( blackhole != null ) {
++					blackhole.consume( parser.currentName() );
++				}
++			}
++			else if ( token == JsonToken.VALUE_NUMBER_INT || token == JsonToken.VALUE_NUMBER_FLOAT ) {
++				String lexeme = parser.getString();
++				count++;
++				if ( actual != null ) {
++					actual.add( lexeme );
++				}
++				if ( values != null ) {
++					values.add( JsonNumber.jsonNumber( lexeme ) );
++				}
++				else if ( blackhole != null ) {
++					blackhole.consume( "numbers".equals( work ) ? JsonNumber.jsonNumber( lexeme ) : lexeme );
++				}
++			}
++		}
++	}
++}
+diff --git a/integrationtest/performance/backend/scripts/summarize-json-jfr.py b/integrationtest/performance/backend/scripts/summarize-json-jfr.py
+new file mode 100644
+index 0000000000..07e56430bb
+--- /dev/null
++++ b/integrationtest/performance/backend/scripts/summarize-json-jfr.py
+@@ -0,0 +1,56 @@
++#!/usr/bin/env python3
++# SPDX-License-Identifier: Apache-2.0
++# Copyright Red Hat Inc. and Hibernate Authors
++"""Summarize jfr print --json execution/native samples; counts are not exact CPU fractions."""
++import argparse
++from collections import Counter
++import hashlib
++import json
++from pathlib import Path
++
++
++def main():
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument('samples', type=Path)
++    parser.add_argument('--thread', default='searchParser-jmh-worker', help='sampled thread name substring')
++    args = parser.parse_args()
++    data = args.samples.read_bytes()
++    events = json.loads(data)['recording']['events']
++    top, inclusive, stacks = Counter(), Counter(), Counter()
++    selected = empty = truncated = 0
++    for event in events:
++        if event['type'] not in {'jdk.ExecutionSample', 'jdk.NativeMethodSample'}:
++            continue
++        values = event['values']
++        thread = values.get('sampledThread') or values.get('eventThread') or {}
++        if args.thread not in thread.get('javaName', ''):
++            continue
++        trace = values.get('stackTrace') or {}
++        frames = trace.get('frames') or []
++        names = [frame['method']['type']['name'].replace('/', '.') + '.' + frame['method']['name']
++                 for frame in frames]
++        if not names:
++            empty += 1
++            continue
++        selected += 1
++        truncated += bool(trace.get('truncated'))
++        top[names[0]] += 1
++        inclusive.update(set(names))
++        stacks[tuple(names)] += 1
++    print('Execution/native samples; diagnostic counts, not exact CPU fractions.')
++    print('Input:', args.samples)
++    print('Input SHA-256:', hashlib.sha256(data).hexdigest())
++    print('Thread substring:', args.thread)
++    print(f'Total events: {len(events)}; selected stacks: {selected}; empty: {empty}; truncated: {truncated}')
++    for label, counts in [('Top frame', top), ('Inclusive (one count per frame name per sample)', inclusive)]:
++        print('\n' + label)
++        for name, count in counts.most_common():
++            print(f'{count:5} {name}')
++    print('\nAll unique selected stacks (count followed by full frame names)')
++    for frames, count in stacks.most_common():
++        print(f'\n{count} samples')
++        print('\n'.join('  ' + name for name in frames))
++
++
++if __name__ == '__main__':
++    main()

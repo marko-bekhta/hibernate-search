@@ -1,0 +1,760 @@
+diff --git a/design/elasticsearch-async-json-task4/README.md b/design/elasticsearch-async-json-task4/README.md
+index 463c845156..cfaa18bd69 100644
+--- a/design/elasticsearch-async-json-task4/README.md
++++ b/design/elasticsearch-async-json-task4/README.md
+@@ -64,3 +64,40 @@ rebuild is not promised. Production source hashes identify unchanged algorithms
+ across benchmark-only additions. The artifact hash changes when the benchmark
+ JAR is rebuilt; never substitute a stale JAR for a new candidate. A stale smoke
+ run was rejected/discarded during development and is excluded from this index.
++
++## Follow-up evidence
++
++[Follow-up report](../elasticsearch-async-json-task4-followup.md) distinguishes
++experimental parser runs with duplicated inherited setup from corrected final
++controls. Writer states are unaffected. Raw evidence is retained; runner gating
++metadata alone does not certify every harness condition.
++
++| Run | Purpose | Evidence |
++| --- | --- | --- |
++| followup-ascii-control | Opaque small/large ASCII output controls. | [raw](followup-ascii-control/jmh.json) · [command](followup-ascii-control/command.txt) · [environment](followup-ascii-control/environment.json) · [source](followup-ascii-control/source.patch) · [console](followup-ascii-control/console.log) |
++| followup-fragment-boundary-smoke | Corrected tiny-feed complete-content smoke; non-gating. | [raw](followup-fragment-boundary-smoke/jmh.json) · [command](followup-fragment-boundary-smoke/command.txt) · [environment](followup-fragment-boundary-smoke/environment.json) · [source](followup-fragment-boundary-smoke/source.patch) · [console](followup-fragment-boundary-smoke/console.log) |
++| followup-fragments | Matched 64/1024/8192-byte fragments; historical duplicated setup. | [raw](followup-fragments/jmh.json) · [command](followup-fragments/command.txt) · [environment](followup-fragments/environment.json) · [source](followup-fragments/source.patch) · [console](followup-fragments/console.log) |
++| followup-numeric-before | Original eager cache, no/selected/repeated reads; historical duplicated setup. | [raw](followup-numeric-before/jmh.json) · [command](followup-numeric-before/command.txt) · [environment](followup-numeric-before/environment.json) · [source](followup-numeric-before/source.patch) · [console](followup-numeric-before/console.log) |
++| followup-numeric-combined | Combined grammar/accumulation; historical duplicated setup. | [raw](followup-numeric-combined/jmh.json) · [command](followup-numeric-combined/command.txt) · [environment](followup-numeric-combined/environment.json) · [source](followup-numeric-combined/source.patch) · [console](followup-numeric-combined/console.log) |
++| followup-numeric-final | Corrected single-setup final numeric gate controls. | [raw](followup-numeric-final/jmh.json) · [command](followup-numeric-final/command.txt) · [environment](followup-numeric-final/environment.json) · [source](followup-numeric-final/source.patch) · [console](followup-numeric-final/console.log) |
++| followup-numeric-final-allocation | Separate final eager cache allocation diagnostic. | [raw](followup-numeric-final-allocation/jmh.json) · [command](followup-numeric-final-allocation/command.txt) · [environment](followup-numeric-final-allocation/environment.json) · [source](followup-numeric-final-allocation/source.patch) · [console](followup-numeric-final-allocation/console.log) |
++| followup-numeric-final-stack | Separate final numeric UTF-8 stack diagnostic. | [raw](followup-numeric-final-stack/jmh.json) · [command](followup-numeric-final-stack/command.txt) · [environment](followup-numeric-final-stack/environment.json) · [source](followup-numeric-final-stack/source.patch) · [console](followup-numeric-final-stack/console.log) |
++| followup-numeric-on-demand | Immutable conversion-on-demand experiment; historical duplicated setup. | [raw](followup-numeric-on-demand/jmh.json) · [command](followup-numeric-on-demand/command.txt) · [environment](followup-numeric-on-demand/environment.json) · [source](followup-numeric-on-demand/source.patch) · [console](followup-numeric-on-demand/console.log) |
++| followup-numeric-on-demand-allocation | Separate on-demand allocation diagnostic. | [raw](followup-numeric-on-demand-allocation/jmh.json) · [command](followup-numeric-on-demand-allocation/command.txt) · [environment](followup-numeric-on-demand-allocation/environment.json) · [source](followup-numeric-on-demand-allocation/source.patch) · [console](followup-numeric-on-demand-allocation/console.log) |
++| followup-numeric-token-final | Corrected single-setup fully consumed numeric token controls. | [raw](followup-numeric-token-final/jmh.json) · [command](followup-numeric-token-final/command.txt) · [environment](followup-numeric-token-final/environment.json) · [source](followup-numeric-token-final/source.patch) · [console](followup-numeric-token-final/console.log) |
++| followup-numeric-token-isolation | Initial numeric token baselines; historical duplicated setup. | [raw](followup-numeric-token-isolation/jmh.json) · [command](followup-numeric-token-isolation/command.txt) · [environment](followup-numeric-token-isolation/environment.json) · [source](followup-numeric-token-isolation/source.patch) · [console](followup-numeric-token-isolation/console.log) |
++| followup-scalar-final | Corrected single-setup large scalar/core token controls. | [raw](followup-scalar-final/jmh.json) · [command](followup-scalar-final/command.txt) · [environment](followup-scalar-final/environment.json) · [source](followup-scalar-final/source.patch) · [console](followup-scalar-final/console.log) |
++| followup-scalar-final-stack | Separate final String stack diagnostic. | [raw](followup-scalar-final-stack/jmh.json) · [command](followup-scalar-final-stack/command.txt) · [environment](followup-scalar-final-stack/environment.json) · [source](followup-scalar-final-stack/source.patch) · [console](followup-scalar-final-stack/console.log) |
++| followup-scalar-isolation | Initial fully consumed token baselines; historical duplicated setup. | [raw](followup-scalar-isolation/jmh.json) · [command](followup-scalar-isolation/command.txt) · [environment](followup-scalar-isolation/environment.json) · [source](followup-scalar-isolation/source.patch) · [console](followup-scalar-isolation/console.log) |
++| followup-unicode-after | Direct Unicode/escape loop, fresh opaque output. | [raw](followup-unicode-after/jmh.json) · [command](followup-unicode-after/command.txt) · [environment](followup-unicode-after/environment.json) · [source](followup-unicode-after/source.patch) · [console](followup-unicode-after/console.log) |
++| followup-unicode-before | Longer-warmup original writer comparison. | [raw](followup-unicode-before/jmh.json) · [command](followup-unicode-before/command.txt) · [environment](followup-unicode-before/environment.json) · [source](followup-unicode-before/source.patch) · [console](followup-unicode-before/console.log) |
++| followup-unicode-compilation | Separate C2/compilation diagnostic, non-gating. | [raw](followup-unicode-compilation/jmh.json) · [command](followup-unicode-compilation/command.txt) · [environment](followup-unicode-compilation/environment.json) · [source](followup-unicode-compilation/source.patch) · [console](followup-unicode-compilation/console.log) |
++| followup-unicode-reused | Raw output excluding matched probes. | [raw](followup-unicode-reused/jmh.json) · [command](followup-unicode-reused/command.txt) · [environment](followup-unicode-reused/environment.json) · [source](followup-unicode-reused/source.patch) · [console](followup-unicode-reused/console.log) |
++| followup-utf8-final | Corrected single-setup 8192-byte UTF-8 controls. | [raw](followup-utf8-final/jmh.json) · [command](followup-utf8-final/command.txt) · [environment](followup-utf8-final/environment.json) · [source](followup-utf8-final/source.patch) · [console](followup-utf8-final/console.log) |
++| followup-utf8-scalar-repeat | Independent corrected scalar UTF-8 corroboration. | [raw](followup-utf8-scalar-repeat/jmh.json) · [command](followup-utf8-scalar-repeat/command.txt) · [environment](followup-utf8-scalar-repeat/environment.json) · [source](followup-utf8-scalar-repeat/source.patch) · [console](followup-utf8-scalar-repeat/console.log) |
++
++[Summary with fork means](followup-summary.csv) ·
++[Generated setup lifecycle check](followup-harness-lifecycle-check.txt) ·
++[Correctness/slow consumer](followup-correctness-and-slow-consumer.log) ·
++[Final JSON verification](followup-final-json-build.log) ·
++[Corrected benchmark build](followup-corrected-harness-build.log).
+diff --git a/integrationtest/performance/backend/README.md b/integrationtest/performance/backend/README.md
+index d884d2804a..fcd379cd33 100644
+--- a/integrationtest/performance/backend/README.md
++++ b/integrationtest/performance/backend/README.md
+@@ -255,3 +255,61 @@ a transport, network fragmentation or an event-loop latency guarantee. Parser
+ benchmarks use only the first fixture part, as the parser accepts a single JSON
+ root; output benchmarks drain the complete NDJSON body. The output lifecycle
+ parameter does not alter these parser operations.
++
++### Follow-up isolation benchmarks
++
++`JsonScalarConsumptionBenchmark` starts with the same owned String for all three
++methods. Its Jackson-only method advances through every token and calls
++`getString()` for property names and scalar values, consuming each returned
++String opaquely. This forces lazy string completion and assembly. It deliberately
++omits Search's raw UTF-16 validation, single-root tree checks, name-byte checks
++and tree allocation; it isolates upstream work on valid single-root fixtures,
++not an interchangeable parser. Core token/depth/length constraints match the
++Search defaults. Setup checks the complete expected scalar outside timing.
++
++```shell
++integrationtest/performance/backend/scripts/run-json-benchmarks.sh --skip-build \
++  --out /tmp/json-scalar-isolation --cores 0,2 --warmup 8 \
++  --fixtures scalar-1m --pattern 'JsonScalarConsumptionBenchmark.*'
++```
++
++`JsonNumericConsumptionBenchmark` constructs the complete 10,000-number tree
++before reading it. `reads=none` observes the tree without numeric access;
++`selected` reads every hundredth value once (100 reads); `repeated` reads every
++value ten times (100,000 reads). Every operation consumes the tree opaquely and
++returns the sum. Setup independently checks sums of 0, 495,000 and 499,950,000.
++Construction experiments must include these cases, and full UTF-8 construction,
++when assessing eager caches versus conversion on demand. Getter-only results
++cannot answer that tradeoff.
++
++```shell
++integrationtest/performance/backend/scripts/run-json-benchmarks.sh --skip-build \
++  --out /tmp/json-numeric-consumption --cores 0,2 --fixtures numbers-10000 \
++  --pattern 'JsonNumericConsumptionBenchmark.*'
++# Select a subset with repeatable additional JMH parameter arguments:
++integrationtest/performance/backend/scripts/run-json-benchmarks.sh --skip-build \
++  --out /tmp/json-numeric-selected --cores 0,2 --fixtures numbers-10000 \
++  --pattern 'JsonNumericConsumptionBenchmark.*' --param reads=none,selected
++# Matched maximum input read/feed fragments; default feedSize remains 8192:
++integrationtest/performance/backend/scripts/run-json-benchmarks.sh --skip-build \
++  --out /tmp/json-fragments --cores 0,2 --fixtures unicode,scalar-1m \
++  --pattern 'JsonUtf8IngressBenchmark.*Parser$' --param feedSize=64,1024,8192
++```
++
++Fragmentation caps both the Gson InputStream read length and Search's offered
++ByteBuffer region. Search also retains its configured maximum internal feed
++size of 8192. Both paths parse through EOF, return complete trees and verify full
++bytes in trial setup for every chunk parameter. This measures CPU throughput
++under controlled in-memory fragmentation, not network arrival timing or an
++event-loop latency distribution. One-byte and escaped-name boundaries remain
++covered by parser correctness tests; their cost need not be repeated in every
++large-scalar throughput campaign.
++
++The scalar-consumption fixture also accepts `numbers-10000` for upstream numeric
++lexeme completion. `jacksonUtf8Tokens` completes the same scalars through Core's
++public async parser with 8192-byte slices and explicit EOF. Setup verifies every
++scalar against the fixture through both character and UTF-8 token paths. This
++UTF-8 baseline omits Search's separate canonical UTF-8 validator, ownership
++handoff clearing, tree construction and the escaped-name workaround (fixture
++names are ASCII). It is a diagnostic baseline, not a replacement SPI or a
++strictness-equivalent end-to-end tree parser.
+diff --git a/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonUtf8IngressBenchmark.java b/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonUtf8IngressBenchmark.java
+index e7bf52f6d2..c5692a4025 100644
+--- a/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonUtf8IngressBenchmark.java
++++ b/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonUtf8IngressBenchmark.java
+@@ -17,8 +17,8 @@
+ import org.openjdk.jmh.annotations.Measurement;
+ import org.openjdk.jmh.annotations.Mode;
+ import org.openjdk.jmh.annotations.OutputTimeUnit;
++import org.openjdk.jmh.annotations.Param;
+ import org.openjdk.jmh.annotations.Scope;
+-import org.openjdk.jmh.annotations.Setup;
+ import org.openjdk.jmh.annotations.State;
+ import org.openjdk.jmh.annotations.Warmup;
+ 
+@@ -32,11 +32,16 @@ public class JsonUtf8IngressBenchmark {
+ 	@State(Scope.Thread)
+ 	public static class Bodies extends JsonComparisonBenchmark.Bodies {
+ 		byte[] input;
++		@Param({ "8192" })
++		public int feedSize;
+ 
++		// The inherited @Setup invokes this override; annotating it too schedules it twice.
+ 		@Override
+-		@Setup
+ 		public void setup() {
+ 			super.setup();
++			if ( feedSize <= 0 ) {
++				throw new IllegalArgumentException( "Feed size must be positive" );
++			}
+ 			input = json.getBytes( StandardCharsets.UTF_8 );
+ 			try {
+ 				JsonElement search = parseSearch( this );
+@@ -66,7 +71,8 @@ public com.google.gson.JsonObject gsonParser(Bodies state) throws IOException {
+ 	private static JsonElement parseSearch(Bodies state) {
+ 		try ( var session = state.parsing.createParser() ) {
+ 			ByteBuffer input = ByteBuffer.wrap( state.input );
+-			while ( input.hasRemaining() ) {
++			while ( input.position() < state.input.length ) {
++				input.limit( Math.min( input.position() + state.feedSize, state.input.length ) );
+ 				session.feed( input );
+ 			}
+ 			return session.endOfInput();
+@@ -74,7 +80,8 @@ private static JsonElement parseSearch(Bodies state) {
+ 	}
+ 
+ 	private static com.google.gson.JsonObject parseGson(Bodies state) throws IOException {
+-		try ( var reader = new InputStreamReader( new ByteArrayInputStream( state.input ), StandardCharsets.UTF_8 ) ) {
++		try ( var reader =
++				new InputStreamReader( new FragmentedInputStream( state.input, state.feedSize ), StandardCharsets.UTF_8 ) ) {
+ 			var result = state.gson.fromJson( reader, com.google.gson.JsonObject.class );
+ 			if ( reader.read() != -1 ) {
+ 				throw new IllegalStateException( "Incomplete UTF-8 consumption" );
+@@ -82,4 +89,18 @@ private static com.google.gson.JsonObject parseGson(Bodies state) throws IOExcep
+ 			return result;
+ 		}
+ 	}
++
++	private static final class FragmentedInputStream extends ByteArrayInputStream {
++		private final int feedSize;
++
++		private FragmentedInputStream(byte[] input, int feedSize) {
++			super( input );
++			this.feedSize = feedSize;
++		}
++
++		@Override
++		public synchronized int read(byte[] bytes, int offset, int length) {
++			return super.read( bytes, offset, Math.min( length, feedSize ) );
++		}
++	}
+ }
+diff --git a/integrationtest/performance/backend/scripts/json-benchmark-runner.py b/integrationtest/performance/backend/scripts/json-benchmark-runner.py
+index d715fe66e3..1ed9b69f53 100644
+--- a/integrationtest/performance/backend/scripts/json-benchmark-runner.py
++++ b/integrationtest/performance/backend/scripts/json-benchmark-runner.py
+@@ -64,11 +64,16 @@ def main():
+     parser.add_argument('--pattern', default='JsonComparisonBenchmark.(gson|jackson|synchronousCursor|incrementalCursor|boundedWorker)$')
+     parser.add_argument('--fixtures', default='small,mapping,unicode,nested,scalar-1m,scalar-8m,bulk-10000')
+     parser.add_argument('--lifecycle', choices=['fresh', 'reused'], default='fresh')
++    parser.add_argument('--param', action='append', default=[], help='additional JMH parameter, e.g. feedSize=64,1024,8192')
+     parser.add_argument('--profiler', help='optional JMH profiler specification; separate diagnostic run')
+     parser.add_argument('--jvm-args', default='', help='additional fork JVM arguments (recorded verbatim)')
+     args = parser.parse_args()
+     if args.quick and args.cold:
+         parser.error('--quick and --cold are mutually exclusive')
++    for parameter in args.param:
++        name, separator, value = parameter.partition('=')
++        if not separator or not name.isidentifier() or not value:
++            parser.error('--param requires a nonempty name=value')
+     if not os.sys.platform.startswith('linux'):
+         parser.error('Linux is required for affinity verification')
+     allowed = os.sched_getaffinity(0)
+@@ -136,6 +141,8 @@ def main():
+         command += ['-bm', 'ss']
+     if args.fixtures:
+         command += ['-p', f'fixture={args.fixtures}', '-p', f'lifecycle={args.lifecycle}']
++    for parameter in args.param:
++        command += ['-p', parameter]
+     if args.profiler:
+         command += ['-prof', args.profiler]
+     patch = capture(['git', '-C', str(ROOT), 'diff', 'HEAD', '--binary'])
+diff --git a/util/json/src/main/java/org/hibernate/search/util/json/impl/JsonNumber.java b/util/json/src/main/java/org/hibernate/search/util/json/impl/JsonNumber.java
+index fd173e8e05..586da5bf9b 100644
+--- a/util/json/src/main/java/org/hibernate/search/util/json/impl/JsonNumber.java
++++ b/util/json/src/main/java/org/hibernate/search/util/json/impl/JsonNumber.java
+@@ -45,28 +45,55 @@ private JsonNumber(String lexeme, boolean validated) {
+ 		integral = negative ? result : -result;
+ 	}
+ 
++	private JsonNumber(String lexeme, boolean hasLong, long integral) {
++		this.lexeme = lexeme;
++		this.validated = true;
++		this.hasLong = hasLong;
++		this.integral = integral;
++	}
++
+ 	static JsonNumber fromParser(String lexeme) {
+ 		return jsonNumber( lexeme );
+ 	}
+ 
+ 	/** Internal factory shared with the public model's validated-number construction. */
+ 	public static JsonNumber jsonNumber(String lexeme) {
+-		int offset = lexeme.startsWith( "-" ) ? 1 : 0;
++		boolean negative = lexeme.startsWith( "-" );
++		int offset = negative ? 1 : 0;
+ 		int length = lexeme.length();
+ 		if ( offset == length ) {
+ 			throw invalid( lexeme );
+ 		}
++		long limit = negative ? Long.MIN_VALUE : -Long.MAX_VALUE;
++		long multiplicationLimit = limit / 10;
++		long result = 0;
++		boolean fits = true;
+ 		if ( lexeme.charAt( offset ) == '0' ) {
+ 			offset++;
+ 		}
+ 		else {
+-			char digit = lexeme.charAt( offset );
+-			if ( digit < '1' || digit > '9' ) {
++			char first = lexeme.charAt( offset );
++			if ( first < '1' || first > '9' ) {
+ 				throw invalid( lexeme );
+ 			}
+-			offset = digitsEnd( lexeme, offset );
++			while ( offset < length ) {
++				int digit = lexeme.charAt( offset ) - '0';
++				if ( digit < 0 || digit > 9 ) {
++					break;
++				}
++				if ( fits ) {
++					if ( result < multiplicationLimit || result * 10 < limit + digit ) {
++						fits = false;
++					}
++					else {
++						result = result * 10 - digit;
++					}
++				}
++				offset++;
++			}
+ 		}
+ 		if ( offset < length && lexeme.charAt( offset ) == '.' ) {
++			fits = false;
+ 			int start = offset + 1;
+ 			offset = digitsEnd( lexeme, start );
+ 			if ( offset == start ) {
+@@ -74,6 +101,7 @@ public static JsonNumber jsonNumber(String lexeme) {
+ 			}
+ 		}
+ 		if ( offset < length && ( lexeme.charAt( offset ) == 'e' || lexeme.charAt( offset ) == 'E' ) ) {
++			fits = false;
+ 			offset++;
+ 			if ( offset < length && ( lexeme.charAt( offset ) == '+' || lexeme.charAt( offset ) == '-' ) ) {
+ 				offset++;
+@@ -87,7 +115,7 @@ public static JsonNumber jsonNumber(String lexeme) {
+ 		if ( offset != length ) {
+ 			throw invalid( lexeme );
+ 		}
+-		return new JsonNumber( lexeme, true );
++		return new JsonNumber( lexeme, fits, negative ? result : -result );
+ 	}
+ 
+ 	private static int digitsEnd(String text, int start) {
+diff --git a/util/json/src/main/java/org/hibernate/search/util/json/impl/Utf8JsonWriteCursor.java b/util/json/src/main/java/org/hibernate/search/util/json/impl/Utf8JsonWriteCursor.java
+index b739ce193d..d044585f30 100644
+--- a/util/json/src/main/java/org/hibernate/search/util/json/impl/Utf8JsonWriteCursor.java
++++ b/util/json/src/main/java/org/hibernate/search/util/json/impl/Utf8JsonWriteCursor.java
+@@ -55,7 +55,7 @@ public int write(ByteBuffer destination) {
+ 		while ( destination.hasRemaining() && !complete ) {
+ 			if ( pendingOffset == pendingLength ) {
+ 				pendingOffset = pendingLength = 0;
+-				if ( writeAsciiRun( destination ) ) {
++				if ( writeAsciiRun( destination ) || writeUnicodeRun( destination ) ) {
+ 					if ( scalar == null && nextValue == null && frames.isEmpty() ) {
+ 						complete = true;
+ 						pending = null;
+@@ -122,6 +122,76 @@ private boolean writeAsciiRun(ByteBuffer destination) {
+ 		return true;
+ 	}
+ 
++	/** Encode complete units directly into caller storage; the last partial unit uses pending. */
++	private boolean writeUnicodeRun(ByteBuffer destination) {
++		if ( scalar == null
++				|| !quoted || scalarStage != 1 || !destination.hasArray()
++				|| destination.remaining() < 6 ) {
++			return false;
++		}
++		byte[] array = destination.array();
++		int base = destination.arrayOffset();
++		int position = base + destination.position();
++		int end = base + destination.limit() - 6;
++		int offset = scalarOffset;
++		String text = scalar;
++		while ( position <= end && offset < text.length() ) {
++			char character = text.charAt( offset++ );
++			if ( character < 128 && SAFE_ASCII[character] ) {
++				array[position++] = (byte) character;
++				continue;
++			}
++			char escape = switch ( character ) {
++				case '"', '\\' -> character;
++				case '\b' -> 'b';
++				case '\f' -> 'f';
++				case '\n' -> 'n';
++				case '\r' -> 'r';
++				case '\t' -> 't';
++				default -> 0;
++			};
++			if ( escape != 0 ) {
++				array[position++] = '\\';
++				array[position++] = (byte) escape;
++			}
++			else if ( character < 128
++					|| character == 0x2028 || character == 0x2029
++					|| Character.isSurrogate( character )
++							&& !( Character.isHighSurrogate( character )
++									&& offset < text.length()
++									&& Character.isLowSurrogate( text.charAt( offset ) ) ) ) {
++				array[position++] = '\\';
++				array[position++] = 'u';
++				array[position++] = (byte) HEX.charAt( character >> 12 & 0xf );
++				array[position++] = (byte) HEX.charAt( character >> 8 & 0xf );
++				array[position++] = (byte) HEX.charAt( character >> 4 & 0xf );
++				array[position++] = (byte) HEX.charAt( character & 0xf );
++			}
++			else if ( character < 0x800 ) {
++				array[position++] = (byte) ( 0xc0 | character >> 6 );
++				array[position++] = (byte) ( 0x80 | character & 0x3f );
++			}
++			else if ( Character.isHighSurrogate( character ) ) {
++				int codePoint = Character.toCodePoint( character, text.charAt( offset++ ) );
++				array[position++] = (byte) ( 0xf0 | codePoint >> 18 );
++				array[position++] = (byte) ( 0x80 | codePoint >> 12 & 0x3f );
++				array[position++] = (byte) ( 0x80 | codePoint >> 6 & 0x3f );
++				array[position++] = (byte) ( 0x80 | codePoint & 0x3f );
++			}
++			else {
++				array[position++] = (byte) ( 0xe0 | character >> 12 );
++				array[position++] = (byte) ( 0x80 | character >> 6 & 0x3f );
++				array[position++] = (byte) ( 0x80 | character & 0x3f );
++			}
++		}
++		destination.position( position - base );
++		scalarOffset = offset;
++		if ( offset == text.length() ) {
++			scalarStage = 2;
++		}
++		return true;
++	}
++
+ 	private void prepare() {
+ 		while ( pendingLength == 0 ) {
+ 			if ( scalar != null ) {
+diff --git a/util/json/src/test/java/org/hibernate/search/util/json/JsonModelTest.java b/util/json/src/test/java/org/hibernate/search/util/json/JsonModelTest.java
+index abc71e005f..5b3fd6cc03 100644
+--- a/util/json/src/test/java/org/hibernate/search/util/json/JsonModelTest.java
++++ b/util/json/src/test/java/org/hibernate/search/util/json/JsonModelTest.java
+@@ -69,6 +69,45 @@ void integralFastPathMatchesDecimalNarrowing() {
+ 		}
+ 	}
+ 
++	@Test
++	void numberFactoriesRetainStrictGrammarAndSignedZero() {
++		for ( String invalid : new String[] {
++				"",
++				"-",
++				"+1",
++				"01",
++				"-01",
++				".1",
++				"-.1",
++				"0.",
++				"1e",
++				"1e+",
++				"1e-",
++				"0E+",
++				"1e+-1",
++				"1x",
++				"1 " } ) {
++			assertThatThrownBy( () -> JsonPrimitive.number( invalid ) ).isInstanceOf( IllegalArgumentException.class );
++		}
++		for ( String valid : new String[] {
++				"0",
++				"-0",
++				"0.1",
++				"-0.0",
++				"10",
++				"1e+000",
++				"-0E-000",
++				"1E999999999999999999999999999" } ) {
++			assertThat( JsonPrimitive.number( valid ).getAsString() ).isEqualTo( valid );
++		}
++		JsonPrimitive zero = JsonPrimitive.number( "-0" );
++		assertThat( zero.getAsLong() ).isZero();
++		assertThat( zero.getAsInt() ).isZero();
++		assertThat( Double.doubleToRawLongBits( zero.getAsDouble() ) ).isEqualTo( Long.MIN_VALUE );
++		assertThat( Float.floatToRawIntBits( zero.getAsFloat() ) ).isEqualTo( Integer.MIN_VALUE );
++		assertThat( zero.getAsString() ).isEqualTo( "-0" );
++	}
++
+ 	@Test
+ 	void numbersPreserveLexemesAndNarrowing() {
+ 		for ( String number : new String[] { "-0", "1.2300e+04", "1.0E-04", "9007199254740993", "0.000", "-1e+0003" } ) {
+diff --git a/util/json/src/test/java/org/hibernate/search/util/json/JsonOutputTest.java b/util/json/src/test/java/org/hibernate/search/util/json/JsonOutputTest.java
+index a1ab0522c1..09723db0a4 100644
+--- a/util/json/src/test/java/org/hibernate/search/util/json/JsonOutputTest.java
++++ b/util/json/src/test/java/org/hibernate/search/util/json/JsonOutputTest.java
+@@ -23,7 +23,7 @@
+ 
+ class JsonOutputTest {
+ 	@ParameterizedTest
+-	@ValueSource(ints = { 1, 2, 5, 8192 })
++	@ValueSource(ints = { 1, 2, 3, 4, 5, 6, 7, 11, 8192 })
+ 	void fragmentedOutputAndBufferBoundaries(int capacity) throws IOException {
+ 		JsonObject tree = fixture();
+ 		JsonBody body = JsonBodies.of( tree );
+@@ -81,6 +81,20 @@ void allCharacterEscapesAndSupplementaryPairsAgreeWithJackson() throws IOExcepti
+ 				.isEqualTo( "\"\\u003c\\u003e\\u0026\\u003d\\u0027\\u2028\\u2029é中😀\\ud800x\\udfff\"" );
+ 	}
+ 
++	@Test
++	void directUnicodeRunsYieldAtEveryEncodedUnitBoundary() throws IOException {
++		String text = "aé中😀\"\\\b\f\n\r\t\u0000<>&='\u2028\u2029\ud800x\udfff";
++		JsonObject tree = new JsonObject();
++		// Vary the prefix to exercise each remaining destination size for both names and values.
++		for ( int prefix = 0; prefix < 12; prefix++ ) {
++			tree.addProperty( "x".repeat( prefix ) + text, text.repeat( 4 ) );
++		}
++		byte[] expected = jackson( tree );
++		for ( int capacity = 1; capacity <= 32; capacity++ ) {
++			assertThat( drain( JsonBodies.of( tree ), capacity ) ).isEqualTo( expected );
++		}
++	}
++
+ 	@Test
+ 	void stableBoundedContentLengthAndExactLimit() throws IOException {
+ 		for ( int length : new int[] { 1, 8191, 8192, 8193, 1_000_000 } ) {
+diff --git a/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonNumericConsumptionBenchmark.java b/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonNumericConsumptionBenchmark.java
+new file mode 100644
+index 0000000000..833c289d4d
+--- /dev/null
++++ b/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonNumericConsumptionBenchmark.java
+@@ -0,0 +1,96 @@
++package org.hibernate.search.integrationtest.performance.backend.elasticsearch;
++
++import java.util.concurrent.TimeUnit;
++
++import org.hibernate.search.util.json.JsonElement;
++
++import org.openjdk.jmh.annotations.Benchmark;
++import org.openjdk.jmh.annotations.BenchmarkMode;
++import org.openjdk.jmh.annotations.Fork;
++import org.openjdk.jmh.annotations.Measurement;
++import org.openjdk.jmh.annotations.Mode;
++import org.openjdk.jmh.annotations.OutputTimeUnit;
++import org.openjdk.jmh.annotations.Param;
++import org.openjdk.jmh.annotations.Scope;
++import org.openjdk.jmh.annotations.State;
++import org.openjdk.jmh.annotations.Warmup;
++import org.openjdk.jmh.infra.Blackhole;
++
++/** Complete numeric-tree construction, with no reads, selected reads, or ten reads of every value. */
++@BenchmarkMode(Mode.Throughput)
++@OutputTimeUnit(TimeUnit.SECONDS)
++@Warmup(iterations = 5, time = 1)
++@Measurement(iterations = 5, time = 1)
++@Fork(3)
++public class JsonNumericConsumptionBenchmark {
++	@State(Scope.Thread)
++	public static class Numbers extends JsonComparisonBenchmark.Bodies {
++		@Param({ "none", "selected", "repeated" })
++		public String reads;
++
++		// The inherited @Setup invokes this override; annotating it too schedules it twice.
++		@Override
++		public void setup() {
++			super.setup();
++			if ( !"numbers-10000".equals( fixture ) ) {
++				throw new IllegalArgumentException( "Numeric consumption requires numbers-10000" );
++			}
++			long expected = switch ( reads ) {
++				case "none" -> 0;
++				case "selected" -> 495_000;
++				case "repeated" -> 499_950_000;
++				default -> throw new IllegalArgumentException( reads );
++			};
++			if ( readSearch( parsing.parse( json ), reads ) != expected
++					|| readGson( gson.fromJson( json, com.google.gson.JsonObject.class ), reads ) != expected ) {
++				throw new IllegalStateException( "Numeric consumption mismatch" );
++			}
++		}
++	}
++
++	@Benchmark
++	public long searchParser(Numbers state, Blackhole blackhole) {
++		var tree = state.parsing.parse( state.json );
++		blackhole.consume( tree );
++		return readSearch( tree, state.reads );
++	}
++
++	@Benchmark
++	public long gsonParser(Numbers state, Blackhole blackhole) {
++		var tree = state.gson.fromJson( state.json, com.google.gson.JsonObject.class );
++		blackhole.consume( tree );
++		return readGson( tree, state.reads );
++	}
++
++	private static long readSearch(JsonElement tree, String reads) {
++		if ( "none".equals( reads ) ) {
++			return 0;
++		}
++		var values = tree.getAsJsonObject().getAsJsonArray( "values" );
++		int step = "selected".equals( reads ) ? 100 : 1;
++		int repetitions = "selected".equals( reads ) ? 1 : 10;
++		long sum = 0;
++		for ( int pass = 0; pass < repetitions; pass++ ) {
++			for ( int index = 0; index < values.size(); index += step ) {
++				sum += values.get( index ).getAsLong();
++			}
++		}
++		return sum;
++	}
++
++	private static long readGson(com.google.gson.JsonObject tree, String reads) {
++		if ( "none".equals( reads ) ) {
++			return 0;
++		}
++		var values = tree.getAsJsonArray( "values" );
++		int step = "selected".equals( reads ) ? 100 : 1;
++		int repetitions = "selected".equals( reads ) ? 1 : 10;
++		long sum = 0;
++		for ( int pass = 0; pass < repetitions; pass++ ) {
++			for ( int index = 0; index < values.size(); index += step ) {
++				sum += values.get( index ).getAsLong();
++			}
++		}
++		return sum;
++	}
++}
+diff --git a/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonScalarConsumptionBenchmark.java b/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonScalarConsumptionBenchmark.java
+new file mode 100644
+index 0000000000..2cdab2c220
+--- /dev/null
++++ b/integrationtest/performance/backend/elasticsearch/src/main/java/org/hibernate/search/integrationtest/performance/backend/elasticsearch/JsonScalarConsumptionBenchmark.java
+@@ -0,0 +1,185 @@
++package org.hibernate.search.integrationtest.performance.backend.elasticsearch;
++
++import java.nio.ByteBuffer;
++import java.nio.charset.StandardCharsets;
++import java.util.ArrayList;
++import java.util.List;
++import java.util.concurrent.TimeUnit;
++
++import org.hibernate.search.util.json.JsonElement;
++import org.hibernate.search.util.json.spi.JsonParsingOptions;
++
++import org.openjdk.jmh.annotations.Benchmark;
++import org.openjdk.jmh.annotations.BenchmarkMode;
++import org.openjdk.jmh.annotations.Fork;
++import org.openjdk.jmh.annotations.Measurement;
++import org.openjdk.jmh.annotations.Mode;
++import org.openjdk.jmh.annotations.OutputTimeUnit;
++import org.openjdk.jmh.annotations.Scope;
++import org.openjdk.jmh.annotations.State;
++import org.openjdk.jmh.annotations.Warmup;
++import org.openjdk.jmh.infra.Blackhole;
++
++import tools.jackson.core.JsonParser;
++import tools.jackson.core.JsonToken;
++import tools.jackson.core.ObjectReadContext;
++import tools.jackson.core.StreamReadConstraints;
++import tools.jackson.core.async.ByteBufferFeeder;
++import tools.jackson.core.json.JsonFactory;
++
++/** Upstream String token completion versus complete tree construction; never skip lazy string completion. */
++@BenchmarkMode(Mode.Throughput)
++@OutputTimeUnit(TimeUnit.SECONDS)
++@Warmup(iterations = 5, time = 1)
++@Measurement(iterations = 5, time = 1)
++@Fork(3)
++public class JsonScalarConsumptionBenchmark {
++	@State(Scope.Thread)
++	public static class Scalars extends JsonComparisonBenchmark.Bodies {
++		final JsonFactory jackson = factory();
++		byte[] utf8;
++
++		private static JsonFactory factory() {
++			var options = JsonParsingOptions.DEFAULT;
++			return JsonFactory.builder().streamReadConstraints( StreamReadConstraints.builder()
++					.maxNestingDepth( options.maxDepth() ).maxStringLength( options.maxStringLength() )
++					.maxNameLength( options.maxNameLength() ).maxNumberLength( options.maxNumberLength() )
++					.maxDocumentLength( -1 ).maxTokenCount( -1 ).build() ).build();
++		}
++
++		// The inherited @Setup invokes this override; annotating it too schedules it twice.
++		@Override
++		public void setup() {
++			super.setup();
++			utf8 = json.getBytes( StandardCharsets.UTF_8 );
++			List<String> expected = new ArrayList<>();
++			var tree = parts.get( 0 );
++			if ( tree.has( "text" ) ) {
++				expected.add( tree.get( "text" ).getAsString() );
++			}
++			else {
++				for ( var number : tree.getAsJsonArray( "values" ) ) {
++					expected.add( number.getAsString() );
++				}
++			}
++			List<String> actual = new ArrayList<>();
++			try ( var parser = jackson.createParser( ObjectReadContext.empty(), json ) ) {
++				JsonToken token;
++				while ( ( token = parser.nextToken() ) != null ) {
++					if ( token == JsonToken.VALUE_STRING
++							|| token == JsonToken.VALUE_NUMBER_INT
++							|| token == JsonToken.VALUE_NUMBER_FLOAT ) {
++						actual.add( parser.getString() );
++					}
++				}
++			}
++			if ( !expected.equals( actual )
++					|| !expected.equals( utf8Scalars() )
++					|| !parsing.parse( json ).equals( searchParts.get( 0 ) ) ) {
++				throw new IllegalStateException( "Scalar completion mismatch" );
++			}
++		}
++
++		private List<String> utf8Scalars() {
++			List<String> actual = new ArrayList<>();
++			try ( var parser = jackson.createNonBlockingByteBufferParser( ObjectReadContext.empty() ) ) {
++				var feeder = (ByteBufferFeeder) parser.nonBlockingInputFeeder();
++				for ( int offset = 0; offset < utf8.length; ) {
++					int count = Math.min( 8192, utf8.length - offset );
++					feeder.feedInput( ByteBuffer.wrap( utf8, offset, count ).slice() );
++					collectScalars( parser, actual, false );
++					offset += count;
++				}
++				feeder.endOfInput();
++				collectScalars( parser, actual, true );
++			}
++			return actual;
++		}
++
++		private static void collectScalars(JsonParser parser, List<String> actual, boolean ended) {
++			while ( true ) {
++				JsonToken token = parser.nextToken();
++				if ( token == null ) {
++					return;
++				}
++				if ( token == JsonToken.NOT_AVAILABLE ) {
++					if ( ended ) {
++						throw new IllegalStateException( "Incomplete UTF-8 scalar validation" );
++					}
++					return;
++				}
++				if ( token == JsonToken.VALUE_STRING
++						|| token == JsonToken.VALUE_NUMBER_INT
++						|| token == JsonToken.VALUE_NUMBER_FLOAT ) {
++					actual.add( parser.getString() );
++				}
++			}
++		}
++
++	}
++
++	@Benchmark
++	public long jacksonTokens(Scalars state, Blackhole blackhole) {
++		long size = 0;
++		try ( var parser = state.jackson.createParser( ObjectReadContext.empty(), state.json ) ) {
++			JsonToken token;
++			while ( ( token = parser.nextToken() ) != null ) {
++				size++;
++				if ( token == JsonToken.PROPERTY_NAME || token.isScalarValue() ) {
++					String value = parser.getString();
++					blackhole.consume( value );
++					size += value.length();
++				}
++			}
++		}
++		return size;
++	}
++
++	@Benchmark
++	public long jacksonUtf8Tokens(Scalars state, Blackhole blackhole) {
++		long size = 0;
++		try ( var parser = state.jackson.createNonBlockingByteBufferParser( ObjectReadContext.empty() ) ) {
++			var feeder = (ByteBufferFeeder) parser.nonBlockingInputFeeder();
++			for ( int offset = 0; offset < state.utf8.length; ) {
++				int count = Math.min( 8192, state.utf8.length - offset );
++				feeder.feedInput( ByteBuffer.wrap( state.utf8, offset, count ).slice() );
++				size += drainUtf8( parser, blackhole, false );
++				offset += count;
++			}
++			feeder.endOfInput();
++			return size + drainUtf8( parser, blackhole, true );
++		}
++	}
++
++	private static long drainUtf8(JsonParser parser, Blackhole blackhole, boolean ended) {
++		long size = 0;
++		while ( true ) {
++			JsonToken token = parser.nextToken();
++			if ( token == null ) {
++				return size;
++			}
++			if ( token == JsonToken.NOT_AVAILABLE ) {
++				if ( ended ) {
++					throw new IllegalStateException( "Incomplete UTF-8 token consumption" );
++				}
++				return size;
++			}
++			size++;
++			if ( token == JsonToken.PROPERTY_NAME || token.isScalarValue() ) {
++				String value = parser.getString();
++				blackhole.consume( value );
++				size += value.length();
++			}
++		}
++	}
++
++	@Benchmark
++	public JsonElement searchParser(Scalars state) {
++		return state.parsing.parse( state.json );
++	}
++
++	@Benchmark
++	public Object gsonParser(Scalars state) {
++		return state.gson.fromJson( state.json, com.google.gson.JsonObject.class );
++	}
++}
