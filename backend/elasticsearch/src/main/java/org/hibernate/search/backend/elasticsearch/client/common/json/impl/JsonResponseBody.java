@@ -6,12 +6,14 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Objects;
 
 import org.hibernate.search.util.json.spi.JsonBodies;
 import org.hibernate.search.util.json.spi.JsonEmptyInputException;
 import org.hibernate.search.util.json.spi.JsonParseException;
 import org.hibernate.search.util.json.spi.JsonParserSession;
 import org.hibernate.search.util.json.spi.JsonParsing;
+import org.hibernate.search.util.json.spi.JsonValidation;
 
 import tools.jackson.databind.JsonNode;
 
@@ -25,6 +27,7 @@ public final class JsonResponseBody implements AutoCloseable {
 	public static final long DEFAULT_LIMIT = 100L * 1024 * 1024;
 	private JsonParserSession parser;
 	private final Charset charset;
+	private final JsonValidation validation;
 	private final long limit;
 	private byte[] diagnosticPrefix = new byte[DIAGNOSTIC_PREFIX_LIMIT];
 	private int prefixLength;
@@ -34,6 +37,11 @@ public final class JsonResponseBody implements AutoCloseable {
 	private boolean completed;
 
 	public JsonResponseBody(Charset charset, long limit) {
+		this( charset, limit, JsonValidation.systemDefault() );
+	}
+
+	public JsonResponseBody(Charset charset, long limit, JsonValidation validation) {
+		this.validation = Objects.requireNonNull( validation );
 		this.charset = charset;
 		this.limit = limit;
 		parser = new JsonParsing().createParser( charset );
@@ -118,13 +126,16 @@ public final class JsonResponseBody implements AutoCloseable {
 			throw new IllegalStateException( "Response body is incomplete" );
 		}
 		if ( failure != null ) {
+			if ( diagnosticPrefix == null ) {
+				return InputStream.nullInputStream();
+			}
 			String prefix = new String( diagnosticPrefix, charset );
 			if ( inputBytes > prefixLength ) {
 				prefix += "\n[response diagnostic truncated after " + DIAGNOSTIC_PREFIX_LIMIT + " source bytes]";
 			}
 			return new ByteArrayInputStream( prefix.getBytes( StandardCharsets.UTF_8 ) );
 		}
-		return tree == null ? InputStream.nullInputStream() : JsonBodies.ofInternal( tree ).openStream();
+		return tree == null ? InputStream.nullInputStream() : JsonBodies.ofInternal( tree, validation ).openStream();
 	}
 
 	public long inputBytes() {
@@ -145,7 +156,9 @@ public final class JsonResponseBody implements AutoCloseable {
 			diagnosticPrefix = null;
 			tree = null;
 			completed = true;
-			failure = new IllegalStateException( "Response consumption cancelled" );
+			if ( failure == null ) {
+				failure = new IllegalStateException( "Response consumption cancelled" );
+			}
 		}
 	}
 }

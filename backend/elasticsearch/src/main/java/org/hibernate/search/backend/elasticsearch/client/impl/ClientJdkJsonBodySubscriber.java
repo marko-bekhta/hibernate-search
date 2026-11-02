@@ -12,6 +12,7 @@ import org.hibernate.search.backend.elasticsearch.client.common.json.impl.JsonGz
 import org.hibernate.search.backend.elasticsearch.client.common.json.impl.JsonResponseBody;
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonCodecService;
 import org.hibernate.search.backend.elasticsearch.logging.spi.ElasticsearchClientLog;
+import org.hibernate.search.util.json.spi.JsonParseException;
 
 import tools.jackson.databind.node.ObjectNode;
 
@@ -22,18 +23,26 @@ final class ClientJdkJsonBodySubscriber implements HttpResponse.BodySubscriber<O
 	private JsonGzipDecoder gzip;
 	private final JsonCodecService json;
 	private final int statusCode;
+	private final long limit;
 	private Flow.Subscription subscription;
 	private boolean terminated;
+	private long inputBytes;
 
 	ClientJdkJsonBodySubscriber(JsonCodecService json, Charset charset, int statusCode) {
 		this( json, charset, statusCode, false );
 	}
 
 	ClientJdkJsonBodySubscriber(JsonCodecService json, Charset charset, int statusCode, boolean compressed) {
+		this( json, charset, statusCode, compressed, JsonResponseBody.DEFAULT_LIMIT );
+	}
+
+	ClientJdkJsonBodySubscriber(JsonCodecService json, Charset charset, int statusCode, boolean compressed, long limit) {
 		this.json = json;
 		this.statusCode = statusCode;
-		body = new JsonResponseBody( charset, 0 );
-		if ( compressed ) {
+		this.limit = limit;
+		// Count transport bytes below, before gzip decoding, just like the REST adapters.
+		body = new JsonResponseBody( charset, 0, json.validation() );
+		if ( compressed && statusCode != 204 && statusCode != 304 ) {
 			gzip = new JsonGzipDecoder( body );
 		}
 		result.whenComplete( (value, failure) -> {
@@ -65,6 +74,10 @@ final class ClientJdkJsonBodySubscriber implements HttpResponse.BodySubscriber<O
 		}
 		try {
 			for ( ByteBuffer buffer : buffers ) {
+				inputBytes += buffer.remaining();
+				if ( limit > 0 && inputBytes > limit ) {
+					throw new JsonParseException( "Response input exceeds byte limit " + limit );
+				}
 				if ( gzip == null ) {
 					body.feed( buffer );
 				}

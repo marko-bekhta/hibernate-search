@@ -11,6 +11,7 @@ import java.util.List;
 import org.hibernate.search.backend.elasticsearch.client.common.json.impl.JsonGzipDecoder;
 import org.hibernate.search.backend.elasticsearch.client.common.json.impl.JsonResponseBody;
 import org.hibernate.search.backend.elasticsearch.client.common.json.impl.JsonResponseConsumerScope;
+import org.hibernate.search.util.json.spi.JsonValidation;
 
 import org.apache.hc.core5.concurrent.FutureCallback;
 import org.apache.hc.core5.http.ClassicHttpResponse;
@@ -28,6 +29,7 @@ import org.apache.hc.core5.http.protocol.HttpContext;
 /** HC5 delivers decompressed bytes by default. Entity details identify any remaining gzip layer. */
 final class ClientRest5JsonResponseConsumer implements AsyncResponseConsumer<ClassicHttpResponse> {
 	private final long limit;
+	private final JsonValidation validation;
 	private final JsonResponseConsumerScope scope;
 	private BasicClassicHttpResponse response;
 	private JsonResponseBody body;
@@ -43,6 +45,11 @@ final class ClientRest5JsonResponseConsumer implements AsyncResponseConsumer<Cla
 	}
 
 	ClientRest5JsonResponseConsumer(long limit, JsonResponseConsumerScope scope) {
+		this( limit, scope, JsonValidation.systemDefault() );
+	}
+
+	ClientRest5JsonResponseConsumer(long limit, JsonResponseConsumerScope scope, JsonValidation validation) {
+		this.validation = validation;
 		this.limit = limit;
 		this.scope = scope;
 		scope.register( this::releaseResources );
@@ -71,7 +78,7 @@ final class ClientRest5JsonResponseConsumer implements AsyncResponseConsumer<Cla
 		if ( incoming.getLocale() != null ) {
 			response.setLocale( incoming.getLocale() );
 		}
-		if ( details == null ) {
+		if ( details == null || incoming.getCode() == 204 || incoming.getCode() == 304 ) {
 			terminated = true;
 			callback.completed( response );
 			return;
@@ -81,7 +88,7 @@ final class ClientRest5JsonResponseConsumer implements AsyncResponseConsumer<Cla
 		Charset charset = contentType == null || contentType.getCharset() == null
 				? StandardCharsets.UTF_8
 				: contentType.getCharset();
-		body = new JsonResponseBody( charset, 0 );
+		body = new JsonResponseBody( charset, 0, validation );
 		if ( "gzip".equalsIgnoreCase( details.getContentEncoding() ) ) {
 			gzip = new JsonGzipDecoder( body );
 		}

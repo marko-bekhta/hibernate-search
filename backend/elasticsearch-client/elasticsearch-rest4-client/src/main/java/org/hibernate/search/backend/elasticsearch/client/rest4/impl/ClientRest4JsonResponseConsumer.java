@@ -6,10 +6,12 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.CancellationException;
 
 import org.hibernate.search.backend.elasticsearch.client.common.json.impl.JsonGzipDecoder;
 import org.hibernate.search.backend.elasticsearch.client.common.json.impl.JsonResponseBody;
 import org.hibernate.search.backend.elasticsearch.client.common.json.impl.JsonResponseConsumerScope;
+import org.hibernate.search.util.json.spi.JsonValidation;
 
 import org.apache.http.ContentTooLongException;
 import org.apache.http.HttpEntity;
@@ -24,6 +26,7 @@ import org.apache.http.protocol.HttpContext;
 /** Bounded input storage; materialized JSON and bounded failure diagnostics replace the buffered entity. */
 final class ClientRest4JsonResponseConsumer extends AbstractAsyncResponseConsumer<HttpResponse> {
 	private final long limit;
+	private final JsonValidation validation;
 	private final JsonResponseConsumerScope scope;
 	private HttpResponse response;
 	private JsonResponseBody body;
@@ -37,6 +40,11 @@ final class ClientRest4JsonResponseConsumer extends AbstractAsyncResponseConsume
 	}
 
 	ClientRest4JsonResponseConsumer(long limit, JsonResponseConsumerScope scope) {
+		this( limit, scope, JsonValidation.systemDefault() );
+	}
+
+	ClientRest4JsonResponseConsumer(long limit, JsonResponseConsumerScope scope, JsonValidation validation) {
+		this.validation = validation;
 		this.limit = limit;
 		this.scope = scope;
 		scope.register( this::releaseResources );
@@ -45,19 +53,27 @@ final class ClientRest4JsonResponseConsumer extends AbstractAsyncResponseConsume
 	@Override
 	protected synchronized void onResponseReceived(HttpResponse response) {
 		if ( scope.isCancelled() ) {
-			throw new java.util.concurrent.CancellationException();
+			cancel();
+			return;
 		}
 		this.response = response;
 	}
 
 	@Override
 	protected synchronized void onEntityEnclosed(HttpEntity entity, ContentType contentType) throws IOException {
+		if ( scope.isCancelled() || response == null || isDone() ) {
+			cancel();
+			return;
+		}
 		checkLimit( entity.getContentLength() );
 		Charset charset = contentType == null || contentType.getCharset() == null
 				? StandardCharsets.UTF_8
 				: contentType.getCharset();
-		body = new JsonResponseBody( charset, 0 );
-		if ( entity.getContentEncoding() != null && "gzip".equalsIgnoreCase( entity.getContentEncoding().getValue() ) ) {
+		body = new JsonResponseBody( charset, 0, validation );
+		int status = response.getStatusLine().getStatusCode();
+		if ( status != 204
+				&& status != 304
+				&& entity.getContentEncoding() != null && "gzip".equalsIgnoreCase( entity.getContentEncoding().getValue() ) ) {
 			gzip = new JsonGzipDecoder( body );
 			// Replay is already decoded. Prevent the REST client from decompressing it a second time.
 			response.removeHeaders( "Content-Encoding" );
@@ -107,7 +123,7 @@ final class ClientRest4JsonResponseConsumer extends AbstractAsyncResponseConsume
 	@Override
 	protected synchronized HttpResponse buildResult(HttpContext context) {
 		if ( scope.isCancelled() ) {
-			throw new java.util.concurrent.CancellationException();
+			throw new CancellationException();
 		}
 		if ( body != null ) {
 			if ( gzip != null ) {

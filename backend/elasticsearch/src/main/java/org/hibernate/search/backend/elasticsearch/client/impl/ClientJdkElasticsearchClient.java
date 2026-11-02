@@ -62,7 +62,8 @@ public class ClientJdkElasticsearchClient implements ElasticsearchClientImplemen
 	}
 
 	@Override
-	public CompletableFuture<ElasticsearchResponse> submit(ElasticsearchRequest request) {
+	public CompletableFuture<ElasticsearchResponse> submit(ElasticsearchRequest unscopedRequest) {
+		ElasticsearchRequest request = unscopedRequest.withValidation( json.validation() );
 		CompletableFuture<HttpResponse<ObjectNode>> sent;
 		try {
 			sent = send( request );
@@ -98,7 +99,7 @@ public class ClientJdkElasticsearchClient implements ElasticsearchClientImplemen
 					response.request().uri().getHost(),
 					response.statusCode(),
 					null,
-					response.body() );
+					response.body(), json.validation() );
 		}
 		catch (RuntimeException e) {
 			throw ElasticsearchClientLog.INSTANCE.failedToParseElasticsearchResponse( response.statusCode(),
@@ -129,7 +130,7 @@ public class ClientJdkElasticsearchClient implements ElasticsearchClientImplemen
 			return completableFuture;
 		}
 
-		ObjectNodeBodyHandler handler = new ObjectNodeBodyHandler();
+		ObjectNodeBodyHandler handler = new ObjectNodeBodyHandler( "HEAD".equalsIgnoreCase( request.method() ) );
 		CompletableFuture<HttpResponse<ObjectNode>> transportFuture = restClientHolder.get().sendAsync(
 				request,
 				handler
@@ -261,8 +262,13 @@ public class ClientJdkElasticsearchClient implements ElasticsearchClientImplemen
 	}
 
 	private class ObjectNodeBodyHandler implements HttpResponse.BodyHandler<ObjectNode> {
+		private final boolean head;
 		private ClientJdkJsonBodySubscriber subscriber;
 		private boolean cancelled;
+
+		private ObjectNodeBodyHandler(boolean head) {
+			this.head = head;
+		}
 
 		void cancel() {
 			ClientJdkJsonBodySubscriber active;
@@ -280,8 +286,10 @@ public class ClientJdkElasticsearchClient implements ElasticsearchClientImplemen
 			try {
 				subscriber =
 						new ClientJdkJsonBodySubscriber( json, getCharset( responseInfo.headers() ), responseInfo.statusCode(),
-								responseInfo.headers().firstValue( "Content-Encoding" ).map( "gzip"::equalsIgnoreCase )
-										.orElse( false ) );
+								!head
+										&& responseInfo.headers().firstValue( "Content-Encoding" )
+												.map( "gzip"::equalsIgnoreCase )
+												.orElse( false ) );
 				if ( cancelled ) {
 					subscriber.getBody().toCompletableFuture().cancel( true );
 				}

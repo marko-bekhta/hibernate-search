@@ -80,8 +80,8 @@ public class ClientJdkJsonHttpEntity extends JsonHttpEntityContentProvider imple
 			}
 			try {
 				while ( true ) {
-					ByteBuffer bytes;
-					boolean complete;
+					ByteBuffer bytes = null;
+					boolean complete = false;
 					RuntimeException cause;
 					synchronized (this) {
 						if ( terminated || ( demand == 0 && failure == null ) ) {
@@ -95,16 +95,22 @@ public class ClientJdkJsonHttpEntity extends JsonHttpEntityContentProvider imple
 							complete = false;
 						}
 						else {
-							if ( cursor == null ) {
-								cursor = openCursor();
+							try {
+								if ( cursor == null ) {
+									cursor = openCursor();
+								}
+								// Recipients can retain storage indefinitely. Never recycle emitted storage.
+								bytes = ByteBuffer.allocate( JsonBodies.DEFAULT_BUFFER_SIZE );
+								cursor.write( bytes );
+								bytes.flip();
+								complete = cursor.isComplete();
+								if ( bytes.hasRemaining() ) {
+									--demand;
+								}
 							}
-							// Recipients can retain storage indefinitely. Never recycle emitted storage.
-							bytes = ByteBuffer.allocate( JsonBodies.DEFAULT_BUFFER_SIZE );
-							cursor.write( bytes );
-							bytes.flip();
-							complete = cursor.isComplete();
-							if ( bytes.hasRemaining() ) {
-								--demand;
+							catch (RuntimeException e) {
+								cause = e;
+								cancel();
 							}
 						}
 					}

@@ -7,11 +7,13 @@ import static org.mockito.Mockito.when;
 import java.net.http.HttpClient;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLContext;
 
 import org.hibernate.search.backend.elasticsearch.cfg.ElasticsearchBackendSettings;
 import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchClientImplementor;
+import org.hibernate.search.backend.elasticsearch.client.common.spi.ElasticsearchRequest;
 import org.hibernate.search.backend.elasticsearch.client.jdk.ElasticsearchHttpClientConfigurer;
 import org.hibernate.search.backend.elasticsearch.json.spi.JsonProviderHelper;
 import org.hibernate.search.engine.cfg.impl.MapConfigurationPropertySource;
@@ -19,11 +21,35 @@ import org.hibernate.search.engine.environment.bean.BeanHolder;
 import org.hibernate.search.engine.environment.bean.BeanReference;
 import org.hibernate.search.engine.environment.bean.BeanResolver;
 import org.hibernate.search.engine.environment.thread.impl.EmbeddedThreadProvider;
+import org.hibernate.search.util.impl.test.http.StreamingHttpServer;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 class ClientJdkElasticsearchClientFactoryTest {
+	@Test
+	void headResponseWithGzipMetadataHasNoBodyToDecode() throws Exception {
+		try ( var server = new StreamingHttpServer( exchange -> {
+			exchange.headers( 200, "application/json", "Content-Encoding: gzip\r\n" );
+			exchange.closeConnection();
+		} ) ) {
+			BeanResolver resolver = mock( BeanResolver.class );
+			when( resolver.resolve( List.of() ) ).thenReturn( BeanHolder.of( List.of() ) );
+			var client = new ClientJdkElasticsearchClientFactory().create( resolver,
+					new MapConfigurationPropertySource( Map.of( ElasticsearchBackendSettings.URIS, server.uri() ) ),
+					new EmbeddedThreadProvider( "test" ), "test", null, JsonProviderHelper.create( false ) );
+			try {
+				var response = client.submit( ElasticsearchRequest.builder( "HEAD" ).build() )
+						.get( 10, TimeUnit.SECONDS );
+				assertThat( response.statusCode() ).isEqualTo( 200 );
+				assertThat( response.bodyJson() ).isNull();
+			}
+			finally {
+				client.close();
+			}
+		}
+	}
 
 	@ParameterizedTest
 	@ValueSource(strings = { "http", "https", "HTTPS", "HtTpS" })
