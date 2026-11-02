@@ -57,7 +57,8 @@ abstract class AbstractLuceneNumericIndexFieldTypeOptionsStep<S extends Abstract
 
 		Indexing indexing = resolvedSearchable ? Indexing.ENABLED : Indexing.DISABLED;
 		DocValues docValues = resolvedSortable || resolvedAggregable || resolvedScorable
-				? DocValues.ENABLED : DocValues.DISABLED;
+				? DocValues.ENABLED
+				: DocValues.DISABLED;
 		Storage storage = resolvedProjectable ? Storage.ENABLED : Storage.DISABLED;
 
 		AbstractLuceneNumericFieldCodec<F, ?> codec = createCodec( indexing, docValues, storage, indexNullAsValue );

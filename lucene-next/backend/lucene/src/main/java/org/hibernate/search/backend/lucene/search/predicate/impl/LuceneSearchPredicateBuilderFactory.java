@@ -3,13 +3,13 @@ package org.hibernate.search.backend.lucene.search.predicate.impl;
 import org.hibernate.search.backend.lucene.search.common.impl.LuceneSearchIndexScope;
 import org.hibernate.search.engine.search.predicate.spi.BooleanPredicateBuilder;
 import org.hibernate.search.engine.search.predicate.spi.DisjunctionMaxPredicateBuilder;
+import org.hibernate.search.engine.search.predicate.spi.FunctionScorePredicateBuilder;
 import org.hibernate.search.engine.search.predicate.spi.MatchAllPredicateBuilder;
 import org.hibernate.search.engine.search.predicate.spi.MatchIdPredicateBuilder;
 import org.hibernate.search.engine.search.predicate.spi.MatchNonePredicateBuilder;
 import org.hibernate.search.engine.search.predicate.spi.QueryStringPredicateBuilder;
 import org.hibernate.search.engine.search.predicate.spi.SearchPredicateBuilderFactory;
 import org.hibernate.search.engine.search.predicate.spi.SimpleQueryStringPredicateBuilder;
-import org.hibernate.search.engine.search.predicate.spi.FunctionScorePredicateBuilder;
 import org.hibernate.search.engine.search.predicate.spi.WithParametersPredicateBuilder;
 
 import org.apache.lucene.search.Query;

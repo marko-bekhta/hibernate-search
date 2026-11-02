@@ -4,8 +4,8 @@ package org.hibernate.search.engine.search.predicate.dsl;
 import java.util.function.Function;
 
 import org.hibernate.search.engine.backend.types.ObjectStructure;
-import org.hibernate.search.engine.search.predicate.SearchPredicate;
 import org.hibernate.search.engine.search.common.BooleanOperator;
+import org.hibernate.search.engine.search.predicate.SearchPredicate;
 import org.hibernate.search.engine.search.reference.predicate.NestedPredicateFieldReference;
 import org.hibernate.search.util.common.annotation.Incubating;
 

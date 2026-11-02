@@ -6,8 +6,8 @@ import org.hibernate.search.engine.search.common.ValueModel;
 import org.hibernate.search.engine.search.predicate.SearchPredicate;
 import org.hibernate.search.engine.search.predicate.dsl.FunctionScoreBoostModeStep;
 import org.hibernate.search.engine.search.predicate.dsl.FunctionScoreClausesStep;
-import org.hibernate.search.engine.search.predicate.dsl.FunctionScoreFieldValueFactorStep;
 import org.hibernate.search.engine.search.predicate.dsl.FunctionScoreFieldValueFactorModifierStep;
+import org.hibernate.search.engine.search.predicate.dsl.FunctionScoreFieldValueFactorStep;
 import org.hibernate.search.engine.search.predicate.dsl.FunctionScoreScoreModeStep;
 import org.hibernate.search.engine.search.predicate.dsl.FunctionScoreWeightStep;
 import org.hibernate.search.engine.search.predicate.dsl.PredicateFinalStep;
@@ -101,7 +101,8 @@ public final class FunctionScoreClausesStepImpl<SR>
 	// -- FunctionScoreFieldValueFactorStep --
 
 	@Override
-	public FunctionScoreFieldValueFactorModifierStep<? extends FunctionScoreFieldValueFactorStep<SR, FunctionScoreClausesStepImpl<SR>>> modifier() {
+	public FunctionScoreFieldValueFactorModifierStep<
+			? extends FunctionScoreFieldValueFactorStep<SR, FunctionScoreClausesStepImpl<SR>>> modifier() {
 		return modifierStep;
 	}
 
@@ -264,7 +265,8 @@ public final class FunctionScoreClausesStepImpl<SR>
 	}
 
 	private class ModifierStepImpl
-			implements FunctionScoreFieldValueFactorModifierStep<FunctionScoreFieldValueFactorStep<SR, FunctionScoreClausesStepImpl<SR>>> {
+			implements
+			FunctionScoreFieldValueFactorModifierStep<FunctionScoreFieldValueFactorStep<SR, FunctionScoreClausesStepImpl<SR>>> {
 		@Override
 		public FunctionScoreFieldValueFactorStep<SR, FunctionScoreClausesStepImpl<SR>> none() {
 			currentFieldValueFactor.modifierNone();

@@ -3,9 +3,9 @@ package org.hibernate.search.backend.lucene.types.predicate.impl;
 import java.util.List;
 
 import org.hibernate.search.backend.lucene.search.common.impl.AbstractLuceneCodecAwareSearchQueryElementFactory;
-import org.hibernate.search.backend.lucene.search.predicate.impl.LuceneFunctionScorePredicate;
 import org.hibernate.search.backend.lucene.search.common.impl.LuceneSearchIndexScope;
 import org.hibernate.search.backend.lucene.search.common.impl.LuceneSearchIndexValueFieldContext;
+import org.hibernate.search.backend.lucene.search.predicate.impl.LuceneFunctionScorePredicate;
 import org.hibernate.search.backend.lucene.types.codec.impl.AbstractLuceneNumericFieldCodec;
 import org.hibernate.search.engine.search.common.ValueModel;
 import org.hibernate.search.engine.search.predicate.spi.FieldValueFactorFunctionBuilder;
@@ -16,7 +16,8 @@ public class LuceneFieldValueFactorFunction {
 	}
 
 	public static class Factory<F, E extends Number>
-			extends AbstractLuceneCodecAwareSearchQueryElementFactory<FieldValueFactorFunctionBuilder, F,
+			extends AbstractLuceneCodecAwareSearchQueryElementFactory<FieldValueFactorFunctionBuilder,
+					F,
 					AbstractLuceneNumericFieldCodec<F, E>> {
 		public Factory(AbstractLuceneNumericFieldCodec<F, E> codec) {
 			super( codec );

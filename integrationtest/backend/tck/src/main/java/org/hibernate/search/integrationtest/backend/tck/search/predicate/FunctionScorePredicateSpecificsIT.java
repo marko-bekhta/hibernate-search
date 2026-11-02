@@ -3,7 +3,6 @@ package org.hibernate.search.integrationtest.backend.tck.search.predicate;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.within;
-import static org.hibernate.search.util.impl.integrationtest.common.assertion.SearchResultAssert.assertThatQuery;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -246,7 +245,7 @@ class FunctionScorePredicateSpecificsIT {
 					.select( SearchProjectionFactory::score )
 					.where( f -> f.functionScore( f.matchAll() )
 							.fieldValueFactor( "popularity" )
-									.modifier().log1p()
+							.modifier().log1p()
 							.boostMode().replace() )
 					.fetchAllHits();
 
@@ -264,7 +263,7 @@ class FunctionScorePredicateSpecificsIT {
 					.select( SearchProjectionFactory::score )
 					.where( f -> f.functionScore( f.matchAll() )
 							.fieldValueFactor( "popularity" )
-									.factor( 2 )
+							.factor( 2 )
 							.boostMode().replace() )
 					.fetchAllHits();
 
