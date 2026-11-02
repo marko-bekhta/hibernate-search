@@ -157,6 +157,21 @@ class FunctionScorePredicateSpecificsIT {
 	class MultipleFunctions {
 
 		@Test
+		void filteredFieldValueFactor() {
+			List<Float> scores = index.createScope().query()
+					.select( SearchProjectionFactory::score )
+					.where( f -> f.functionScore( f.matchAll() )
+							.fieldValueFactor( "popularity" ).functionWeight( 3 )
+							.filter( pf -> pf.match().field( "featured" ).matching( true ) )
+							.fieldValueFactor( "rating" )
+							.scoreMode().sum()
+							.boostMode().replace() )
+					.fetchAllHits();
+
+			assertThat( scores ).containsExactlyInAnyOrder( 35f, 3f, 23f );
+		}
+
+		@Test
 		void scoreModeSum() {
 			List<Float> scores = index.createScope().query()
 					.select( SearchProjectionFactory::score )
