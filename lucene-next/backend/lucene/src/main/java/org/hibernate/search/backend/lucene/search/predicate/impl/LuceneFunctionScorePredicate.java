@@ -14,7 +14,7 @@ import org.hibernate.search.engine.search.predicate.spi.FieldValueFactorFunction
 import org.hibernate.search.engine.search.predicate.spi.FunctionScorePredicateBuilder;
 
 import org.apache.lucene.index.LeafReaderContext;
-import org.apache.lucene.index.NumericDocValues;
+import org.apache.lucene.index.SortedNumericDocValues;
 import org.apache.lucene.queries.function.FunctionScoreQuery;
 import org.apache.lucene.search.DoubleValues;
 import org.apache.lucene.search.DoubleValuesSource;
@@ -441,7 +441,7 @@ public class LuceneFunctionScorePredicate extends AbstractLuceneSearchPredicate 
 
 		@Override
 		public DoubleValues getValues(LeafReaderContext ctx, DoubleValues scores) throws IOException {
-			NumericDocValues docValues = ctx.reader().getNumericDocValues( fieldPath );
+			SortedNumericDocValues docValues = ctx.reader().getSortedNumericDocValues( fieldPath );
 			return new DoubleValues() {
 				private boolean hasValue;
 
@@ -449,7 +449,7 @@ public class LuceneFunctionScorePredicate extends AbstractLuceneSearchPredicate 
 				public double doubleValue() throws IOException {
 					double fieldValue;
 					if ( hasValue ) {
-						fieldValue = docValueDecoder.applyAsDouble( docValues.longValue() );
+						fieldValue = docValueDecoder.applyAsDouble( docValues.nextValue() );
 					}
 					else {
 						fieldValue = missing;
