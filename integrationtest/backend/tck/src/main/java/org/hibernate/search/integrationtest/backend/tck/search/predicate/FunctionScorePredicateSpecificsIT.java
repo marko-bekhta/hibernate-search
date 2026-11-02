@@ -8,7 +8,10 @@ import static org.hibernate.search.util.impl.integrationtest.common.assertion.Se
 import java.util.List;
 
 import org.hibernate.search.engine.backend.document.IndexFieldReference;
+import org.hibernate.search.engine.backend.document.IndexObjectFieldReference;
 import org.hibernate.search.engine.backend.document.model.dsl.IndexSchemaElement;
+import org.hibernate.search.engine.backend.document.model.dsl.IndexSchemaObjectField;
+import org.hibernate.search.engine.backend.types.ObjectStructure;
 import org.hibernate.search.engine.backend.types.Scorable;
 import org.hibernate.search.engine.backend.types.Searchable;
 import org.hibernate.search.engine.search.projection.dsl.SearchProjectionFactory;
@@ -38,6 +41,7 @@ class FunctionScorePredicateSpecificsIT {
 				.add( "1", document -> {
 					document.addValue( index.binding().popularity, 10 );
 					document.addValue( index.binding().rating, 5 );
+					document.addObject( index.binding().nested ).addValue( index.binding().nestedRating, 7 );
 					document.addValue( index.binding().optionalRating, 5 );
 					document.addValue( index.binding().featured, true );
 					document.addValue( index.binding().label, "featured" );
@@ -45,12 +49,14 @@ class FunctionScorePredicateSpecificsIT {
 				.add( "2", document -> {
 					document.addValue( index.binding().popularity, 20 );
 					document.addValue( index.binding().rating, 3 );
+					document.addObject( index.binding().nested ).addValue( index.binding().nestedRating, 11 );
 					document.addValue( index.binding().featured, false );
 					document.addValue( index.binding().label, "ordinary" );
 				} )
 				.add( "3", document -> {
 					document.addValue( index.binding().popularity, 5 );
 					document.addValue( index.binding().rating, 8 );
+					document.addObject( index.binding().nested ).addValue( index.binding().nestedRating, 13 );
 					document.addValue( index.binding().optionalRating, 8 );
 					document.addValue( index.binding().featured, true );
 					document.addValue( index.binding().label, "featured" );
@@ -60,6 +66,30 @@ class FunctionScorePredicateSpecificsIT {
 
 	@Nested
 	class SingleFieldValueFactor {
+
+		@Test
+		void implicitNesting() {
+			List<Float> scores = index.createScope().query()
+					.select( SearchProjectionFactory::score )
+					.where( f -> f.functionScore()
+							.fieldValueFactor( "nested.rating" )
+							.boostMode().replace() )
+					.fetchAllHits();
+
+			assertThat( scores ).containsExactlyInAnyOrder( 7f, 11f, 13f );
+		}
+
+		@Test
+		void explicitNesting() {
+			List<Float> scores = index.createScope().query()
+					.select( SearchProjectionFactory::score )
+					.where( f -> f.nested( "nested" ).add( f.functionScore()
+							.fieldValueFactor( "nested.rating" )
+							.boostMode().replace() ) )
+					.fetchAllHits();
+
+			assertThat( scores ).containsExactlyInAnyOrder( 7f, 11f, 13f );
+		}
 
 		@Test
 		void withFunctionWeight() {
@@ -282,6 +312,16 @@ class FunctionScorePredicateSpecificsIT {
 	class WeightFunction {
 
 		@Test
+		void weightInsideExplicitNesting() {
+			List<Float> scores = index.createScope().query()
+					.select( SearchProjectionFactory::score )
+					.where( f -> f.nested( "nested" ).add( f.functionScore().weight( 5 ).boostMode().replace() ) )
+					.fetchAllHits();
+
+			assertThat( scores ).containsExactlyInAnyOrder( 5f, 5f, 5f );
+		}
+
+		@Test
 		void weightWithWildcardFilter() {
 			List<Float> scores = index.createScope().query()
 					.select( SearchProjectionFactory::score )
@@ -342,6 +382,8 @@ class FunctionScorePredicateSpecificsIT {
 	}
 
 	private static class IndexBinding {
+		final IndexObjectFieldReference nested;
+		final IndexFieldReference<Integer> nestedRating;
 		final IndexFieldReference<Integer> popularity;
 		final IndexFieldReference<Integer> rating;
 		final IndexFieldReference<Integer> optionalRating;
@@ -349,6 +391,9 @@ class FunctionScorePredicateSpecificsIT {
 		final IndexFieldReference<String> label;
 
 		IndexBinding(IndexSchemaElement root) {
+			IndexSchemaObjectField nestedField = root.objectField( "nested", ObjectStructure.NESTED );
+			nested = nestedField.toReference();
+			nestedRating = nestedField.field( "rating", f -> f.asInteger().scorable( Scorable.YES ) ).toReference();
 			popularity = root.field( "popularity", f -> f.asInteger().scorable( Scorable.YES ) ).toReference();
 			rating = root.field( "rating", f -> f.asInteger().scorable( Scorable.YES ) ).toReference();
 			optionalRating = root.field( "optionalRating", f -> f.asInteger().scorable( Scorable.YES ) ).toReference();

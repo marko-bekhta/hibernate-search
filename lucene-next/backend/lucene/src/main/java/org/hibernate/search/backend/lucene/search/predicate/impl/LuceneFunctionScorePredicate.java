@@ -190,6 +190,44 @@ public class LuceneFunctionScorePredicate extends AbstractLuceneSearchPredicate 
 
 	// -- Builder --
 
+	private static class Nestable extends AbstractLuceneNestablePredicate {
+		private final LuceneFunctionScorePredicate delegate;
+		private final List<String> nestedPathHierarchy;
+		private final List<String> fieldPaths;
+
+		Nestable(Builder builder, LuceneFunctionScorePredicate delegate) {
+			super( builder );
+			this.delegate = delegate;
+			this.nestedPathHierarchy = List.copyOf( builder.resolvedNestedPathHierarchy );
+			this.fieldPaths = builder.functions.stream()
+					.filter( FieldValueFactorEntry.class::isInstance )
+					.map( FieldValueFactorEntry.class::cast )
+					.map( entry -> entry.fieldPath )
+					.toList();
+		}
+
+		@Override
+		public void checkNestableWithin(String expectedParentNestedPath) {
+			super.checkNestableWithin( expectedParentNestedPath );
+			delegate.checkNestableWithin( expectedParentNestedPath );
+		}
+
+		@Override
+		protected Query doToQuery(PredicateRequestContext context) {
+			return delegate.doToQuery( context );
+		}
+
+		@Override
+		protected List<String> getNestedPathHierarchy() {
+			return nestedPathHierarchy;
+		}
+
+		@Override
+		protected List<String> getFieldPathsForErrorMessage() {
+			return fieldPaths;
+		}
+	}
+
 	static class Builder extends AbstractBuilder implements FunctionScorePredicateBuilder {
 
 		private final LuceneSearchIndexScope<?> scope;
@@ -304,7 +342,8 @@ public class LuceneFunctionScorePredicate extends AbstractLuceneSearchPredicate 
 
 		@Override
 		public SearchPredicate build() {
-			return new LuceneFunctionScorePredicate( this );
+			LuceneFunctionScorePredicate predicate = new LuceneFunctionScorePredicate( this );
+			return resolvedNestedPathHierarchy.isEmpty() ? predicate : new Nestable( this, predicate );
 		}
 
 		private LuceneSearchPredicate toLucenePredicate(SearchPredicate predicate) {
