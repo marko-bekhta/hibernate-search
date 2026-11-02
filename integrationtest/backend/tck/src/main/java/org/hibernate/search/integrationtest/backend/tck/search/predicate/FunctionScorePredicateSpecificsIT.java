@@ -17,7 +17,9 @@ import org.hibernate.search.engine.backend.types.IndexFieldTraits;
 import org.hibernate.search.engine.backend.types.ObjectStructure;
 import org.hibernate.search.engine.backend.types.Scorable;
 import org.hibernate.search.engine.backend.types.Searchable;
+import org.hibernate.search.engine.search.common.ValueModel;
 import org.hibernate.search.engine.search.projection.dsl.SearchProjectionFactory;
+import org.hibernate.search.engine.search.reference.scorefunction.FieldValueFactorFieldReference;
 import org.hibernate.search.integrationtest.backend.tck.testsupport.util.extension.SearchSetupHelper;
 import org.hibernate.search.util.impl.integrationtest.mapper.stub.SimpleMappedIndex;
 
@@ -75,6 +77,42 @@ class FunctionScorePredicateSpecificsIT {
 
 	@Nested
 	class SingleFieldValueFactor {
+
+		@Test
+		void typedReferenceMissingUsesIndexValueModel() {
+			var reference = new ScoreFunctionReference<>( "convertedRating", Integer.class, ValueModel.INDEX );
+			List<Float> scores = index.createScope().query()
+					.select( SearchProjectionFactory::score )
+					.where( f -> f.functionScore().fieldValueFactor( reference ).missing( 7 ).boostMode().replace() )
+					.fetchAllHits();
+
+			assertThat( scores ).containsExactlyInAnyOrder( 7f, 7f, 7f );
+		}
+
+		@Test
+		void typedReferenceMissingAllowsExplicitValueModel() {
+			var reference = new ScoreFunctionReference<>( "convertedRating", Integer.class, ValueModel.INDEX );
+			List<Float> scores = index.createScope().query()
+					.select( SearchProjectionFactory::score )
+					.where( f -> f.functionScore().fieldValueFactor( reference ).missing( "9", ValueModel.MAPPING )
+							.boostMode().replace() )
+					.fetchAllHits();
+
+			assertThat( scores ).containsExactlyInAnyOrder( 9f, 9f, 9f );
+		}
+
+		@Test
+		void stringFieldMissingResetsToMappingValueModel() {
+			var reference = new ScoreFunctionReference<>( "convertedRating", Integer.class, ValueModel.INDEX );
+			List<Float> scores = index.createScope().query()
+					.select( SearchProjectionFactory::score )
+					.where( f -> f.functionScore().fieldValueFactor( reference ).missing( 7 )
+							.fieldValueFactor( "convertedRating" ).missing( "3" )
+							.scoreMode().sum().boostMode().replace() )
+					.fetchAllHits();
+
+			assertThat( scores ).containsExactlyInAnyOrder( 10f, 10f, 10f );
+		}
 
 		@Test
 		void scaledBigDecimalAndMissingUseLogicalValues() {
@@ -454,6 +492,8 @@ class FunctionScorePredicateSpecificsIT {
 		final IndexFieldReference<String> label;
 
 		IndexBinding(IndexSchemaElement root) {
+			root.field( "convertedRating", f -> f.asInteger().scorable( Scorable.YES )
+					.dslConverter( String.class, (value, context) -> Integer.valueOf( value ) ) ).toReference();
 			root.field( "unscorableRating", f -> f.asInteger().scorable( Scorable.NO ) ).toReference();
 			root.field( "defaultScorableRating", f -> f.asInteger() ).toReference();
 			decimalRating = root.field( "decimalRating", f -> f.asBigDecimal().decimalScale( 2 ).scorable( Scorable.YES ) )
@@ -468,6 +508,14 @@ class FunctionScorePredicateSpecificsIT {
 			optionalRating = root.field( "optionalRating", f -> f.asInteger().scorable( Scorable.YES ) ).toReference();
 			featured = root.field( "featured", f -> f.asBoolean().searchable( Searchable.YES ) ).toReference();
 			label = root.field( "label", f -> f.asString() ).toReference();
+		}
+	}
+
+	private record ScoreFunctionReference<T>(String absolutePath, Class<T> scoreFunctionType, ValueModel valueModel)
+			implements FieldValueFactorFieldReference<Object, T> {
+		@Override
+		public Class<Object> scopeRootType() {
+			return Object.class;
 		}
 	}
 

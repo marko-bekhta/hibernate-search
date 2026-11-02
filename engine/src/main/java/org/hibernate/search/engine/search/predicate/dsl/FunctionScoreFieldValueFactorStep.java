@@ -39,7 +39,8 @@ public interface FunctionScoreFieldValueFactorStep<SR, S extends FunctionScoreCl
 	 * Set the value to use when a document does not have the target field.
 	 * <p>
 	 * The modifier and factor are still applied to this value.
-	 * Uses {@link ValueModel#MAPPING} for value conversion.
+	 * Uses the value model of the typed field reference for value conversion,
+	 * or {@link ValueModel#MAPPING} when targeting the field by its path.
 	 *
 	 * @param value The missing value.
 	 * @return {@code this}, for method chaining.

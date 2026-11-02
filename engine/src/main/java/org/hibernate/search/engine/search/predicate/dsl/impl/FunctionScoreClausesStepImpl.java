@@ -33,6 +33,7 @@ public final class FunctionScoreClausesStepImpl<SR>
 	private final ModifierStepImpl modifierStep = new ModifierStepImpl();
 
 	private FieldValueFactorFunctionBuilder currentFieldValueFactor;
+	private ValueModel currentValueModel = ValueModel.MAPPING;
 	private float currentFunctionWeight = 1.0f;
 	private SearchPredicate currentFunctionFilter;
 	private boolean currentIsWeightFunction;
@@ -62,6 +63,7 @@ public final class FunctionScoreClausesStepImpl<SR>
 	public FunctionScoreFieldValueFactorStep<SR, FunctionScoreClausesStepImpl<SR>> fieldValueFactor(String fieldPath) {
 		flushCurrentFunction();
 		currentFieldValueFactor = dslContext.scope().fieldQueryElement( fieldPath, ScoreFunctionTypeKeys.FIELD_VALUE_FACTOR );
+		currentValueModel = ValueModel.MAPPING;
 		currentFunctionWeight = 1.0f;
 		currentFunctionFilter = null;
 		currentIsWeightFunction = false;
@@ -71,7 +73,9 @@ public final class FunctionScoreClausesStepImpl<SR>
 	@Override
 	public <T> FunctionScoreFieldValueFactorStep<SR, FunctionScoreClausesStepImpl<SR>> fieldValueFactor(
 			FieldValueFactorFieldReference<? super SR, T> fieldReference) {
-		return fieldValueFactor( fieldReference.absolutePath() );
+		fieldValueFactor( fieldReference.absolutePath() );
+		currentValueModel = fieldReference.valueModel();
+		return this;
 	}
 
 	@Override
@@ -106,6 +110,11 @@ public final class FunctionScoreClausesStepImpl<SR>
 	public FunctionScoreFieldValueFactorStep<SR, FunctionScoreClausesStepImpl<SR>> factor(float factor) {
 		currentFieldValueFactor.factor( factor );
 		return this;
+	}
+
+	@Override
+	public FunctionScoreFieldValueFactorStep<SR, FunctionScoreClausesStepImpl<SR>> missing(Object value) {
+		return missing( value, currentValueModel );
 	}
 
 	@Override
