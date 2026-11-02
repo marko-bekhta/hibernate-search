@@ -39,16 +39,19 @@ class FunctionScorePredicateSpecificsIT {
 					document.addValue( index.binding().popularity, 10 );
 					document.addValue( index.binding().rating, 5 );
 					document.addValue( index.binding().featured, true );
+					document.addValue( index.binding().label, "featured" );
 				} )
 				.add( "2", document -> {
 					document.addValue( index.binding().popularity, 20 );
 					document.addValue( index.binding().rating, 3 );
 					document.addValue( index.binding().featured, false );
+					document.addValue( index.binding().label, "ordinary" );
 				} )
 				.add( "3", document -> {
 					document.addValue( index.binding().popularity, 5 );
 					document.addValue( index.binding().rating, 8 );
 					document.addValue( index.binding().featured, true );
+					document.addValue( index.binding().label, "featured" );
 				} )
 				.join();
 	}
@@ -250,6 +253,18 @@ class FunctionScorePredicateSpecificsIT {
 	class WeightFunction {
 
 		@Test
+		void weightWithWildcardFilter() {
+			List<Float> scores = index.createScope().query()
+					.select( SearchProjectionFactory::score )
+					.where( f -> f.functionScore( f.matchAll() )
+							.weight( 10 ).filter( pf -> pf.wildcard().field( "label" ).matching( "feat*" ) )
+							.boostMode().replace() )
+					.fetchAllHits();
+
+			assertThat( scores ).containsExactlyInAnyOrder( 10f, 1f, 10f );
+		}
+
+		@Test
 		void simpleWeight() {
 			List<Float> scores = index.createScope().query()
 					.select( SearchProjectionFactory::score )
@@ -301,11 +316,13 @@ class FunctionScorePredicateSpecificsIT {
 		final IndexFieldReference<Integer> popularity;
 		final IndexFieldReference<Integer> rating;
 		final IndexFieldReference<Boolean> featured;
+		final IndexFieldReference<String> label;
 
 		IndexBinding(IndexSchemaElement root) {
 			popularity = root.field( "popularity", f -> f.asInteger().scorable( Scorable.YES ) ).toReference();
 			rating = root.field( "rating", f -> f.asInteger().scorable( Scorable.YES ) ).toReference();
 			featured = root.field( "featured", f -> f.asBoolean().searchable( Searchable.YES ) ).toReference();
+			label = root.field( "label", f -> f.asString() ).toReference();
 		}
 	}
 

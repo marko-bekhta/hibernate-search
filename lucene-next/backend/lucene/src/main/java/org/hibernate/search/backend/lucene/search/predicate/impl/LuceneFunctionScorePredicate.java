@@ -15,6 +15,7 @@ import org.hibernate.search.engine.search.predicate.spi.FieldValueFactorFunction
 import org.hibernate.search.engine.search.predicate.spi.FunctionScorePredicateBuilder;
 
 import org.apache.lucene.index.LeafReaderContext;
+import org.apache.lucene.index.ReaderUtil;
 import org.apache.lucene.index.SortedNumericDocValues;
 import org.apache.lucene.queries.function.FunctionScoreQuery;
 import org.apache.lucene.search.DocIdSetIterator;
@@ -542,7 +543,8 @@ public class LuceneFunctionScorePredicate extends AbstractLuceneSearchPredicate 
 				Query filter = filters.get( i );
 				if ( filter != null ) {
 					Weight filterWeight = filter.createWeight(
-							new IndexSearcher( ctx.reader() ), org.apache.lucene.search.ScoreMode.COMPLETE_NO_SCORES, 1.0f );
+							new IndexSearcher( ReaderUtil.getTopLevelContext( ctx ).reader() ),
+							org.apache.lucene.search.ScoreMode.COMPLETE_NO_SCORES, 1.0f );
 					Scorer scorer = filterWeight.scorer( ctx );
 					filterBitSets.add( scorerToBitSet( scorer, ctx.reader().maxDoc() ) );
 				}
@@ -604,7 +606,11 @@ public class LuceneFunctionScorePredicate extends AbstractLuceneSearchPredicate 
 			for ( DoubleValuesSource source : sources ) {
 				rewritten.add( source.rewrite( reader ) );
 			}
-			return new CompositeScoreFunctionSource( rewritten, weights, filters, scoreMode );
+			List<Query> rewrittenFilters = new ArrayList<>();
+			for ( Query filter : filters ) {
+				rewrittenFilters.add( filter != null ? reader.rewrite( filter ) : null );
+			}
+			return new CompositeScoreFunctionSource( rewritten, weights, rewrittenFilters, scoreMode );
 		}
 
 		@Override
