@@ -553,19 +553,11 @@ public class LuceneFunctionScorePredicate extends AbstractLuceneSearchPredicate 
 				}
 			}
 			return new DoubleValues() {
-				private int currentDoc;
+				private final List<DoubleValues> matchingValues = new ArrayList<>();
+				private final List<Float> matchingWeights = new ArrayList<>();
 
 				@Override
 				public double doubleValue() throws IOException {
-					List<DoubleValues> matchingValues = new ArrayList<>();
-					List<Float> matchingWeights = new ArrayList<>();
-					for ( int i = 0; i < allValues.size(); i++ ) {
-						BitSet bits = filterBitSets.get( i );
-						if ( bits == null || bits.get( currentDoc ) ) {
-							matchingValues.add( allValues.get( i ) );
-							matchingWeights.add( weights.get( i ) );
-						}
-					}
 					if ( matchingValues.isEmpty() ) {
 						return 1.0;
 					}
@@ -574,9 +566,19 @@ public class LuceneFunctionScorePredicate extends AbstractLuceneSearchPredicate 
 
 				@Override
 				public boolean advanceExact(int doc) throws IOException {
-					currentDoc = doc;
-					for ( DoubleValues v : allValues ) {
-						v.advanceExact( doc );
+					matchingValues.clear();
+					matchingWeights.clear();
+					for ( int i = 0; i < allValues.size(); i++ ) {
+						BitSet bits = filterBitSets.get( i );
+						if ( bits == null || bits.get( doc ) ) {
+							DoubleValues value = allValues.get( i );
+							value.advanceExact( doc );
+							matchingValues.add( value );
+							matchingWeights.add( weights.get( i ) );
+							if ( scoreMode == ScoreMode.FIRST ) {
+								break;
+							}
+						}
 					}
 					return true;
 				}

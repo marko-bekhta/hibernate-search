@@ -38,6 +38,7 @@ class FunctionScorePredicateSpecificsIT {
 				.add( "1", document -> {
 					document.addValue( index.binding().popularity, 10 );
 					document.addValue( index.binding().rating, 5 );
+					document.addValue( index.binding().optionalRating, 5 );
 					document.addValue( index.binding().featured, true );
 					document.addValue( index.binding().label, "featured" );
 				} )
@@ -50,6 +51,7 @@ class FunctionScorePredicateSpecificsIT {
 				.add( "3", document -> {
 					document.addValue( index.binding().popularity, 5 );
 					document.addValue( index.binding().rating, 8 );
+					document.addValue( index.binding().optionalRating, 8 );
 					document.addValue( index.binding().featured, true );
 					document.addValue( index.binding().label, "featured" );
 				} )
@@ -158,6 +160,33 @@ class FunctionScorePredicateSpecificsIT {
 
 	@Nested
 	class MultipleFunctions {
+
+		@Test
+		void filteredFunctionIgnoresMissingValueOutsideFilter() {
+			List<Float> scores = index.createScope().query()
+					.select( SearchProjectionFactory::score )
+					.where( f -> f.functionScore( f.matchAll() )
+							.fieldValueFactor( "optionalRating" )
+							.filter( pf -> pf.match().field( "featured" ).matching( true ) )
+							.boostMode().replace() )
+					.fetchAllHits();
+
+			assertThat( scores ).containsExactlyInAnyOrder( 5f, 1f, 8f );
+		}
+
+		@Test
+		void firstIgnoresMissingValueInLaterFunction() {
+			List<Float> scores = index.createScope().query()
+					.select( SearchProjectionFactory::score )
+					.where( f -> f.functionScore( f.matchAll() )
+							.weight( 10 ).filter( pf -> pf.match().field( "featured" ).matching( false ) )
+							.fieldValueFactor( "optionalRating" )
+							.scoreMode().first()
+							.boostMode().replace() )
+					.fetchAllHits();
+
+			assertThat( scores ).containsExactlyInAnyOrder( 5f, 10f, 8f );
+		}
 
 		@Test
 		void filteredFieldValueFactor() {
@@ -315,12 +344,14 @@ class FunctionScorePredicateSpecificsIT {
 	private static class IndexBinding {
 		final IndexFieldReference<Integer> popularity;
 		final IndexFieldReference<Integer> rating;
+		final IndexFieldReference<Integer> optionalRating;
 		final IndexFieldReference<Boolean> featured;
 		final IndexFieldReference<String> label;
 
 		IndexBinding(IndexSchemaElement root) {
 			popularity = root.field( "popularity", f -> f.asInteger().scorable( Scorable.YES ) ).toReference();
 			rating = root.field( "rating", f -> f.asInteger().scorable( Scorable.YES ) ).toReference();
+			optionalRating = root.field( "optionalRating", f -> f.asInteger().scorable( Scorable.YES ) ).toReference();
 			featured = root.field( "featured", f -> f.asBoolean().searchable( Searchable.YES ) ).toReference();
 			label = root.field( "label", f -> f.asString() ).toReference();
 		}
