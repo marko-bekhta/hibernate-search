@@ -330,4 +330,8 @@ public interface QueryLog {
 	@Message(id = ID_OFFSET + 195, value = "Configured query cache policy is ineffective as query cache is not enabled. "
 			+ "Set the cache explicitly through the QueryCachingConfigurer.")
 	void ineffectiveQueryCachingPolicy();
+
+	@Message(id = ID_OFFSET + 196,
+			value = "Invalid function score '%1$s' produced by %2$s. Scores must be finite, non-negative values representable as floats.")
+	SearchException invalidFunctionScore(double score, String source);
 }

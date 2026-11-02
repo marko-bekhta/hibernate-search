@@ -24,6 +24,8 @@ import org.hibernate.search.engine.search.projection.dsl.SearchProjectionFactory
 import org.hibernate.search.engine.search.reference.predicate.MatchPredicateFieldReference;
 import org.hibernate.search.engine.search.reference.scorefunction.FieldValueFactorFieldReference;
 import org.hibernate.search.integrationtest.backend.tck.testsupport.util.extension.SearchSetupHelper;
+import org.hibernate.search.util.common.AssertionFailure;
+import org.hibernate.search.util.common.SearchException;
 import org.hibernate.search.util.impl.integrationtest.mapper.stub.SimpleMappedIndex;
 
 import org.junit.jupiter.api.BeforeAll;
@@ -477,6 +479,77 @@ class FunctionScorePredicateSpecificsIT {
 
 	@Nested
 	class DefaultsAndEdgeCases {
+
+		@ParameterizedTest
+		@ValueSource(strings = { "negative", "nan", "positiveInfinity", "negativeInfinity" })
+		void invalidFieldValueFactorResult(String invalidResult) {
+			assertThatThrownBy( () -> index.createScope().query()
+					.select( SearchProjectionFactory::score )
+					.where( f -> {
+						var function = f.functionScore().fieldValueFactor( "popularity" );
+						switch ( invalidResult ) {
+							case "negative" -> function.factor( -1 );
+							case "nan" -> function.factor( -1 ).modifier().sqrt();
+							case "positiveInfinity" -> function.factor( 0 ).modifier().reciprocal();
+							case "negativeInfinity" -> function.factor( 0 ).modifier().log();
+							default -> throw new AssertionFailure( invalidResult );
+						}
+						return function.boostMode().replace();
+					} )
+					.fetchAllHits() )
+					.isInstanceOf( SearchException.class );
+		}
+
+		@Test
+		void invalidFunctionCannotBeMaskedByMax() {
+			assertThatThrownBy( () -> index.createScope().query()
+					.select( SearchProjectionFactory::score )
+					.where( f -> f.functionScore().fieldValueFactor( "popularity" ).factor( -1 )
+							.weight( 10 ).scoreMode().max().boostMode().replace() )
+					.fetchAllHits() )
+					.isInstanceOf( SearchException.class );
+		}
+
+		@Test
+		void combinedFunctionScoreMustFitInFloat() {
+			assertThatThrownBy( () -> index.createScope().query()
+					.select( SearchProjectionFactory::score )
+					.where( f -> f.functionScore().weight( Float.MAX_VALUE ).weight( 2 ).boostMode().replace() )
+					.fetchAllHits() )
+					.isInstanceOf( SearchException.class );
+		}
+
+		@Test
+		void multipliedQueryScoreMustFitInFloat() {
+			assertThatThrownBy( () -> index.createScope().query()
+					.select( SearchProjectionFactory::score )
+					.where( f -> f.functionScore( f.matchAll().boost( Float.MAX_VALUE ) )
+							.weight( 2 ).boostMode().multiply() )
+					.fetchAllHits() )
+					.isInstanceOf( SearchException.class );
+		}
+
+		@Test
+		void zeroFunctionScoreIsValid() {
+			List<Float> scores = index.createScope().query()
+					.select( SearchProjectionFactory::score )
+					.where( f -> f.functionScore().fieldValueFactor( "popularity" ).factor( 0 ).boostMode().replace() )
+					.fetchAllHits();
+
+			assertThat( scores ).containsExactlyInAnyOrder( 0f, 0f, 0f );
+		}
+
+		@Test
+		void invalidFunctionSkippedByFirst() {
+			List<Float> scores = index.createScope().query()
+					.select( SearchProjectionFactory::score )
+					.where( f -> f.functionScore().weight( 10 )
+							.fieldValueFactor( "popularity" ).factor( -1 )
+							.scoreMode().first().boostMode().replace() )
+					.fetchAllHits();
+
+			assertThat( scores ).containsExactlyInAnyOrder( 10f, 10f, 10f );
+		}
 
 		@Test
 		void scorableMetamodelAndTraits() {

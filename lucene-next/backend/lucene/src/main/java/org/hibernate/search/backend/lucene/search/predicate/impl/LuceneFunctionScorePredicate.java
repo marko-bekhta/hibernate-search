@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.LongToDoubleFunction;
 
+import org.hibernate.search.backend.lucene.logging.impl.QueryLog;
 import org.hibernate.search.backend.lucene.search.common.impl.LuceneSearchIndexScope;
 import org.hibernate.search.backend.lucene.types.predicate.impl.LuceneFieldValueFactorFunction;
 import org.hibernate.search.engine.search.predicate.SearchPredicate;
@@ -63,7 +64,6 @@ public class LuceneFunctionScorePredicate extends AbstractLuceneSearchPredicate 
 		DoubleValuesSource combinedSource = buildCombinedSource( context );
 
 		return switch ( boostMode ) {
-			case MULTIPLY -> FunctionScoreQuery.boostByValue( innerQuery, combinedSource );
 			case REPLACE -> new FunctionScoreQuery( innerQuery, combinedSource );
 			default -> new FunctionScoreQuery( innerQuery,
 					new BoostModeSource( combinedSource, boostMode ) );
@@ -84,13 +84,32 @@ public class LuceneFunctionScorePredicate extends AbstractLuceneSearchPredicate 
 
 	// -- Enums for internal use --
 
+	private static double checkedScore(double score, String source) {
+		if ( !Double.isFinite( score ) || score < 0 ) {
+			throw QueryLog.INSTANCE.invalidFunctionScore( score, source );
+		}
+		return score;
+	}
+
+	private static double checkedFloatScore(double score, String source) {
+		checkedScore( score, source );
+		if ( !Float.isFinite( (float) score ) ) {
+			throw QueryLog.INSTANCE.invalidFunctionScore( score, source );
+		}
+		return score;
+	}
+
+	private static double weightedScore(DoubleValues value, float weight) throws IOException {
+		return checkedScore( value.doubleValue() * weight, "weighted function" );
+	}
+
 	enum ScoreMode {
 		MULTIPLY {
 			@Override
 			double combine(List<DoubleValues> values, List<Float> weights) throws IOException {
 				double result = 1.0;
 				for ( int i = 0; i < values.size(); i++ ) {
-					result *= values.get( i ).doubleValue() * weights.get( i );
+					result *= weightedScore( values.get( i ), weights.get( i ) );
 				}
 				return result;
 			}
@@ -100,7 +119,7 @@ public class LuceneFunctionScorePredicate extends AbstractLuceneSearchPredicate 
 			double combine(List<DoubleValues> values, List<Float> weights) throws IOException {
 				double result = 0.0;
 				for ( int i = 0; i < values.size(); i++ ) {
-					result += values.get( i ).doubleValue() * weights.get( i );
+					result += weightedScore( values.get( i ), weights.get( i ) );
 				}
 				return result;
 			}
@@ -111,7 +130,7 @@ public class LuceneFunctionScorePredicate extends AbstractLuceneSearchPredicate 
 				double result = 0.0;
 				double weightSum = 0;
 				for ( int i = 0; i < values.size(); i++ ) {
-					result += values.get( i ).doubleValue() * weights.get( i );
+					result += weightedScore( values.get( i ), weights.get( i ) );
 					weightSum += weights.get( i );
 				}
 				return weightSum > 0 ? result / weightSum : 1.0;
@@ -120,7 +139,7 @@ public class LuceneFunctionScorePredicate extends AbstractLuceneSearchPredicate 
 		FIRST {
 			@Override
 			double combine(List<DoubleValues> values, List<Float> weights) throws IOException {
-				return values.isEmpty() ? 1.0 : values.get( 0 ).doubleValue() * weights.get( 0 );
+				return values.isEmpty() ? 1.0 : weightedScore( values.get( 0 ), weights.get( 0 ) );
 			}
 		},
 		MAX {
@@ -128,7 +147,7 @@ public class LuceneFunctionScorePredicate extends AbstractLuceneSearchPredicate 
 			double combine(List<DoubleValues> values, List<Float> weights) throws IOException {
 				double result = Double.NEGATIVE_INFINITY;
 				for ( int i = 0; i < values.size(); i++ ) {
-					result = Math.max( result, values.get( i ).doubleValue() * weights.get( i ) );
+					result = Math.max( result, weightedScore( values.get( i ), weights.get( i ) ) );
 				}
 				return result == Double.NEGATIVE_INFINITY ? 1.0 : result;
 			}
@@ -138,7 +157,7 @@ public class LuceneFunctionScorePredicate extends AbstractLuceneSearchPredicate 
 			double combine(List<DoubleValues> values, List<Float> weights) throws IOException {
 				double result = Double.POSITIVE_INFINITY;
 				for ( int i = 0; i < values.size(); i++ ) {
-					result = Math.min( result, values.get( i ).doubleValue() * weights.get( i ) );
+					result = Math.min( result, weightedScore( values.get( i ), weights.get( i ) ) );
 				}
 				return result == Double.POSITIVE_INFINITY ? 1.0 : result;
 			}
@@ -496,7 +515,7 @@ public class LuceneFunctionScorePredicate extends AbstractLuceneSearchPredicate 
 					else {
 						fieldValue = missing;
 					}
-					return modifier.apply( factor * fieldValue );
+					return checkedScore( modifier.apply( factor * fieldValue ), "field '" + fieldPath + "'" );
 				}
 
 				@Override
@@ -599,7 +618,7 @@ public class LuceneFunctionScorePredicate extends AbstractLuceneSearchPredicate 
 					if ( matchingValues.isEmpty() ) {
 						return 1.0;
 					}
-					return scoreMode.combine( matchingValues, matchingWeights );
+					return checkedFloatScore( scoreMode.combine( matchingValues, matchingWeights ), "score mode " + scoreMode );
 				}
 
 				@Override
@@ -706,7 +725,7 @@ public class LuceneFunctionScorePredicate extends AbstractLuceneSearchPredicate 
 				public double doubleValue() throws IOException {
 					double queryScore = scores != null ? scores.doubleValue() : 0;
 					double functionScore = functionValues.doubleValue();
-					return boostMode.combine( queryScore, functionScore );
+					return checkedFloatScore( boostMode.combine( queryScore, functionScore ), "boost mode " + boostMode );
 				}
 
 				@Override

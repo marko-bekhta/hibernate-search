@@ -59,6 +59,6 @@ public interface LuceneLog
 	 * here to the next value.
 	 */
 	@LogMessage(level = TRACE)
-	@Message(id = ID_OFFSET + 196, value = "")
+	@Message(id = ID_OFFSET + 197, value = "")
 	void nextLoggerIdForConvenience();
 }
