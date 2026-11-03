@@ -39,6 +39,6 @@ public interface EngineLog extends EngineMiscLog, ConfigurationLog, ExecutorLog,
 	 * here to the next value.
 	 */
 	@LogMessage(level = TRACE)
-	@Message(id = ID_OFFSET + 135, value = "")
+	@Message(id = ID_OFFSET + 136, value = "")
 	void nextLoggerIdForConvenience();
 }

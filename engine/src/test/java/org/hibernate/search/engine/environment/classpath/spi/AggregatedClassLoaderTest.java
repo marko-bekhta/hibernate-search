@@ -9,6 +9,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ServiceConfigurationError;
 
+import org.hibernate.search.util.common.SearchException;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -57,5 +59,12 @@ class AggregatedClassLoaderTest {
 				.isInstanceOf( NullPointerException.class );
 		assertThatThrownBy( () -> AggregatedClassLoader.createFrom( (ClassLoader) null ) )
 				.isInstanceOf( NullPointerException.class );
+	}
+
+	@Test
+	void rejectsEmptyLoaders() {
+		assertThatThrownBy( AggregatedClassLoader::createFrom )
+				.isInstanceOf( SearchException.class )
+				.hasMessageContaining( "at least one class loader must be provided" );
 	}
 }

@@ -192,4 +192,8 @@ public interface EngineMiscLog {
 	@Message(id = ID_OFFSET + 129, value = "%1$s")
 	void exceptionOccurred(String errorMsg, @Cause Throwable exceptionThatOccurred);
 
+	@Message(id = ID_OFFSET + 135,
+			value = "Invalid call to create an AggregatedClassLoader: at least one class loader must be provided.")
+	SearchException emptyAggregatedClassLoaders();
+
 }

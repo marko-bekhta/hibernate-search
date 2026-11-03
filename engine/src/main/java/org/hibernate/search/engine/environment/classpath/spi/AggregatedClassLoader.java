@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 
+import org.hibernate.search.engine.logging.impl.EngineMiscLog;
 import org.hibernate.search.util.common.annotation.Incubating;
 
 /**
@@ -58,6 +59,9 @@ public final class AggregatedClassLoader extends ClassLoader {
 	@Incubating
 	public static AggregatedClassLoader createFrom(ClassLoader... classLoaders) {
 		Objects.requireNonNull( classLoaders );
+		if ( classLoaders.length == 0 ) {
+			throw EngineMiscLog.INSTANCE.emptyAggregatedClassLoaders();
+		}
 		LinkedHashSet<ClassLoader> orderedClassLoaders = new LinkedHashSet<>();
 		for ( ClassLoader classLoader : classLoaders ) {
 			orderedClassLoaders.add( Objects.requireNonNull( classLoader ) );
