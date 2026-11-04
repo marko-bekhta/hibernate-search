@@ -61,6 +61,10 @@ public class LuceneFunctionScorePredicate extends AbstractLuceneSearchPredicate 
 				? innerPredicate.toQuery( context )
 				: MatchAllDocsQuery.INSTANCE;
 
+		if ( functions.isEmpty() ) {
+			return innerQuery;
+		}
+
 		DoubleValuesSource combinedSource = buildCombinedSource( context );
 
 		return switch ( boostMode ) {
@@ -85,22 +89,15 @@ public class LuceneFunctionScorePredicate extends AbstractLuceneSearchPredicate 
 	// -- Enums for internal use --
 
 	private static double checkedScore(double score, String source) {
-		if ( !Double.isFinite( score ) || score < 0 ) {
-			throw QueryLog.INSTANCE.invalidFunctionScore( score, source );
-		}
-		return score;
-	}
-
-	private static double checkedFloatScore(double score, String source) {
-		checkedScore( score, source );
-		if ( !Float.isFinite( (float) score ) ) {
+		// Positive infinity is capped for function scores, and allowed for final query scores.
+		if ( Double.isNaN( score ) || score < 0 ) {
 			throw QueryLog.INSTANCE.invalidFunctionScore( score, source );
 		}
 		return score;
 	}
 
 	private static double weightedScore(DoubleValues value, float weight) throws IOException {
-		return checkedScore( value.doubleValue() * weight, "weighted function" );
+		return value.doubleValue() * weight;
 	}
 
 	enum ScoreMode {
@@ -118,10 +115,12 @@ public class LuceneFunctionScorePredicate extends AbstractLuceneSearchPredicate 
 			@Override
 			double combine(List<DoubleValues> values, List<Float> weights) throws IOException {
 				double result = 0.0;
+				double weightSum = 0.0;
 				for ( int i = 0; i < values.size(); i++ ) {
 					result += weightedScore( values.get( i ), weights.get( i ) );
+					weightSum += weights.get( i );
 				}
-				return result;
+				return weightSum > 0 ? result : 1.0;
 			}
 		},
 		AVG {
@@ -618,7 +617,9 @@ public class LuceneFunctionScorePredicate extends AbstractLuceneSearchPredicate 
 					if ( matchingValues.isEmpty() ) {
 						return 1.0;
 					}
-					return checkedFloatScore( scoreMode.combine( matchingValues, matchingWeights ), "score mode " + scoreMode );
+					// Cap the combined function score before applying boost_mode, as Elasticsearch does.
+					return checkedScore( Math.min( Float.MAX_VALUE,
+							scoreMode.combine( matchingValues, matchingWeights ) ), "score mode " + scoreMode );
 				}
 
 				@Override
@@ -725,7 +726,7 @@ public class LuceneFunctionScorePredicate extends AbstractLuceneSearchPredicate 
 				public double doubleValue() throws IOException {
 					double queryScore = scores != null ? scores.doubleValue() : 0;
 					double functionScore = functionValues.doubleValue();
-					return checkedFloatScore( boostMode.combine( queryScore, functionScore ), "boost mode " + boostMode );
+					return checkedScore( boostMode.combine( queryScore, functionScore ), "boost mode " + boostMode );
 				}
 
 				@Override

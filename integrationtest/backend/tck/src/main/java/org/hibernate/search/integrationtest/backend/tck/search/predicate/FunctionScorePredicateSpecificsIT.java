@@ -17,6 +17,8 @@ import org.hibernate.search.engine.backend.types.ObjectStructure;
 import org.hibernate.search.engine.backend.types.Scorable;
 import org.hibernate.search.engine.backend.types.Searchable;
 import org.hibernate.search.engine.search.common.ValueModel;
+import org.hibernate.search.engine.search.predicate.dsl.FunctionScoreBoostModeStep;
+import org.hibernate.search.engine.search.predicate.dsl.FunctionScoreScoreModeStep;
 import org.hibernate.search.engine.search.predicate.dsl.PredicateFinalStep;
 import org.hibernate.search.engine.search.predicate.dsl.TypedSearchPredicateFactory;
 import org.hibernate.search.engine.search.projection.dsl.SearchProjectionFactory;
@@ -32,6 +34,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 //CHECKSTYLE:OFF HideUtilityClassConstructor ignore the rule since it is a class with nested test classes.
@@ -480,7 +483,140 @@ class FunctionScorePredicateSpecificsIT {
 	class DefaultsAndEdgeCases {
 
 		@ParameterizedTest
-		@ValueSource(strings = { "negative", "nan", "positiveInfinity", "negativeInfinity" })
+		@CsvSource({ "multiply, 30", "replace, 10", "sum, 16", "avg, 8", "max, 10", "min, 6" })
+		void predicateBoostAppliedAfterCombination(String mode, float expected) {
+			List<Float> scores = index.createScope().query()
+					.select( SearchProjectionFactory::score )
+					.where( f -> boostMode( f.functionScore( f.matchAll().boost( 3 ) )
+							.weight( 5 ).boostMode(), mode ).boost( 2 ) )
+					.fetchAllHits();
+
+			assertThat( scores ).containsExactly( expected, expected, expected );
+		}
+
+		@ParameterizedTest
+		@ValueSource(booleans = { false, true })
+		void nestedPredicateBoost(boolean explicitNesting) {
+			List<Float> scores = index.createScope().query()
+					.select( SearchProjectionFactory::score )
+					.where( f -> {
+						var predicate = f.functionScore().fieldValueFactor( "nested.rating" )
+								.boostMode().replace().boost( 2 );
+						return explicitNesting ? f.nested( "nested" ).add( predicate ) : predicate;
+					} )
+					.fetchAllHits();
+
+			assertThat( scores ).containsExactlyInAnyOrder( 14f, 22f, 26f );
+		}
+
+		@Test
+		void emptyFunctionsPreserveMatches() {
+			List<Float> scores = index.createScope().query()
+					.select( SearchProjectionFactory::score )
+					.where( f -> f.functionScore( f.match().field( "featured" ).matching( true ).constantScore().boost( 3 ) )
+							.boostMode().replace() )
+					.fetchAllHits();
+
+			assertThat( scores ).containsExactly( 3f, 3f );
+		}
+
+		@ParameterizedTest
+		@ValueSource(strings = { "multiply", "replace", "sum", "avg", "max", "min" })
+		void emptyFunctionsPreserveInnerScore(String mode) {
+			List<Float> scores = index.createScope().query()
+					.select( SearchProjectionFactory::score )
+					.where( f -> boostMode( f.functionScore( f.matchAll().boost( 3 ) ).boostMode(), mode ).boost( 2 ) )
+					.fetchAllHits();
+
+			assertThat( scores ).containsExactly( 6f, 6f, 6f );
+		}
+
+		@ParameterizedTest
+		@CsvSource({ "multiply, 3", "replace, 1", "sum, 4", "avg, 2", "max, 3", "min, 1" })
+		void noMatchingFunctionsUseNeutralFactor(String mode, float expected) {
+			List<Float> scores = index.createScope().query()
+					.select( SearchProjectionFactory::score )
+					.where( f -> boostMode( f.functionScore( f.matchAll().boost( 3 ) )
+							.weight( 5 ).filter( pf -> pf.matchNone() ).boostMode(), mode ) )
+					.fetchAllHits();
+
+			assertThat( scores ).containsExactly( expected, expected, expected );
+		}
+
+		@ParameterizedTest
+		@CsvSource({ "multiply, 5", "sum, 5", "avg, 1", "first, 5", "max, 5", "min, 5" })
+		void singleWeightScoreModes(String mode, float expected) {
+			List<Float> scores = index.createScope().query()
+					.select( SearchProjectionFactory::score )
+					.where( f -> scoreMode( f.functionScore().weight( 5 ).scoreMode(), mode ).boostMode().replace() )
+					.fetchAllHits();
+
+			assertThat( scores ).containsExactly( expected, expected, expected );
+		}
+
+		@ParameterizedTest
+		@ValueSource(booleans = { false, true })
+		void singleFieldWeightedAverage(boolean filtered) {
+			List<Float> scores = index.createScope().query()
+					.select( SearchProjectionFactory::score )
+					.where( f -> {
+						var function = f.functionScore().fieldValueFactor( "popularity" ).functionWeight( 5 );
+						if ( filtered ) {
+							function.filter( pf -> pf.match().field( "featured" ).matching( true ) );
+						}
+						return function.scoreMode().avg().boostMode().replace();
+					} )
+					.fetchAllHits();
+
+			assertThat( scores ).containsExactlyInAnyOrder( 10f, filtered ? 1f : 20f, 5f );
+		}
+
+		@ParameterizedTest
+		@CsvSource({ "sum, 1", "sum, 2", "avg, 1", "avg, 2" })
+		void zeroMatchingWeights(String mode, int count) {
+			List<Float> scores = index.createScope().query()
+					.select( SearchProjectionFactory::score )
+					.where( f -> {
+						var predicate = f.functionScore();
+						for ( int i = 0; i < count; i++ ) {
+							predicate.weight( 0 );
+						}
+						return scoreMode( predicate.scoreMode(), mode ).boostMode().replace();
+					} )
+					.fetchAllHits();
+
+			assertThat( scores ).containsExactly( 1f, 1f, 1f );
+		}
+
+		@ParameterizedTest
+		@ValueSource(strings = { "sum", "avg" })
+		void zeroMatchingWeightsIgnoreNonMatchingWeights(String mode) {
+			List<Float> scores = index.createScope().query()
+					.select( SearchProjectionFactory::score )
+					.where( f -> scoreMode( f.functionScore()
+							.fieldValueFactor( "popularity" ).functionWeight( 0 )
+							.weight( 5 ).filter( pf -> pf.match().field( "featured" ).matching( true ) )
+							.scoreMode(), mode ).boostMode().replace() )
+					.fetchAllHits();
+
+			float featuredScore = "sum".equals( mode ) ? 5f : 1f;
+			assertThat( scores ).containsExactlyInAnyOrder( featuredScore, 1f, featuredScore );
+		}
+
+		@Test
+		void constantScoreOverridesFunctionsAndRetainsBoost() {
+			List<Float> scores = index.createScope().query()
+					.select( SearchProjectionFactory::score )
+					.where( f -> f.functionScore( f.matchAll().boost( 3 ) ).weight( 5 )
+							.boostMode().replace().constantScore().boost( 2 ) )
+					.fetchAllHits();
+
+			assertThat( scores ).containsExactly( 2f, 2f, 2f );
+		}
+
+
+		@ParameterizedTest
+		@ValueSource(strings = { "negative", "nan", "negativeInfinity" })
 		void invalidFieldValueFactorResult(String invalidResult) {
 			assertThatThrownBy( () -> index.createScope().query()
 					.select( SearchProjectionFactory::score )
@@ -489,7 +625,6 @@ class FunctionScorePredicateSpecificsIT {
 						switch ( invalidResult ) {
 							case "negative" -> function.factor( -1 );
 							case "nan" -> function.factor( -1 ).modifier().sqrt();
-							case "positiveInfinity" -> function.factor( 0 ).modifier().reciprocal();
 							case "negativeInfinity" -> function.factor( 0 ).modifier().log();
 							default -> throw new AssertionFailure( invalidResult );
 						}
@@ -509,23 +644,54 @@ class FunctionScorePredicateSpecificsIT {
 					.isInstanceOf( SearchException.class );
 		}
 
-		@Test
-		void combinedFunctionScoreMustFitInFloat() {
-			assertThatThrownBy( () -> index.createScope().query()
+		@ParameterizedTest
+		@CsvSource({ "multiply, 2", "multiply, 10", "sum, 2" })
+		void combinedFunctionScoreIsCapped(String mode, int count) {
+			List<Float> scores = index.createScope().query()
 					.select( SearchProjectionFactory::score )
-					.where( f -> f.functionScore().weight( Float.MAX_VALUE ).weight( 2 ).boostMode().replace() )
-					.fetchAllHits() )
-					.isInstanceOf( SearchException.class );
+					.where( f -> {
+						var predicate = f.functionScore();
+						for ( int i = 0; i < count; i++ ) {
+							predicate.weight( Float.MAX_VALUE );
+						}
+						return scoreMode( predicate.scoreMode(), mode ).boostMode().replace();
+					} )
+					.fetchAllHits();
+
+			assertThat( scores ).containsExactly( Float.MAX_VALUE, Float.MAX_VALUE, Float.MAX_VALUE );
 		}
 
 		@Test
-		void multipliedQueryScoreMustFitInFloat() {
-			assertThatThrownBy( () -> index.createScope().query()
+		void infiniteFieldValueFactorIsCapped() {
+			List<Float> scores = index.createScope().query()
+					.select( SearchProjectionFactory::score )
+					.where( f -> f.functionScore().fieldValueFactor( "popularity" )
+							.factor( 0 ).modifier().reciprocal().boostMode().replace() )
+					.fetchAllHits();
+
+			assertThat( scores ).containsExactly( Float.MAX_VALUE, Float.MAX_VALUE, Float.MAX_VALUE );
+		}
+
+		@Test
+		void functionScoreIsCappedBeforeBoostMode() {
+			List<Float> scores = index.createScope().query()
+					.select( SearchProjectionFactory::score )
+					.where( f -> f.functionScore( f.matchAll().boost( 0.5f ) )
+							.weight( Float.MAX_VALUE ).weight( 2 ).boostMode().multiply() )
+					.fetchAllHits();
+
+			assertThat( scores ).containsExactly( Float.MAX_VALUE / 2, Float.MAX_VALUE / 2, Float.MAX_VALUE / 2 );
+		}
+
+		@Test
+		void multipliedQueryScoreCanOverflow() {
+			List<Float> scores = index.createScope().query()
 					.select( SearchProjectionFactory::score )
 					.where( f -> f.functionScore( f.matchAll().boost( Float.MAX_VALUE ) )
 							.weight( 2 ).boostMode().multiply() )
-					.fetchAllHits() )
-					.isInstanceOf( SearchException.class );
+					.fetchAllHits();
+
+			assertThat( scores ).containsExactly( Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY );
 		}
 
 		@Test
@@ -577,6 +743,30 @@ class FunctionScorePredicateSpecificsIT {
 			assertThat( scores ).hasSize( 3 );
 			assertThat( scores ).anySatisfy( s -> assertThat( s ).isCloseTo( 20f, within( 0.1f ) ) );
 		}
+	}
+
+	private static <N> N boostMode(FunctionScoreBoostModeStep<N> step, String mode) {
+		return switch ( mode ) {
+			case "multiply" -> step.multiply();
+			case "replace" -> step.replace();
+			case "sum" -> step.sum();
+			case "avg" -> step.avg();
+			case "max" -> step.max();
+			case "min" -> step.min();
+			default -> throw new AssertionFailure( mode );
+		};
+	}
+
+	private static <N> N scoreMode(FunctionScoreScoreModeStep<N> step, String mode) {
+		return switch ( mode ) {
+			case "multiply" -> step.multiply();
+			case "sum" -> step.sum();
+			case "avg" -> step.avg();
+			case "first" -> step.first();
+			case "max" -> step.max();
+			case "min" -> step.min();
+			default -> throw new AssertionFailure( mode );
+		};
 	}
 
 	private static class IndexBinding {

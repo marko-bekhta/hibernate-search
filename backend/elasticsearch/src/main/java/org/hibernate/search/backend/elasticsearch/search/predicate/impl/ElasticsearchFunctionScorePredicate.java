@@ -12,6 +12,7 @@ import org.hibernate.search.engine.search.predicate.spi.FieldValueFactorFunction
 import org.hibernate.search.engine.search.predicate.spi.FunctionScorePredicateBuilder;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 class ElasticsearchFunctionScorePredicate extends AbstractElasticsearchPredicate {
@@ -46,6 +47,7 @@ class ElasticsearchFunctionScorePredicate extends AbstractElasticsearchPredicate
 	@Override
 	protected JsonObject doToJsonQuery(PredicateRequestContext context,
 			JsonObject outerObject, JsonObject innerObject) {
+		JsonElement boost = innerObject.remove( "boost" );
 		PredicateRequestContext contextAfterImplicitNesting = nestedPathHierarchy.isEmpty()
 				? context
 				: context.withNestedPath( nestedPathHierarchy.get( nestedPathHierarchy.size() - 1 ) );
@@ -56,6 +58,17 @@ class ElasticsearchFunctionScorePredicate extends AbstractElasticsearchPredicate
 		JsonArray functionsArray = new JsonArray();
 		for ( FunctionEntry entry : functions ) {
 			functionsArray.add( entry.toJson( contextAfterImplicitNesting ) );
+		}
+		if ( functions.size() == 1 && ( "avg".equals( scoreMode ) || "sum".equals( scoreMode ) ) ) {
+			// Elasticsearch ignores score_mode for a single unfiltered function.
+			// A non-matching second function preserves weighted averages and zero-weight sums,
+			// without contributing either a score or a weight to the result.
+			JsonObject ignoredFunction = new JsonObject();
+			JsonObject filter = new JsonObject();
+			filter.add( "match_none", new JsonObject() );
+			ignoredFunction.add( "filter", filter );
+			ignoredFunction.addProperty( "weight", 1 );
+			functionsArray.add( ignoredFunction );
 		}
 		innerObject.add( "functions", functionsArray );
 
@@ -81,6 +94,17 @@ class ElasticsearchFunctionScorePredicate extends AbstractElasticsearchPredicate
 				ElasticsearchNestedPredicate.wrap( indexNames(), path, nestedOuter, nestedInner, result );
 				result = nestedOuter;
 			}
+		}
+
+		if ( boost != null ) {
+			// Native function_score.boost affects the inner query score. Apply the predicate
+			// boost through a separate function, after score combination and implicit nesting.
+			JsonObject boosted = new JsonObject();
+			boosted.add( "query", result );
+			boosted.add( "weight", boost );
+			boosted.addProperty( "boost_mode", "multiply" );
+			result = new JsonObject();
+			result.add( "function_score", boosted );
 		}
 
 		return result;

@@ -11,8 +11,17 @@ public interface FunctionScoreScoreModeStep<N> {
 
 	N multiply();
 
+	/**
+	 * Sum the weighted function scores, or use {@code 1} if the matching weights sum to zero.
+	 * @return The next step.
+	 */
 	N sum();
 
+	/**
+	 * Divide the sum of weighted function scores by the sum of matching weights.
+	 * This also applies to a single function. If the matching weights sum to zero, use {@code 1}.
+	 * @return The next step.
+	 */
 	N avg();
 
 	N first();

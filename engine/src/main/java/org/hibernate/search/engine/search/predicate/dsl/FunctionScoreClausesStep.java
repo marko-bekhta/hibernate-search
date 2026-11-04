@@ -7,6 +7,12 @@ import org.hibernate.search.engine.search.reference.scorefunction.FieldValueFact
  * <p>
  * Follows the same flow pattern as {@link BooleanPredicateClausesStep}: functions are clause methods,
  * config steps extend this step so you can break out to add another function at any point.
+ * <p>
+ * If no functions are added, the inner predicate's score is preserved, regardless of the boost mode.
+ * Otherwise, functions that match the document are combined using the score mode, with a score of
+ * {@code 1} when none match. The combined function score is capped at {@link Float#MAX_VALUE}
+ * before applying the boost mode. The final score can overflow to positive infinity.
+ * A predicate {@link #boost(float) boost} is applied after combining the function and inner predicate scores.
  *
  * @param <SR> Scope root type.
  * @param <S> The "self" type (the actual exposed type of this step).
